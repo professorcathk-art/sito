@@ -59,7 +59,7 @@ export default function FeaturedCoursesPage() {
         }
 
         // Get expert IDs
-        const expertIds = [...new Set(productsData.map((p: any) => p.expert_id))];
+        const expertIds = Array.from(new Set(productsData.map((p: any) => p.expert_id)));
         console.log("Expert IDs:", expertIds);
         
         // Fetch profiles for these experts
