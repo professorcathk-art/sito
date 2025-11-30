@@ -384,7 +384,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                         </div>
                         {isExpanded && (
                           <div 
-                            className="text-custom-text/80 mb-3 prose prose-invert prose-sm max-w-none"
+                            className="text-custom-text/80 mb-3 product-preview"
                             dangerouslySetInnerHTML={{ __html: product.description }}
                           />
                         )}
