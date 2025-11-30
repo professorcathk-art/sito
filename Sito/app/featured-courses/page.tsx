@@ -84,7 +84,7 @@ export default function FeaturedCoursesPage() {
         console.log("Profiles fetched:", profilesData?.length || 0);
 
         // Combine products with profiles
-        const combinedData = productsData
+        const combinedData: Product[] = productsData
           .map((product: any) => {
             const profile = profilesData?.find((p: any) => p.id === product.expert_id);
             if (!profile) {
@@ -104,7 +104,7 @@ export default function FeaturedCoursesPage() {
               created_at: product.created_at,
             };
           })
-          .filter((item): item is Product => item !== null) as Product[];
+          .filter((item): item is NonNullable<typeof item> => item !== null);
 
         console.log("Combined products:", combinedData.length);
 
