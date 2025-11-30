@@ -29,6 +29,7 @@ export default function FeaturedCoursesPage() {
     async function fetchProducts() {
       setLoading(true);
       try {
+        console.log("Fetching products...");
         // Fetch products
         const { data: productsData, error: productsError } = await supabase
           .from("products")
@@ -44,16 +45,22 @@ export default function FeaturedCoursesPage() {
           .order("created_at", { ascending: false });
 
         if (productsError) {
+          console.error("Products query error:", productsError);
           throw productsError;
         }
 
+        console.log("Products fetched:", productsData?.length || 0);
+
         if (!productsData || productsData.length === 0) {
+          console.log("No products found");
           setProducts([]);
+          setLoading(false);
           return;
         }
 
         // Get expert IDs
         const expertIds = [...new Set(productsData.map((p: any) => p.expert_id))];
+        console.log("Expert IDs:", expertIds);
         
         // Fetch profiles for these experts
         const { data: profilesData, error: profilesError } = await supabase
@@ -70,14 +77,20 @@ export default function FeaturedCoursesPage() {
           .eq("listed_on_marketplace", true);
 
         if (profilesError) {
+          console.error("Profiles query error:", profilesError);
           throw profilesError;
         }
+
+        console.log("Profiles fetched:", profilesData?.length || 0);
 
         // Combine products with profiles
         const combinedData = productsData
           .map((product: any) => {
             const profile = profilesData?.find((p: any) => p.id === product.expert_id);
-            if (!profile) return null;
+            if (!profile) {
+              console.log(`No listed profile found for product ${product.id}, expert ${product.expert_id}`);
+              return null;
+            }
             return {
               id: product.id,
               name: product.name,
@@ -93,6 +106,8 @@ export default function FeaturedCoursesPage() {
           })
           .filter((item: any) => item !== null);
 
+        console.log("Combined products:", combinedData.length);
+
         let filtered = combinedData;
 
         // Apply search filter
@@ -105,10 +120,10 @@ export default function FeaturedCoursesPage() {
           );
         }
 
+        console.log("Final filtered products:", filtered.length);
         setProducts(filtered);
-        }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error fetching products:", error);
         setProducts([]);
       } finally {
         setLoading(false);

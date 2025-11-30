@@ -26,6 +26,7 @@ export function FeaturedCourses() {
     async function fetchFeaturedProducts() {
       setLoading(true);
       try {
+        console.log("FeaturedCourses: Fetching products...");
         // Fetch products from listed experts
         // First, get all products
         const { data: productsData, error: productsError } = await supabase
@@ -43,16 +44,22 @@ export function FeaturedCourses() {
           .limit(50);
 
         if (productsError) {
+          console.error("FeaturedCourses: Products query error:", productsError);
           throw productsError;
         }
 
+        console.log("FeaturedCourses: Products fetched:", productsData?.length || 0);
+
         if (!productsData || productsData.length === 0) {
+          console.log("FeaturedCourses: No products found");
           setFeaturedProducts([]);
+          setLoading(false);
           return;
         }
 
         // Get expert IDs
         const expertIds = [...new Set(productsData.map((p: any) => p.expert_id))];
+        console.log("FeaturedCourses: Expert IDs:", expertIds);
         
         // Fetch profiles for these experts
         const { data: profilesData, error: profilesError } = await supabase
@@ -67,14 +74,20 @@ export function FeaturedCourses() {
           .eq("listed_on_marketplace", true);
 
         if (profilesError) {
+          console.error("FeaturedCourses: Profiles query error:", profilesError);
           throw profilesError;
         }
+
+        console.log("FeaturedCourses: Profiles fetched:", profilesData?.length || 0);
 
         // Combine products with profiles
         const productsWithProfiles = productsData
           .map((product: any) => {
             const profile = profilesData?.find((p: any) => p.id === product.expert_id);
-            if (!profile) return null;
+            if (!profile) {
+              console.log(`FeaturedCourses: No listed profile for product ${product.id}`);
+              return null;
+            }
             return {
               id: product.id,
               name: product.name,
@@ -90,9 +103,8 @@ export function FeaturedCourses() {
           .filter((item: any) => item !== null)
           .slice(0, 6);
 
+        console.log("FeaturedCourses: Final products:", productsWithProfiles.length);
         setFeaturedProducts(productsWithProfiles);
-
-        // Products are already set above
       } catch (error) {
         console.error("Error:", error);
         setFeaturedProducts([]);
