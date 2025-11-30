@@ -82,6 +82,7 @@ export function ProductsManagement() {
       console.log("Fetching interests for products:", products.map(p => p.id));
       const productIds = products.map((p) => p.id);
       
+      // First, get all interests for the expert's products
       const { data, error } = await supabase
         .from("product_interests")
         .select(`
@@ -90,10 +91,10 @@ export function ProductsManagement() {
           user_id,
           user_email,
           created_at,
-          products(name),
-          profiles:user_id(name)
+          products!inner(name, expert_id)
         `)
-        .in("product_id", productIds);
+        .in("product_id", productIds)
+        .eq("products.expert_id", user.id);
 
       if (error) {
         console.error("Error fetching interests:", error);
@@ -107,13 +108,30 @@ export function ProductsManagement() {
 
       console.log("Interests fetched:", data?.length || 0);
 
+      // Fetch user names separately if we have user IDs
+      const userIds = Array.from(new Set((data || []).map((item: any) => item.user_id)));
+      let userNameMap: { [key: string]: string } = {};
+      
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, name")
+          .in("id", userIds);
+        
+        if (profilesData) {
+          profilesData.forEach((profile: any) => {
+            userNameMap[profile.id] = profile.name || "Unknown User";
+          });
+        }
+      }
+
       const interestsData = (data || []).map((item: any) => ({
         id: item.id,
         product_id: item.product_id,
         product_name: item.products?.name || "Unknown Product",
         user_id: item.user_id,
         user_email: item.user_email,
-        user_name: item.profiles?.name || "Unknown User",
+        user_name: userNameMap[item.user_id] || "Unknown User",
         created_at: item.created_at,
       }));
 
