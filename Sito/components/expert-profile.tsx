@@ -78,13 +78,16 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
       }
     }
 
-    fetchExpert();
-  }, [expertId, supabase]);
+    if (expertId) {
+      fetchExpert();
+    }
+  }, [expertId, supabase, user]);
 
   // Check connection status
   useEffect(() => {
     async function checkConnectionStatus() {
       if (!user || !expert || user.id === expert.id) {
+        setConnectionStatus("none");
         return;
       }
 

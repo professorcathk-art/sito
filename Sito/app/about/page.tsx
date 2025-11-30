@@ -39,7 +39,7 @@ export default function AboutPage() {
           <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-12">
             <h2 className="text-3xl font-bold text-cyber-green mb-4 text-glow">Contact Us</h2>
             <p className="text-custom-text/80 mb-6">
-              Have a question or feedback? We'd love to hear from you!
+              Have a question or feedback? We&apos;d love to hear from you!
             </p>
             <ContactForm />
           </div>

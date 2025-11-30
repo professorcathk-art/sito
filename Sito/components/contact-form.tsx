@@ -82,7 +82,7 @@ export function ContactForm() {
       )}
       {success && (
         <div className="p-4 bg-cyber-green/20 border border-cyber-green/50 text-cyber-green rounded-lg">
-          Thank you for your message! We'll get back to you soon.
+          Thank you for your message! We&apos;ll get back to you soon.
         </div>
       )}
 

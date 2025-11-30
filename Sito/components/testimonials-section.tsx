@@ -111,7 +111,7 @@ export function TestimonialsSection() {
                 </svg>
               </div>
               <p className="text-custom-text/90 mb-4 sm:mb-6 text-sm sm:text-base lg:text-lg leading-relaxed">
-                "{testimonial.quote}"
+                &ldquo;{testimonial.quote}&rdquo;
               </p>
               <div>
                 <p className="font-semibold text-custom-text text-sm sm:text-base">{testimonial.author}</p>
