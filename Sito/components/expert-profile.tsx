@@ -134,6 +134,11 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
   };
 
   const handleSubmitInterest = async (productId: string) => {
+    if (!user) {
+      alert("Please sign in to register interest");
+      return;
+    }
+
     setRegisteringInterest(productId);
     try {
       // Get user email
