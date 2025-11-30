@@ -2,27 +2,27 @@
 
 const features = [
   {
-    title: "Expert Profiles",
-    description: "Comprehensive profiles showcasing expertise, experience, and achievements",
-    icon: "👤",
+    title: "Career Guidance",
+    description: "Find industry experts to guide your career growth and planning. Get personalized advice from leaders who've walked your path.",
+    icon: "🎯",
     delay: "0ms",
   },
   {
-    title: "Direct Messaging",
-    description: "Connect and communicate directly with experts in your field",
-    icon: "💬",
+    title: "Professional Consultation",
+    description: "Consult with professionals to solve complex problems. Tap into expert knowledge when you need it most.",
+    icon: "💡",
     delay: "100ms",
   },
   {
-    title: "Verified Experts",
-    description: "All experts are verified to ensure quality and authenticity",
-    icon: "✅",
+    title: "Business Connections",
+    description: "Find cofounders, investors, and partners for your business. Connect with entrepreneurs and industry leaders.",
+    icon: "🤝",
     delay: "200ms",
   },
   {
-    title: "Global Network",
-    description: "Access industry leaders from around the world",
-    icon: "🌍",
+    title: "Skill Development",
+    description: "Learn new skills from industry leaders. Masterclass-style learning from the best minds in your field.",
+    icon: "📚",
     delay: "300ms",
   },
 ];
@@ -33,10 +33,10 @@ export function FeaturesSection() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8 sm:mb-12">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-cyber-green mb-2 sm:mb-3 text-glow animate-pulse-glow tracking-tight">
-            Why Choose Sito?
+            What Can You Do on Sito?
           </h2>
           <p className="text-base sm:text-lg text-custom-text/80 max-w-2xl mx-auto px-4">
-            Everything you need to find and connect with industry experts
+            Connect with industry leaders and accelerate your professional journey
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

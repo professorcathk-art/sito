@@ -14,31 +14,31 @@ const testimonials: Testimonial[] = [
     quote: "Sito has transformed how I connect with industry experts. The platform makes it easy to find mentors who truly understand my field.",
     author: "Sarah Chen",
     role: "Software Engineer",
-    company: "Tech Corp",
+    company: "Microsoft",
   },
   {
     quote: "As an expert, I love being able to share my knowledge and help others grow. The messaging system makes communication seamless.",
     author: "Michael Rodriguez",
     role: "Senior Developer",
-    company: "StartupXYZ",
+    company: "Stripe",
   },
   {
     quote: "The best platform for finding mentors. I've connected with amazing experts who have guided my career journey.",
     author: "Emma Wilson",
     role: "Product Manager",
-    company: "InnovateCo",
+    company: "Airbnb",
   },
   {
     quote: "Sito bridges the gap between experts and learners. It's exactly what the industry needed.",
     author: "David Kim",
     role: "Trading Strategist",
-    company: "FinanceHub",
+    company: "Goldman Sachs",
   },
   {
     quote: "I've found incredible mentors through Sito. The platform is intuitive and the experts are top-notch.",
     author: "Lisa Zhang",
     role: "Marketing Director",
-    company: "GrowthLab",
+    company: "Meta",
   },
 ];
 
