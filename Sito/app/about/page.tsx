@@ -5,7 +5,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-custom-bg">
       <Navigation />
-      <div className="pt-16 pb-20">
+      <div className="pt-24 pb-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-12 mb-8">
             <h1 className="text-4xl font-bold text-cyber-green mb-6 text-glow">About Sito</h1>

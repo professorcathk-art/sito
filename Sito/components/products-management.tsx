@@ -281,7 +281,7 @@ export function ProductsManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-custom-text">Products & Services</h2>
         {activeTab === "products" && (

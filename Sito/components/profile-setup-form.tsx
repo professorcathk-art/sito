@@ -87,6 +87,7 @@ export function ProfileSetupForm() {
             .select(`
               name,
               title,
+              tagline,
               bio,
               website,
               linkedin,
@@ -109,7 +110,7 @@ export function ProfileSetupForm() {
           const profile = profileRes.data;
           setFormData({
             name: profile.name || "",
-            title: profile.title || "",
+            title: profile.tagline || profile.title || "",
             categoryId: profile.category_id || "",
             categoryName: (profile.categories as any)?.name || "",
             bio: profile.bio || "",
@@ -285,7 +286,7 @@ export function ProfileSetupForm() {
         .upsert({
           id: user.id,
           name: formData.name,
-          title: formData.title,
+          tagline: formData.title,
           category_id: formData.categoryId || null,
           country_id: formData.countryId || null,
           bio: formData.bio,
