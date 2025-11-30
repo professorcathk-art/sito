@@ -29,7 +29,8 @@ export default function FeaturedCoursesPage() {
     async function fetchProducts() {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        // Fetch products
+        const { data: productsData, error: productsError } = await supabase
           .from("products")
           .select(`
             id,
@@ -38,38 +39,63 @@ export default function FeaturedCoursesPage() {
             price,
             pricing_type,
             expert_id,
-            created_at,
-            profiles:expert_id(
-              name,
-              tagline,
-              title,
-              avatar_url,
-              listed_on_marketplace
-            )
+            created_at
           `)
           .order("created_at", { ascending: false });
 
-        if (error) {
-          console.error("Error fetching products:", error);
-          setProducts([]);
-        } else if (data) {
-          const productsData = data
-            .filter((item: any) => item.profiles && item.profiles.listed_on_marketplace)
-            .map((item: any) => ({
-              id: item.id,
-              name: item.name,
-              description: item.description,
-              price: item.price,
-              pricing_type: item.pricing_type,
-              expert_id: item.expert_id,
-              expert_name: item.profiles?.name || "Anonymous Expert",
-              expert_tagline: item.profiles?.tagline || item.profiles?.title || "",
-              expert_avatar_url: item.profiles?.avatar_url || undefined,
-              created_at: item.created_at,
-            }));
+        if (productsError) {
+          throw productsError;
+        }
 
-          // Apply search filter
-          let filtered = productsData;
+        if (!productsData || productsData.length === 0) {
+          setProducts([]);
+          return;
+        }
+
+        // Get expert IDs
+        const expertIds = [...new Set(productsData.map((p: any) => p.expert_id))];
+        
+        // Fetch profiles for these experts
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select(`
+            id,
+            name,
+            tagline,
+            title,
+            avatar_url,
+            listed_on_marketplace
+          `)
+          .in("id", expertIds)
+          .eq("listed_on_marketplace", true);
+
+        if (profilesError) {
+          throw profilesError;
+        }
+
+        // Combine products with profiles
+        const combinedData = productsData
+          .map((product: any) => {
+            const profile = profilesData?.find((p: any) => p.id === product.expert_id);
+            if (!profile) return null;
+            return {
+              id: product.id,
+              name: product.name,
+              description: product.description,
+              price: product.price,
+              pricing_type: product.pricing_type,
+              expert_id: product.expert_id,
+              expert_name: profile.name || "Anonymous Expert",
+              expert_tagline: profile.tagline || profile.title || "",
+              expert_avatar_url: profile.avatar_url || undefined,
+              created_at: product.created_at,
+            };
+          })
+          .filter((item: any) => item !== null);
+
+        let filtered = combinedData;
+
+        // Apply search filter
           if (searchQuery) {
             filtered = productsData.filter(
               (product: Product) =>

@@ -83,7 +83,8 @@ export function ExpertDirectory() {
             categories(name),
             countries(name)
           `)
-          .eq("listed_on_marketplace", true);
+          .eq("listed_on_marketplace", true)
+          .not("name", "is", null); // Ensure name is not null
 
         // Filter by category if selected
         if (selectedCategory) {

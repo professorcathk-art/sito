@@ -27,7 +27,8 @@ export function FeaturedCourses() {
       setLoading(true);
       try {
         // Fetch products from listed experts
-        const { data, error } = await supabase
+        // First, get all products
+        const { data: productsData, error: productsError } = await supabase
           .from("products")
           .select(`
             id,
@@ -36,36 +37,62 @@ export function FeaturedCourses() {
             price,
             pricing_type,
             expert_id,
-            created_at,
-            profiles:expert_id(
-              name,
-              avatar_url,
-              listed_on_marketplace
-            )
+            created_at
           `)
           .order("created_at", { ascending: false })
-          .limit(20);
+          .limit(50);
 
-        if (error) {
-          console.error("Error fetching featured products:", error);
-          setFeaturedProducts([]);
-        } else if (data) {
-          const productsData = data
-            .filter((item: any) => item.profiles?.listed_on_marketplace)
-            .slice(0, 6)
-            .map((item: any) => ({
-              id: item.id,
-              name: item.name,
-              description: item.description,
-              price: item.price,
-              pricing_type: item.pricing_type,
-              expert_id: item.expert_id,
-              expert_name: item.profiles?.name || "Anonymous Expert",
-              expert_avatar_url: item.profiles?.avatar_url || undefined,
-              created_at: item.created_at,
-            }));
-          setFeaturedProducts(productsData);
+        if (productsError) {
+          throw productsError;
         }
+
+        if (!productsData || productsData.length === 0) {
+          setFeaturedProducts([]);
+          return;
+        }
+
+        // Get expert IDs
+        const expertIds = [...new Set(productsData.map((p: any) => p.expert_id))];
+        
+        // Fetch profiles for these experts
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select(`
+            id,
+            name,
+            avatar_url,
+            listed_on_marketplace
+          `)
+          .in("id", expertIds)
+          .eq("listed_on_marketplace", true);
+
+        if (profilesError) {
+          throw profilesError;
+        }
+
+        // Combine products with profiles
+        const productsWithProfiles = productsData
+          .map((product: any) => {
+            const profile = profilesData?.find((p: any) => p.id === product.expert_id);
+            if (!profile) return null;
+            return {
+              id: product.id,
+              name: product.name,
+              description: product.description,
+              price: product.price,
+              pricing_type: product.pricing_type,
+              expert_id: product.expert_id,
+              expert_name: profile.name || "Anonymous Expert",
+              expert_avatar_url: profile.avatar_url || undefined,
+              created_at: product.created_at,
+            };
+          })
+          .filter((item: any) => item !== null)
+          .slice(0, 6);
+
+        setFeaturedProducts(productsWithProfiles);
+
+        // Products are already set above
       } catch (error) {
         console.error("Error:", error);
         setFeaturedProducts([]);
