@@ -33,6 +33,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
   const [connectionStatus, setConnectionStatus] = useState<"none" | "pending" | "accepted" | "rejected">("none");
   const [connecting, setConnecting] = useState(false);
   const [registeringInterest, setRegisteringInterest] = useState<string | null>(null);
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const supabase = createClient();
   const { user } = useAuth();
 
@@ -363,43 +364,62 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           <div className="mb-8">
             <h2 className="text-xl font-bold text-custom-text mb-4">Products & Services</h2>
             <div className="space-y-4">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-dark-green-900/30 border border-cyber-green/30 rounded-xl p-6"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-custom-text mb-2">{product.name}</h3>
-                      <div 
-                        className="text-custom-text/80 mb-3 prose prose-invert prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: product.description }}
-                      />
-                      <div className="flex items-center gap-2">
-                        <span className="text-cyber-green font-semibold">
-                          USD ${product.price} {product.pricing_type === "hourly" ? "/ hour" : ""}
-                        </span>
-                        <span className="text-custom-text/60 text-sm">
-                          {product.pricing_type === "hourly" ? "Hourly Rate" : "One-off Price"}
-                        </span>
+              {products.map((product) => {
+                const isExpanded = expandedProducts.has(product.id);
+                return (
+                  <div
+                    key={product.id}
+                    className="bg-dark-green-900/30 border border-cyber-green/30 rounded-xl p-6"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-custom-text mb-2">{product.name}</h3>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-cyber-green font-semibold">
+                            USD ${product.price} {product.pricing_type === "hourly" ? "/ hour" : ""}
+                          </span>
+                          <span className="text-custom-text/60 text-sm">
+                            {product.pricing_type === "hourly" ? "Hourly Rate" : "One-off Price"}
+                          </span>
+                        </div>
+                        {isExpanded && (
+                          <div 
+                            className="text-custom-text/80 mb-3 prose prose-invert prose-sm max-w-none"
+                            dangerouslySetInnerHTML={{ __html: product.description }}
+                          />
+                        )}
+                        <button
+                          onClick={() => {
+                            const newExpanded = new Set(expandedProducts);
+                            if (isExpanded) {
+                              newExpanded.delete(product.id);
+                            } else {
+                              newExpanded.add(product.id);
+                            }
+                            setExpandedProducts(newExpanded);
+                          }}
+                          className="text-cyber-green hover:text-cyber-green-light text-sm font-medium transition-colors mb-3"
+                        >
+                          {isExpanded ? "Hide Details" : "View Full Details"}
+                        </button>
                       </div>
                     </div>
+                    {user?.id !== expertId && (
+                      <button
+                        onClick={() => handleRegisterInterest(product.id)}
+                        disabled={registeringInterest === product.id}
+                        className="w-full bg-cyber-green text-custom-text py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(0,255,136,0.3)]"
+                      >
+                        {registeringInterest === product.id 
+                          ? "Registering..." 
+                          : user 
+                          ? "Register Your Interest" 
+                          : "Sign in to Register Interest"}
+                      </button>
+                    )}
                   </div>
-                  {user?.id !== expertId && (
-                    <button
-                      onClick={() => handleRegisterInterest(product.id)}
-                      disabled={registeringInterest === product.id}
-                      className="w-full bg-cyber-green text-custom-text py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(0,255,136,0.3)]"
-                    >
-                      {registeringInterest === product.id 
-                        ? "Registering..." 
-                        : user 
-                        ? "Register Your Interest" 
-                        : "Sign in to Register Interest"}
-                    </button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ) : null}

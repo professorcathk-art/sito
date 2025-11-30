@@ -182,10 +182,9 @@ export function FeaturedCourses() {
                   <p className="text-xs text-custom-text/70 truncate">by {product.expert_name}</p>
                 </div>
               </div>
-              <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-2 line-clamp-2">
+              <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
                 {product.name}
               </h3>
-              <p className="text-custom-text/70 text-xs sm:text-sm mb-3 line-clamp-2">{product.description}</p>
               <div className="flex items-center justify-between">
                 <span className="text-sm sm:text-base font-bold text-cyber-green">
                   USD ${product.price} {product.pricing_type === "hourly" ? "/hr" : ""}

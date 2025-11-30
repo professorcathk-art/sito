@@ -140,7 +140,7 @@ export default function FeaturedCoursesPage() {
   return (
     <div className="min-h-screen bg-custom-bg">
       <Navigation />
-      <div className="pt-16 pb-20">
+      <div className="pt-24 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2 text-glow">Featured Courses</h1>
@@ -200,10 +200,9 @@ export default function FeaturedCoursesPage() {
                       )}
                     </div>
                   </div>
-                  <h3 className="text-base sm:text-xl font-bold text-cyber-green group-hover:text-glow transition-all mb-2 sm:mb-3 line-clamp-2">
+                  <h3 className="text-base sm:text-xl font-bold text-cyber-green group-hover:text-glow transition-all mb-3 sm:mb-4 line-clamp-2">
                     {product.name}
                   </h3>
-                  <p className="text-custom-text/70 text-sm mb-3 sm:mb-4 line-clamp-3">{product.description}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-base sm:text-lg font-bold text-cyber-green">
                       USD ${product.price} {product.pricing_type === "hourly" ? "/hr" : ""}
