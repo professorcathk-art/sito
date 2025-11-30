@@ -164,6 +164,41 @@ export function ProfileSetupForm() {
     setShowCategoryDropdown(false);
   };
 
+  const handleCreateNewCategory = async () => {
+    if (!categorySearch.trim()) {
+      setError("Please enter a category name");
+      return;
+    }
+
+    // Check if category already exists
+    const existingCategory = categories.find(
+      (cat) => cat.name.toLowerCase() === categorySearch.trim().toLowerCase()
+    );
+    if (existingCategory) {
+      handleCategorySelect(existingCategory);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("categories")
+        .insert({ name: categorySearch.trim() })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Add to local categories list
+      setCategories([...categories, data]);
+      handleCategorySelect(data);
+    } catch (err: any) {
+      setError(err.message || "Failed to create category. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCountrySelect = (country: Country) => {
     setFormData({
       ...formData,
@@ -382,18 +417,44 @@ export function ProfileSetupForm() {
         {showCategoryDropdown && (
           <div className="absolute z-50 w-full mt-1 bg-dark-green-800 border border-cyber-green/30 rounded-lg shadow-lg max-h-60 overflow-auto">
             {filteredCategories.length === 0 ? (
-              <div className="px-4 py-3 text-custom-text/70">No categories found</div>
+              <div className="px-4 py-3">
+                <div className="text-custom-text/70 mb-2">No categories found</div>
+                {categorySearch.trim() && (
+                  <button
+                    type="button"
+                    onClick={handleCreateNewCategory}
+                    disabled={loading}
+                    className="w-full px-4 py-2 bg-cyber-green/20 border border-cyber-green/50 rounded-lg text-cyber-green hover:bg-cyber-green/30 transition-colors disabled:opacity-50 text-sm font-semibold"
+                  >
+                    {loading ? "Creating..." : `Create "${categorySearch.trim()}"`}
+                  </button>
+                )}
+              </div>
             ) : (
-              filteredCategories.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => handleCategorySelect(cat)}
-                  className="w-full text-left px-4 py-2 text-custom-text hover:bg-dark-green-700 hover:text-cyber-green transition-colors"
-                >
-                  {cat.name}
-                </button>
-              ))
+              <>
+                {filteredCategories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => handleCategorySelect(cat)}
+                    className="w-full text-left px-4 py-2 text-custom-text hover:bg-dark-green-700 hover:text-cyber-green transition-colors"
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+                {categorySearch.trim() && !filteredCategories.some(cat => cat.name.toLowerCase() === categorySearch.trim().toLowerCase()) && (
+                  <div className="border-t border-cyber-green/20 pt-2">
+                    <button
+                      type="button"
+                      onClick={handleCreateNewCategory}
+                      disabled={loading}
+                      className="w-full px-4 py-2 text-cyber-green hover:bg-dark-green-700 transition-colors disabled:opacity-50 text-sm font-semibold"
+                    >
+                      {loading ? "Creating..." : `+ Create "${categorySearch.trim()}"`}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

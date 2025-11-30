@@ -11,7 +11,7 @@ export default function AboutPage() {
             <h1 className="text-4xl font-bold text-cyber-green mb-6 text-glow">About Sito</h1>
             <div className="prose prose-lg max-w-none text-custom-text/90 space-y-6">
               <p>
-                Sito (師徒) represents the timeless relationship between master and student, mentor
+                Sito represents the timeless relationship between master and student, mentor
                 and mentee. Our platform bridges the gap between industry experts and those seeking
                 guidance, knowledge, and professional growth.
               </p>

@@ -61,18 +61,18 @@ export function Footer() {
             © {new Date().getFullYear()} Sito. All rights reserved.
           </p>
           <div className="flex gap-4 sm:gap-6">
-            <a
-              href="#"
+            <Link
+              href="/privacy"
               className="text-custom-text/60 hover:text-cyber-green transition-colors text-xs sm:text-sm"
             >
               Privacy Policy
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              href="/terms"
               className="text-custom-text/60 hover:text-cyber-green transition-colors text-xs sm:text-sm"
             >
               Terms of Service
-            </a>
+            </Link>
           </div>
         </div>
       </div>

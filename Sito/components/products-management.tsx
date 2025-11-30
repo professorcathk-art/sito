@@ -355,16 +355,19 @@ export function ProductsManagement() {
             </div>
             <div>
               <label className="block text-sm font-medium text-custom-text mb-2">
-                Description *
+                Description * <span className="text-xs text-custom-text/60">(HTML supported)</span>
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 required
-                rows={4}
-                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
-                placeholder="Describe your product or service..."
+                rows={6}
+                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50 font-mono text-sm"
+                placeholder="Describe your product or service... HTML code is supported (e.g., &lt;strong&gt;bold&lt;/strong&gt;, &lt;a href=&quot;...&quot;&gt;links&lt;/a&gt;)"
               />
+              <p className="mt-1 text-xs text-custom-text/60">
+                You can use HTML tags like &lt;strong&gt;, &lt;em&gt;, &lt;a&gt;, &lt;ul&gt;, &lt;li&gt;, etc.
+              </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
