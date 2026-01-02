@@ -530,35 +530,6 @@ export function ProductsManagement() {
               </p>
             </div>
 
-            {formData.product_type === "course" && (
-              <div>
-                <label className="block text-sm font-medium text-custom-text mb-2">
-                  Link to Course *
-                </label>
-                <div className="flex gap-2">
-                  <select
-                    value={formData.course_id}
-                    onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
-                    className="flex-1 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
-                    required
-                  >
-                    <option value="">Select a course...</option>
-                    {courses.map((course) => (
-                      <option key={course.id} value={course.id}>
-                        {course.title} ({course.is_free ? "Free" : `$${course.price}`})
-                      </option>
-                    ))}
-                  </select>
-                  <a
-                    href="/courses/create"
-                    target="_blank"
-                    className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors whitespace-nowrap"
-                  >
-                    + Create New Course
-                  </a>
-                </div>
-              </div>
-            )}
 
             <div>
               <div className="flex items-center justify-between mb-2">
