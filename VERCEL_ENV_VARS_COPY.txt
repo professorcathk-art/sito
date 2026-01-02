@@ -1,0 +1,6 @@
+NEXT_PUBLIC_SUPABASE_URL=https://zyqjurzximonwpojeazp.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_Pw741jqAbshYugXZZcizig_aCZN9vJs
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_Xu8vgXM2Spc8tybODD1nzQ_GG-corr8
+RESEND_API_KEY=re_iH4pcquy_PMoPupZh4aYbnMBcSPtjDWoJ
+NEXT_PUBLIC_SITE_URL=https://sito-smoky.vercel.app
+

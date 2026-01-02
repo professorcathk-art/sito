@@ -1,0 +1,614 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: #f7eddd;
+  background: #202219;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  scroll-behavior: smooth;
+  font-feature-settings: "kern" 1, "liga" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Product preview HTML styling for responsive display */
+.product-preview {
+  max-width: 100%;
+}
+
+.product-preview * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.product-preview img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  display: block;
+}
+
+.product-preview video,
+.product-preview iframe {
+  max-width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.5rem;
+}
+
+.product-preview table {
+  width: 100% !important;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1rem 0;
+}
+
+.product-preview pre,
+.product-preview code {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+  overflow-x: auto;
+  background: rgba(26, 58, 48, 0.5);
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.product-preview a {
+  color: #00ff88;
+  text-decoration: underline;
+}
+
+.product-preview a:hover {
+  color: #33ffaa;
+}
+
+.product-preview h1,
+.product-preview h2,
+.product-preview h3,
+.product-preview h4,
+.product-preview h5,
+.product-preview h6 {
+  color: #f7eddd;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.product-preview h1 {
+  font-size: 1.5rem;
+}
+
+.product-preview h2 {
+  font-size: 1.25rem;
+}
+
+.product-preview h3 {
+  font-size: 1.125rem;
+}
+
+.product-preview p {
+  color: rgba(247, 237, 221, 0.8);
+  margin-bottom: 0.75em;
+  line-height: 1.6;
+}
+
+.product-preview ul,
+.product-preview ol {
+  padding-left: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+.product-preview li {
+  color: rgba(247, 237, 221, 0.8);
+  margin-bottom: 0.25em;
+  line-height: 1.6;
+}
+
+.product-preview strong,
+.product-preview b {
+  color: #f7eddd;
+  font-weight: 600;
+}
+
+.product-preview em,
+.product-preview i {
+  font-style: italic;
+}
+
+.product-preview blockquote {
+  border-left: 3px solid #00ff88;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: rgba(247, 237, 221, 0.7);
+  font-style: italic;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .product-preview {
+    font-size: 0.875rem;
+  }
+  
+  .product-preview h1 {
+    font-size: 1.25rem;
+  }
+  
+  .product-preview h2 {
+    font-size: 1.125rem;
+  }
+  
+  .product-preview h3 {
+    font-size: 1rem;
+  }
+  
+  .product-preview img {
+    margin: 0.75rem 0;
+  }
+  
+  .product-preview table {
+    font-size: 0.75rem;
+  }
+}
+
+/* Modern animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 1;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.6s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease-out forwards;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Ensure text on dark backgrounds uses the custom text color */
+.bg-dark-green-950,
+.bg-dark-green-900,
+.bg-dark-green-800,
+[class*="bg-dark-green"],
+[class*="bg-custom-bg"] {
+  color: #f7eddd;
+}
+
+/* Override for specific elements that need dark text on light backgrounds */
+.bg-white,
+.bg-gray-50,
+.bg-gray-100,
+.bg-white\/10,
+[class*="bg-white"],
+[class*="bg-gray"] {
+  color: inherit;
+}
+
+/* Input placeholder colors for dark backgrounds */
+input::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: rgba(247, 237, 221, 0.5);
+}
+
+/* Ensure inputs on dark backgrounds have custom text color */
+.bg-dark-green-950 input,
+.bg-dark-green-900 input,
+.bg-dark-green-800 input,
+[class*="bg-dark-green"] input,
+[class*="bg-dark-green"] textarea,
+[class*="bg-dark-green"] select {
+  color: #f7eddd;
+  background-color: rgba(32, 34, 25, 0.5);
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+[class*="bg-dark-green"] input::placeholder,
+[class*="bg-dark-green"] textarea::placeholder {
+  color: rgba(247, 237, 221, 0.5);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Removed blob animations for cleaner design */
+
+/* Gradient animation */
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+/* Cyber animations */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3), 0 0 40px rgba(0, 255, 136, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.5), 0 0 60px rgba(0, 255, 136, 0.3);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes glitch {
+  0%, 100% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+}
+
+@keyframes scan-line {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes neon-flicker {
+  0%, 100% {
+    opacity: 1;
+  }
+  41.99% {
+    opacity: 1;
+  }
+  42% {
+    opacity: 0;
+  }
+  43% {
+    opacity: 0;
+  }
+  43.01% {
+    opacity: 1;
+  }
+  45.99% {
+    opacity: 1;
+  }
+  46% {
+    opacity: 0;
+  }
+  46.01% {
+    opacity: 1;
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glitch {
+  animation: glitch 0.3s infinite;
+}
+
+.animate-scan-line {
+  animation: scan-line 8s linear infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 136, 0.3),
+    transparent
+  );
+  background-size: 1000px 100%;
+}
+
+.animate-neon-flicker {
+  animation: neon-flicker 3s linear infinite;
+}
+
+/* Cyber grid background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(rgba(0, 255, 136, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* 3D Perspective for Rubik's Cube */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Hide scrollbar for testimonials */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Glow text effect - removed for cleaner design */
+.text-glow {
+  text-shadow: none;
+}
+
+/* Custom scrollbar - cyber theme */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #202219;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00ff88, #00cc6f);
+  border-radius: 6px;
+  border: 2px solid #202219;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #33ffaa, #00ff88);
+}
+
+/* Blog content styling */
+.blog-content {
+  color: #f7eddd;
+}
+
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4,
+.blog-content h5,
+.blog-content h6 {
+  color: #f7eddd;
+  font-weight: 600;
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
+.blog-content h1 {
+  font-size: 2.5em;
+}
+
+.blog-content h2 {
+  font-size: 2em;
+}
+
+.blog-content h3 {
+  font-size: 1.5em;
+}
+
+.blog-content p {
+  color: rgba(247, 237, 221, 0.9);
+  margin-bottom: 1.5em;
+  line-height: 1.8;
+}
+
+.blog-content a {
+  color: #00ff88;
+  text-decoration: underline;
+}
+
+.blog-content a:hover {
+  color: #33ffaa;
+}
+
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 2em 0;
+}
+
+.blog-content iframe {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  margin: 2em 0;
+}
+
+.blog-content audio {
+  width: 100%;
+  max-width: 600px;
+  margin: 2em 0;
+}
+
+.blog-content ul,
+.blog-content ol {
+  margin-left: 2em;
+  margin-bottom: 1.5em;
+}
+
+.blog-content li {
+  color: rgba(247, 237, 221, 0.9);
+  margin-bottom: 0.5em;
+  line-height: 1.8;
+}
+
+.blog-content code {
+  background: rgba(26, 58, 48, 0.5);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  color: #00ff88;
+}
+
+.blog-content pre {
+  background: rgba(26, 58, 48, 0.5);
+  padding: 1em;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 2em 0;
+}
+
+.blog-content pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.blog-content blockquote {
+  border-left: 3px solid #00ff88;
+  padding-left: 1.5em;
+  margin: 2em 0;
+  color: rgba(247, 237, 221, 0.7);
+  font-style: italic;
+}
+
+.blog-content strong,
+.blog-content b {
+  color: #f7eddd;
+  font-weight: 600;
+}
+
+.blog-content em,
+.blog-content i {
+  font-style: italic;
+}
+
