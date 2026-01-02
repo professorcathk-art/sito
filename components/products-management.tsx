@@ -512,6 +512,22 @@ export function ProductsManagement() {
               </p>
             </div>
 
+            {(formData.product_type === "appointment" || editingProduct) && (
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">
+                  Price (USD) {formData.product_type === "appointment" ? "(per hour)" : ""}
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                  placeholder="0.00"
+                />
+              </div>
+            )}
 
             <div>
               <div className="flex items-center justify-between mb-2">

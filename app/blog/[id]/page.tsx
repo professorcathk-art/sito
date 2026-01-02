@@ -16,15 +16,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   try {
     const { data: blogPost, error } = await supabase
       .from("blog_posts")
-      .select(`
-        *,
-        profiles:expert_id (
-          id,
-          name,
-          title,
-          avatar_url
-        )
-      `)
+      .select("*")
       .eq("id", id)
       .single();
 
@@ -37,8 +29,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       notFound();
     }
 
-    // Handle profiles relationship (can be array or object)
-    const expertProfile = Array.isArray(blogPost.profiles) ? blogPost.profiles[0] : blogPost.profiles;
+    // Fetch expert profile separately
+    let expertProfile = null;
+    if (blogPost.expert_id) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, name, title, avatar_url")
+        .eq("id", blogPost.expert_id)
+        .single();
+      expertProfile = profile;
+    }
+
     const blogPostWithProfile = {
       ...blogPost,
       profiles: expertProfile || {

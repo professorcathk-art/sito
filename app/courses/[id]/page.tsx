@@ -16,15 +16,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   try {
     const { data: course, error } = await supabase
       .from("courses")
-      .select(`
-        *,
-        profiles:expert_id (
-          id,
-          name,
-          title,
-          avatar_url
-        )
-      `)
+      .select("*")
       .eq("id", id)
       .single();
 
@@ -37,8 +29,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
       notFound();
     }
 
-    // Handle profiles relationship (can be array or object)
-    const expertProfile = Array.isArray(course.profiles) ? course.profiles[0] : course.profiles;
+    // Fetch expert profile separately
+    let expertProfile = null;
+    if (course.expert_id) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, name, title, avatar_url")
+        .eq("id", course.expert_id)
+        .single();
+      expertProfile = profile;
+    }
 
     // Get lessons
     const { data: lessons, error: lessonsError } = await supabase
