@@ -30,11 +30,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
+  // Handle profiles relationship (can be array or object)
+  const expertProfile = Array.isArray(blogPost.profiles) ? blogPost.profiles[0] : blogPost.profiles;
+  const blogPostWithProfile = {
+    ...blogPost,
+    profiles: expertProfile,
+  };
+
   return (
     <div className="min-h-screen bg-custom-bg">
       <Navigation />
       <div className="pt-16 pb-12">
-        <BlogPostView blogPost={blogPost} />
+        <BlogPostView blogPost={blogPostWithProfile} />
       </div>
     </div>
   );

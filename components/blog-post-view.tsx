@@ -157,7 +157,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
         <div className="flex items-center gap-4 text-custom-text/70 mb-6">
           {blogPost.profiles && (
             <Link
-              href={`/expert/${blogPost.profiles.id}`}
+              href={`/expert/${blogPost.profiles?.id || blogPost.expert_id}`}
               className="flex items-center gap-2 hover:text-cyber-green transition-colors"
             >
               {blogPost.profiles.avatar_url ? (

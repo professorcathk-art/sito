@@ -117,6 +117,11 @@ export function DashboardSidebar() {
       href: "/appointments/manage",
       icon: "📅",
     },
+    {
+      name: "Book Appointments",
+      href: "/appointments",
+      icon: "📞",
+    },
     ...(isAdmin
       ? [
           {

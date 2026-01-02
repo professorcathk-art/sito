@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
-import { Navigation } from "@/components/navigation";
+import { DashboardLayout } from "@/components/dashboard-layout";
 import { ProtectedRoute } from "@/components/protected-route";
 
 export default function CreateCoursePage() {
@@ -98,9 +98,8 @@ export default function CreateCoursePage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-custom-bg">
-        <Navigation />
-        <div className="pt-16 pb-12 px-4 sm:px-6 lg:px-8">
+      <DashboardLayout>
+        <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold text-custom-text mb-8">Create Course</h1>
 
@@ -206,7 +205,7 @@ export default function CreateCoursePage() {
             </form>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     </ProtectedRoute>
   );
 }
