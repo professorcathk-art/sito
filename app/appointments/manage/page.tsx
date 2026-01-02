@@ -87,7 +87,6 @@ export default function ManageAppointmentsPage() {
           expert_id: user.id,
           start_time: currentTime.toISOString(),
           end_time: slotEnd.toISOString(),
-          duration_minutes: intervalMinutes,
           rate_per_hour: ratePerHour,
           is_available: true,
         });

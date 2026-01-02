@@ -87,7 +87,7 @@ export default function CreateCoursePage() {
 
       if (error) throw error;
 
-      router.push(`/courses/${course.id}/edit`);
+      router.push(`/courses/${course.id}`);
     } catch (err: any) {
       console.error("Error creating course:", err);
       alert("Failed to create course. Please try again.");

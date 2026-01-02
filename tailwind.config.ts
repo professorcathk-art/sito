@@ -11,8 +11,8 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        "custom-bg": "#202219",
-        "custom-text": "#f7eddd",
+        "custom-bg": "#0a0a0a",
+        "custom-text": "#ffffff",
         "dark-green": {
           50: "#0a1a12",
           100: "#0d2217",
@@ -27,9 +27,19 @@ const config: Config = {
           950: "#050807",
         },
         "cyber-green": {
-          DEFAULT: "#00ff88",
-          light: "#33ffaa",
-          dark: "#00cc6f",
+          DEFAULT: "#00D4AA", // Netflix-style green
+          light: "#00FFC8",
+          dark: "#00A862", // MasterClass-style green
+          "50": "#E6F7F2",
+          "100": "#CCEFE5",
+          "200": "#99DFCB",
+          "300": "#66CFB1",
+          "400": "#33BF97",
+          "500": "#00D4AA",
+          "600": "#00A862",
+          "700": "#007D49",
+          "800": "#005231",
+          "900": "#002718",
         },
       },
     },
