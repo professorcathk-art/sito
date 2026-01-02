@@ -71,15 +71,18 @@ export default function ManageAppointmentsPage() {
 
       if (error) throw error;
 
-      const appointments = (data || []).map((apt: any) => ({
-        id: apt.id,
-        start_time: apt.start_time,
-        end_time: apt.end_time,
-        rate_per_hour: apt.rate_per_hour,
-        total_amount: apt.total_amount,
-        status: apt.status,
-        user: Array.isArray(apt.profiles) ? apt.profiles[0] : apt.profiles,
-      }));
+      const appointments = (data || []).map((apt: any) => {
+        const profile = Array.isArray(apt.profiles) ? apt.profiles[0] : apt.profiles;
+        return {
+          id: apt.id,
+          start_time: apt.start_time,
+          end_time: apt.end_time,
+          rate_per_hour: apt.rate_per_hour,
+          total_amount: apt.total_amount,
+          status: apt.status,
+          profiles: profile || { name: "Unknown", email: "N/A" },
+        };
+      });
 
       setBookedAppointments(appointments);
     } catch (err) {
