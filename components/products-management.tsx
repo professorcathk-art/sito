@@ -198,44 +198,89 @@ export function ProductsManagement() {
       return;
     }
 
-    if (formData.product_type === "service" && !formData.price) {
-      setError("Please enter a price for service products");
-      return;
-    }
-
-    const price = formData.price ? parseFloat(formData.price) : 0;
-    if (formData.price && (isNaN(price) || price <= 0)) {
-      setError("Please enter a valid price");
-      return;
-    }
-
-    if (formData.product_type === "course" && !formData.course_id) {
-      setError("Please select or create a course");
-      return;
-    }
-
     try {
-      const productData: any = {
-        expert_id: user.id,
-        name: formData.name,
-        description: formData.description,
-        product_type: formData.product_type,
-        pricing_type: formData.pricing_type,
-      };
+      if (formData.product_type === "course") {
+        // For course: create course first, then product
+        if (!formData.course_id) {
+          // Create new course
+          const { data: newCourse, error: courseError } = await supabase
+            .from("courses")
+            .insert({
+              expert_id: user.id,
+              title: formData.name,
+              description: formData.description,
+              is_free: true,
+              price: 0,
+              published: false,
+            })
+            .select()
+            .single();
 
-      if (formData.product_type === "service") {
-        productData.price = price;
-      } else if (formData.product_type === "course") {
-        productData.course_id = formData.course_id;
-        // Get course price if linked
-        const course = courses.find(c => c.id === formData.course_id);
-        if (course) {
-          productData.price = course.is_free ? 0 : course.price;
+          if (courseError) throw courseError;
+
+          // Create product linked to course
+          const { error: productError } = await supabase.from("products").insert({
+            expert_id: user.id,
+            name: formData.name,
+            description: formData.description,
+            product_type: "course",
+            course_id: newCourse.id,
+            price: 0,
+            pricing_type: "one-off",
+          });
+
+          if (productError) throw productError;
+
+          // Redirect to course edit page
+          router.push(`/courses/${newCourse.id}/edit?skipLessons=true`);
+          return;
+        } else {
+          // Link to existing course
+          const course = courses.find(c => c.id === formData.course_id);
+          const { error: productError } = await supabase.from("products").insert({
+            expert_id: user.id,
+            name: formData.name,
+            description: formData.description,
+            product_type: "course",
+            course_id: formData.course_id,
+            price: course?.is_free ? 0 : (course?.price || 0),
+            pricing_type: "one-off",
+          });
+
+          if (productError) throw productError;
+          router.push(`/courses/${formData.course_id}/edit`);
+          return;
         }
+      } else if (formData.product_type === "appointment") {
+        // For appointment: create product, then redirect to appointments
+        const { error: productError } = await supabase.from("products").insert({
+          expert_id: user.id,
+          name: formData.name,
+          description: formData.description,
+          product_type: "appointment",
+          price: 0,
+          pricing_type: "hourly",
+        });
+
+        if (productError) throw productError;
+
+        // Redirect to appointments page
+        router.push("/appointments/manage");
+        return;
       }
 
       if (editingProduct) {
         // Update existing product
+        const productData: any = {
+          name: formData.name,
+          description: formData.description,
+          product_type: formData.product_type,
+        };
+
+        if (formData.product_type === "course" && formData.course_id) {
+          productData.course_id = formData.course_id;
+        }
+
         const { error } = await supabase
           .from("products")
           .update(productData)
@@ -243,20 +288,6 @@ export function ProductsManagement() {
           .eq("expert_id", user.id);
 
         if (error) throw error;
-      } else {
-        // Create new product
-        const { error } = await supabase.from("products").insert(productData);
-
-        if (error) throw error;
-
-        // Redirect based on product type
-        if (formData.product_type === "course") {
-          window.location.href = `/courses/${formData.course_id}/edit`;
-          return;
-        } else if (formData.product_type === "appointment") {
-          window.location.href = `/appointments/manage`;
-          return;
-        }
       }
 
       setFormData({
@@ -264,7 +295,7 @@ export function ProductsManagement() {
         description: "",
         price: "",
         pricing_type: "one-off",
-        product_type: "service",
+        product_type: "appointment",
         course_id: "",
       });
       setShowAddForm(false);
@@ -539,7 +570,7 @@ export function ProductsManagement() {
                 type="submit"
                 className="bg-cyber-green text-custom-text px-6 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
               >
-                {editingProduct ? "Update Product" : "Add Product"}
+                {editingProduct ? "Update Product" : formData.product_type === "course" ? "Next: Create Lessons" : "Next: Set Up Sessions"}
               </button>
               <button
                 type="button"

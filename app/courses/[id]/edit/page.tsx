@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { Navigation } from "@/components/navigation";
@@ -21,6 +21,8 @@ interface Lesson {
 export default function EditCoursePage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
+  const skipLessons = searchParams?.get("skipLessons") === "true";
   const courseId = params.id as string;
   const supabase = createClient();
   const { user } = useAuth();
