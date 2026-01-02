@@ -23,8 +23,7 @@ interface BookedAppointment {
   rate_per_hour: number;
   total_amount: number;
   status: string;
-  user: {
-    id: string;
+  profiles: {
     name: string;
     email: string;
   };
