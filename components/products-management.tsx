@@ -61,6 +61,7 @@ export function ProductsManagement() {
       fetchProducts();
       fetchCourses();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchCourses = async () => {
@@ -183,6 +184,7 @@ export function ProductsManagement() {
     if (activeTab === "interests") {
       fetchInterests();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, products, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -550,6 +552,8 @@ export function ProductsManagement() {
                     description: "",
                     price: "",
                     pricing_type: "one-off",
+                    product_type: "service",
+                    course_id: "",
                   });
                 }}
                 className="px-6 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"

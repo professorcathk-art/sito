@@ -116,6 +116,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
       fetchProducts();
       fetchAppointmentSlots();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expertId, supabase, user]);
 
   const fetchAppointmentSlots = async () => {
