@@ -12,8 +12,7 @@ interface AppointmentSlot {
   end_time: string;
   duration_minutes?: number;
   rate_per_hour: number;
-  is_booked?: boolean;
-  is_available?: boolean;
+  is_available: boolean;
 }
 
 export default function ManageAppointmentsPage() {
@@ -90,7 +89,7 @@ export default function ManageAppointmentsPage() {
           end_time: slotEnd.toISOString(),
           duration_minutes: intervalMinutes,
           rate_per_hour: ratePerHour,
-          is_booked: false,
+          is_available: true,
         });
 
         currentTime = slotEnd;
@@ -270,14 +269,14 @@ export default function ManageAppointmentsPage() {
                     <p className="text-custom-text/70">
                       ${slot.rate_per_hour}/hour
                       {slot.duration_minutes && ` • ${slot.duration_minutes} min`} •{" "}
-                      {(slot.is_booked === false || slot.is_available === true) ? (
+                      {slot.is_available ? (
                         <span className="text-green-300">Available</span>
                       ) : (
                         <span className="text-red-300">Booked</span>
                       )}
                     </p>
                   </div>
-                  {(slot.is_booked === false || slot.is_available === true) && (
+                  {slot.is_available && (
                     <button
                       onClick={() => handleDeleteSlot(slot.id)}
                       className="px-4 py-2 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900/70 transition-colors"
