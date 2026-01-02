@@ -30,6 +30,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
     notFound();
   }
 
+  // Handle profiles relationship (can be array or object)
+  const expertProfile = Array.isArray(course.profiles) ? course.profiles[0] : course.profiles;
+
   // Get lessons
   const { data: lessons } = await supabase
     .from("course_lessons")
@@ -52,19 +55,19 @@ export default async function CoursePage({ params }: CoursePageProps) {
           
           <h1 className="text-4xl font-bold text-custom-text mb-4">{course.title}</h1>
           
-          {course.profiles && (
+          {expertProfile && (
             <div className="flex items-center gap-4 mb-6">
-              {course.profiles.avatar_url && (
+              {expertProfile.avatar_url && (
                 <img
-                  src={course.profiles.avatar_url}
-                  alt={course.profiles.name || "Expert"}
+                  src={expertProfile.avatar_url}
+                  alt={expertProfile.name || "Expert"}
                   className="w-12 h-12 rounded-full"
                 />
               )}
               <div>
-                <p className="text-custom-text font-semibold">{course.profiles.name || "Expert"}</p>
-                {course.profiles.title && (
-                  <p className="text-custom-text/70 text-sm">{course.profiles.title}</p>
+                <p className="text-custom-text font-semibold">{expertProfile.name || "Expert"}</p>
+                {expertProfile.title && (
+                  <p className="text-custom-text/70 text-sm">{expertProfile.title}</p>
                 )}
               </div>
             </div>
