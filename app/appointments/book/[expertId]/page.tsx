@@ -119,10 +119,11 @@ export default function BookAppointmentPage() {
         .insert({
           expert_id: expertId,
           user_id: user.id,
-          slot_id: slot.id,
           start_time: slot.start_time,
           end_time: slot.end_time,
-          price: totalAmount,
+          duration_minutes: duration,
+          rate_per_hour: slot.rate_per_hour,
+          total_amount: totalAmount,
           status: "pending",
         })
         .select()
