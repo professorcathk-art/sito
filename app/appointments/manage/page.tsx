@@ -416,13 +416,13 @@ export default function ManageAppointmentsPage() {
                           <p className="text-lg font-semibold text-custom-text mb-2">
                             {formatDateTime(appointment.start_time)} - {formatDateTime(appointment.end_time)}
                           </p>
-                          {appointment.user && (
+                          {appointment.profiles && (
                             <div className="mb-2">
                               <p className="text-custom-text/90 font-medium">
-                                Booked by: {appointment.user.name || "Unknown"}
+                                Booked by: {appointment.profiles.name || "Unknown"}
                               </p>
-                              {appointment.user.email && (
-                                <p className="text-custom-text/70 text-sm">{appointment.user.email}</p>
+                              {appointment.profiles.email && (
+                                <p className="text-custom-text/70 text-sm">{appointment.profiles.email}</p>
                               )}
                             </div>
                           )}

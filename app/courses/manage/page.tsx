@@ -130,8 +130,15 @@ export default function ManageCoursePage() {
       if (error) throw error;
       alert("Course updated successfully!");
       await fetchCourses();
-      const updatedCourse = { ...selectedCourse, ...courseForm };
-      setSelectedCourse(updatedCourse);
+      // Fetch updated course from database
+      const { data: updatedCourseData } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("id", selectedCourse.id)
+        .single();
+      if (updatedCourseData) {
+        setSelectedCourse(updatedCourseData);
+      }
     } catch (err) {
       console.error("Error saving course:", err);
       alert("Failed to save course.");
@@ -334,7 +341,7 @@ export default function ManageCoursePage() {
                     <label className="block text-sm font-medium text-custom-text mb-2">Description</label>
                     <RichTextEditor
                       content={courseForm.description}
-                      onContentChange={(newContent) => setCourseForm({ ...courseForm, description: newContent })}
+                      onChange={(newContent) => setCourseForm({ ...courseForm, description: newContent })}
                     />
                   </div>
                   <div>
@@ -496,7 +503,7 @@ export default function ManageCoursePage() {
                         {isRichTextMode ? (
                           <RichTextEditor
                             content={lessonForm.content}
-                            onContentChange={(newContent) => setLessonForm({ ...lessonForm, content: newContent })}
+                            onChange={(newContent) => setLessonForm({ ...lessonForm, content: newContent })}
                           />
                         ) : (
                           <textarea
