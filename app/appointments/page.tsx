@@ -33,31 +33,47 @@ export default function AppointmentsPage() {
 
   const fetchAvailableSlots = async () => {
     try {
-      // Fetch all available appointment slots with expert info
+      // Fetch all available appointment slots
       const { data, error } = await supabase
         .from("appointment_slots")
-        .select(`
-          *,
-          profiles:expert_id (
-            id,
-            name,
-            title
-          )
-        `)
+        .select("id, start_time, end_time, rate_per_hour, expert_id")
         .eq("is_available", true)
         .gte("start_time", new Date().toISOString())
         .order("start_time", { ascending: true });
 
       if (error) throw error;
 
+      // Fetch expert profiles separately
+      const expertIds = Array.from(new Set((data || []).map((slot: any) => slot.expert_id)));
+      let expertMap: { [key: string]: { id: string; name: string; title: string | null } } = {};
+      
+      if (expertIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, name, title")
+          .in("id", expertIds);
+        
+        if (profilesData) {
+          profilesData.forEach((profile: any) => {
+            expertMap[profile.id] = {
+              id: profile.id,
+              name: profile.name || "Expert",
+              title: profile.title,
+            };
+          });
+        }
+      }
+
       // Transform data to include expert info
-      const slots = (data || []).map((slot: any) => ({
-        id: slot.id,
-        start_time: slot.start_time,
-        end_time: slot.end_time,
-        rate_per_hour: slot.rate_per_hour,
-        expert: Array.isArray(slot.profiles) ? slot.profiles[0] : slot.profiles,
-      })).filter((slot: AppointmentSlot) => slot.expert && slot.expert.id !== user?.id);
+      const slots = (data || [])
+        .map((slot: any) => ({
+          id: slot.id,
+          start_time: slot.start_time,
+          end_time: slot.end_time,
+          rate_per_hour: slot.rate_per_hour,
+          expert: expertMap[slot.expert_id] || { id: slot.expert_id, name: "Expert", title: null },
+        }))
+        .filter((slot: AppointmentSlot) => slot.expert.id !== user?.id);
 
       setAvailableSlots(slots);
     } catch (err) {

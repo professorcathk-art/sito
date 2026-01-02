@@ -58,31 +58,41 @@ export default function ManageAppointmentsPage() {
     try {
       const { data, error } = await supabase
         .from("appointments")
-        .select(`
-          *,
-          profiles:user_id (
-            id,
-            name,
-            email
-          )
-        `)
+        .select("*")
         .eq("expert_id", user.id)
         .order("start_time", { ascending: false });
 
       if (error) throw error;
 
-      const appointments = (data || []).map((apt: any) => {
-        const profile = Array.isArray(apt.profiles) ? apt.profiles[0] : apt.profiles;
-        return {
-          id: apt.id,
-          start_time: apt.start_time,
-          end_time: apt.end_time,
-          rate_per_hour: apt.rate_per_hour,
-          total_amount: apt.total_amount,
-          status: apt.status,
-          profiles: profile || { name: "Unknown", email: "N/A" },
-        };
-      });
+      // Fetch profiles separately
+      const userIds = Array.from(new Set((data || []).map((apt: any) => apt.user_id)));
+      let profileMap: { [key: string]: { name: string; email: string } } = {};
+      
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, name, email")
+          .in("id", userIds);
+        
+        if (profilesData) {
+          profilesData.forEach((profile: any) => {
+            profileMap[profile.id] = {
+              name: profile.name || "Unknown",
+              email: profile.email || "N/A",
+            };
+          });
+        }
+      }
+
+      const appointments = (data || []).map((apt: any) => ({
+        id: apt.id,
+        start_time: apt.start_time,
+        end_time: apt.end_time,
+        rate_per_hour: apt.rate_per_hour,
+        total_amount: apt.total_amount,
+        status: apt.status,
+        profiles: profileMap[apt.user_id] || { name: "Unknown", email: "N/A" },
+      }));
 
       setBookedAppointments(appointments);
     } catch (err) {

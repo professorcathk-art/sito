@@ -36,27 +36,46 @@ export default function SubscriptionsPage() {
     try {
       const { data, error } = await supabase
         .from("subscriptions")
-        .select(`
-          id,
-          created_at,
-          profiles:expert_id (
-            id,
-            name,
-            title,
-            avatar_url,
-            verified
-          )
-        `)
+        .select("id, created_at, expert_id")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
+      // Fetch expert profiles separately
+      const expertIds = Array.from(new Set((data || []).map((sub: any) => sub.expert_id)));
+      let expertMap: { [key: string]: { id: string; name: string; title: string | null; avatar_url: string | null; verified: boolean } } = {};
+      
+      if (expertIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, name, title, avatar_url, verified")
+          .in("id", expertIds);
+        
+        if (profilesData) {
+          profilesData.forEach((profile: any) => {
+            expertMap[profile.id] = {
+              id: profile.id,
+              name: profile.name || "Expert",
+              title: profile.title,
+              avatar_url: profile.avatar_url,
+              verified: profile.verified || false,
+            };
+          });
+        }
+      }
+
       setSubscriptions(
         (data || []).map((sub: any) => ({
           id: sub.id,
           created_at: sub.created_at,
-          expert: sub.profiles,
+          expert: expertMap[sub.expert_id] || {
+            id: sub.expert_id,
+            name: "Expert",
+            title: null,
+            avatar_url: null,
+            verified: false,
+          },
         }))
       );
     } catch (err) {

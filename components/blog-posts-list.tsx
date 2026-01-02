@@ -42,12 +42,7 @@ export function BlogPostsList({ expertId, limit = 10 }: BlogPostsListProps) {
             featured_image_url,
             reading_time_minutes,
             published_at,
-            expert_id,
-            profiles:expert_id (
-              id,
-              name,
-              avatar_url
-            )
+            expert_id
           `)
           .eq("access_level", "public")
           .not("published_at", "is", null)
@@ -61,10 +56,36 @@ export function BlogPostsList({ expertId, limit = 10 }: BlogPostsListProps) {
         const { data, error } = await query;
 
         if (error) throw error;
+
+        // Fetch expert profiles separately
+        const expertIds = Array.from(new Set((data || []).map((post: any) => post.expert_id)));
+        let profileMap: { [key: string]: { id: string; name: string; avatar_url: string | null } } = {};
+        
+        if (expertIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from("profiles")
+            .select("id, name, avatar_url")
+            .in("id", expertIds);
+          
+          if (profilesData) {
+            profilesData.forEach((profile: any) => {
+              profileMap[profile.id] = {
+                id: profile.id,
+                name: profile.name || "Expert",
+                avatar_url: profile.avatar_url,
+              };
+            });
+          }
+        }
+
         setPosts(
           (data || []).map((post: any) => ({
             ...post,
-            profiles: Array.isArray(post.profiles) ? post.profiles[0] : post.profiles,
+            profiles: profileMap[post.expert_id] || {
+              id: post.expert_id,
+              name: "Expert",
+              avatar_url: null,
+            },
           }))
         );
       } catch (err) {
