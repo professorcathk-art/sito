@@ -346,12 +346,22 @@ export default function EditCoursePage() {
 
             {/* Add Lesson Button */}
             {!showLessonForm && (
-              <button
-                onClick={() => setShowLessonForm(true)}
-                className="w-full px-6 py-4 bg-dark-green-800/50 border-2 border-dashed border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
-              >
-                + Add Lesson
-              </button>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowLessonForm(true)}
+                  className="w-full px-6 py-4 bg-dark-green-800/50 border-2 border-dashed border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
+                >
+                  + Add Lesson
+                </button>
+                {skipLessons && (
+                  <button
+                    onClick={() => router.push("/products")}
+                    className="w-full px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                  >
+                    Skip for Now - Return to Products
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>
