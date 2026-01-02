@@ -4,47 +4,58 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 
 interface CoursePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function CoursePage({ params }: CoursePageProps) {
+  const { id } = await params;
   const supabase = await createClient();
   
-  const { data: course, error } = await supabase
-    .from("courses")
-    .select(`
-      *,
-      profiles:expert_id (
-        id,
-        name,
-        title,
-        avatar_url
-      )
-    `)
-    .eq("id", params.id)
-    .single();
+  try {
+    const { data: course, error } = await supabase
+      .from("courses")
+      .select(`
+        *,
+        profiles:expert_id (
+          id,
+          name,
+          title,
+          avatar_url
+        )
+      `)
+      .eq("id", id)
+      .single();
 
-  if (error || !course) {
-    notFound();
-  }
+    if (error) {
+      console.error("Error fetching course:", error);
+      notFound();
+    }
 
-  // Handle profiles relationship (can be array or object)
-  const expertProfile = Array.isArray(course.profiles) ? course.profiles[0] : course.profiles;
-  
-  if (!expertProfile) {
-    notFound();
-  }
+    if (!course) {
+      notFound();
+    }
 
-  // Get lessons
-  const { data: lessons } = await supabase
-    .from("course_lessons")
-    .select("*")
-    .eq("course_id", course.id)
-    .order("order_index", { ascending: true });
+    // Handle profiles relationship (can be array or object)
+    const expertProfile = Array.isArray(course.profiles) ? course.profiles[0] : course.profiles;
+    
+    if (!expertProfile) {
+      notFound();
+    }
 
-  return (
+    // Get lessons
+    const { data: lessons, error: lessonsError } = await supabase
+      .from("course_lessons")
+      .select("*")
+      .eq("course_id", course.id)
+      .order("order_index", { ascending: true });
+
+    if (lessonsError) {
+      console.error("Error fetching lessons:", lessonsError);
+    }
+
+    return (
     <div className="min-h-screen bg-custom-bg">
       <Navigation />
       <div className="pt-16 pb-12 px-4 sm:px-6 lg:px-8">
@@ -144,6 +155,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
       </div>
     </div>
-  );
+    );
+  } catch (err) {
+    console.error("Error in course page:", err);
+    notFound();
+  }
 }
 

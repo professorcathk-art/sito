@@ -15,12 +15,29 @@ interface AppointmentSlot {
   is_available: boolean;
 }
 
+interface BookedAppointment {
+  id: string;
+  start_time: string;
+  end_time: string;
+  rate_per_hour: number;
+  total_amount: number;
+  status: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 export default function ManageAppointmentsPage() {
   const { user } = useAuth();
   const supabase = createClient();
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
+  const [bookedAppointments, setBookedAppointments] = useState<BookedAppointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingBookings, setLoadingBookings] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<"slots" | "bookings">("slots");
   const [formData, setFormData] = useState({
     date: "",
     startTime: "",
@@ -32,7 +49,45 @@ export default function ManageAppointmentsPage() {
   useEffect(() => {
     if (!user) return;
     fetchSlots();
+    fetchBookedAppointments();
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchBookedAppointments = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select(`
+          *,
+          profiles:user_id (
+            id,
+            name,
+            email
+          )
+        `)
+        .eq("expert_id", user.id)
+        .order("start_time", { ascending: false });
+
+      if (error) throw error;
+
+      const appointments = (data || []).map((apt: any) => ({
+        id: apt.id,
+        start_time: apt.start_time,
+        end_time: apt.end_time,
+        rate_per_hour: apt.rate_per_hour,
+        total_amount: apt.total_amount,
+        status: apt.status,
+        user: Array.isArray(apt.profiles) ? apt.profiles[0] : apt.profiles,
+      }));
+
+      setBookedAppointments(appointments);
+    } catch (err) {
+      console.error("Error fetching booked appointments:", err);
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
 
   const fetchSlots = async () => {
     if (!user) return;
@@ -286,6 +341,68 @@ export default function ManageAppointmentsPage() {
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Booked Appointments Tab */}
+          {activeTab === "bookings" && (
+            <>
+              {loadingBookings ? (
+                <div className="animate-pulse space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-24 bg-dark-green-800/50 rounded-lg"></div>
+                  ))}
+                </div>
+              ) : bookedAppointments.length === 0 ? (
+                <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
+                  <p className="text-custom-text/80 mb-4">No booked appointments yet.</p>
+                  <p className="text-custom-text/60 text-sm">
+                    When users book your available slots, they will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {bookedAppointments.map((appointment) => (
+                    <div
+                      key={appointment.id}
+                      className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-lg font-semibold text-custom-text mb-2">
+                            {formatDateTime(appointment.start_time)} - {formatDateTime(appointment.end_time)}
+                          </p>
+                          {appointment.user && (
+                            <div className="mb-2">
+                              <p className="text-custom-text/90 font-medium">
+                                Booked by: {appointment.user.name || "Unknown"}
+                              </p>
+                              {appointment.user.email && (
+                                <p className="text-custom-text/70 text-sm">{appointment.user.email}</p>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-4 text-sm text-custom-text/70">
+                            <span>Rate: ${appointment.rate_per_hour}/hour</span>
+                            <span>Total: ${appointment.total_amount?.toFixed(2) || "0.00"}</span>
+                            <span className={`px-2 py-1 rounded ${
+                              appointment.status === "confirmed"
+                                ? "bg-green-900/50 text-green-300"
+                                : appointment.status === "completed"
+                                ? "bg-blue-900/50 text-blue-300"
+                                : appointment.status === "cancelled"
+                                ? "bg-red-900/50 text-red-300"
+                                : "bg-yellow-900/50 text-yellow-300"
+                            }`}>
+                              {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </DashboardLayout>

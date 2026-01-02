@@ -29,11 +29,21 @@ interface Product {
   pricing_type: "one-off" | "hourly";
 }
 
+interface AppointmentSlot {
+  id: string;
+  start_time: string;
+  end_time: string;
+  rate_per_hour: number;
+  is_available: boolean;
+}
+
 export function ExpertProfile({ expertId }: { expertId: string }) {
   const [expert, setExpert] = useState<Expert | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [appointmentSlots, setAppointmentSlots] = useState<AppointmentSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingSlots, setLoadingSlots] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<"none" | "pending" | "accepted" | "rejected">("none");
   const [connecting, setConnecting] = useState(false);
   const [registeringInterest, setRegisteringInterest] = useState<string | null>(null);
@@ -104,8 +114,29 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
     if (expertId) {
       fetchExpert();
       fetchProducts();
+      fetchAppointmentSlots();
     }
   }, [expertId, supabase, user]);
+
+  const fetchAppointmentSlots = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("appointment_slots")
+        .select("*")
+        .eq("expert_id", expertId)
+        .eq("is_available", true)
+        .gte("start_time", new Date().toISOString())
+        .order("start_time", { ascending: true })
+        .limit(5);
+
+      if (error) throw error;
+      setAppointmentSlots(data || []);
+    } catch (err) {
+      console.error("Error fetching appointment slots:", err);
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
 
   const fetchProducts = async () => {
     if (!expertId) return;
@@ -349,8 +380,72 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           <p className="text-custom-text/90 leading-relaxed">{expert.bio}</p>
         </div>
 
+        {/* Appointment Slots Section */}
+        {appointmentSlots.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-custom-text mb-4">Available Appointment Slots</h2>
+            <div className="space-y-3 mb-4">
+              {appointmentSlots.slice(0, 3).map((slot) => {
+                const startDate = new Date(slot.start_time);
+                const endDate = new Date(slot.end_time);
+                const duration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+                const total = (slot.rate_per_hour * duration) / 60;
+                
+                return (
+                  <div
+                    key={slot.id}
+                    className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-custom-text font-semibold">
+                          {startDate.toLocaleString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })} - {endDate.toLocaleString("en-US", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                        <p className="text-custom-text/70 text-sm">
+                          {duration} minutes • ${slot.rate_per_hour}/hour • Total: ${total.toFixed(2)}
+                        </p>
+                      </div>
+                      {user && user.id !== expert.id ? (
+                        <Link
+                          href={`/appointments/book/${expert.id}?slot=${slot.id}`}
+                          className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                        >
+                          Book Now
+                        </Link>
+                      ) : !user ? (
+                        <Link
+                          href={`/login?redirect=/appointments/book/${expert.id}?slot=${slot.id}`}
+                          className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                        >
+                          Sign In to Book
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {appointmentSlots.length > 3 && (
+              <Link
+                href={`/appointments/book/${expert.id}`}
+                className="text-cyber-green hover:text-cyber-green-light text-sm font-medium"
+              >
+                View all {appointmentSlots.length} available slots →
+              </Link>
+            )}
+          </div>
+        )}
+
         {/* Book Appointment Button */}
-        {user && user.id !== expert.id && (
+        {user && user.id !== expert.id && appointmentSlots.length === 0 && (
           <div className="mb-6">
             <Link
               href={`/appointments/book/${expert.id}`}

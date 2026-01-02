@@ -4,46 +4,57 @@ import { BlogPostView } from "@/components/blog-post-view";
 import { notFound } from "next/navigation";
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { id } = await params;
   const supabase = await createClient();
   
-  const { data: blogPost, error } = await supabase
-    .from("blog_posts")
-    .select(`
-      *,
-      profiles:expert_id (
-        id,
-        name,
-        title,
-        avatar_url
-      )
-    `)
-    .eq("id", params.id)
-    .single();
+  try {
+    const { data: blogPost, error } = await supabase
+      .from("blog_posts")
+      .select(`
+        *,
+        profiles:expert_id (
+          id,
+          name,
+          title,
+          avatar_url
+        )
+      `)
+      .eq("id", id)
+      .single();
 
-  if (error || !blogPost) {
-    notFound();
-  }
+    if (error) {
+      console.error("Error fetching blog post:", error);
+      notFound();
+    }
 
-  // Handle profiles relationship (can be array or object)
-  const expertProfile = Array.isArray(blogPost.profiles) ? blogPost.profiles[0] : blogPost.profiles;
-  const blogPostWithProfile = {
-    ...blogPost,
-    profiles: expertProfile,
-  };
+    if (!blogPost) {
+      notFound();
+    }
 
-  return (
+    // Handle profiles relationship (can be array or object)
+    const expertProfile = Array.isArray(blogPost.profiles) ? blogPost.profiles[0] : blogPost.profiles;
+    const blogPostWithProfile = {
+      ...blogPost,
+      profiles: expertProfile,
+    };
+
+    return (
     <div className="min-h-screen bg-custom-bg">
       <Navigation />
       <div className="pt-16 pb-12">
         <BlogPostView blogPost={blogPostWithProfile} />
       </div>
     </div>
-  );
+    );
+  } catch (err) {
+    console.error("Error in blog post page:", err);
+    notFound();
+  }
 }
 

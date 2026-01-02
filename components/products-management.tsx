@@ -10,7 +10,17 @@ interface Product {
   description: string;
   price: number;
   pricing_type: "one-off" | "hourly";
+  product_type?: "service" | "course" | "appointment";
+  course_id?: string;
+  appointment_slot_id?: string;
   created_at: string;
+}
+
+interface Course {
+  id: string;
+  title: string;
+  is_free: boolean;
+  price: number;
 }
 
 interface ProductInterest {
@@ -33,11 +43,14 @@ export function ProductsManagement() {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
     pricing_type: "one-off" as "one-off" | "hourly",
+    product_type: "service" as "service" | "course" | "appointment",
+    course_id: "",
   });
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"products" | "interests">("products");
@@ -46,8 +59,25 @@ export function ProductsManagement() {
   useEffect(() => {
     if (user) {
       fetchProducts();
+      fetchCourses();
     }
   }, [user]);
+
+  const fetchCourses = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("courses")
+        .select("id, title, is_free, price")
+        .eq("expert_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setCourses(data || []);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+    }
+  };
 
   const fetchProducts = async () => {
     if (!user) return;
@@ -160,43 +190,70 @@ export function ProductsManagement() {
     setError("");
     if (!user) return;
 
-    if (!formData.name || !formData.description || !formData.price) {
-      setError("Please fill in all fields");
+    if (!formData.name || !formData.description) {
+      setError("Please fill in name and description");
       return;
     }
 
-    const price = parseFloat(formData.price);
-    if (isNaN(price) || price <= 0) {
+    if (formData.product_type === "service" && !formData.price) {
+      setError("Please enter a price for service products");
+      return;
+    }
+
+    const price = formData.price ? parseFloat(formData.price) : 0;
+    if (formData.price && (isNaN(price) || price <= 0)) {
       setError("Please enter a valid price");
       return;
     }
 
+    if (formData.product_type === "course" && !formData.course_id) {
+      setError("Please select or create a course");
+      return;
+    }
+
     try {
+      const productData: any = {
+        expert_id: user.id,
+        name: formData.name,
+        description: formData.description,
+        product_type: formData.product_type,
+        pricing_type: formData.pricing_type,
+      };
+
+      if (formData.product_type === "service") {
+        productData.price = price;
+      } else if (formData.product_type === "course") {
+        productData.course_id = formData.course_id;
+        // Get course price if linked
+        const course = courses.find(c => c.id === formData.course_id);
+        if (course) {
+          productData.price = course.is_free ? 0 : course.price;
+        }
+      }
+
       if (editingProduct) {
         // Update existing product
         const { error } = await supabase
           .from("products")
-          .update({
-            name: formData.name,
-            description: formData.description,
-            price: price,
-            pricing_type: formData.pricing_type,
-          })
+          .update(productData)
           .eq("id", editingProduct.id)
           .eq("expert_id", user.id);
 
         if (error) throw error;
       } else {
         // Create new product
-        const { error } = await supabase.from("products").insert({
-          expert_id: user.id,
-          name: formData.name,
-          description: formData.description,
-          price: price,
-          pricing_type: formData.pricing_type,
-        });
+        const { error } = await supabase.from("products").insert(productData);
 
         if (error) throw error;
+
+        // Redirect based on product type
+        if (formData.product_type === "course") {
+          window.location.href = `/courses/${formData.course_id}/edit`;
+          return;
+        } else if (formData.product_type === "appointment") {
+          window.location.href = `/appointments/manage`;
+          return;
+        }
       }
 
       setFormData({
@@ -204,6 +261,8 @@ export function ProductsManagement() {
         description: "",
         price: "",
         pricing_type: "one-off",
+        product_type: "service",
+        course_id: "",
       });
       setShowAddForm(false);
       setEditingProduct(null);
@@ -223,6 +282,8 @@ export function ProductsManagement() {
       description: product.description,
       price: product.price.toString(),
       pricing_type: product.pricing_type,
+      product_type: product.product_type || "service",
+      course_id: product.course_id || "",
     });
     setShowAddForm(true);
   };
@@ -304,6 +365,8 @@ export function ProductsManagement() {
                 description: "",
                 price: "",
                 pricing_type: "one-off",
+                product_type: "service",
+                course_id: "",
               });
             }}
             className="bg-cyber-green text-custom-text px-4 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
@@ -363,6 +426,65 @@ export function ProductsManagement() {
                 placeholder="e.g., 1-on-1 Consultation"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-custom-text mb-2">
+                Product Type *
+              </label>
+              <select
+                value={formData.product_type}
+                onChange={(e) => {
+                  const newType = e.target.value as "service" | "course" | "appointment";
+                  setFormData({
+                    ...formData,
+                    product_type: newType,
+                    course_id: "",
+                    price: newType === "appointment" ? "" : formData.price,
+                  });
+                }}
+                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                required
+              >
+                <option value="service">Service (One-off or Hourly)</option>
+                <option value="course">Course</option>
+                <option value="appointment">1-on-1 Appointment Session</option>
+              </select>
+              <p className="text-xs text-custom-text/60 mt-1">
+                {formData.product_type === "course" && "Link this product to an existing course or create a new one"}
+                {formData.product_type === "appointment" && "After creating, you'll set up appointment slots and pricing"}
+                {formData.product_type === "service" && "Standard service/product offering"}
+              </p>
+            </div>
+
+            {formData.product_type === "course" && (
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">
+                  Link to Course *
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    value={formData.course_id}
+                    onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
+                    className="flex-1 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                    required
+                  >
+                    <option value="">Select a course...</option>
+                    {courses.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.title} ({course.is_free ? "Free" : `$${course.price}`})
+                      </option>
+                    ))}
+                  </select>
+                  <a
+                    href="/courses/create"
+                    target="_blank"
+                    className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors whitespace-nowrap"
+                  >
+                    + Create New Course
+                  </a>
+                </div>
+              </div>
+            )}
+
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-custom-text">
