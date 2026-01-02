@@ -57,6 +57,27 @@ export function ProductsManagement() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"products" | "interests">("products");
   const [descriptionMode, setDescriptionMode] = useState<"edit" | "preview">("edit");
+  const [currentProductId, setCurrentProductId] = useState<string | null>(null);
+  const [showAppointmentForm, setShowAppointmentForm] = useState(false);
+  const [showCourseForm, setShowCourseForm] = useState(false);
+  const [appointmentFormData, setAppointmentFormData] = useState({
+    date: new Date().toISOString().split('T')[0],
+    startTime: "09:00",
+    endTime: "17:00",
+    intervalMinutes: "60",
+    ratePerHour: "100",
+  });
+  const [courseLessons, setCourseLessons] = useState<any[]>([]);
+  const [showLessonForm, setShowLessonForm] = useState(false);
+  const [editingLesson, setEditingLesson] = useState<any | null>(null);
+  const [lessonForm, setLessonForm] = useState({
+    title: "",
+    description: "",
+    videoUrl: "",
+    videoType: "youtube" as "youtube" | "vimeo",
+    content: "",
+  });
+  const [currentCourseId, setCurrentCourseId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -220,7 +241,7 @@ export function ProductsManagement() {
           if (courseError) throw courseError;
 
           // Create product linked to course
-          const { error: productError } = await supabase.from("products").insert({
+          const { data: newProduct, error: productError } = await supabase.from("products").insert({
             expert_id: user.id,
             name: formData.name,
             description: formData.description,
@@ -228,12 +249,23 @@ export function ProductsManagement() {
             course_id: newCourse.id,
             price: 0,
             pricing_type: "one-off",
-          });
+          }).select().single();
 
           if (productError) throw productError;
 
-          // Redirect to course edit page
-          router.push(`/courses/${newCourse.id}/edit?skipLessons=true`);
+          // Set current product and show course form
+          setCurrentProductId(newProduct.id);
+          setShowCourseForm(true);
+          setShowAddForm(false);
+          setCourseLessons([]);
+          setFormData({
+            name: "",
+            description: "",
+            price: "",
+            pricing_type: "one-off",
+            product_type: "appointment",
+            course_id: "",
+          });
           return;
         } else {
           // Link to existing course
@@ -253,20 +285,30 @@ export function ProductsManagement() {
           return;
         }
       } else if (formData.product_type === "appointment") {
-        // For appointment: create product, then redirect to appointments
-        const { error: productError } = await supabase.from("products").insert({
+        // For appointment: create product first, then show appointment form inline
+        const { data: newProduct, error: productError } = await supabase.from("products").insert({
           expert_id: user.id,
           name: formData.name,
           description: formData.description,
           product_type: "appointment",
           price: 0,
           pricing_type: "hourly",
-        });
+        }).select().single();
 
         if (productError) throw productError;
 
-        // Redirect to appointments page
-        router.push("/appointments/manage");
+        // Set current product and show appointment form
+        setCurrentProductId(newProduct.id);
+        setShowAppointmentForm(true);
+        setShowAddForm(false);
+        setFormData({
+          name: "",
+          description: "",
+          price: "",
+          pricing_type: "one-off",
+          product_type: "appointment",
+          course_id: "",
+        });
         return;
       }
 
@@ -593,6 +635,299 @@ export function ProductsManagement() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Appointment Form (Embedded) */}
+      {showAppointmentForm && currentProductId && (
+        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 mb-6">
+          <h3 className="text-xl font-bold text-custom-text mb-4">Set Up Appointment Slots</h3>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            if (!user || !currentProductId) return;
+
+            try {
+              const date = appointmentFormData.date;
+              const startTime = appointmentFormData.startTime;
+              const endTime = appointmentFormData.endTime;
+              const intervalMinutes = parseInt(appointmentFormData.intervalMinutes);
+              const ratePerHour = parseFloat(appointmentFormData.ratePerHour);
+
+              const startDateTime = new Date(`${date}T${startTime}`);
+              const endDateTime = new Date(`${date}T${endTime}`);
+
+              if (endDateTime <= startDateTime) {
+                alert("End time must be after start time");
+                return;
+              }
+
+              const slots = [];
+              let currentTime = new Date(startDateTime);
+
+              while (currentTime < endDateTime) {
+                const slotEnd = new Date(currentTime.getTime() + intervalMinutes * 60000);
+                if (slotEnd > endDateTime) break;
+
+                slots.push({
+                  expert_id: user.id,
+                  product_id: currentProductId,
+                  start_time: currentTime.toISOString(),
+                  end_time: slotEnd.toISOString(),
+                  rate_per_hour: ratePerHour,
+                  is_available: true,
+                });
+
+                currentTime = slotEnd;
+              }
+
+              if (slots.length === 0) {
+                alert("No slots could be created with the given time range and interval.");
+                return;
+              }
+
+              const { error } = await supabase.from("appointment_slots").insert(slots);
+              if (error) throw error;
+
+              alert(`Successfully created ${slots.length} appointment slots!`);
+              setShowAppointmentForm(false);
+              setCurrentProductId(null);
+              fetchProducts();
+            } catch (err: any) {
+              console.error("Error creating slots:", err);
+              alert("Failed to create appointment slots. Please try again.");
+            }
+          }} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">Date *</label>
+                <input
+                  type="date"
+                  value={appointmentFormData.date}
+                  onChange={(e) => setAppointmentFormData({ ...appointmentFormData, date: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">Start Time *</label>
+                <input
+                  type="time"
+                  value={appointmentFormData.startTime}
+                  onChange={(e) => setAppointmentFormData({ ...appointmentFormData, startTime: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">End Time *</label>
+                <input
+                  type="time"
+                  value={appointmentFormData.endTime}
+                  onChange={(e) => setAppointmentFormData({ ...appointmentFormData, endTime: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">Session Duration *</label>
+                <select
+                  value={appointmentFormData.intervalMinutes}
+                  onChange={(e) => setAppointmentFormData({ ...appointmentFormData, intervalMinutes: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  required
+                >
+                  <option value="15">15 minutes</option>
+                  <option value="30">30 minutes</option>
+                  <option value="60">1 hour</option>
+                  <option value="90">1.5 hours</option>
+                  <option value="120">2 hours</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-custom-text mb-2">Rate per Hour (USD) *</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={appointmentFormData.ratePerHour}
+                onChange={(e) => setAppointmentFormData({ ...appointmentFormData, ratePerHour: e.target.value })}
+                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                required
+              />
+            </div>
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              >
+                Create Slots
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAppointmentForm(false);
+                  setCurrentProductId(null);
+                }}
+                className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+              >
+                Skip for Now
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Course Lessons Form (Embedded) */}
+      {showCourseForm && currentCourseId && (
+        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 mb-6">
+          <h3 className="text-xl font-bold text-custom-text mb-4">Add Course Lessons</h3>
+          {courseLessons.length > 0 && (
+            <div className="mb-4 space-y-2">
+              {courseLessons.map((lesson, index) => (
+                <div key={lesson.id || index} className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-3 flex items-center justify-between">
+                  <span className="text-custom-text">{index + 1}. {lesson.title || "Untitled Lesson"}</span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (lesson.id) {
+                        const { error } = await supabase.from("course_lessons").delete().eq("id", lesson.id);
+                        if (error) {
+                          alert("Failed to delete lesson");
+                          return;
+                        }
+                      }
+                      setCourseLessons(courseLessons.filter((_, i) => i !== index));
+                    }}
+                    className="text-red-400 hover:text-red-300 text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {showLessonForm && (
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!lessonForm.title || !currentCourseId) return;
+
+              try {
+                const orderIndex = editingLesson ? editingLesson.order_index : courseLessons.length;
+                const lessonData = {
+                  course_id: currentCourseId,
+                  title: lessonForm.title,
+                  description: lessonForm.description || null,
+                  video_url: lessonForm.videoUrl || null,
+                  content: lessonForm.content || null,
+                  order_index: orderIndex,
+                };
+
+                if (editingLesson && editingLesson.id) {
+                  const { error } = await supabase.from("course_lessons").update(lessonData).eq("id", editingLesson.id);
+                  if (error) throw error;
+                  setCourseLessons(courseLessons.map(l => l.id === editingLesson.id ? { ...editingLesson, ...lessonData } : l));
+                } else {
+                  const { data, error } = await supabase.from("course_lessons").insert(lessonData).select().single();
+                  if (error) throw error;
+                  setCourseLessons([...courseLessons, data]);
+                }
+
+                setShowLessonForm(false);
+                setEditingLesson(null);
+                setLessonForm({ title: "", description: "", videoUrl: "", videoType: "youtube", content: "" });
+              } catch (err: any) {
+                console.error("Error saving lesson:", err);
+                alert("Failed to save lesson. Please try again.");
+              }
+            }} className="space-y-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">Lesson Title *</label>
+                <input
+                  type="text"
+                  value={lessonForm.title}
+                  onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">Description</label>
+                <textarea
+                  value={lessonForm.description}
+                  onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">Video URL (YouTube/Vimeo)</label>
+                <input
+                  type="url"
+                  value={lessonForm.videoUrl}
+                  onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  placeholder="https://youtube.com/watch?v=..."
+                />
+              </div>
+              <div className="flex gap-4">
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                >
+                  {editingLesson ? "Update Lesson" : "Add Lesson"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLessonForm(false);
+                    setEditingLesson(null);
+                    setLessonForm({ title: "", description: "", videoUrl: "", videoType: "youtube", content: "" });
+                  }}
+                  className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+          {!showLessonForm && (
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setShowLessonForm(true)}
+                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              >
+                + Add Lesson
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    // Publish course
+                    if (currentCourseId) {
+                      const { error } = await supabase
+                        .from("courses")
+                        .update({ published: true })
+                        .eq("id", currentCourseId);
+                      if (error) throw error;
+                    }
+                    setShowCourseForm(false);
+                    setCurrentCourseId(null);
+                    setCurrentProductId(null);
+                    fetchProducts();
+                    alert("Course published successfully!");
+                  } catch (err: any) {
+                    console.error("Error publishing course:", err);
+                    alert("Failed to publish course. Please try again.");
+                  }
+                }}
+                className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+              >
+                {courseLessons.length === 0 ? "Skip & Publish Course" : "Publish Course"}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

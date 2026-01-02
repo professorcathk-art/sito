@@ -414,21 +414,21 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                           {duration} minutes • ${slot.rate_per_hour}/hour • Total: ${total.toFixed(2)}
                         </p>
                       </div>
-                      {user && user.id !== expert.id ? (
+                      {user?.id === expert.id ? null : user ? (
                         <Link
                           href={`/appointments/book/${expert.id}?slot=${slot.id}`}
                           className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
                         >
                           Book Now
                         </Link>
-                      ) : !user ? (
+                      ) : (
                         <Link
                           href={`/login?redirect=/appointments/book/${expert.id}?slot=${slot.id}`}
                           className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
                         >
                           Sign In to Book
                         </Link>
-                      ) : null}
+                      )}
                     </div>
                   </div>
                 );
