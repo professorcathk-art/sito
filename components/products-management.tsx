@@ -222,68 +222,50 @@ export function ProductsManagement() {
 
     try {
       if (formData.product_type === "course") {
-        // For course: create course first, then product
-        if (!formData.course_id) {
-          // Create new course
-          const { data: newCourse, error: courseError } = await supabase
-            .from("courses")
-            .insert({
-              expert_id: user.id,
-              title: formData.name,
-              description: formData.description,
-              is_free: true,
-              price: 0,
-              published: false,
-            })
-            .select()
-            .single();
-
-          if (courseError) throw courseError;
-
-          // Create product linked to course
-          const { data: newProduct, error: productError } = await supabase.from("products").insert({
+        // For course: auto-create course and product
+        const { data: newCourse, error: courseError } = await supabase
+          .from("courses")
+          .insert({
             expert_id: user.id,
-            name: formData.name,
+            title: formData.name,
             description: formData.description,
-            product_type: "course",
-            course_id: newCourse.id,
+            is_free: true,
             price: 0,
-            pricing_type: "one-off",
-          }).select().single();
+            published: false,
+          })
+          .select()
+          .single();
 
-          if (productError) throw productError;
+        if (courseError) throw courseError;
 
-          // Set current product and show course form
-          setCurrentProductId(newProduct.id);
-          setShowCourseForm(true);
-          setShowAddForm(false);
-          setCourseLessons([]);
-          setFormData({
-            name: "",
-            description: "",
-            price: "",
-            pricing_type: "one-off",
-            product_type: "appointment",
-            course_id: "",
-          });
-          return;
-        } else {
-          // Link to existing course
-          const course = courses.find(c => c.id === formData.course_id);
-          const { error: productError } = await supabase.from("products").insert({
-            expert_id: user.id,
-            name: formData.name,
-            description: formData.description,
-            product_type: "course",
-            course_id: formData.course_id,
-            price: course?.is_free ? 0 : (course?.price || 0),
-            pricing_type: "one-off",
-          });
+        // Create product linked to course
+        const { data: newProduct, error: productError } = await supabase.from("products").insert({
+          expert_id: user.id,
+          name: formData.name,
+          description: formData.description,
+          product_type: "course",
+          course_id: newCourse.id,
+          price: 0,
+          pricing_type: "one-off",
+        }).select().single();
 
-          if (productError) throw productError;
-          router.push(`/courses/${formData.course_id}/edit`);
-          return;
-        }
+        if (productError) throw productError;
+
+        // Set current product and course, show course form
+        setCurrentProductId(newProduct.id);
+        setCurrentCourseId(newCourse.id);
+        setShowCourseForm(true);
+        setShowAddForm(false);
+        setCourseLessons([]);
+        setFormData({
+          name: "",
+          description: "",
+          price: "",
+          pricing_type: "one-off",
+          product_type: "appointment",
+          course_id: "",
+        });
+        return;
       } else if (formData.product_type === "appointment") {
         // For appointment: create product first, then show appointment form inline
         const { data: newProduct, error: productError } = await supabase.from("products").insert({
