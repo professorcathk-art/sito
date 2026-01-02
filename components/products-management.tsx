@@ -36,6 +36,7 @@ interface ProductInterest {
 }
 
 export function ProductsManagement() {
+  const router = useRouter();
   const { user } = useAuth();
   const supabase = createClient();
   const [products, setProducts] = useState<Product[]>([]);
@@ -49,7 +50,7 @@ export function ProductsManagement() {
     description: "",
     price: "",
     pricing_type: "one-off" as "one-off" | "hourly",
-    product_type: "service" as "service" | "course" | "appointment",
+    product_type: "appointment" as "course" | "appointment",
     course_id: "",
   });
   const [error, setError] = useState("");
@@ -367,7 +368,7 @@ export function ProductsManagement() {
                 description: "",
                 price: "",
                 pricing_type: "one-off",
-                product_type: "service",
+                product_type: "appointment",
                 course_id: "",
               });
             }}
@@ -435,25 +436,23 @@ export function ProductsManagement() {
               <select
                 value={formData.product_type}
                 onChange={(e) => {
-                  const newType = e.target.value as "service" | "course" | "appointment";
+                  const newType = e.target.value as "course" | "appointment";
                   setFormData({
                     ...formData,
                     product_type: newType,
                     course_id: "",
-                    price: newType === "appointment" ? "" : formData.price,
+                    price: "",
                   });
                 }}
                 className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
                 required
               >
-                <option value="service">Service (One-off or Hourly)</option>
+                <option value="appointment">1-on-1 Session</option>
                 <option value="course">Course</option>
-                <option value="appointment">1-on-1 Appointment Session</option>
               </select>
               <p className="text-xs text-custom-text/60 mt-1">
-                {formData.product_type === "course" && "Link this product to an existing course or create a new one"}
-                {formData.product_type === "appointment" && "After creating, you'll set up appointment slots and pricing"}
-                {formData.product_type === "service" && "Standard service/product offering"}
+                {formData.product_type === "course" && "Create a course with lessons. You can add lessons now or skip and add them later."}
+                {formData.product_type === "appointment" && "Create a 1-on-1 session service. After adding description, you'll set up appointment slots and pricing."}
               </p>
             </div>
 
@@ -552,7 +551,7 @@ export function ProductsManagement() {
                     description: "",
                     price: "",
                     pricing_type: "one-off",
-                    product_type: "service",
+                    product_type: "appointment",
                     course_id: "",
                   });
                 }}

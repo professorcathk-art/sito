@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
@@ -23,6 +23,7 @@ interface AppointmentSlot {
 export default function BookAppointmentPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const expertId = params.expertId as string;
   const { user } = useAuth();
   const supabase = createClient();
@@ -86,10 +87,12 @@ export default function BookAppointmentPage() {
   const calculateDuration = (start: string, end: string): number => {
     const startDate = new Date(start);
     const endDate = new Date(end);
-    return Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+    const duration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+    return Math.max(0, duration); // Ensure non-negative
   };
 
   const calculateTotal = (ratePerHour: number, durationMinutes: number): number => {
+    if (durationMinutes <= 0) return 0;
     return (ratePerHour / 60) * durationMinutes;
   };
 
@@ -199,9 +202,23 @@ export default function BookAppointmentPage() {
               </div>
             ) : (
               <div className="space-y-4">
+                {!user && (
+                  <div className="bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-4 mb-4">
+                    <p className="text-yellow-200 mb-2">Please sign in to book an appointment</p>
+                    <Link
+                      href={`/login?redirect=/appointments/book/${expertId}`}
+                      className="text-cyber-green hover:text-cyber-green-light font-semibold"
+                    >
+                      Sign In →
+                    </Link>
+                  </div>
+                )}
                 {slots.map((slot) => {
                   const duration = calculateDuration(slot.start_time, slot.end_time);
                   const total = calculateTotal(slot.rate_per_hour, duration);
+                  
+                  // Skip invalid slots
+                  if (duration <= 0) return null;
 
                   return (
                     <div
@@ -224,13 +241,22 @@ export default function BookAppointmentPage() {
                           <p className="text-2xl font-bold text-cyber-green mb-2">
                             ${total.toFixed(2)}
                           </p>
-                          <button
-                            onClick={() => handleBookAppointment(slot)}
-                            disabled={booking}
-                            className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
-                          >
-                            {booking ? "Booking..." : "Book Now"}
-                          </button>
+                          {user ? (
+                            <button
+                              onClick={() => handleBookAppointment(slot)}
+                              disabled={booking}
+                              className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+                            >
+                              {booking ? "Booking..." : "Book Now"}
+                            </button>
+                          ) : (
+                            <Link
+                              href={`/login?redirect=/appointments/book/${expertId}?slot=${slot.id}`}
+                              className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors inline-block text-center"
+                            >
+                              Sign In to Book
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </div>

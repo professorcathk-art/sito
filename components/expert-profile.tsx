@@ -389,8 +389,8 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
               {appointmentSlots.slice(0, 3).map((slot) => {
                 const startDate = new Date(slot.start_time);
                 const endDate = new Date(slot.end_time);
-                const duration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
-                const total = (slot.rate_per_hour * duration) / 60;
+                const duration = Math.max(0, Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60)));
+                const total = duration > 0 ? (slot.rate_per_hour * duration) / 60 : 0;
                 
                 return (
                   <div
