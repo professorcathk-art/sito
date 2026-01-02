@@ -32,12 +32,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
     // Fetch expert profile separately
     let expertProfile = null;
     if (course.expert_id) {
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("id, name, title, avatar_url")
         .eq("id", course.expert_id)
         .single();
-      expertProfile = profile;
+      
+      // Don't fail if profile not found, just use defaults
+      if (!profileError && profile) {
+        expertProfile = profile;
+      }
     }
 
     // Get lessons

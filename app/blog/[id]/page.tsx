@@ -32,12 +32,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     // Fetch expert profile separately
     let expertProfile = null;
     if (blogPost.expert_id) {
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("id, name, title, avatar_url")
         .eq("id", blogPost.expert_id)
         .single();
-      expertProfile = profile;
+      
+      // Don't fail if profile not found, just use defaults
+      if (!profileError && profile) {
+        expertProfile = profile;
+      }
     }
 
     const blogPostWithProfile = {
