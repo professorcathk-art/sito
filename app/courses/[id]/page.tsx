@@ -39,10 +39,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
     // Handle profiles relationship (can be array or object)
     const expertProfile = Array.isArray(course.profiles) ? course.profiles[0] : course.profiles;
-    
-    if (!expertProfile) {
-      notFound();
-    }
 
     // Get lessons
     const { data: lessons, error: lessonsError } = await supabase

@@ -41,7 +41,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     const expertProfile = Array.isArray(blogPost.profiles) ? blogPost.profiles[0] : blogPost.profiles;
     const blogPostWithProfile = {
       ...blogPost,
-      profiles: expertProfile,
+      profiles: expertProfile || {
+        id: blogPost.expert_id,
+        name: "Expert",
+        title: null,
+        avatar_url: null,
+      },
     };
 
     return (
