@@ -2,17 +2,18 @@ import { Navigation } from "@/components/navigation";
 import { ExpertProfile } from "@/components/expert-profile";
 
 interface ExpertPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export default function ExpertPage({ params }: ExpertPageProps) {
+export default async function ExpertPage({ params }: ExpertPageProps) {
+  const { id } = await params;
   return (
     <div className="min-h-screen bg-custom-bg">
       <Navigation />
       <div className="pt-16 pb-12">
-        <ExpertProfile expertId={params.id} />
+        <ExpertProfile expertId={id} />
       </div>
     </div>
   );
