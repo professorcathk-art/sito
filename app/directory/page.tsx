@@ -25,8 +25,6 @@ function DirectoryLoading() {
 export default function DirectoryPage() {
   return (
     <div className="min-h-screen bg-custom-bg relative overflow-hidden">
-      {/* Cyber grid overlay */}
-      <div className="fixed inset-0 cyber-grid opacity-20 pointer-events-none"></div>
       
       <Navigation />
       <div className="pt-16">

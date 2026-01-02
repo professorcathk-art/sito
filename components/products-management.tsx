@@ -490,7 +490,10 @@ export function ProductsManagement() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-custom-text mb-2">{product.name}</h3>
-                    <p className="text-custom-text/80 mb-3">{product.description}</p>
+                    <div 
+                      className="product-preview text-custom-text/80 mb-3"
+                      dangerouslySetInnerHTML={{ __html: product.description }}
+                    />
                     <div className="flex items-center gap-4 text-sm">
                       <span className="text-cyber-green font-semibold">
                         USD ${product.price} {product.pricing_type === "hourly" ? "/ hour" : ""}

@@ -17,9 +17,6 @@ export function HeroSection() {
       <div className="absolute top-40 right-4 sm:right-20 w-28 h-28 sm:w-40 sm:h-40 rounded-full blur-3xl animate-float opacity-20" style={{ backgroundColor: 'rgba(0, 255, 136, 0.3)', animationDelay: '2s' }}></div>
       <div className="absolute bottom-20 left-1/2 w-24 h-24 sm:w-36 sm:h-36 rounded-full blur-3xl animate-float opacity-25" style={{ backgroundColor: 'rgba(0, 255, 136, 0.3)', animationDelay: '4s' }}></div>
 
-      {/* Cyber grid pattern */}
-      <div className="absolute inset-0 cyber-grid opacity-10"></div>
-
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left side - Content */}

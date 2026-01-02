@@ -86,6 +86,16 @@ export function DashboardSidebar() {
       icon: "🛍️",
     },
     {
+      name: "Blog Posts",
+      href: "/blog/create",
+      icon: "✍️",
+    },
+    {
+      name: "Courses",
+      href: "/courses/create",
+      icon: "📚",
+    },
+    {
       name: "Messages",
       href: "/messages",
       icon: "💬",

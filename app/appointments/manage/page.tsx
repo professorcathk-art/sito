@@ -10,8 +10,10 @@ interface AppointmentSlot {
   id: string;
   start_time: string;
   end_time: string;
+  duration_minutes?: number;
   rate_per_hour: number;
-  is_available: boolean;
+  is_booked?: boolean;
+  is_available?: boolean;
 }
 
 export default function ManageAppointmentsPage() {
@@ -21,8 +23,10 @@ export default function ManageAppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
+    date: "",
     startTime: "",
     endTime: "",
+    intervalMinutes: "60",
     ratePerHour: "100",
   });
 
@@ -50,26 +54,70 @@ export default function ManageAppointmentsPage() {
     }
   };
 
-  const handleCreateSlot = async (e: React.FormEvent) => {
+  const handleCreateSlots = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     try {
-      const { error } = await supabase.from("appointment_slots").insert({
-        expert_id: user.id,
-        start_time: formData.startTime,
-        end_time: formData.endTime,
-        rate_per_hour: parseFloat(formData.ratePerHour),
-        is_available: true,
-      });
+      const date = formData.date;
+      const startTime = formData.startTime;
+      const endTime = formData.endTime;
+      const intervalMinutes = parseInt(formData.intervalMinutes);
+      const ratePerHour = parseFloat(formData.ratePerHour);
+
+      // Combine date with start and end times
+      const startDateTime = new Date(`${date}T${startTime}`);
+      const endDateTime = new Date(`${date}T${endTime}`);
+
+      if (endDateTime <= startDateTime) {
+        alert("End time must be after start time");
+        return;
+      }
+
+      // Generate slots based on interval
+      const slots = [];
+      let currentTime = new Date(startDateTime);
+
+      while (currentTime < endDateTime) {
+        const slotEnd = new Date(currentTime.getTime() + intervalMinutes * 60000);
+        
+        // Don't create a slot if it would exceed the end time
+        if (slotEnd > endDateTime) break;
+
+        slots.push({
+          expert_id: user.id,
+          start_time: currentTime.toISOString(),
+          end_time: slotEnd.toISOString(),
+          duration_minutes: intervalMinutes,
+          rate_per_hour: ratePerHour,
+          is_booked: false,
+        });
+
+        currentTime = slotEnd;
+      }
+
+      if (slots.length === 0) {
+        alert("No slots could be created with the given time range and interval.");
+        return;
+      }
+
+      const { error } = await supabase.from("appointment_slots").insert(slots);
 
       if (error) throw error;
+      
       setShowForm(false);
-      setFormData({ startTime: "", endTime: "", ratePerHour: "100" });
+      setFormData({ 
+        date: "",
+        startTime: "", 
+        endTime: "", 
+        intervalMinutes: "60",
+        ratePerHour: "100" 
+      });
       fetchSlots();
+      alert(`Successfully created ${slots.length} appointment slot(s)!`);
     } catch (err: any) {
-      console.error("Error creating slot:", err);
-      alert("Failed to create appointment slot. Please try again.");
+      console.error("Error creating slots:", err);
+      alert("Failed to create appointment slots. Please try again.");
     }
   };
 
@@ -112,15 +160,30 @@ export default function ManageAppointmentsPage() {
           </div>
 
           {showForm && (
-            <form onSubmit={handleCreateSlot} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-custom-text mb-6">Create Appointment Slot</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <form onSubmit={handleCreateSlots} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
+              <h2 className="text-2xl font-bold text-custom-text mb-6">Create Appointment Slots</h2>
+              <p className="text-custom-text/70 mb-6 text-sm">
+                Set a time range and interval, and the system will automatically create multiple booking slots for you.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    required
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
                     Start Time *
                   </label>
                   <input
-                    type="datetime-local"
+                    type="time"
                     value={formData.startTime}
                     onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                     className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
@@ -132,7 +195,7 @@ export default function ManageAppointmentsPage() {
                     End Time *
                   </label>
                   <input
-                    type="datetime-local"
+                    type="time"
                     value={formData.endTime}
                     onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
                     className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
@@ -141,24 +204,41 @@ export default function ManageAppointmentsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
-                    Rate per Hour (USD) *
+                    Session Duration (minutes) *
                   </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.ratePerHour}
-                    onChange={(e) => setFormData({ ...formData, ratePerHour: e.target.value })}
+                  <select
+                    value={formData.intervalMinutes}
+                    onChange={(e) => setFormData({ ...formData, intervalMinutes: e.target.value })}
                     className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
                     required
-                  />
+                  >
+                    <option value="15">15 minutes</option>
+                    <option value="30">30 minutes</option>
+                    <option value="60">1 hour</option>
+                    <option value="90">1.5 hours</option>
+                    <option value="120">2 hours</option>
+                  </select>
                 </div>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-custom-text mb-2">
+                  Rate per Hour (USD) *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.ratePerHour}
+                  onChange={(e) => setFormData({ ...formData, ratePerHour: e.target.value })}
+                  className="w-full max-w-xs px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  required
+                />
               </div>
               <button
                 type="submit"
                 className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
               >
-                Create Slot
+                Create Slots
               </button>
             </form>
           )}
@@ -188,15 +268,16 @@ export default function ManageAppointmentsPage() {
                       {formatDateTime(slot.start_time)} - {formatDateTime(slot.end_time)}
                     </p>
                     <p className="text-custom-text/70">
-                      ${slot.rate_per_hour}/hour •{" "}
-                      {slot.is_available ? (
+                      ${slot.rate_per_hour}/hour
+                      {slot.duration_minutes && ` • ${slot.duration_minutes} min`} •{" "}
+                      {(slot.is_booked === false || slot.is_available === true) ? (
                         <span className="text-green-300">Available</span>
                       ) : (
                         <span className="text-red-300">Booked</span>
                       )}
                     </p>
                   </div>
-                  {slot.is_available && (
+                  {(slot.is_booked === false || slot.is_available === true) && (
                     <button
                       onClick={() => handleDeleteSlot(slot.id)}
                       className="px-4 py-2 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900/70 transition-colors"
