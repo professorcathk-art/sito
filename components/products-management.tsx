@@ -317,7 +317,7 @@ export function ProductsManagement() {
       description: product.description,
       price: product.price.toString(),
       pricing_type: product.pricing_type,
-      product_type: product.product_type || "service",
+      product_type: (product.product_type === "service" ? "appointment" : product.product_type) || "appointment",
       course_id: product.course_id || "",
     });
     setShowAddForm(true);
