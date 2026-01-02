@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { BlogPostsList } from "@/components/blog-posts-list";
 import { ExpertCourses } from "@/components/expert-courses";
+import { ExpertCoursesWithProducts } from "@/components/expert-courses-with-products";
 import { SubscribeButton } from "@/components/subscribe-button";
 
 interface Expert {
@@ -27,6 +28,8 @@ interface Product {
   description: string;
   price: number;
   pricing_type: "one-off" | "hourly";
+  product_type?: "course" | "appointment" | "service";
+  course_id?: string;
 }
 
 interface AppointmentSlot {
@@ -381,10 +384,10 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           <p className="text-custom-text/90 leading-relaxed">{expert.bio}</p>
         </div>
 
-        {/* Appointment Slots Section */}
+        {/* 1-on-1 Timeslots Section */}
         {appointmentSlots.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-4">Available Appointment Slots</h2>
+            <h2 className="text-xl font-bold text-custom-text mb-4">1-on-1 Timeslots</h2>
             <div className="space-y-3 mb-4">
               {appointmentSlots.slice(0, 3).map((slot) => {
                 const startDate = new Date(slot.start_time);
@@ -495,130 +498,22 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           </div>
         )}
 
-        {/* Products Section */}
-        {loadingProducts ? (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-3">Products & Services</h2>
-            <div className="animate-pulse space-y-4">
-              <div className="h-24 bg-dark-green-800/50 rounded-xl"></div>
-            </div>
-          </div>
-        ) : products.length > 0 ? (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-4">Products & Services</h2>
-            <div className="space-y-4">
-              {products.map((product) => {
-                const isExpanded = expandedProducts.has(product.id);
-                return (
-                  <div
-                    key={product.id}
-                    className="bg-dark-green-900/30 border border-cyber-green/30 rounded-xl p-6"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold text-custom-text mb-2">{product.name}</h3>
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-cyber-green font-semibold">
-                            USD ${product.price} {product.pricing_type === "hourly" ? "/ hour" : ""}
-                          </span>
-                          <span className="text-custom-text/60 text-sm">
-                            {product.pricing_type === "hourly" ? "Hourly Rate" : "One-off Price"}
-                          </span>
-                        </div>
-                        {isExpanded && (
-                          <div 
-                            className="text-custom-text/80 mb-3 product-preview"
-                            dangerouslySetInnerHTML={{ __html: product.description }}
-                          />
-                        )}
-                        <button
-                          onClick={() => {
-                            const newExpanded = new Set(expandedProducts);
-                            if (isExpanded) {
-                              newExpanded.delete(product.id);
-                            } else {
-                              newExpanded.add(product.id);
-                            }
-                            setExpandedProducts(newExpanded);
-                          }}
-                          className="text-cyber-green hover:text-cyber-green-light text-sm font-medium transition-colors mb-3"
-                        >
-                          {isExpanded ? "Hide Details" : "View Full Details"}
-                        </button>
-                      </div>
-                    </div>
-                    {user?.id !== expertId && (
-                      <div>
-                        {showInterestForm === product.id ? (
-                          <div className="space-y-3 bg-dark-green-800/30 p-4 rounded-lg border border-cyber-green/30">
-                            <div className="grid grid-cols-3 gap-2">
-                              <div>
-                                <label className="block text-xs text-custom-text/70 mb-1">Country Code</label>
-                                <input
-                                  type="text"
-                                  placeholder="+1"
-                                  value={interestFormData.countryCode}
-                                  onChange={(e) => setInterestFormData({ ...interestFormData, countryCode: e.target.value })}
-                                  className="w-full px-2 py-1.5 bg-dark-green-900/50 border border-cyber-green/30 rounded text-custom-text placeholder-custom-text/50 text-sm"
-                                />
-                              </div>
-                              <div className="col-span-2">
-                                <label className="block text-xs text-custom-text/70 mb-1">Phone Number (Optional)</label>
-                                <input
-                                  type="tel"
-                                  placeholder="1234567890"
-                                  value={interestFormData.phoneNumber}
-                                  onChange={(e) => setInterestFormData({ ...interestFormData, phoneNumber: e.target.value })}
-                                  className="w-full px-2 py-1.5 bg-dark-green-900/50 border border-cyber-green/30 rounded text-custom-text placeholder-custom-text/50 text-sm"
-                                />
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => handleSubmitInterest(product.id)}
-                                disabled={registeringInterest === product.id}
-                                className="flex-1 bg-cyber-green text-custom-text py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                              >
-                                {registeringInterest === product.id ? "Registering..." : "Submit"}
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setShowInterestForm(null);
-                                  setInterestFormData({ countryCode: "", phoneNumber: "" });
-                                }}
-                                className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors text-sm"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => handleRegisterInterest(product.id)}
-                            className="w-full bg-cyber-green text-custom-text py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors"
-                          >
-                            {user ? "Register Your Interest" : "Sign in to Register Interest"}
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
-
         {/* Blog Posts Section */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-custom-text mb-4">Blog Posts</h2>
           <BlogPostsList expertId={expertId} limit={6} />
         </div>
 
-        {/* Courses Section */}
+        {/* Courses Section - Show courses from products */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-custom-text mb-4">Courses</h2>
-          <ExpertCourses expertId={expertId} />
+          {loadingProducts ? (
+            <div className="animate-pulse space-y-4">
+              <div className="h-48 bg-dark-green-800/50 rounded-lg"></div>
+            </div>
+          ) : (
+            <ExpertCoursesWithProducts expertId={expertId} products={products.filter(p => p.product_type === "course")} supabase={supabase} />
+          )}
         </div>
 
         {/* Subscribe Button */}

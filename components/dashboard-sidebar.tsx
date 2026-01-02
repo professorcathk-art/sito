@@ -91,8 +91,8 @@ export function DashboardSidebar() {
       icon: "✍️",
     },
     {
-      name: "Courses",
-      href: "/courses/create",
+      name: "Manage Course",
+      href: "/courses/manage",
       icon: "📚",
     },
     {
@@ -113,14 +113,9 @@ export function DashboardSidebar() {
       icon: "⭐",
     },
     {
-      name: "Appointments",
+      name: "Manage Appointments",
       href: "/appointments/manage",
       icon: "📅",
-    },
-    {
-      name: "Book Appointments",
-      href: "/appointments",
-      icon: "📞",
     },
     ...(isAdmin
       ? [

@@ -137,7 +137,11 @@ export default function CreateBlogPostPage() {
 
       // TODO: Send notifications to subscribers if notifySubscribers is true
 
-      router.push(`/blog/${blogPost.id}`);
+      // Wait a moment for the database to be ready, then redirect
+      setTimeout(() => {
+        router.push(`/blog/${blogPost.id}`);
+        router.refresh();
+      }, 500);
     } catch (err: any) {
       console.error("Error creating blog post:", err);
       alert("Failed to create blog post. Please try again.");

@@ -47,24 +47,25 @@ export default function BookAppointmentPage() {
 
       setExpert(expertData);
 
-      // Fetch available appointment slots
-      const { data: slotsData, error } = await supabase
-        .from("appointment_slots")
-        .select(`
-          id,
-          start_time,
-          end_time,
-          rate_per_hour,
-          profiles:expert_id (
-            id,
-            name,
-            title
-          )
-        `)
-        .eq("expert_id", expertId)
-        .eq("is_available", true)
-        .gte("start_time", new Date().toISOString())
-        .order("start_time", { ascending: true });
+              // Fetch available appointment slots (including those linked to products)
+              const { data: slotsData, error } = await supabase
+                .from("appointment_slots")
+                .select(`
+                  id,
+                  start_time,
+                  end_time,
+                  rate_per_hour,
+                  product_id,
+                  profiles:expert_id (
+                    id,
+                    name,
+                    title
+                  )
+                `)
+                .eq("expert_id", expertId)
+                .eq("is_available", true)
+                .gte("start_time", new Date().toISOString())
+                .order("start_time", { ascending: true });
 
       if (error) throw error;
 

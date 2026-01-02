@@ -204,15 +204,57 @@ export default function ManageAppointmentsPage() {
         <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-4xl font-bold text-custom-text">Manage Appointments</h1>
-            <button
-              onClick={() => setShowForm(!showForm)}
+            <Link
+              href="/products"
               className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
             >
-              {showForm ? "Cancel" : "+ Add Time Slot"}
-            </button>
+              Create Timeslots from Products
+            </Link>
           </div>
 
-          {showForm && (
+          {/* Calendar View for Booked Appointments */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-custom-text mb-6">Booked Appointments</h2>
+            {loadingBookings ? (
+              <div className="animate-pulse space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-20 bg-dark-green-800/50 rounded-lg"></div>
+                ))}
+              </div>
+            ) : bookedAppointments.length === 0 ? (
+              <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
+                <p className="text-custom-text/80 mb-4">No appointments booked yet.</p>
+                <p className="text-custom-text/60 text-sm">
+                  Users will see your available slots and book them here.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {bookedAppointments.map((appointment) => (
+                  <div
+                    key={appointment.id}
+                    className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-lg font-semibold text-custom-text mb-2">
+                          {formatDateTime(appointment.start_time)} - {formatDateTime(appointment.end_time)}
+                        </p>
+                        <p className="text-custom-text/70 mb-1">
+                          Booked by: {appointment.profiles?.name || "N/A"} ({appointment.profiles?.email || "N/A"})
+                        </p>
+                        <p className="text-custom-text/70">
+                          ${appointment.rate_per_hour}/hour • Total: ${appointment.total_amount.toFixed(2)} • Status: {appointment.status}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {false && showForm && (
             <form onSubmit={handleCreateSlots} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
               <h2 className="text-2xl font-bold text-custom-text mb-6">Create Appointment Slots</h2>
               <p className="text-custom-text/70 mb-6 text-sm">
