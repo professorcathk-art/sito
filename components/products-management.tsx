@@ -306,6 +306,11 @@ export function ProductsManagement() {
           productData.course_id = formData.course_id;
         }
 
+        // Add price if provided
+        if (formData.price) {
+          productData.price = parseFloat(formData.price) || 0;
+        }
+
         const { error } = await supabase
           .from("products")
           .update(productData)
