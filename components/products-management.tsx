@@ -275,14 +275,19 @@ export function ProductsManagement() {
         // Auto-create questionnaire with default fields (name, email)
         let questionnaireId: string | null = null;
         try {
-          // First check if questionnaire already exists
-          const { data: existingQ } = await supabase
+          // First check if questionnaire already exists - use maybeSingle to handle no results
+          const { data: existingQ, error: existingQError } = await supabase
             .from("questionnaires")
             .select("id")
             .eq("expert_id", user.id)
             .eq("type", "course_enrollment")
             .eq("is_active", true)
-            .single();
+            .maybeSingle();
+
+          if (existingQError && existingQError.code !== "PGRST116") {
+            // PGRST116 is "no rows returned" which is fine
+            console.error("Error checking for existing questionnaire:", existingQError);
+          }
 
           if (existingQ?.id) {
             questionnaireId = existingQ.id;
@@ -303,15 +308,23 @@ export function ProductsManagement() {
               console.error("Error creating questionnaire:", qError);
               // If unique constraint violation, try to fetch existing one
               if (qError.code === "23505") {
-                const { data: existingQ2 } = await supabase
+                const { data: existingQ2, error: fetchError } = await supabase
                   .from("questionnaires")
                   .select("id")
                   .eq("expert_id", user.id)
                   .eq("type", "course_enrollment")
-                  .single();
-                questionnaireId = existingQ2?.id || null;
+                  .maybeSingle();
+                
+                if (fetchError && fetchError.code !== "PGRST116") {
+                  console.error("Error fetching existing questionnaire:", fetchError);
+                } else {
+                  questionnaireId = existingQ2?.id || null;
+                }
               } else {
-                throw qError;
+                // Don't throw - just log and continue without questionnaire
+                console.error("Failed to create questionnaire:", qError);
+                // Set questionnaireId to null so we proceed without it
+                questionnaireId = null;
               }
             } else {
               questionnaireId = questionnaire?.id || null;
@@ -351,27 +364,35 @@ export function ProductsManagement() {
             setQuestionnaireFields(fieldsData || []);
           }
 
-          // Set current product and course, show questionnaire form inline
+          // Set current product and course, show questionnaire form inline only if questionnaire exists
           setCurrentProductId(newProduct.id);
           setCurrentCourseId(newCourse.id);
           setShowAddForm(false);
-          setShowQuestionnaireForm(true);
-          setQuestionnaireType("course_enrollment");
-          setCurrentQuestionnaireId(questionnaireId);
-          setFieldForm({
-            field_type: "text",
-            label: "",
-            placeholder: "",
-            required: false,
-            options: "",
-          });
+          
+          if (questionnaireId) {
+            setShowQuestionnaireForm(true);
+            setQuestionnaireType("course_enrollment");
+            setCurrentQuestionnaireId(questionnaireId);
+            setFieldForm({
+              field_type: "text",
+              label: "",
+              placeholder: "",
+              required: false,
+              options: "",
+            });
+          } else {
+            // No questionnaire - just refresh products list
+            fetchProducts();
+            alert("Course created successfully! You can add a questionnaire later if needed.");
+          }
         } catch (err: any) {
           console.error("Error creating questionnaire:", err);
-          alert(`Failed to create questionnaire: ${err.message || "Please try again."}`);
-          // Still show the form even if questionnaire creation fails
+          // Don't show error alert - just log and continue
+          // Still set the product and course so user can proceed
           setCurrentProductId(newProduct.id);
           setCurrentCourseId(newCourse.id);
           setShowAddForm(false);
+          fetchProducts();
         }
         setFormData({
           name: "",

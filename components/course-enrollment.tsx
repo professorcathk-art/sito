@@ -83,24 +83,30 @@ export function CourseEnrollment({
       return;
     }
 
-    // Check for questionnaire
+    // Check for questionnaire - use maybeSingle to handle no results gracefully
     try {
-      const { data: questionnaire } = await supabase
+      const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
         .select("id")
         .eq("expert_id", expertId)
         .eq("type", "course_interest")
         .eq("is_active", true)
-        .single();
+        .maybeSingle();
 
-      if (questionnaire) {
+      // PGRST116 is "no rows returned" which is fine
+      if (qError && qError.code !== "PGRST116") {
+        console.error("Error checking for questionnaire:", qError);
+      }
+
+      if (questionnaire?.id) {
         setQuestionnaireId(questionnaire.id);
         setQuestionnaireType("interest");
         setShowQuestionnaire(true);
         return;
       }
     } catch (err) {
-      // No questionnaire found, continue
+      // No questionnaire found or error checking, continue without questionnaire
+      console.error("Error checking for questionnaire:", err);
     }
 
     // No questionnaire, register interest directly
