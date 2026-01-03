@@ -55,7 +55,7 @@ export default function ManageCoursePage() {
     coverImageUrl: "",
     price: "0",
     isFree: true,
-    published: false,
+    published: true, // Courses are always published from product page
     category: "",
   });
   const [isRichTextMode, setIsRichTextMode] = useState(false);
@@ -127,7 +127,7 @@ export default function ManageCoursePage() {
       coverImageUrl: course.cover_image_url || "",
       price: course.price.toString(),
       isFree: course.is_free,
-      published: course.published,
+      published: true, // Courses are always published from product page
       category: course.category || "",
     });
     await fetchLessons(course.id);
@@ -390,20 +390,7 @@ export default function ManageCoursePage() {
                     <p className="text-xs text-custom-text/60 mt-1">Categorize your course to help users discover it</p>
                   </div>
                   <div className="flex items-center gap-4">
-                    {selectedCourse.expert_id === user?.id && (
-                      <div>
-                        <label className="block text-sm font-medium text-custom-text mb-2">Price</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={courseForm.price}
-                          onChange={(e) => setCourseForm({ ...courseForm, price: e.target.value })}
-                          disabled={courseForm.isFree}
-                          className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text disabled:opacity-50"
-                        />
-                        <p className="text-xs text-custom-text/60 mt-1">Price should be updated in Products page</p>
-                      </div>
-                    )}
+                    {/* Price field removed - price is managed in Products page */}
                     <div className="flex items-center mt-6">
                       <input
                         type="checkbox"
@@ -416,18 +403,7 @@ export default function ManageCoursePage() {
                         Free Course
                       </label>
                     </div>
-                    <div className="flex items-center mt-6">
-                      <input
-                        type="checkbox"
-                        id="published"
-                        checked={courseForm.published}
-                        onChange={(e) => setCourseForm({ ...courseForm, published: e.target.checked })}
-                        className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
-                      />
-                      <label htmlFor="published" className="ml-2 block text-sm text-custom-text">
-                        Published
-                      </label>
-                    </div>
+                    {/* Published checkbox removed - courses are published directly from product page */}
                   </div>
                   <div className="flex gap-4">
                     <button
