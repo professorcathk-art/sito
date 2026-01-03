@@ -77,7 +77,7 @@ export function DashboardSidebar() {
     },
     {
       name: "Profile",
-      href: "/profile/setup",
+      href: "/profile",
       icon: "👤",
     },
     {
@@ -87,7 +87,7 @@ export function DashboardSidebar() {
     },
     {
       name: "Blog Posts",
-      href: "/blog/create",
+      href: "/dashboard/blog",
       icon: "✍️",
     },
     {
