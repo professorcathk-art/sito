@@ -51,6 +51,13 @@ export function Navigation() {
               Featured Courses
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
             </Link>
+            <Link
+              href="/blog"
+              className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
+            >
+              Blogs
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
+            </Link>
             {loading ? (
               <div className="text-custom-text/80 animate-pulse text-sm lg:text-base">Loading...</div>
             ) : user ? (
@@ -137,6 +144,13 @@ export function Navigation() {
                 className="block text-custom-text/90 hover:text-cyber-green transition-colors py-2"
               >
                 Featured Courses
+              </Link>
+              <Link
+                href="/blog"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-custom-text/90 hover:text-cyber-green transition-colors py-2"
+              >
+                Blogs
               </Link>
               {loading ? (
                 <div className="text-custom-text/80 animate-pulse py-2">Loading...</div>

@@ -113,6 +113,11 @@ export function DashboardSidebar() {
       icon: "⭐",
     },
     {
+      name: "Watch Later",
+      href: "/blog/watch-later",
+      icon: "💾",
+    },
+    {
       name: "Manage Appointments",
       href: "/appointments/manage",
       icon: "📅",
