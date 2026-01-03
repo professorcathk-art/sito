@@ -273,50 +273,82 @@ export function ProductsManagement() {
         if (productError) throw productError;
 
         // Auto-create questionnaire with default fields (name, email)
+        let questionnaireId: string | null = null;
         try {
-          const { data: questionnaire, error: qError } = await supabase
-            .from("questionnaires")
-            .insert({
-              expert_id: user.id,
-              type: "course_enrollment",
-              title: "Course Enrollment Questionnaire",
-              is_active: true,
-            })
-            .select()
-            .single();
-
-          if (qError && qError.code !== "23505") throw qError;
-
-          const questionnaireId = questionnaire?.id || (await supabase
+          // First check if questionnaire already exists
+          const { data: existingQ } = await supabase
             .from("questionnaires")
             .select("id")
             .eq("expert_id", user.id)
             .eq("type", "course_enrollment")
-            .single()).data?.id;
+            .eq("is_active", true)
+            .single();
+
+          if (existingQ?.id) {
+            questionnaireId = existingQ.id;
+          } else {
+            // Create new questionnaire
+            const { data: questionnaire, error: qError } = await supabase
+              .from("questionnaires")
+              .insert({
+                expert_id: user.id,
+                type: "course_enrollment",
+                title: "Course Enrollment Questionnaire",
+                is_active: true,
+              })
+              .select()
+              .single();
+
+            if (qError) {
+              console.error("Error creating questionnaire:", qError);
+              // If unique constraint violation, try to fetch existing one
+              if (qError.code === "23505") {
+                const { data: existingQ2 } = await supabase
+                  .from("questionnaires")
+                  .select("id")
+                  .eq("expert_id", user.id)
+                  .eq("type", "course_enrollment")
+                  .single();
+                questionnaireId = existingQ2?.id || null;
+              } else {
+                throw qError;
+              }
+            } else {
+              questionnaireId = questionnaire?.id || null;
+            }
+          }
 
           if (questionnaireId) {
-            // Create default fields: Name and Email
-            const defaultFields = [
-              { questionnaire_id: questionnaireId, field_type: "text", label: "Name", placeholder: "Enter your name", required: true, order_index: 0 },
-              { questionnaire_id: questionnaireId, field_type: "email", label: "Email", placeholder: "Enter your email", required: true, order_index: 1 },
-            ];
-
-            const { data: createdFields, error: fieldsError } = await supabase
+            // Check if fields already exist
+            const { data: existingFields } = await supabase
               .from("questionnaire_fields")
-              .insert(defaultFields)
-              .select();
+              .select("*")
+              .eq("questionnaire_id", questionnaireId)
+              .order("order_index", { ascending: true });
 
-            if (fieldsError) {
-              // Fields might already exist, fetch them
-              const { data: existingFields } = await supabase
+            if (!existingFields || existingFields.length === 0) {
+              // Create default fields: Name and Email
+              const defaultFields = [
+                { questionnaire_id: questionnaireId, field_type: "text", label: "Name", placeholder: "Enter your name", required: true, order_index: 0 },
+                { questionnaire_id: questionnaireId, field_type: "email", label: "Email", placeholder: "Enter your email", required: true, order_index: 1 },
+              ];
+
+              const { error: fieldsError } = await supabase
                 .from("questionnaire_fields")
-                .select("*")
-                .eq("questionnaire_id", questionnaireId)
-                .order("order_index", { ascending: true });
-              setQuestionnaireFields(existingFields || []);
-            } else {
-              setQuestionnaireFields(createdFields || []);
+                .insert(defaultFields);
+
+              if (fieldsError && fieldsError.code !== "23505") {
+                console.error("Error creating questionnaire fields:", fieldsError);
+              }
             }
+
+            // Fetch fields for display
+            const { data: fieldsData } = await supabase
+              .from("questionnaire_fields")
+              .select("*")
+              .eq("questionnaire_id", questionnaireId)
+              .order("order_index", { ascending: true });
+            setQuestionnaireFields(fieldsData || []);
           }
 
           // Set current product and course, show questionnaire form inline
@@ -325,7 +357,7 @@ export function ProductsManagement() {
           setShowAddForm(false);
           setShowQuestionnaireForm(true);
           setQuestionnaireType("course_enrollment");
-          setCurrentQuestionnaireId(questionnaireId || null);
+          setCurrentQuestionnaireId(questionnaireId);
           setFieldForm({
             field_type: "text",
             label: "",
@@ -333,9 +365,13 @@ export function ProductsManagement() {
             required: false,
             options: "",
           });
-        } catch (err) {
+        } catch (err: any) {
           console.error("Error creating questionnaire:", err);
-          alert("Failed to create questionnaire. Please try again.");
+          alert(`Failed to create questionnaire: ${err.message || "Please try again."}`);
+          // Still show the form even if questionnaire creation fails
+          setCurrentProductId(newProduct.id);
+          setCurrentCourseId(newCourse.id);
+          setShowAddForm(false);
         }
         setFormData({
           name: "",
@@ -382,8 +418,10 @@ export function ProductsManagement() {
         const productData: any = {
           name: formData.name,
           description: formData.description,
-          product_type: formData.product_type,
         };
+
+        // Don't change product_type when updating
+        // productData.product_type = formData.product_type;
 
         // Add price if provided
         if (formData.price) {
@@ -391,11 +429,17 @@ export function ProductsManagement() {
         }
 
         // If updating a course product, also update the course price, description, and category
-        if (formData.product_type === "course" && editingProduct.course_id) {
+        if (editingProduct.product_type === "course" && editingProduct.course_id) {
           const courseUpdateData: any = {};
           
           if (formData.price) {
             courseUpdateData.price = parseFloat(formData.price) || 0;
+            courseUpdateData.is_free = parseFloat(formData.price) === 0;
+          }
+          
+          // Update course title if product name changed
+          if (formData.name) {
+            courseUpdateData.title = formData.name;
           }
           
           // Update course description if provided
@@ -428,6 +472,22 @@ export function ProductsManagement() {
         if (error) throw error;
         
         alert("Product updated successfully!");
+        setFormData({
+          name: "",
+          description: "",
+          price: "",
+          pricing_type: "one-off",
+          product_type: "appointment",
+          course_id: "",
+          category: "",
+        });
+        setShowAddForm(false);
+        setEditingProduct(null);
+        fetchProducts();
+        if (activeTab === "interests") {
+          fetchInterests();
+        }
+        return; // Exit early, don't create new product
       }
 
       setFormData({

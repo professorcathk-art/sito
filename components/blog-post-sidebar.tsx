@@ -32,7 +32,7 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
 
   const fetchRelatedPosts = async () => {
     try {
-      // Fetch other posts from the same expert
+      // Fetch other posts from the same expert - use left join instead of inner join
       const { data: posts, error } = await supabase
         .from("blog_posts")
         .select(`
@@ -43,7 +43,7 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
           expert_id,
           view_count,
           like_count,
-          profiles!inner(id, name)
+          profiles(id, name)
         `)
         .eq("expert_id", expertId)
         .neq("id", currentPostId)
@@ -51,7 +51,11 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
         .order("published_at", { ascending: false })
         .limit(5);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching related posts:", error);
+        setRelatedPosts([]);
+        return;
+      }
 
       const formattedPosts = (posts || []).map((post: any) => ({
         id: post.id,
@@ -67,6 +71,7 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
       setRelatedPosts(formattedPosts);
     } catch (err) {
       console.error("Error fetching related posts:", err);
+      setRelatedPosts([]);
     } finally {
       setLoading(false);
     }
@@ -76,9 +81,15 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
   return (
     <aside className="w-80 flex-shrink-0 ml-8">
       {/* Related Posts */}
-      {relatedPosts.length > 0 && (
-        <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-4">
-          <h3 className="text-lg font-bold text-custom-text mb-4">Other Posts</h3>
+      <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-4">
+        <h3 className="text-lg font-bold text-custom-text mb-4">Other Posts</h3>
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-20 bg-dark-green-900/50 rounded-lg animate-pulse"></div>
+            ))}
+          </div>
+        ) : relatedPosts.length > 0 ? (
           <div className="space-y-3">
             {relatedPosts.map((post) => (
               <Link
@@ -102,8 +113,10 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
               </Link>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-custom-text/60 text-sm">No other posts available</p>
+        )}
+      </div>
     </aside>
   );
 }

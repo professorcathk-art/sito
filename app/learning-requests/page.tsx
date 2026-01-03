@@ -269,12 +269,12 @@ export default function LearningRequestsPage() {
                         <span>{new Date(request.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    {user && user.id !== request.user_id && (
+                    {user?.id !== request.user_id && (
                       <button
                         onClick={() => handleContact(request)}
                         className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm whitespace-nowrap"
                       >
-                        Connect & Message
+                        {user ? "Connect & Message" : "Send Message"}
                       </button>
                     )}
                   </div>

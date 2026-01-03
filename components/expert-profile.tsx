@@ -578,6 +578,103 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           </div>
         ) : null}
 
+        {/* Other Products (Appointments/Services) Section */}
+        {!loadingProducts && products.filter(p => p.product_type !== "course").length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-custom-text mb-4">Services & Products</h2>
+            <div className="space-y-4">
+              {products.filter(p => p.product_type !== "course").map((product) => {
+                const isExpanded = expandedProducts.has(product.id);
+                const hasRegisteredInterest = false; // Could check this if needed
+                return (
+                  <div
+                    key={product.id}
+                    className="bg-dark-green-900/30 border border-cyber-green/30 rounded-xl p-6"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-custom-text mb-2">{product.name}</h3>
+                        {isExpanded && (
+                          <div 
+                            className="text-custom-text/80 mb-3 product-preview"
+                            dangerouslySetInnerHTML={{ __html: product.description }}
+                          />
+                        )}
+                        {!isExpanded && product.description && (
+                          <button
+                            onClick={() => {
+                              const newExpanded = new Set(expandedProducts);
+                              newExpanded.add(product.id);
+                              setExpandedProducts(newExpanded);
+                            }}
+                            className="text-cyber-green hover:text-cyber-green-light text-sm"
+                          >
+                            Show more
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {user?.id !== expertId && (
+                      <div className="mt-4">
+                        {showInterestForm === product.id ? (
+                          <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-4 space-y-3">
+                            <h4 className="text-sm font-semibold text-custom-text">Register Interest</h4>
+                            <div>
+                              <label className="block text-xs text-custom-text/70 mb-1">Country Code (Optional)</label>
+                              <input
+                                type="text"
+                                value={interestFormData.countryCode}
+                                onChange={(e) => setInterestFormData({ ...interestFormData, countryCode: e.target.value })}
+                                className="w-full px-3 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text text-sm"
+                                placeholder="+1"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-custom-text/70 mb-1">Phone Number (Optional)</label>
+                              <input
+                                type="text"
+                                value={interestFormData.phoneNumber}
+                                onChange={(e) => setInterestFormData({ ...interestFormData, phoneNumber: e.target.value })}
+                                className="w-full px-3 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text text-sm"
+                                placeholder="1234567890"
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleSubmitInterest(product.id)}
+                                disabled={registeringInterest === product.id}
+                                className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm disabled:opacity-50"
+                              >
+                                {registeringInterest === product.id ? "Submitting..." : "Submit"}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowInterestForm(null);
+                                  setInterestFormData({ countryCode: "", phoneNumber: "" });
+                                }}
+                                className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors text-sm"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleRegisterInterest(product.id)}
+                            className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                          >
+                            Register Interest
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Subscribe Button */}
         {user && user.id !== expert.id && (
           <div className="mb-6 pt-6 border-t border-cyber-green/30">
