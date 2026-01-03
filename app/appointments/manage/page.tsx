@@ -334,6 +334,7 @@ export default function ManageAppointmentsPage() {
                       }
                     }}
                     showToggle={true}
+                    hideSlotsDisplay={true}
                   />
                   
                   {/* Show slots for selected date */}

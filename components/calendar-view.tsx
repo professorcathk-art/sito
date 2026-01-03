@@ -13,9 +13,10 @@ interface CalendarViewProps {
   onDateSelect?: (date: string) => void;
   onSlotToggle?: (slotId: string, isAvailable: boolean) => void;
   showToggle?: boolean;
+  hideSlotsDisplay?: boolean; // If true, don't show the built-in slots display below calendar
 }
 
-export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = false }: CalendarViewProps) {
+export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = false, hideSlotsDisplay = false }: CalendarViewProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -143,8 +144,8 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
         </div>
       </div>
 
-      {/* Selected Date Slots */}
-      {selectedDate && (
+      {/* Selected Date Slots - Only show if hideSlotsDisplay is false */}
+      {!hideSlotsDisplay && selectedDate && (
         <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
           <h3 className="text-xl font-bold text-custom-text mb-4">
             Timeslots for {(() => {

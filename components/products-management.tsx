@@ -252,42 +252,89 @@ export function ProductsManagement() {
         let questionnaireId: string | null = null;
         
         try {
-          // Create new questionnaire for this course
-          // Note: Database constraint only allows 'appointment' or 'course_interest'
-          const { data: questionnaire, error: qError } = await supabase
+          // Check if questionnaire already exists for this expert and type
+          const { data: existingQuestionnaire } = await supabase
             .from("questionnaires")
-            .insert({
-              expert_id: user.id,
-              type: "course_interest", // Use 'course_interest' instead of 'course_enrollment' to match DB constraint
-              title: `${formData.name} - Enrollment Form`,
-              is_active: true,
-            })
-            .select()
-            .single();
+            .select("id")
+            .eq("expert_id", user.id)
+            .eq("type", "course_interest")
+            .eq("is_active", true)
+            .maybeSingle();
 
-          if (qError) {
-            console.error("Error creating questionnaire:", qError);
-            throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
+          if (existingQuestionnaire?.id) {
+            // Use existing questionnaire
+            questionnaireId = existingQuestionnaire.id;
+            console.log("Using existing questionnaire:", questionnaireId);
+          } else {
+            // Create new questionnaire for this course
+            // Note: Database constraint only allows 'appointment' or 'course_interest'
+            const { data: questionnaire, error: qError } = await supabase
+              .from("questionnaires")
+              .insert({
+                expert_id: user.id,
+                type: "course_interest", // Use 'course_interest' instead of 'course_enrollment' to match DB constraint
+                title: `${formData.name} - Enrollment Form`,
+                is_active: true,
+              })
+              .select()
+              .single();
+
+            if (qError) {
+              console.error("Error creating questionnaire:", qError);
+              // If it's a duplicate key error, try to fetch the existing one
+              if (qError.code === "23505") {
+                const { data: existing } = await supabase
+                  .from("questionnaires")
+                  .select("id")
+                  .eq("expert_id", user.id)
+                  .eq("type", "course_interest")
+                  .maybeSingle();
+                if (existing?.id) {
+                  questionnaireId = existing.id;
+                } else {
+                  throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
+                }
+              } else {
+                throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
+              }
+            } else {
+              questionnaireId = questionnaire?.id || null;
+            }
           }
 
-          questionnaireId = questionnaire?.id || null;
           if (!questionnaireId) {
             throw new Error("Failed to create form. Please try again.");
           }
 
-          // Create mandatory fields: Name and Email
-          const defaultFields = [
-            { questionnaire_id: questionnaireId, field_type: "text", label: "Name", placeholder: "Enter your name", required: true, order_index: 0 },
-            { questionnaire_id: questionnaireId, field_type: "email", label: "Email", placeholder: "Enter your email", required: true, order_index: 1 },
-          ];
-
-          const { error: fieldsError } = await supabase
+          // Check if fields already exist
+          const { data: existingFields } = await supabase
             .from("questionnaire_fields")
-            .insert(defaultFields);
+            .select("id, label")
+            .eq("questionnaire_id", questionnaireId);
 
-          if (fieldsError) {
-            console.error("Error creating questionnaire fields:", fieldsError);
-            throw new Error(`Failed to create form fields: ${fieldsError.message || "Please try again."}`);
+          const hasNameField = existingFields?.some(f => f.label.toLowerCase().includes("name"));
+          const hasEmailField = existingFields?.some(f => f.label.toLowerCase().includes("email"));
+
+          // Only create mandatory fields if they don't exist
+          if (!hasNameField || !hasEmailField) {
+            const defaultFields = [];
+            if (!hasNameField) {
+              defaultFields.push({ questionnaire_id: questionnaireId, field_type: "text", label: "Name", placeholder: "Enter your name", required: true, order_index: 0 });
+            }
+            if (!hasEmailField) {
+              defaultFields.push({ questionnaire_id: questionnaireId, field_type: "email", label: "Email", placeholder: "Enter your email", required: true, order_index: 1 });
+            }
+
+            if (defaultFields.length > 0) {
+              const { error: fieldsError } = await supabase
+                .from("questionnaire_fields")
+                .insert(defaultFields);
+
+              if (fieldsError) {
+                console.error("Error creating questionnaire fields:", fieldsError);
+                throw new Error(`Failed to create form fields: ${fieldsError.message || "Please try again."}`);
+              }
+            }
           }
 
           // Fetch fields for display
