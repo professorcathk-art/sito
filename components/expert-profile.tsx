@@ -186,16 +186,28 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
 
     setRegisteringInterest(productId);
     try {
-      // Get user email
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser?.email) {
+      // Get user email from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", user.id)
+        .single();
+
+      // Fallback to auth user email if profile email not found
+      let userEmail = profile?.email;
+      if (!userEmail) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        userEmail = authUser?.email;
+      }
+
+      if (!userEmail) {
         throw new Error("User email not found");
       }
 
       const { error } = await supabase.from("product_interests").insert({
         product_id: productId,
         user_id: user.id,
-        user_email: authUser.email,
+        user_email: userEmail,
         country_code: interestFormData.countryCode || null,
         phone_number: interestFormData.phoneNumber || null,
       });
@@ -212,20 +224,25 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
         setInterestFormData({ countryCode: "", phoneNumber: "" });
         
         // Send email notification
-        await fetch("/api/notify-product-interest", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            productId,
-            expertId,
-            userId: user.id,
-            userEmail: authUser.email,
-          }),
-        });
+        try {
+          await fetch("/api/notify-product-interest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              productId,
+              expertId,
+              userId: user.id,
+              userEmail: userEmail,
+            }),
+          });
+        } catch (emailErr) {
+          console.error("Error sending notification:", emailErr);
+          // Don't fail the whole operation if email fails
+        }
       }
     } catch (err: any) {
       console.error("Error registering interest:", err);
-      alert("Failed to register interest. Please try again.");
+      alert(`Failed to register interest. ${err.message || "Please try again."}`);
     } finally {
       setRegisteringInterest(null);
     }

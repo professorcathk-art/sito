@@ -373,281 +373,345 @@ export default function ManageCoursePage() {
                 ← Back to Courses
               </button>
 
-              {/* Course Details Form */}
+              {/* Course Details - View/Edit based on ownership */}
               <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
                 <h2 className="text-2xl font-bold text-custom-text mb-6">Course Details</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-custom-text mb-2">Title</label>
-                    <input
-                      type="text"
-                      value={courseForm.title}
-                      onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-custom-text mb-2">Description</label>
-                    <RichTextEditor
-                      content={courseForm.description}
-                      onChange={(newContent) => setCourseForm({ ...courseForm, description: newContent })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-custom-text mb-2">Cover Image URL</label>
-                    <input
-                      type="text"
-                      value={courseForm.coverImageUrl}
-                      onChange={(e) => setCourseForm({ ...courseForm, coverImageUrl: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                      placeholder="https://..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-custom-text mb-2">Category</label>
-                    <input
-                      type="text"
-                      value={courseForm.category}
-                      onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                      placeholder="e.g., AI Courses, Business, Design, Marketing"
-                    />
-                    <p className="text-xs text-custom-text/60 mt-1">Categorize your course to help users discover it</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    {/* Price field removed - price is managed in Products page */}
-                    <div className="flex items-center mt-6">
+                {selectedCourse.expert_id === user?.id ? (
+                  // Owner can edit
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-custom-text mb-2">Title</label>
                       <input
-                        type="checkbox"
-                        id="is_free"
-                        checked={courseForm.isFree}
-                        onChange={(e) => setCourseForm({ ...courseForm, isFree: e.target.checked })}
-                        className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                        type="text"
+                        value={courseForm.title}
+                        onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
+                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
                       />
-                      <label htmlFor="is_free" className="ml-2 block text-sm text-custom-text">
-                        Free Course
-                      </label>
                     </div>
-                    {/* Published checkbox removed - courses are published directly from product page */}
+                    <div>
+                      <label className="block text-sm font-medium text-custom-text mb-2">Description</label>
+                      <RichTextEditor
+                        content={courseForm.description}
+                        onChange={(newContent) => setCourseForm({ ...courseForm, description: newContent })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-custom-text mb-2">Cover Image URL</label>
+                      <input
+                        type="text"
+                        value={courseForm.coverImageUrl}
+                        onChange={(e) => setCourseForm({ ...courseForm, coverImageUrl: e.target.value })}
+                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-custom-text mb-2">Category</label>
+                      <input
+                        type="text"
+                        value={courseForm.category}
+                        onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
+                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                        placeholder="e.g., AI Courses, Business, Design, Marketing"
+                      />
+                      <p className="text-xs text-custom-text/60 mt-1">Categorize your course to help users discover it</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center mt-6">
+                        <input
+                          type="checkbox"
+                          id="is_free"
+                          checked={courseForm.isFree}
+                          onChange={(e) => setCourseForm({ ...courseForm, isFree: e.target.checked })}
+                          className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                        />
+                        <label htmlFor="is_free" className="ml-2 block text-sm text-custom-text">
+                          Free Course
+                        </label>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <button
+                        onClick={handleSaveCourse}
+                        disabled={saving}
+                        className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+                      >
+                        {saving ? "Saving..." : "Save Course Details"}
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!selectedCourse || !user) return;
+                          if (!confirm("Are you sure you want to delete this course? This action cannot be undone.")) return;
+                          
+                          try {
+                            // Delete associated product first
+                            const { error: productError } = await supabase
+                              .from("products")
+                              .delete()
+                              .eq("course_id", selectedCourse.id)
+                              .eq("expert_id", user.id);
+                            
+                            if (productError) throw productError;
+                            
+                            // Delete course lessons
+                            const { error: lessonsError } = await supabase
+                              .from("course_lessons")
+                              .delete()
+                              .eq("course_id", selectedCourse.id);
+                            
+                            if (lessonsError) throw lessonsError;
+                            
+                            // Delete course enrollments
+                            const { error: enrollmentsError } = await supabase
+                              .from("course_enrollments")
+                              .delete()
+                              .eq("course_id", selectedCourse.id);
+                            
+                            if (enrollmentsError) throw enrollmentsError;
+                            
+                            // Finally delete the course
+                            const { error: courseError } = await supabase
+                              .from("courses")
+                              .delete()
+                              .eq("id", selectedCourse.id)
+                              .eq("expert_id", user.id);
+                            
+                            if (courseError) throw courseError;
+                            
+                            alert("Course deleted successfully!");
+                            setSelectedCourse(null);
+                            await fetchCourses();
+                          } catch (err) {
+                            console.error("Error deleting course:", err);
+                            alert("Failed to delete course. Please try again.");
+                          }
+                        }}
+                        className="px-6 py-3 bg-red-900/50 text-red-300 font-semibold rounded-lg hover:bg-red-900/70 transition-colors"
+                      >
+                        Delete Course
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-4">
-                    <button
-                      onClick={handleSaveCourse}
-                      disabled={saving}
-                      className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
-                    >
-                      {saving ? "Saving..." : "Save Course Details"}
-                    </button>
-                    <button
-                      onClick={async () => {
-                        if (!selectedCourse || !user) return;
-                        if (!confirm("Are you sure you want to delete this course? This action cannot be undone.")) return;
-                        
-                        try {
-                          // Delete associated product first
-                          const { error: productError } = await supabase
-                            .from("products")
-                            .delete()
-                            .eq("course_id", selectedCourse.id)
-                            .eq("expert_id", user.id);
-                          
-                          if (productError) throw productError;
-                          
-                          // Delete course lessons
-                          const { error: lessonsError } = await supabase
-                            .from("course_lessons")
-                            .delete()
-                            .eq("course_id", selectedCourse.id);
-                          
-                          if (lessonsError) throw lessonsError;
-                          
-                          // Delete course enrollments
-                          const { error: enrollmentsError } = await supabase
-                            .from("course_enrollments")
-                            .delete()
-                            .eq("course_id", selectedCourse.id);
-                          
-                          if (enrollmentsError) throw enrollmentsError;
-                          
-                          // Finally delete the course
-                          const { error: courseError } = await supabase
-                            .from("courses")
-                            .delete()
-                            .eq("id", selectedCourse.id)
-                            .eq("expert_id", user.id);
-                          
-                          if (courseError) throw courseError;
-                          
-                          alert("Course deleted successfully!");
-                          setSelectedCourse(null);
-                          await fetchCourses();
-                        } catch (err) {
-                          console.error("Error deleting course:", err);
-                          alert("Failed to delete course. Please try again.");
-                        }
-                      }}
-                      className="px-6 py-3 bg-red-900/50 text-red-300 font-semibold rounded-lg hover:bg-red-900/70 transition-colors"
-                    >
-                      Delete Course
-                    </button>
+                ) : (
+                  // Non-owner view-only
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-custom-text/70 mb-2">Title</label>
+                      <p className="text-custom-text">{selectedCourse.title}</p>
+                    </div>
+                    {selectedCourse.description && (
+                      <div>
+                        <label className="block text-sm font-medium text-custom-text/70 mb-2">Description</label>
+                        <div 
+                          className="prose prose-invert prose-lg max-w-none blog-content text-custom-text/80"
+                          dangerouslySetInnerHTML={{ __html: selectedCourse.description }}
+                        />
+                      </div>
+                    )}
+                    {selectedCourse.cover_image_url && (
+                      <div>
+                        <label className="block text-sm font-medium text-custom-text/70 mb-2">Cover Image</label>
+                        <img
+                          src={selectedCourse.cover_image_url}
+                          alt={selectedCourse.title}
+                          className="w-full max-w-md rounded-lg"
+                        />
+                      </div>
+                    )}
+                    {selectedCourse.category && (
+                      <div>
+                        <label className="block text-sm font-medium text-custom-text/70 mb-2">Category</label>
+                        <p className="text-custom-text">{selectedCourse.category}</p>
+                      </div>
+                    )}
+                    <div>
+                      <label className="block text-sm font-medium text-custom-text/70 mb-2">Price</label>
+                      <p className="text-custom-text">
+                        {selectedCourse.is_free ? "Free" : `$${selectedCourse.price}`}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Lessons Management */}
+              {/* Lessons - View/Edit based on ownership */}
               <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
                 <h2 className="text-2xl font-bold text-custom-text mb-6">Lessons</h2>
-                {lessons.length === 0 && !showLessonForm ? (
+                {lessons.length === 0 ? (
                   <p className="text-custom-text/70 mb-4">No lessons added yet.</p>
                 ) : (
                   <div className="space-y-4 mb-6">
                     {lessons.map((lesson, index) => (
                       <div
                         key={lesson.id}
-                        className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-4 flex items-center justify-between"
+                        className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-4"
                       >
-                        <div>
-                          <p className="text-lg font-semibold text-custom-text">
-                            {index + 1}. {lesson.title}
-                          </p>
-                          <p className="text-custom-text/70 text-sm">{lesson.description}</p>
-                        </div>
-                        {/* Only show edit/delete buttons for course owner */}
-                        {selectedCourse.expert_id === user?.id && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleEditLesson(lesson)}
-                              className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg hover:bg-blue-900/70 transition-colors text-sm"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteLesson(lesson.id)}
-                              className="px-3 py-1 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900/70 transition-colors text-sm"
-                            >
-                              Delete
-                            </button>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-lg font-semibold text-custom-text mb-1">
+                              {index + 1}. {lesson.title}
+                            </p>
+                            {lesson.description && (
+                              <p className="text-custom-text/70 text-sm mb-2">{lesson.description}</p>
+                            )}
+                            {lesson.video_url && (
+                              <a
+                                href={lesson.video_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-cyber-green hover:text-cyber-green-light text-sm"
+                              >
+                                Watch Video →
+                              </a>
+                            )}
+                            {lesson.content && (
+                              <div 
+                                className="prose prose-invert prose-sm max-w-none blog-content text-custom-text/80 mt-2"
+                                dangerouslySetInnerHTML={{ __html: lesson.content }}
+                              />
+                            )}
                           </div>
-                        )}
+                          {/* Only show edit/delete buttons for course owner */}
+                          {selectedCourse.expert_id === user?.id && (
+                            <div className="flex gap-2 ml-4">
+                              <button
+                                onClick={() => handleEditLesson(lesson)}
+                                className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg hover:bg-blue-900/70 transition-colors text-sm"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteLesson(lesson.id)}
+                                className="px-3 py-1 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900/70 transition-colors text-sm"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Add/Edit Lesson Form */}
-                {showLessonForm && (
-                  <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-6 mt-6">
-                    <h3 className="text-xl font-bold text-custom-text mb-4">
-                      {editingLesson ? "Edit Lesson" : "Add New Lesson"}
-                    </h3>
-                    <form onSubmit={editingLesson ? handleUpdateLesson : handleAddLesson} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-custom-text mb-2">Title</label>
-                        <input
-                          type="text"
-                          value={lessonForm.title}
-                          onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
-                          className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                          required
-                        />
+                {/* Add/Edit Lesson Form - Only show for course owner */}
+                {selectedCourse.expert_id === user?.id && (
+                  <>
+                    {showLessonForm && (
+                      <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-6 mt-6">
+                        <h3 className="text-xl font-bold text-custom-text mb-4">
+                          {editingLesson ? "Edit Lesson" : "Add New Lesson"}
+                        </h3>
+                        <form onSubmit={editingLesson ? handleUpdateLesson : handleAddLesson} className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-custom-text mb-2">Title</label>
+                            <input
+                              type="text"
+                              value={lessonForm.title}
+                              onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
+                              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-custom-text mb-2">Description</label>
+                            <textarea
+                              value={lessonForm.description}
+                              onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
+                              rows={3}
+                              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                            ></textarea>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-custom-text mb-2">Video URL (YouTube/Vimeo)</label>
+                            <input
+                              type="text"
+                              value={lessonForm.videoUrl}
+                              onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
+                              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                              placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                            />
+                          </div>
+                          {lessonForm.videoUrl && (
+                            <div>
+                              <label className="block text-sm font-medium text-custom-text mb-2">Video Type</label>
+                              <select
+                                value={lessonForm.videoType}
+                                onChange={(e) => setLessonForm({ ...lessonForm, videoType: e.target.value as "youtube" | "vimeo" })}
+                                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                              >
+                                <option value="youtube">YouTube</option>
+                                <option value="vimeo">Vimeo</option>
+                              </select>
+                            </div>
+                          )}
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="block text-sm font-medium text-custom-text">
+                                Lesson Content <span className="text-xs text-custom-text/60">(Rich Text)</span>
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setIsRichTextMode(!isRichTextMode)}
+                                className="px-3 py-1 text-xs font-medium bg-dark-green-800/50 border border-cyber-green/30 rounded-lg text-custom-text hover:bg-dark-green-800 hover:border-cyber-green transition-colors"
+                              >
+                                {isRichTextMode ? "Plain Text" : "Rich Text"}
+                              </button>
+                            </div>
+                            {isRichTextMode ? (
+                              <RichTextEditor
+                                content={lessonForm.content}
+                                onChange={(newContent) => setLessonForm({ ...lessonForm, content: newContent })}
+                              />
+                            ) : (
+                              <textarea
+                                value={lessonForm.content}
+                                onChange={(e) => setLessonForm({ ...lessonForm, content: e.target.value })}
+                                rows={6}
+                                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                                placeholder="Enter lesson content (plain text)"
+                              ></textarea>
+                            )}
+                          </div>
+                          <div className="flex gap-4">
+                            <button
+                              type="submit"
+                              className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                            >
+                              {editingLesson ? "Update Lesson" : "Add Lesson"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowLessonForm(false);
+                                setEditingLesson(null);
+                                setLessonForm({
+                                  title: "",
+                                  description: "",
+                                  videoUrl: "",
+                                  videoType: "youtube",
+                                  content: "",
+                                });
+                              }}
+                              className="px-6 py-3 border border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-custom-text mb-2">Description</label>
-                        <textarea
-                          value={lessonForm.description}
-                          onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
-                          rows={3}
-                          className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                        ></textarea>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-custom-text mb-2">Video URL (YouTube/Vimeo)</label>
-                        <input
-                          type="text"
-                          value={lessonForm.videoUrl}
-                          onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
-                          className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                          placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                        />
-                      </div>
-                      {lessonForm.videoUrl && (
-                        <div>
-                          <label className="block text-sm font-medium text-custom-text mb-2">Video Type</label>
-                          <select
-                            value={lessonForm.videoType}
-                            onChange={(e) => setLessonForm({ ...lessonForm, videoType: e.target.value as "youtube" | "vimeo" })}
-                            className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                          >
-                            <option value="youtube">YouTube</option>
-                            <option value="vimeo">Vimeo</option>
-                          </select>
-                        </div>
-                      )}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <label className="block text-sm font-medium text-custom-text">
-                            Lesson Content <span className="text-xs text-custom-text/60">(Rich Text)</span>
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => setIsRichTextMode(!isRichTextMode)}
-                            className="px-3 py-1 text-xs font-medium bg-dark-green-800/50 border border-cyber-green/30 rounded-lg text-custom-text hover:bg-dark-green-800 hover:border-cyber-green transition-colors"
-                          >
-                            {isRichTextMode ? "Plain Text" : "Rich Text"}
-                          </button>
-                        </div>
-                        {isRichTextMode ? (
-                          <RichTextEditor
-                            content={lessonForm.content}
-                            onChange={(newContent) => setLessonForm({ ...lessonForm, content: newContent })}
-                          />
-                        ) : (
-                          <textarea
-                            value={lessonForm.content}
-                            onChange={(e) => setLessonForm({ ...lessonForm, content: e.target.value })}
-                            rows={6}
-                            className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                            placeholder="Enter lesson content (plain text)"
-                          ></textarea>
-                        )}
-                      </div>
-                      <div className="flex gap-4">
-                        <button
-                          type="submit"
-                          className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
-                        >
-                          {editingLesson ? "Update Lesson" : "Add Lesson"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowLessonForm(false);
-                            setEditingLesson(null);
-                            setLessonForm({
-                              title: "",
-                              description: "",
-                              videoUrl: "",
-                              videoType: "youtube",
-                              content: "",
-                            });
-                          }}
-                          className="px-6 py-3 border border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/50 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                )}
+                    )}
 
-                {/* Add Lesson Button */}
-                {!showLessonForm && (
-                  <button
-                    onClick={() => setShowLessonForm(true)}
-                    className="w-full px-6 py-4 bg-dark-green-800/50 border-2 border-dashed border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
-                  >
-                    + Add Lesson
-                  </button>
+                    {/* Add Lesson Button - Only show for course owner */}
+                    {!showLessonForm && (
+                      <button
+                        onClick={() => setShowLessonForm(true)}
+                        className="w-full px-6 py-4 bg-dark-green-800/50 border-2 border-dashed border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
+                      >
+                        + Add Lesson
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
