@@ -184,7 +184,7 @@ export default function DashboardBlogPage() {
                           View
                         </Link>
                         <Link
-                          href={`/blog/${post.id}`}
+                          href={`/blog/edit/${post.id}`}
                           className="px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-900 hover:border-cyber-green transition-colors text-sm"
                         >
                           Edit

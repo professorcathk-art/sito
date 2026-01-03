@@ -89,7 +89,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
           )}
 
           <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
-            <p className="text-custom-text/80 mb-4">{course.description}</p>
+            {course.description && (
+              <div 
+                className="prose prose-invert prose-lg max-w-none blog-content text-custom-text/80 mb-4"
+                dangerouslySetInnerHTML={{ __html: course.description }}
+              />
+            )}
             <div className="flex items-center gap-4">
               <span className="text-2xl font-bold text-cyber-green">
                 {course.is_free ? "Free" : `$${course.price}`}
