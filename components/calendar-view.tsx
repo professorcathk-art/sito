@@ -147,11 +147,16 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
       {selectedDate && (
         <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
           <h3 className="text-xl font-bold text-custom-text mb-4">
-            Timeslots for {new Date(selectedDate).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
+            Timeslots for {(() => {
+              // Parse YYYY-MM-DD format to local date
+              const [year, month, day] = selectedDate.split('-').map(Number);
+              const displayDate = new Date(year, month - 1, day);
+              return displayDate.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              });
+            })()}
           </h3>
           {selectedDateSlots.length > 0 ? (
             <div className="space-y-3">
