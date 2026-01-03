@@ -147,8 +147,24 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel }: Quest
     );
   }
 
+  if (loading) {
+    return <div className="text-custom-text/60">Loading form...</div>;
+  }
+
   if (fields.length === 0) {
-    return null;
+    return (
+      <div className="text-custom-text/60">
+        <p>No form fields found. Please contact the expert.</p>
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            className="mt-4 px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+    );
   }
 
   return (

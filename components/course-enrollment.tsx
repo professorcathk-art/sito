@@ -99,10 +99,13 @@ export function CourseEnrollment({
       }
 
       if (questionnaire?.id) {
+        console.log("Found questionnaire:", questionnaire.id);
         setQuestionnaireId(questionnaire.id);
         setQuestionnaireType("interest");
         setShowQuestionnaire(true);
         return;
+      } else {
+        console.log("No questionnaire found for expert:", expertId, "type: course_interest");
       }
     } catch (err) {
       // No questionnaire found or error checking, continue without questionnaire

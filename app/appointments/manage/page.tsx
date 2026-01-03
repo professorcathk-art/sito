@@ -39,6 +39,7 @@ export default function ManageAppointmentsPage() {
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState<"slots" | "bookings">("slots");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     date: "",
     startTime: "",
@@ -312,28 +313,106 @@ export default function ManageAppointmentsPage() {
                   </p>
                 </div>
               ) : (
-                <CalendarView
-                  slots={slots}
-                  onDateSelect={(date) => {
-                    // Date selection is handled internally by CalendarView
-                    // This callback can be used for additional actions if needed
-                  }}
-                  onSlotToggle={async (slotId, isAvailable) => {
-                    try {
-                      const { error } = await supabase
-                        .from("appointment_slots")
-                        .update({ is_available: isAvailable })
-                        .eq("id", slotId)
-                        .eq("expert_id", user?.id);
-                      if (error) throw error;
-                      fetchSlots();
-                    } catch (err) {
-                      console.error("Error toggling slot:", err);
-                      alert("Failed to update slot availability.");
-                    }
-                  }}
-                  showToggle={true}
-                />
+                <>
+                  <CalendarView
+                    slots={slots}
+                    onDateSelect={(date) => {
+                      setSelectedDate(date);
+                    }}
+                    onSlotToggle={async (slotId, isAvailable) => {
+                      try {
+                        const { error } = await supabase
+                          .from("appointment_slots")
+                          .update({ is_available: isAvailable })
+                          .eq("id", slotId)
+                          .eq("expert_id", user?.id);
+                        if (error) throw error;
+                        fetchSlots();
+                      } catch (err) {
+                        console.error("Error toggling slot:", err);
+                        alert("Failed to update slot availability.");
+                      }
+                    }}
+                    showToggle={true}
+                  />
+                  
+                  {/* Show slots for selected date */}
+                  {selectedDate && slots.filter(s => {
+                    const slotDate = new Date(s.start_time);
+                    const dateStr = `${slotDate.getFullYear()}-${String(slotDate.getMonth() + 1).padStart(2, '0')}-${String(slotDate.getDate()).padStart(2, '0')}`;
+                    return dateStr === selectedDate;
+                  }).length > 0 && (
+                    <div className="mt-6 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                      <h3 className="text-xl font-bold text-custom-text mb-4">
+                        Timeslots for {(() => {
+                          const [year, month, day] = selectedDate.split('-').map(Number);
+                          const displayDate = new Date(year, month - 1, day);
+                          return displayDate.toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          });
+                        })()}
+                      </h3>
+                      <div className="space-y-3">
+                        {slots
+                          .filter(s => {
+                            const slotDate = new Date(s.start_time);
+                            const dateStr = `${slotDate.getFullYear()}-${String(slotDate.getMonth() + 1).padStart(2, '0')}-${String(slotDate.getDate()).padStart(2, '0')}`;
+                            return dateStr === selectedDate;
+                          })
+                          .map((slot) => {
+                            const startTime = new Date(slot.start_time).toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                            });
+                            const endTime = new Date(slot.end_time).toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                            });
+                            const duration = slot.duration_minutes || Math.round((new Date(slot.end_time).getTime() - new Date(slot.start_time).getTime()) / 60000);
+
+                            return (
+                              <div
+                                key={slot.id}
+                                className="flex items-center justify-between p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg"
+                              >
+                                <div>
+                                  <p className="text-custom-text font-semibold">
+                                    {startTime} - {endTime}
+                                  </p>
+                                  <p className="text-sm text-custom-text/70">
+                                    ${slot.rate_per_hour}/hour • {duration} min •{" "}
+                                    {slot.is_available ? (
+                                      <span className="text-green-300">Available</span>
+                                    ) : (
+                                      <span className="text-red-300">Unavailable</span>
+                                    )}
+                                  </p>
+                                </div>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={slot.is_available}
+                                    onChange={(e) => {
+                                      supabase
+                                        .from("appointment_slots")
+                                        .update({ is_available: e.target.checked })
+                                        .eq("id", slot.id)
+                                        .eq("expert_id", user?.id)
+                                        .then(() => fetchSlots());
+                                    }}
+                                    className="w-5 h-5 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                                  />
+                                  <span className="text-sm text-custom-text">Available</span>
+                                </label>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
