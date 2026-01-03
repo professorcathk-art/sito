@@ -195,11 +195,17 @@ export function FeaturedCourses() {
               </h3>
               <div className="flex items-center justify-between">
                 <span className="text-sm sm:text-base font-bold text-cyber-green">
-                  USD ${product.price} {product.pricing_type === "hourly" ? "/hr" : ""}
+                  {product.price === 0 || !product.price ? (
+                    "Free"
+                  ) : (
+                    `USD $${product.price.toFixed(2)} ${product.pricing_type === "hourly" ? "/hr" : ""}`
+                  )}
                 </span>
-                <span className="text-xs text-custom-text/60">
-                  {product.pricing_type === "hourly" ? "Hourly" : "One-time"}
-                </span>
+                {product.price > 0 && (
+                  <span className="text-xs text-custom-text/60">
+                    {product.pricing_type === "hourly" ? "Hourly" : "One-time"}
+                  </span>
+                )}
               </div>
             </Link>
           ))}

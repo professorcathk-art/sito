@@ -33,6 +33,7 @@ interface ConversationMessage {
 export function MessagesContent() {
   const searchParams = useSearchParams();
   const expertId = searchParams.get("expert");
+  const userId = searchParams.get("user"); // Support for user parameter (for anonymous learning requests)
   const { user } = useAuth();
   const supabase = createClient();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -173,8 +174,28 @@ export function MessagesContent() {
             setComposeExpertName(data.name);
           }
         });
+    } else if (userId) {
+      // Handle user parameter (for anonymous learning requests)
+      setShowCompose(true);
+      setComposeExpertId(userId);
+      // For anonymous users, show "Anonymous Student" or fetch name if available
+      supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", userId)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            setComposeExpertName(data.name);
+          } else {
+            setComposeExpertName("Anonymous Student");
+          }
+        })
+        .catch(() => {
+          setComposeExpertName("Anonymous Student");
+        });
     }
-  }, [expertId, supabase]);
+  }, [expertId, userId, supabase]);
 
   const markAsRead = async (messageId: string) => {
     if (!user) return;

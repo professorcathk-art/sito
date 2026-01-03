@@ -43,6 +43,8 @@ export default function ProfilePage() {
     subscribers: 0,
     products: 0,
   });
+  const [recentMessages, setRecentMessages] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
