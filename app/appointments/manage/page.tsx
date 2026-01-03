@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { ProtectedRoute } from "@/components/protected-route";
+import { CalendarView } from "@/components/calendar-view";
 
 interface AppointmentSlot {
   id: string;
@@ -225,9 +226,34 @@ export default function ManageAppointmentsPage() {
             </Link>
           </div>
 
-          {/* Calendar View for Booked Appointments */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-custom-text mb-6">Booked Appointments</h2>
+          {/* Tabs */}
+          <div className="flex gap-4 border-b border-cyber-green/30 mb-6">
+            <button
+              onClick={() => setActiveTab("bookings")}
+              className={`px-4 py-2 font-semibold transition-colors ${
+                activeTab === "bookings"
+                  ? "text-cyber-green border-b-2 border-cyber-green"
+                  : "text-custom-text/70 hover:text-custom-text"
+              }`}
+            >
+              Booked Appointments ({bookedAppointments.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("slots")}
+              className={`px-4 py-2 font-semibold transition-colors ${
+                activeTab === "slots"
+                  ? "text-cyber-green border-b-2 border-cyber-green"
+                  : "text-custom-text/70 hover:text-custom-text"
+              }`}
+            >
+              Available Timeslots ({slots.filter(s => s.is_available).length})
+            </button>
+          </div>
+
+          {/* Booked Appointments Section */}
+          {activeTab === "bookings" && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-custom-text mb-6">Booked Appointments</h2>
             {loadingBookings ? (
               <div className="animate-pulse space-y-4">
                 {[...Array(3)].map((_, i) => (
@@ -265,7 +291,48 @@ export default function ManageAppointmentsPage() {
                 ))}
               </div>
             )}
-          </div>
+            </div>
+          )}
+
+          {/* Available Timeslots Section */}
+          {activeTab === "slots" && (
+            <div>
+              <h2 className="text-2xl font-bold text-custom-text mb-6">Available Timeslots</h2>
+              {loading ? (
+                <div className="animate-pulse space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-20 bg-dark-green-800/50 rounded-lg"></div>
+                  ))}
+                </div>
+              ) : slots.length === 0 ? (
+                <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
+                  <p className="text-custom-text/80 mb-4">No appointment slots created yet.</p>
+                  <p className="text-custom-text/60 text-sm">
+                    Create time slots to allow users to book 1-on-1 sessions with you.
+                  </p>
+                </div>
+              ) : (
+                <CalendarView
+                  slots={slots}
+                  onSlotToggle={async (slotId, isAvailable) => {
+                    try {
+                      const { error } = await supabase
+                        .from("appointment_slots")
+                        .update({ is_available: isAvailable })
+                        .eq("id", slotId)
+                        .eq("expert_id", user?.id);
+                      if (error) throw error;
+                      fetchSlots();
+                    } catch (err) {
+                      console.error("Error toggling slot:", err);
+                      alert("Failed to update slot availability.");
+                    }
+                  }}
+                  showToggle={true}
+                />
+              )}
+            </div>
+          )}
 
           {false && showForm && (
             <form onSubmit={handleCreateSlots} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
@@ -351,114 +418,6 @@ export default function ManageAppointmentsPage() {
             </form>
           )}
 
-          {loading ? (
-            <div className="animate-pulse space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-20 bg-dark-green-800/50 rounded-lg"></div>
-              ))}
-            </div>
-          ) : slots.length === 0 ? (
-            <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
-              <p className="text-custom-text/80 mb-4">No appointment slots created yet.</p>
-              <p className="text-custom-text/60 text-sm">
-                Create time slots to allow users to book 1-on-1 sessions with you.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {slots.map((slot) => (
-                <div
-                  key={slot.id}
-                  className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 flex items-center justify-between"
-                >
-                  <div>
-                    <p className="text-lg font-semibold text-custom-text mb-2">
-                      {formatDateTime(slot.start_time)} - {formatDateTime(slot.end_time)}
-                    </p>
-                    <p className="text-custom-text/70">
-                      ${slot.rate_per_hour}/hour
-                      {slot.duration_minutes && ` • ${slot.duration_minutes} min`} •{" "}
-                      {slot.is_available ? (
-                        <span className="text-green-300">Available</span>
-                      ) : (
-                        <span className="text-red-300">Booked</span>
-                      )}
-                    </p>
-                  </div>
-                  {slot.is_available && (
-                    <button
-                      onClick={() => handleDeleteSlot(slot.id)}
-                      className="px-4 py-2 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900/70 transition-colors"
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Booked Appointments Tab */}
-          {activeTab === "bookings" && (
-            <>
-              {loadingBookings ? (
-                <div className="animate-pulse space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-24 bg-dark-green-800/50 rounded-lg"></div>
-                  ))}
-                </div>
-              ) : bookedAppointments.length === 0 ? (
-                <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
-                  <p className="text-custom-text/80 mb-4">No booked appointments yet.</p>
-                  <p className="text-custom-text/60 text-sm">
-                    When users book your available slots, they will appear here.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {bookedAppointments.map((appointment) => (
-                    <div
-                      key={appointment.id}
-                      className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="text-lg font-semibold text-custom-text mb-2">
-                            {formatDateTime(appointment.start_time)} - {formatDateTime(appointment.end_time)}
-                          </p>
-                          {appointment.profiles && (
-                            <div className="mb-2">
-                              <p className="text-custom-text/90 font-medium">
-                                Booked by: {appointment.profiles.name || "Unknown"}
-                              </p>
-                              {appointment.profiles.email && (
-                                <p className="text-custom-text/70 text-sm">{appointment.profiles.email}</p>
-                              )}
-                            </div>
-                          )}
-                          <div className="flex items-center gap-4 text-sm text-custom-text/70">
-                            <span>Rate: ${appointment.rate_per_hour}/hour</span>
-                            <span>Total: ${appointment.total_amount?.toFixed(2) || "0.00"}</span>
-                            <span className={`px-2 py-1 rounded ${
-                              appointment.status === "confirmed"
-                                ? "bg-green-900/50 text-green-300"
-                                : appointment.status === "completed"
-                                ? "bg-blue-900/50 text-blue-300"
-                                : appointment.status === "cancelled"
-                                ? "bg-red-900/50 text-red-300"
-                                : "bg-yellow-900/50 text-yellow-300"
-                            }`}>
-                              {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
         </div>
       </DashboardLayout>
     </ProtectedRoute>

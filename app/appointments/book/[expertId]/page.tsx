@@ -7,12 +7,14 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { Navigation } from "@/components/navigation";
 import { ProtectedRoute } from "@/components/protected-route";
+import { CalendarView } from "@/components/calendar-view";
 
 interface AppointmentSlot {
   id: string;
   start_time: string;
   end_time: string;
   rate_per_hour: number;
+  is_available: boolean;
   expert: {
     id: string;
     name: string;
@@ -31,6 +33,7 @@ export default function BookAppointmentPage() {
   const [expert, setExpert] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -50,7 +53,7 @@ export default function BookAppointmentPage() {
               // Fetch available appointment slots (including those linked to products)
               const { data: slotsData, error } = await supabase
                 .from("appointment_slots")
-                .select("id, start_time, end_time, rate_per_hour, product_id")
+                .select("id, start_time, end_time, rate_per_hour, product_id, is_available")
                 .eq("expert_id", expertId)
                 .eq("is_available", true)
                 .gte("start_time", new Date().toISOString())
@@ -71,6 +74,7 @@ export default function BookAppointmentPage() {
           start_time: slot.start_time,
           end_time: slot.end_time,
           rate_per_hour: slot.rate_per_hour,
+          is_available: slot.is_available !== false,
           expert: expertProfile || { id: expertId, name: "Expert", title: null },
         }))
       );
@@ -179,6 +183,18 @@ export default function BookAppointmentPage() {
               <p className="text-custom-text/70 mb-8">{expert.title}</p>
             )}
 
+            {!user && (
+              <div className="bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-4 mb-6">
+                <p className="text-yellow-200 mb-2">Please sign in to book an appointment</p>
+                <Link
+                  href={`/login?redirect=/appointments/book/${expertId}`}
+                  className="text-cyber-green hover:text-cyber-green-light font-semibold"
+                >
+                  Sign In →
+                </Link>
+              </div>
+            )}
+
             {loading ? (
               <div className="animate-pulse space-y-4">
                 {[...Array(3)].map((_, i) => (
@@ -198,46 +214,52 @@ export default function BookAppointmentPage() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
-                {!user && (
-                  <div className="bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-4 mb-4">
-                    <p className="text-yellow-200 mb-2">Please sign in to book an appointment</p>
-                    <Link
-                      href={`/login?redirect=/appointments/book/${expertId}`}
-                      className="text-cyber-green hover:text-cyber-green-light font-semibold"
-                    >
-                      Sign In →
-                    </Link>
-                  </div>
-                )}
-                {slots.map((slot) => {
-                  const duration = calculateDuration(slot.start_time, slot.end_time);
-                  const total = calculateTotal(slot.rate_per_hour, duration);
-                  
-                  // Skip invalid slots
-                  if (duration <= 0) return null;
+              <>
+                <CalendarView
+                  slots={slots}
+                  onDateSelect={(date) => {
+                    setSelectedDate(date);
+                  }}
+                />
+                
+                {/* Show slots for selected date with booking buttons */}
+                {selectedDate && slots.filter(s => new Date(s.start_time).toISOString().split("T")[0] === selectedDate).length > 0 && (
+              <div className="mt-6 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                <h3 className="text-xl font-bold text-custom-text mb-4">
+                  Available Timeslots for {new Date(selectedDate).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </h3>
+                <div className="space-y-3">
+                  {slots
+                    .filter(s => new Date(s.start_time).toISOString().split("T")[0] === selectedDate)
+                    .map((slot) => {
+                      const duration = calculateDuration(slot.start_time, slot.end_time);
+                      const total = calculateTotal(slot.rate_per_hour, duration);
+                      
+                      if (duration <= 0) return null;
 
-                  return (
-                    <div
-                      key={slot.id}
-                      className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <p className="text-lg font-semibold text-custom-text mb-1">
-                            {formatDateTime(slot.start_time)}
-                          </p>
-                          <p className="text-custom-text/70">
-                            Duration: {duration} minutes
-                          </p>
-                          <p className="text-custom-text/70">
-                            Rate: ${slot.rate_per_hour}/hour
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-cyber-green mb-2">
-                            ${total.toFixed(2)}
-                          </p>
+                      return (
+                        <div
+                          key={slot.id}
+                          className="flex items-center justify-between p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg"
+                        >
+                          <div>
+                            <p className="text-custom-text font-semibold">
+                              {new Date(slot.start_time).toLocaleTimeString("en-US", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })} - {new Date(slot.end_time).toLocaleTimeString("en-US", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}
+                            </p>
+                            <p className="text-sm text-custom-text/70">
+                              ${slot.rate_per_hour}/hour • {duration} min • ${total.toFixed(2)} total
+                            </p>
+                          </div>
                           {user ? (
                             <button
                               onClick={() => handleBookAppointment(slot)}
@@ -248,18 +270,19 @@ export default function BookAppointmentPage() {
                             </button>
                           ) : (
                             <Link
-                              href={`/login?redirect=/appointments/book/${expertId}?slot=${slot.id}`}
+                              href={`/login?redirect=/appointments/book/${expertId}`}
                               className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors inline-block text-center"
                             >
                               Sign In to Book
                             </Link>
                           )}
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                </div>
+                </div>
+                )}
+              </>
             )}
           </div>
         </div>
