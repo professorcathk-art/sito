@@ -252,12 +252,12 @@ export function ProductsManagement() {
 
         if (productError) throw productError;
 
-        // Set current product and course, show course form
+        // Set current product and course, show questionnaire form instead of course form
         setCurrentProductId(newProduct.id);
         setCurrentCourseId(newCourse.id);
-        setShowCourseForm(true);
         setShowAddForm(false);
-        setCourseLessons([]);
+        // Redirect to questionnaire management to create enrollment questionnaire
+        router.push(`/questionnaires/manage?product_id=${newProduct.id}&type=course_enrollment`);
         setFormData({
           name: "",
           description: "",

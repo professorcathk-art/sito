@@ -69,14 +69,33 @@ export default function ManageCoursePage() {
     if (!user) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch courses where user is expert
+      const { data: expertCourses, error: expertError } = await supabase
         .from("courses")
         .select("*")
         .eq("expert_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setCourses(data || []);
+      if (expertError) throw expertError;
+
+      // Fetch courses where user is enrolled
+      const { data: enrollments, error: enrollmentError } = await supabase
+        .from("course_enrollments")
+        .select("course_id, courses(*)")
+        .eq("user_id", user.id);
+
+      if (enrollmentError) throw enrollmentError;
+
+      // Combine expert courses and enrolled courses
+      const enrolledCourses = (enrollments || []).map((e: any) => e.courses).filter(Boolean);
+      const allCourses = [...(expertCourses || []), ...enrolledCourses];
+      
+      // Remove duplicates
+      const uniqueCourses = Array.from(
+        new Map(allCourses.map((c: any) => [c.id, c])).values()
+      );
+
+      setCourses(uniqueCourses);
     } catch (err) {
       console.error("Error fetching courses:", err);
     } finally {
@@ -370,17 +389,20 @@ export default function ManageCoursePage() {
                     <p className="text-xs text-custom-text/60 mt-1">Categorize your course to help users discover it</p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-custom-text mb-2">Price</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={courseForm.price}
-                        onChange={(e) => setCourseForm({ ...courseForm, price: e.target.value })}
-                        disabled={courseForm.isFree}
-                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text disabled:opacity-50"
-                      />
-                    </div>
+                    {selectedCourse.expert_id === user?.id && (
+                      <div>
+                        <label className="block text-sm font-medium text-custom-text mb-2">Price</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={courseForm.price}
+                          onChange={(e) => setCourseForm({ ...courseForm, price: e.target.value })}
+                          disabled={courseForm.isFree}
+                          className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text disabled:opacity-50"
+                        />
+                        <p className="text-xs text-custom-text/60 mt-1">Price should be updated in Products page</p>
+                      </div>
+                    )}
                     <div className="flex items-center mt-6">
                       <input
                         type="checkbox"

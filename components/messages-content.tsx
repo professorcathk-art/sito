@@ -269,21 +269,65 @@ export function MessagesContent() {
     );
   }
 
-  if (expertId) {
-    // Show message compose form for specific expert
-    return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-custom-text mb-6">Send Message</h1>
-          <MessageComposeForm expertId={expertId} />
-        </div>
-      </div>
-    );
-  }
+  const [showCompose, setShowCompose] = useState(false);
+  const [composeExpertId, setComposeExpertId] = useState<string | null>(null);
+  const [composeExpertName, setComposeExpertName] = useState<string>("");
+
+  useEffect(() => {
+    if (expertId) {
+      setShowCompose(true);
+      setComposeExpertId(expertId);
+      // Fetch expert name
+      supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", expertId)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            setComposeExpertName(data.name);
+          }
+        });
+    }
+  }, [expertId, supabase]);
 
   return (
     <div className="w-full">
       <h1 className="text-4xl font-bold text-custom-text mb-8">Messages</h1>
+      
+      {/* Compose Form */}
+      {showCompose && composeExpertId && (
+        <div className="mb-6 bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-custom-text">
+              {composeExpertName ? `Send Message to ${composeExpertName}` : "Send Message"}
+            </h2>
+            <button
+              onClick={() => {
+                setShowCompose(false);
+                setComposeExpertId(null);
+                setComposeExpertName("");
+                window.history.replaceState({}, "", "/messages");
+              }}
+              className="text-custom-text/70 hover:text-custom-text"
+            >
+              ✕
+            </button>
+          </div>
+          <MessageComposeForm 
+            expertId={composeExpertId} 
+            onSent={() => {
+              setShowCompose(false);
+              setComposeExpertId(null);
+              setComposeExpertName("");
+              window.history.replaceState({}, "", "/messages");
+              // Refresh messages
+              window.location.reload();
+            }}
+          />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg">
@@ -366,12 +410,16 @@ export function MessagesContent() {
               )}
               
               <div className="pt-6 border-t border-cyber-green/30">
-                <Link
-                  href={`/messages?expert=${selectedMessage.fromId}`}
-                  className="bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)] inline-block"
+                <button
+                  onClick={() => {
+                    setShowCompose(true);
+                    setComposeExpertId(selectedMessage.fromId);
+                    setComposeExpertName(selectedMessage.from);
+                  }}
+                  className="bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
                 >
                   Reply
-                </Link>
+                </button>
               </div>
             </div>
           ) : (
@@ -385,7 +433,7 @@ export function MessagesContent() {
   );
 }
 
-function MessageComposeForm({ expertId }: { expertId: string }) {
+function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: () => void }) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -446,7 +494,11 @@ function MessageComposeForm({ expertId }: { expertId: string }) {
       alert("Message sent successfully!");
       setSubject("");
       setMessage("");
-      window.location.href = "/messages";
+      if (onSent) {
+        onSent();
+      } else {
+        window.location.href = "/messages";
+      }
     } catch (err: any) {
       setError(err.message || "Failed to send message. Please try again.");
     } finally {
