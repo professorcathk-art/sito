@@ -536,52 +536,12 @@ export function ProductsManagement() {
             )}
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-custom-text">
-                  Description * <span className="text-xs text-custom-text/60">(HTML supported)</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setDescriptionMode(descriptionMode === "edit" ? "preview" : "edit")}
-                  className="px-3 py-1 text-xs font-medium bg-dark-green-800/50 border border-cyber-green/30 rounded-lg text-custom-text hover:bg-dark-green-800 hover:border-cyber-green transition-colors"
-                >
-                  {descriptionMode === "edit" ? "Preview" : "Edit"}
-                </button>
-              </div>
-              {descriptionMode === "edit" ? (
-                <>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    required
-                    rows={6}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50 font-mono text-sm"
-                    placeholder="Describe your product or service... HTML code is supported (e.g., &lt;strong&gt;bold&lt;/strong&gt;, &lt;a href=&quot;...&quot;&gt;links&lt;/a&gt;)"
-                  />
-                  <p className="mt-1 text-xs text-custom-text/60">
-                    You can use HTML tags like &lt;strong&gt;, &lt;em&gt;, &lt;a&gt;, &lt;ul&gt;, &lt;li&gt;, etc.
-                  </p>
-                </>
-              ) : (
-                <div className="w-full min-h-[150px] px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg">
-                  {formData.description ? (
-                    <div 
-                      className="text-custom-text/80"
-                      style={{
-                        wordWrap: 'break-word',
-                        overflowWrap: 'break-word',
-                      }}
-                    >
-                      <div 
-                        className="product-preview"
-                        dangerouslySetInnerHTML={{ __html: formData.description }}
-                      />
-                    </div>
-                  ) : (
-                    <p className="text-custom-text/50 italic">No description entered yet. Click &quot;Edit&quot; to add content.</p>
-                  )}
-                </div>
-              )}
+              <label className="block text-sm font-medium text-custom-text mb-2">Description *</label>
+              <RichTextEditor
+                content={formData.description}
+                onChange={(newContent) => setFormData({ ...formData, description: newContent })}
+                placeholder="Describe your product or service..."
+              />
             </div>
             <div className="flex gap-4">
               <button
