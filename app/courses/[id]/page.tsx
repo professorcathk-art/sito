@@ -146,7 +146,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
           )}
 
-          <CourseActions courseId={course.id} expertId={course.expert_id} currentUserId={user?.id} />
+          <CourseActions 
+            courseId={course.id} 
+            expertId={course.expert_id} 
+            currentUserId={user?.id}
+            coursePrice={course.price}
+            isFree={course.is_free}
+          />
         </div>
       </div>
       <Footer />
