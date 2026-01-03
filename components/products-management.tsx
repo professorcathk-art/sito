@@ -252,7 +252,7 @@ export function ProductsManagement() {
             is_free: coursePrice === 0,
             price: coursePrice,
             category: formData.category || "",
-            published: false,
+            published: true, // Publish directly when created from product page
           })
           .select()
           .single();

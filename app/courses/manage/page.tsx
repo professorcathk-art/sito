@@ -145,7 +145,7 @@ export default function ManageCoursePage() {
           cover_image_url: courseForm.coverImageUrl || null,
           price: parseFloat(courseForm.price) || 0,
           is_free: courseForm.isFree,
-          published: courseForm.published,
+          published: true, // Always published - courses are published from product page
           category: courseForm.category || null,
         })
         .eq("id", selectedCourse.id)
