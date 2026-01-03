@@ -19,14 +19,16 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Group slots by date
+  // Group slots by date (handle timezone properly)
   const slotsByDate: { [key: string]: typeof slots } = {};
   slots.forEach((slot) => {
-    const date = new Date(slot.start_time).toISOString().split("T")[0];
-    if (!slotsByDate[date]) {
-      slotsByDate[date] = [];
+    // Use local date string to match calendar dates
+    const slotDate = new Date(slot.start_time);
+    const dateStr = `${slotDate.getFullYear()}-${String(slotDate.getMonth() + 1).padStart(2, '0')}-${String(slotDate.getDate()).padStart(2, '0')}`;
+    if (!slotsByDate[dateStr]) {
+      slotsByDate[dateStr] = [];
     }
-    slotsByDate[date].push(slot);
+    slotsByDate[dateStr].push(slot);
   });
 
   // Get days in current month
@@ -58,7 +60,8 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const handleDateClickInternal = (date: Date) => {
-    const dateStr = date.toISOString().split("T")[0];
+    // Use local date string format to match slotsByDate
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     setSelectedDate(dateStr);
     if (onDateSelect) {
       onDateSelect(dateStr);
@@ -100,11 +103,14 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
             if (!date) {
               return <div key={`empty-${index}`} className="aspect-square"></div>;
             }
-            const dateStr = date.toISOString().split("T")[0];
+            // Use local date string format to match slotsByDate
+            const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
             const hasSlots = !!slotsByDate[dateStr];
             const isSelected = selectedDate === dateStr;
-            const isToday = dateStr === new Date().toISOString().split("T")[0];
-            const isPast = date < new Date() && !isToday;
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            const isToday = dateStr === todayStr;
+            const isPast = date < today && !isToday;
 
             return (
               <button

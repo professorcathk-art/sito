@@ -253,11 +253,12 @@ export function ProductsManagement() {
         
         try {
           // Create new questionnaire for this course
+          // Note: Database constraint only allows 'appointment' or 'course_interest'
           const { data: questionnaire, error: qError } = await supabase
             .from("questionnaires")
             .insert({
               expert_id: user.id,
-              type: "course_enrollment",
+              type: "course_interest", // Use 'course_interest' instead of 'course_enrollment' to match DB constraint
               title: `${formData.name} - Enrollment Form`,
               is_active: true,
             })

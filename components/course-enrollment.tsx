@@ -201,15 +201,20 @@ export function CourseEnrollment({
       return;
     }
 
-    // Check for questionnaire
+    // Check for questionnaire - use 'course_interest' to match DB constraint
     try {
-      const { data: questionnaire } = await supabase
+      const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
         .select("id")
         .eq("expert_id", expertId)
-        .eq("type", "course_enrollment")
+        .eq("type", "course_interest")
         .eq("is_active", true)
-        .single();
+        .maybeSingle();
+      
+      // PGRST116 is "no rows returned" which is fine
+      if (qError && qError.code !== "PGRST116") {
+        console.error("Error checking for questionnaire:", qError);
+      }
 
       if (questionnaire) {
         setQuestionnaireId(questionnaire.id);
