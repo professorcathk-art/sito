@@ -256,7 +256,7 @@ export default function BlogFeedPage() {
       <div className="pt-24 pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2">Blog Feed</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2">Sharing Feed</h1>
             <p className="text-base sm:text-lg text-custom-text/80">
               Discover insights from industry experts
             </p>

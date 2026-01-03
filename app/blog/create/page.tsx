@@ -95,7 +95,23 @@ export default function CreateBlogPostPage() {
         }
       }
 
-      // TODO: Send notifications to subscribers if notifySubscribers is true
+      // Send notifications to subscribers if notifySubscribers is true
+      if (formData.notifySubscribers && blogPost) {
+        try {
+          await fetch("/api/notify-blog-post", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              blogPostId: blogPost.id,
+              expertId: user.id,
+              blogTitle: formData.title,
+            }),
+          });
+        } catch (err) {
+          console.error("Error sending notifications:", err);
+          // Don't fail the blog creation if notification fails
+        }
+      }
 
       // Wait a moment for the database to be ready, then redirect
       setTimeout(() => {

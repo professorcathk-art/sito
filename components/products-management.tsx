@@ -296,32 +296,40 @@ export function ProductsManagement() {
       }
 
       if (editingProduct) {
-        // Update existing product
+        // Update existing product - DO NOT CREATE NEW COURSE
         const productData: any = {
           name: formData.name,
           description: formData.description,
           product_type: formData.product_type,
         };
 
-        if (formData.product_type === "course" && formData.course_id) {
-          productData.course_id = formData.course_id;
+        // Add price if provided
+        if (formData.price) {
+          productData.price = parseFloat(formData.price) || 0;
+        }
+
+        // If updating a course product, also update the course price and description
+        if (formData.product_type === "course" && editingProduct.course_id) {
+          const courseUpdateData: any = {};
           
-          // If updating a course product, also update the course price
           if (formData.price) {
-            const coursePrice = parseFloat(formData.price) || 0;
+            courseUpdateData.price = parseFloat(formData.price) || 0;
+          }
+          
+          // Update course description if provided
+          if (formData.description) {
+            courseUpdateData.description = formData.description;
+          }
+          
+          if (Object.keys(courseUpdateData).length > 0) {
             const { error: courseUpdateError } = await supabase
               .from("courses")
-              .update({ price: coursePrice })
-              .eq("id", formData.course_id)
+              .update(courseUpdateData)
+              .eq("id", editingProduct.course_id)
               .eq("expert_id", user.id);
             
             if (courseUpdateError) throw courseUpdateError;
           }
-        }
-
-        // Add price if provided
-        if (formData.price) {
-          productData.price = parseFloat(formData.price) || 0;
         }
 
         const { error } = await supabase
@@ -331,6 +339,8 @@ export function ProductsManagement() {
           .eq("expert_id", user.id);
 
         if (error) throw error;
+        
+        alert("Product updated successfully!");
       }
 
       setFormData({

@@ -135,6 +135,24 @@ export default function EditBlogPostPage() {
 
       if (error) throw error;
 
+      // Send notifications to subscribers if notifySubscribers is true
+      if (formData.notifySubscribers && blogPostId) {
+        try {
+          await fetch("/api/notify-blog-post", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              blogPostId: blogPostId,
+              expertId: user.id,
+              blogTitle: formData.title,
+            }),
+          });
+        } catch (err) {
+          console.error("Error sending notifications:", err);
+          // Don't fail the blog update if notification fails
+        }
+      }
+
       alert("Blog post updated successfully!");
       router.push(`/blog/${blogPostId}`);
     } catch (err: any) {

@@ -270,7 +270,7 @@ export default function ManageCoursePage() {
     <ProtectedRoute>
       <DashboardLayout>
         <div className="px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-4xl font-bold text-custom-text mb-8">Manage Course</h1>
+          <h1 className="text-4xl font-bold text-custom-text mb-8">Classroom</h1>
 
           {!selectedCourse ? (
             <div className="space-y-4">

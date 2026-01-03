@@ -86,12 +86,12 @@ export function DashboardSidebar() {
       icon: "🛍️",
     },
     {
-      name: "Blog Posts",
+      name: "Sharing Posts",
       href: "/dashboard/blog",
       icon: "✍️",
     },
     {
-      name: "Manage Course",
+      name: "Classroom",
       href: "/courses/manage",
       icon: "📚",
     },
