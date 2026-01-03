@@ -47,6 +47,12 @@ export function ProductsManagement() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [pendingCourseData, setPendingCourseData] = useState<{
+    name: string;
+    description: string;
+    price: string;
+    category: string;
+  } | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -305,6 +311,12 @@ export function ProductsManagement() {
           
           // Store form data temporarily (don't create course yet)
           // User will click "Publish Course" after questionnaire is ready
+          setPendingCourseData({
+            name: formData.name,
+            description: formData.description,
+            price: formData.price,
+            category: formData.category || "",
+          });
           setShowAddForm(false);
           
         } catch (err: any) {
@@ -1160,19 +1172,24 @@ export function ProductsManagement() {
                   }
                   
                   // Now create the course and product
+                  if (!pendingCourseData) {
+                    alert("Course data not found. Please start over.");
+                    return;
+                  }
+                  
                   try {
-                    const coursePrice = formData.price ? parseFloat(formData.price) || 0 : 0;
+                    const coursePrice = pendingCourseData.price ? parseFloat(pendingCourseData.price) || 0 : 0;
                     
                     // Create course
                     const { data: newCourse, error: courseError } = await supabase
                       .from("courses")
                       .insert({
                         expert_id: user.id,
-                        title: formData.name,
-                        description: formData.description,
+                        title: pendingCourseData.name,
+                        description: pendingCourseData.description,
                         is_free: coursePrice === 0,
                         price: coursePrice,
-                        category: formData.category || "",
+                        category: pendingCourseData.category,
                         published: true, // Publish after questionnaire is ready
                       })
                       .select()
@@ -1183,8 +1200,8 @@ export function ProductsManagement() {
                     // Create product linked to course
                     const { data: newProduct, error: productError } = await supabase.from("products").insert({
                       expert_id: user.id,
-                      name: formData.name,
-                      description: formData.description,
+                      name: pendingCourseData.name,
+                      description: pendingCourseData.description,
                       product_type: "course",
                       course_id: newCourse.id,
                       price: coursePrice,
@@ -1203,6 +1220,7 @@ export function ProductsManagement() {
                     setQuestionnaireType(null);
                     setCurrentQuestionnaireId(null);
                     setQuestionnaireFields([]);
+                    setPendingCourseData(null);
                     setFormData({
                       name: "",
                       description: "",
