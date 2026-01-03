@@ -64,7 +64,7 @@ export default function FeaturedCoursesPage() {
         // Fetch course details - filter out deleted courses
         const { data: coursesData, error: coursesError } = await supabase
           .from("courses")
-          .select("id, title, description, cover_image_url, price, is_free, category")
+          .select("id, title, description, cover_image_url, category")
           .in("id", courseIds)
           .eq("published", true)
           .not("id", "is", null);
@@ -103,8 +103,8 @@ export default function FeaturedCoursesPage() {
               title: course.title,
               description: course.description,
               cover_image_url: course.cover_image_url,
-              price: course.price,
-              is_free: course.is_free,
+              price: product.price, // Use price from products table (golden source)
+              is_free: product.price === 0,
               category: course.category,
               expert_id: product.expert_id,
               expert_name: profile.name || "Expert",
