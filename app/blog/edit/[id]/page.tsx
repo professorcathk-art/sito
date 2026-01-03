@@ -7,7 +7,6 @@ import { useAuth } from "@/contexts/auth-context";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { ProtectedRoute } from "@/components/protected-route";
 import { RichTextEditor } from "@/components/rich-text-editor";
-import Image from "next/image";
 
 export default function EditBlogPostPage() {
   const params = useParams();
@@ -17,7 +16,6 @@ export default function EditBlogPostPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -50,7 +48,6 @@ export default function EditBlogPostPage() {
           title: data.title || "",
           description: data.description || "",
           content: data.content || "",
-          featuredImageUrl: data.featured_image_url || "",
           accessLevel: data.access_level || "public",
           notifySubscribers: false,
         });
@@ -64,44 +61,6 @@ export default function EditBlogPostPage() {
     }
   };
 
-  const handleFeaturedImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image size must be less than 5MB");
-      return;
-    }
-
-    setUploadingImage(true);
-    try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `blog-featured/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("blog-resources")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage.from("blog-resources").getPublicUrl(filePath);
-      setFormData({ ...formData, featuredImageUrl: data.publicUrl });
-    } catch (err: any) {
-      console.error("Error uploading image:", err);
-      alert("Failed to upload image. Please try again.");
-    } finally {
-      setUploadingImage(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +83,7 @@ export default function EditBlogPostPage() {
           title: formData.title,
           description: formData.description || null,
           content: formData.content,
-          featured_image_url: formData.featuredImageUrl || null,
+          featured_image_url: null,
           access_level: formData.accessLevel,
           reading_time_minutes: readingTime,
           updated_at: new Date().toISOString(),
@@ -209,29 +168,6 @@ export default function EditBlogPostPage() {
                   placeholder="Brief description of your post"
                   rows={3}
                 />
-              </div>
-
-              {/* Featured Image */}
-              <div>
-                <label className="block text-sm font-medium text-custom-text mb-2">
-                  Featured Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFeaturedImageUpload}
-                  disabled={uploadingImage}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                />
-                {formData.featuredImageUrl && (
-                  <Image
-                    src={formData.featuredImageUrl}
-                    alt="Featured"
-                    width={300}
-                    height={200}
-                    className="mt-4 max-w-md rounded-lg object-cover"
-                  />
-                )}
               </div>
 
               {/* Content */}
