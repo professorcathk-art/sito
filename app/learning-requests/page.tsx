@@ -47,13 +47,7 @@ export default function LearningRequestsPage() {
     try {
       const { data, error } = await supabase
         .from("learning_requests")
-        .select(`
-          *,
-          profiles:user_id (
-            name,
-            avatar_url
-          )
-        `)
+        .select("*")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 

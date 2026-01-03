@@ -40,6 +40,9 @@ export function MessagesContent() {
   const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showCompose, setShowCompose] = useState(false);
+  const [composeExpertId, setComposeExpertId] = useState<string | null>(null);
+  const [composeExpertName, setComposeExpertName] = useState<string>("");
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -155,6 +158,24 @@ export function MessagesContent() {
     fetchMessages();
   }, [user, supabase]);
 
+  useEffect(() => {
+    if (expertId) {
+      setShowCompose(true);
+      setComposeExpertId(expertId);
+      // Fetch expert name
+      supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", expertId)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            setComposeExpertName(data.name);
+          }
+        });
+    }
+  }, [expertId, supabase]);
+
   const markAsRead = async (messageId: string) => {
     if (!user) return;
     
@@ -269,27 +290,6 @@ export function MessagesContent() {
     );
   }
 
-  const [showCompose, setShowCompose] = useState(false);
-  const [composeExpertId, setComposeExpertId] = useState<string | null>(null);
-  const [composeExpertName, setComposeExpertName] = useState<string>("");
-
-  useEffect(() => {
-    if (expertId) {
-      setShowCompose(true);
-      setComposeExpertId(expertId);
-      // Fetch expert name
-      supabase
-        .from("profiles")
-        .select("name")
-        .eq("id", expertId)
-        .single()
-        .then(({ data }) => {
-          if (data) {
-            setComposeExpertName(data.name);
-          }
-        });
-    }
-  }, [expertId, supabase]);
 
   return (
     <div className="w-full">

@@ -223,14 +223,15 @@ export function ProductsManagement() {
     try {
       if (formData.product_type === "course") {
         // For course: auto-create course and product
+        const coursePrice = formData.price ? parseFloat(formData.price) || 0 : 0;
         const { data: newCourse, error: courseError } = await supabase
           .from("courses")
           .insert({
             expert_id: user.id,
             title: formData.name,
             description: formData.description,
-            is_free: true,
-            price: 0,
+            is_free: coursePrice === 0,
+            price: coursePrice,
             category: null, // Category can be set later in course management
             published: false,
           })
@@ -239,14 +240,14 @@ export function ProductsManagement() {
 
         if (courseError) throw courseError;
 
-        // Create product linked to course
+        // Create product linked to course - sync price
         const { data: newProduct, error: productError } = await supabase.from("products").insert({
           expert_id: user.id,
           name: formData.name,
           description: formData.description,
           product_type: "course",
           course_id: newCourse.id,
-          price: 0,
+          price: coursePrice,
           pricing_type: "one-off",
         }).select().single();
 

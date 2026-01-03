@@ -97,7 +97,83 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
     }
 
     checkAccess();
+    if (user && blogPost.profiles && user.id !== blogPost.profiles.id) {
+      checkConnectionStatus();
+    }
   }, [blogPost, user, supabase]);
+
+  const checkConnectionStatus = async () => {
+    if (!user || !blogPost.profiles) return;
+
+    try {
+      const { data: sentConnection } = await supabase
+        .from("connections")
+        .select("status")
+        .eq("user_id", user.id)
+        .eq("expert_id", blogPost.profiles.id)
+        .single();
+
+      if (sentConnection) {
+        setConnectionStatus(sentConnection.status as "pending" | "accepted" | "rejected");
+      } else {
+        const { data: receivedConnection } = await supabase
+          .from("connections")
+          .select("status")
+          .eq("user_id", blogPost.profiles.id)
+          .eq("expert_id", user.id)
+          .single();
+
+        if (receivedConnection) {
+          setConnectionStatus(receivedConnection.status === "accepted" ? "accepted" : "none");
+        } else {
+          setConnectionStatus("none");
+        }
+      }
+    } catch (err) {
+      setConnectionStatus("none");
+    }
+  };
+
+  const handleConnect = async () => {
+    if (!user || !blogPost.profiles || user.id === blogPost.profiles.id) {
+      return;
+    }
+
+    setConnecting(true);
+    try {
+      const { error } = await supabase
+        .from("connections")
+        .insert({
+          user_id: user.id,
+          expert_id: blogPost.profiles.id,
+          status: "pending",
+        });
+
+      if (error) throw error;
+
+      setConnectionStatus("pending");
+      alert("Connection request sent!");
+
+      // Send email notification
+      try {
+        await fetch("/api/notify-connection", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            expert_id: blogPost.profiles.id,
+            user_name: user.email || "A user",
+          }),
+        });
+      } catch (err) {
+        console.error("Error sending notification:", err);
+      }
+    } catch (error: any) {
+      console.error("Error sending connection request:", error);
+      alert("Failed to send connection request. Please try again.");
+    } finally {
+      setConnecting(false);
+    }
+  };
 
   if (checkingAccess) {
     return (

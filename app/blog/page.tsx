@@ -11,7 +11,8 @@ import Image from "next/image";
 interface BlogPost {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
+  content: string | null;
   featured_image_url: string | null;
   reading_time_minutes: number;
   published_at: string;

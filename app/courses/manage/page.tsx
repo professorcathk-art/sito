@@ -11,6 +11,7 @@ import Link from "next/link";
 
 interface Course {
   id: string;
+  expert_id: string;
   title: string;
   description: string | null;
   cover_image_url: string | null;
