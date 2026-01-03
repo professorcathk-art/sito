@@ -9,15 +9,19 @@ import { ProtectedRoute } from "@/components/protected-route";
 import { RichTextEditor } from "@/components/rich-text-editor";
 import Link from "next/link";
 
-interface Course {
-  id: string;
-  title: string;
-  description: string | null;
-  cover_image_url: string | null;
-  price: number;
-  is_free: boolean;
-  published: boolean;
-}
+      const { error } = await supabase
+        .from("courses")
+        .update({
+          title: courseForm.title,
+          description: courseForm.description || null,
+          cover_image_url: courseForm.coverImageUrl || null,
+          price: parseFloat(courseForm.price) || 0,
+          is_free: courseForm.isFree,
+          published: courseForm.published,
+          category: courseForm.category || null,
+        })
+        .eq("id", selectedCourse.id)
+        .eq("expert_id", user.id);
 
 interface Lesson {
   id: string;
@@ -54,6 +58,7 @@ export default function ManageCoursePage() {
     price: "0",
     isFree: true,
     published: false,
+    category: "",
   });
   const [isRichTextMode, setIsRichTextMode] = useState(false);
 
@@ -106,6 +111,7 @@ export default function ManageCoursePage() {
       price: course.price.toString(),
       isFree: course.is_free,
       published: course.published,
+      category: course.category || "",
     });
     await fetchLessons(course.id);
   };
@@ -123,6 +129,7 @@ export default function ManageCoursePage() {
           price: parseFloat(courseForm.price) || 0,
           is_free: courseForm.isFree,
           published: courseForm.published,
+          category: courseForm.category || null,
         })
         .eq("id", selectedCourse.id)
         .eq("expert_id", user.id);
@@ -353,6 +360,17 @@ export default function ManageCoursePage() {
                       className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
                       placeholder="https://..."
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-custom-text mb-2">Category</label>
+                    <input
+                      type="text"
+                      value={courseForm.category}
+                      onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
+                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      placeholder="e.g., AI Courses, Business, Design, Marketing"
+                    />
+                    <p className="text-xs text-custom-text/60 mt-1">Categorize your course to help users discover it</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <div>

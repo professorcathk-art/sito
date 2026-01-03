@@ -36,7 +36,16 @@ export function RichTextEditor({
   placeholder = "Start writing...",
 }: RichTextEditorProps) {
   const [uploading, setUploading] = useState(false);
+  const [isRawHtmlMode, setIsRawHtmlMode] = useState(false);
+  const [rawHtmlContent, setRawHtmlContent] = useState(content);
   const supabase = createClient();
+
+  // Sync rawHtmlContent when content prop changes externally
+  useEffect(() => {
+    if (!isRawHtmlMode) {
+      setRawHtmlContent(content);
+    }
+  }, [content, isRawHtmlMode]);
 
   const editor = useEditor({
     extensions: [
@@ -377,10 +386,50 @@ export function RichTextEditor({
             🔗
           </button>
         </div>
+
+        {/* Raw HTML Mode Toggle */}
+        <div className="border-l border-cyber-green/30 pl-2 ml-auto">
+          <button
+            type="button"
+            onClick={() => {
+              if (isRawHtmlMode) {
+                // Switching from raw HTML to editor mode
+                onChange(rawHtmlContent);
+                if (editor) {
+                  editor.commands.setContent(rawHtmlContent);
+                }
+              } else {
+                // Switching from editor to raw HTML mode
+                const htmlContent = editor?.getHTML() || content;
+                setRawHtmlContent(htmlContent);
+              }
+              setIsRawHtmlMode(!isRawHtmlMode);
+            }}
+            className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+              isRawHtmlMode
+                ? "bg-cyber-green text-dark-green-900"
+                : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+            }`}
+          >
+            {isRawHtmlMode ? "📝 Editor" : "🔧 HTML"}
+          </button>
+        </div>
       </div>
 
-      {/* Editor */}
-      <EditorContent editor={editor} className="min-h-[300px]" />
+      {/* Editor or Raw HTML */}
+      {isRawHtmlMode ? (
+        <textarea
+          value={rawHtmlContent}
+          onChange={(e) => {
+            setRawHtmlContent(e.target.value);
+            onChange(e.target.value);
+          }}
+          className="w-full min-h-[300px] p-4 bg-dark-green-900/50 border-0 text-custom-text font-mono text-sm focus:outline-none resize-y"
+          placeholder="Enter raw HTML code here..."
+        />
+      ) : (
+        <EditorContent editor={editor} className="min-h-[300px]" />
+      )}
     </div>
   );
 }

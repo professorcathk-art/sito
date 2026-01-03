@@ -19,6 +19,7 @@ export default function CreateCoursePage() {
     coverImageUrl: "",
     price: "0",
     isFree: true,
+    category: "",
   });
 
   const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,6 +81,7 @@ export default function CreateCoursePage() {
           cover_image_url: formData.coverImageUrl || null,
           price: parseFloat(formData.price) || 0,
           is_free: formData.isFree,
+          category: formData.category || null,
           published: false,
         })
         .select()
@@ -153,6 +155,21 @@ export default function CreateCoursePage() {
                     className="mt-4 max-w-md rounded-lg"
                   />
                 )}
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">
+                  Category
+                </label>
+                <input
+                  type="text"
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-cyber-green"
+                  placeholder="e.g., AI Courses, Business, Design, Marketing"
+                />
+                <p className="text-xs text-custom-text/60 mt-1">Categorize your course to help users discover it</p>
               </div>
 
               {/* Pricing */}

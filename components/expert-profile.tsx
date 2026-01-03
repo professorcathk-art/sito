@@ -504,7 +504,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           <BlogPostsList expertId={expertId} limit={6} />
         </div>
 
-        {/* Courses Section - Show products with interest registration */}
+        {/* Courses Section - Show only course products */}
         {loadingProducts ? (
           <div className="mb-8">
             <h2 className="text-xl font-bold text-custom-text mb-3">Courses</h2>
@@ -512,11 +512,11 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
               <div className="h-24 bg-dark-green-800/50 rounded-xl"></div>
             </div>
           </div>
-        ) : products.length > 0 ? (
+        ) : products.filter(p => p.product_type === "course").length > 0 ? (
           <div className="mb-8">
             <h2 className="text-xl font-bold text-custom-text mb-4">Courses</h2>
             <div className="space-y-4">
-              {products.map((product) => {
+              {products.filter(p => p.product_type === "course").map((product) => {
                 const isExpanded = expandedProducts.has(product.id);
                 return (
                   <div
@@ -621,6 +621,11 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                 );
               })}
             </div>
+          </div>
+        ) : !loadingProducts ? (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-custom-text mb-4">Courses</h2>
+            <p className="text-custom-text/70">No courses available yet.</p>
           </div>
         ) : null}
 

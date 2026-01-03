@@ -231,6 +231,7 @@ export function ProductsManagement() {
             description: formData.description,
             is_free: true,
             price: 0,
+            category: null, // Category can be set later in course management
             published: false,
           })
           .select()
