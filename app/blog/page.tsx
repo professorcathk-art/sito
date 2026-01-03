@@ -74,11 +74,18 @@ export default function BlogFeedPage() {
         subscribedExpertIds = subscriptions?.map((s: any) => s.expert_id) || [];
       }
 
+      // Check access for each post
+      const postsWithAccess = (blogPosts || []).map((post: any) => {
+        const hasAccess = post.access_level === "public" || 
+          (user && (subscribedExpertIds.includes(post.expert_id) || post.expert_id === user.id));
+        return { ...post, has_access: hasAccess };
+      });
+
       // Get user's likes and watchlist if logged in
       let likedPostIds: string[] = [];
       let savedPostIds: string[] = [];
-      if (user && blogPosts) {
-        const postIds = blogPosts.map((p: any) => p.id);
+      if (user && postsWithAccess) {
+        const postIds = postsWithAccess.map((p: any) => p.id);
         const { data: likes } = await supabase
           .from("blog_likes")
           .select("blog_post_id")
@@ -273,94 +280,169 @@ export default function BlogFeedPage() {
                   className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
                   style={{ height: "160px" }} // Fixed height like Twitter/Threads
                 >
-                  <Link
-                    href={`/blog/${post.id}`}
-                    onClick={() => trackView(post.id)}
-                    className="flex h-full"
-                  >
-                    {/* Featured Image */}
-                    <div className="w-48 sm:w-64 flex-shrink-0 relative">
-                      {post.featured_image_url ? (
-                        <Image
-                          src={post.featured_image_url}
-                          alt={post.title}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-dark-green-800 to-dark-green-900 flex items-center justify-center">
-                          <span className="text-4xl text-cyber-green font-bold">
-                            {post.title.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm font-semibold text-custom-text truncate">
-                            {post.expert_name}
-                          </span>
-                          {post.is_subscribed && (
-                            <span className="text-xs text-cyber-green bg-cyber-green/20 px-2 py-0.5 rounded">
-                              Subscribed
+                  {post.has_access ? (
+                    <Link
+                      href={`/blog/${post.id}`}
+                      onClick={() => trackView(post.id)}
+                      className="flex h-full"
+                    >
+                      {/* Featured Image */}
+                      <div className="w-48 sm:w-64 flex-shrink-0 relative">
+                        {post.featured_image_url ? (
+                          <Image
+                            src={post.featured_image_url}
+                            alt={post.title}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-dark-green-800 to-dark-green-900 flex items-center justify-center">
+                            <span className="text-4xl text-cyber-green font-bold">
+                              {post.title.charAt(0).toUpperCase()}
                             </span>
-                          )}
-                          <span className="text-xs text-custom-text/60">
-                            {formatDate(post.published_at)}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-bold text-custom-text mb-1 line-clamp-2">
-                          {post.title}
-                        </h3>
-                        <p className="text-sm text-custom-text/70 line-clamp-2 mb-2">
-                          {post.description}
-                        </p>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Footer */}
-                      <div className="flex items-center justify-between text-xs text-custom-text/60">
-                        <div className="flex items-center gap-4">
-                          <span>{post.reading_time_minutes} min read</span>
-                          <span>{post.view_count} views</span>
+                      {/* Content */}
+                      <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-semibold text-custom-text truncate">
+                              {post.expert_name}
+                            </span>
+                            {post.is_subscribed && (
+                              <span className="text-xs text-cyber-green bg-cyber-green/20 px-2 py-0.5 rounded">
+                                Subscribed
+                              </span>
+                            )}
+                            <span className="text-xs text-custom-text/60">
+                              {formatDate(post.published_at)}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold text-custom-text mb-1 line-clamp-2">
+                            {post.title}
+                          </h3>
+                          <p className="text-sm text-custom-text/70 line-clamp-2 mb-2">
+                            {post.description}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleLike(post.id, post.is_liked);
-                            }}
-                            disabled={likingPost === post.id}
-                            className={`p-1.5 rounded transition-colors ${
-                              post.is_liked
-                                ? "text-red-500 hover:bg-red-900/20"
-                                : "text-custom-text/60 hover:bg-dark-green-800/50"
-                            }`}
-                          >
-                            ❤️ {post.like_count}
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleSave(post.id, post.is_saved);
-                            }}
-                            disabled={savingPost === post.id}
-                            className={`p-1.5 rounded transition-colors ${
-                              post.is_saved
-                                ? "text-cyber-green hover:bg-cyber-green/20"
-                                : "text-custom-text/60 hover:bg-dark-green-800/50"
-                            }`}
-                          >
-                            {post.is_saved ? "✓ Saved" : "💾 Save"}
-                          </button>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between text-xs text-custom-text/60">
+                          <div className="flex items-center gap-4">
+                            <span>{post.reading_time_minutes} min read</span>
+                            <span>{post.view_count} views</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleLike(post.id, post.is_liked);
+                              }}
+                              disabled={likingPost === post.id}
+                              className={`p-1.5 rounded transition-colors ${
+                                post.is_liked
+                                  ? "text-red-500 hover:bg-red-900/20"
+                                  : "text-custom-text/60 hover:bg-dark-green-800/50"
+                              }`}
+                            >
+                              ❤️ {post.like_count}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleSave(post.id, post.is_saved);
+                              }}
+                              disabled={savingPost === post.id}
+                              className={`p-1.5 rounded transition-colors ${
+                                post.is_saved
+                                  ? "text-cyber-green hover:bg-cyber-green/20"
+                                  : "text-custom-text/60 hover:bg-dark-green-800/50"
+                              }`}
+                            >
+                              {post.is_saved ? "✓ Saved" : "💾 Save"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ) : (
+                    <div
+                      onClick={() => {
+                        if (!user) {
+                          window.location.href = `/login?redirect=/blog/${post.id}`;
+                        } else {
+                          window.location.href = `/blog/${post.id}`;
+                        }
+                      }}
+                      className="flex h-full cursor-pointer"
+                    >
+                      {/* Featured Image - Blurred */}
+                      <div className="w-48 sm:w-64 flex-shrink-0 relative">
+                        {post.featured_image_url ? (
+                          <div className="relative w-full h-full">
+                            <Image
+                              src={post.featured_image_url}
+                              alt={post.title}
+                              fill
+                              className="object-cover blur-sm opacity-50"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="text-4xl text-cyber-green">🔒</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-dark-green-800 to-dark-green-900 flex items-center justify-center opacity-50">
+                            <div className="text-4xl text-cyber-green">🔒</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content - Masked */}
+                      <div className="flex-1 p-4 flex flex-col justify-between min-w-0 relative">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-semibold text-custom-text/60 truncate">
+                              {post.expert_name}
+                            </span>
+                            <span className="text-xs text-custom-text/60">
+                              {formatDate(post.published_at)}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold text-custom-text/80 mb-1 line-clamp-2">
+                            {post.title}
+                          </h3>
+                          <div className="relative">
+                            <p className="text-sm text-custom-text/40 line-clamp-2 mb-2 blur-sm select-none">
+                              {post.description || "This content is available to subscribers only. Subscribe to unlock this post and access exclusive content from this expert."}
+                            </p>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="bg-dark-green-900/80 backdrop-blur-sm border border-cyber-green/30 rounded-lg p-3 flex items-center gap-2">
+                                <span className="text-2xl">🔒</span>
+                                <span className="text-sm text-custom-text font-semibold">
+                                  {!user ? "Sign in to view" : "Subscribe to view"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between text-xs text-custom-text/40">
+                          <div className="flex items-center gap-4">
+                            <span>{post.reading_time_minutes} min read</span>
+                            <span>{post.view_count} views</span>
+                          </div>
+                          <div className="text-xs text-cyber-green font-semibold">
+                            {!user ? "Sign In Required" : "Subscribe to Unlock"}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </Link>
+                  )}
                 </div>
               ))}
             </div>
