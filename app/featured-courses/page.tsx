@@ -239,9 +239,9 @@ export default function FeaturedCoursesPage() {
                                   className="object-cover"
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800 to-dark-green-900">
-                                  <span className="text-4xl text-cyber-green font-bold">
-                                    {course.title.charAt(0).toUpperCase()}
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800 to-dark-green-900 p-4">
+                                  <span className="text-lg sm:text-xl md:text-2xl text-cyber-green font-bold text-center line-clamp-3">
+                                    {course.title}
                                   </span>
                                 </div>
                               )}
@@ -292,9 +292,9 @@ export default function FeaturedCoursesPage() {
                                   className="object-cover"
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800 to-dark-green-900">
-                                  <span className="text-4xl text-cyber-green font-bold">
-                                    {course.title.charAt(0).toUpperCase()}
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800 to-dark-green-900 p-4">
+                                  <span className="text-lg sm:text-xl md:text-2xl text-cyber-green font-bold text-center line-clamp-3">
+                                    {course.title}
                                   </span>
                                 </div>
                               )}
