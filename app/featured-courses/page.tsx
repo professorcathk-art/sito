@@ -86,8 +86,12 @@ export default function FeaturedCoursesPage() {
           throw profilesError;
         }
 
+        // Filter out products with deleted courses
+        const validCourseIds = coursesData?.map((c: any) => c.id) || [];
+        const validProductsData = productsData.filter((p: any) => validCourseIds.includes(p.course_id));
+        
         // Combine data
-        const combinedCourses = productsData
+        const combinedCourses = validProductsData
           .map((product: any) => {
             const course = coursesData?.find((c: any) => c.id === product.course_id);
             const profile = profilesData?.find((p: any) => p.id === product.expert_id);
