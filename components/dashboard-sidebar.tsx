@@ -117,6 +117,11 @@ export function DashboardSidebar() {
       href: "/appointments/manage",
       icon: "📅",
     },
+    {
+      name: "Payment Setup",
+      href: "/dashboard/stripe-connect",
+      icon: "💳",
+    },
     ...(isAdmin
       ? [
           {
