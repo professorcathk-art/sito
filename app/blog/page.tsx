@@ -23,6 +23,8 @@ interface BlogPost {
   is_liked: boolean;
   is_saved: boolean;
   is_subscribed: boolean;
+  access_level: "public" | "subscriber" | "paid";
+  has_access: boolean;
 }
 
 export default function BlogFeedPage() {
@@ -40,11 +42,11 @@ export default function BlogFeedPage() {
   const fetchBlogPosts = async () => {
     setLoading(true);
     try {
-      // Fetch all public blog posts
+      // Fetch all blog posts (public and subscriber-only)
       const { data: blogPosts, error: blogError } = await supabase
         .from("blog_posts")
-        .select("id, title, description, featured_image_url, reading_time_minutes, published_at, expert_id, view_count, like_count")
-        .eq("access_level", "public")
+        .select("id, title, description, featured_image_url, reading_time_minutes, published_at, expert_id, view_count, like_count, access_level")
+        .in("access_level", ["public", "subscriber"])
         .not("published_at", "is", null)
         .order("published_at", { ascending: false })
         .limit(100);
@@ -93,7 +95,7 @@ export default function BlogFeedPage() {
       }
 
       // Combine and sort posts with algorithm
-      const combinedPosts = (blogPosts || []).map((post: any) => {
+      const combinedPosts = postsWithAccess.map((post: any) => {
         const profile = profiles?.find((p: any) => p.id === post.expert_id);
         const isSubscribed = subscribedExpertIds.includes(post.expert_id);
         const isLiked = likedPostIds.includes(post.id);

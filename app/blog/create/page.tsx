@@ -19,7 +19,7 @@ export default function CreateBlogPostPage() {
     description: "",
     content: "",
     featuredImageUrl: "",
-    accessLevel: "public" as "public" | "subscriber" | "paid",
+    accessLevel: "public" as "public" | "subscriber",
     notifySubscribers: true,
   });
   const [uploadedFiles, setUploadedFiles] = useState<Array<{
@@ -232,7 +232,6 @@ export default function CreateBlogPostPage() {
                 >
                   <option value="public">Public</option>
                   <option value="subscriber">Subscriber-only</option>
-                  <option value="paid">Paid-only</option>
                 </select>
               </div>
 

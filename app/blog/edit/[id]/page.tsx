@@ -23,7 +23,7 @@ export default function EditBlogPostPage() {
     description: "",
     content: "",
     featuredImageUrl: "",
-    accessLevel: "public" as "public" | "subscriber-only" | "paid-only",
+    accessLevel: "public" as "public" | "subscriber",
     notifySubscribers: false,
   });
 
@@ -236,12 +236,11 @@ export default function EditBlogPostPage() {
                 </label>
                 <select
                   value={formData.accessLevel}
-                  onChange={(e) => setFormData({ ...formData, accessLevel: e.target.value as "public" | "subscriber-only" | "paid-only" })}
+                  onChange={(e) => setFormData({ ...formData, accessLevel: e.target.value as "public" | "subscriber" })}
                   className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text focus:outline-none focus:border-cyber-green"
                 >
                   <option value="public">Public</option>
-                  <option value="subscriber-only">Subscriber-only</option>
-                  <option value="paid-only">Paid-only</option>
+                  <option value="subscriber">Subscriber-only</option>
                 </select>
               </div>
 
