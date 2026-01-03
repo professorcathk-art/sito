@@ -257,7 +257,7 @@ export default function FeaturedCoursesPage() {
                                   <p className="text-white/80 text-sm mb-2">{course.expert_name}</p>
                                   <div className="flex items-center justify-between">
                                     <span className="text-cyber-green font-semibold">
-                                      {course.is_free ? "Free" : `$${course.price}`}
+                                      {course.price === 0 || !course.price ? "Free" : `$${course.price.toFixed(2)}`}
                                     </span>
                                     {course.category && (
                                       <span className="text-xs text-white/60 bg-white/20 px-2 py-1 rounded">
