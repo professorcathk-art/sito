@@ -179,21 +179,22 @@ export function MessagesContent() {
       setShowCompose(true);
       setComposeExpertId(userId);
       // For anonymous users, show "Anonymous Student" or fetch name if available
-      supabase
-        .from("profiles")
-        .select("name")
-        .eq("id", userId)
-        .single()
-        .then(({ data }) => {
+      (async () => {
+        try {
+          const { data } = await supabase
+            .from("profiles")
+            .select("name")
+            .eq("id", userId)
+            .single();
           if (data) {
             setComposeExpertName(data.name);
           } else {
             setComposeExpertName("Anonymous Student");
           }
-        })
-        .catch(() => {
+        } catch {
           setComposeExpertName("Anonymous Student");
-        });
+        }
+      })();
     }
   }, [expertId, userId, supabase]);
 

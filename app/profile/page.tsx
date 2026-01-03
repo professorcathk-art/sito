@@ -45,6 +45,7 @@ export default function ProfilePage() {
   });
   const [recentMessages, setRecentMessages] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [activeTab, setActiveTab] = useState<"profile" | "messages" | "connections">("profile");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

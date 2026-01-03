@@ -386,6 +386,7 @@ export function ProductsManagement() {
         pricing_type: "one-off",
         product_type: "appointment",
         course_id: "",
+        category: "",
       });
       setShowAddForm(false);
       setEditingProduct(null);
@@ -657,6 +658,7 @@ export function ProductsManagement() {
                     pricing_type: "one-off",
                     product_type: "appointment",
                     course_id: "",
+                    category: "",
                   });
                 }}
                 className="px-6 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
