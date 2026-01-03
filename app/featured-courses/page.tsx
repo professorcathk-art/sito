@@ -105,7 +105,7 @@ export default function FeaturedCoursesPage() {
               cover_image_url: course.cover_image_url,
               price: course.price,
               is_free: course.is_free,
-              category: course.category || "Uncategorized",
+              category: course.category,
               expert_id: product.expert_id,
               expert_name: profile.name || "Expert",
               expert_avatar_url: profile.avatar_url || undefined,
@@ -143,14 +143,15 @@ export default function FeaturedCoursesPage() {
     fetchCourses();
   }, [supabase, searchQuery, selectedCategory]);
 
-  // Get unique categories
-  const categories = Array.from(new Set(courses.map((c) => c.category).filter(Boolean))) as string[];
+  // Get unique categories (excluding null and "Uncategorized")
+  const categories = Array.from(new Set(courses.map((c) => c.category).filter((cat): cat is string => cat !== null && cat !== "Uncategorized"))) as string[];
   const trendingCourses = courses.slice(0, 10); // First 10 courses as trending
 
-  // Group courses by category
+  // Group courses by category (excluding Uncategorized)
   const coursesByCategory: { [key: string]: Course[] } = {};
   courses.forEach((course) => {
-    const cat = course.category || "Uncategorized";
+    const cat = course.category;
+    if (!cat || cat === "Uncategorized") return; // Skip Uncategorized
     if (!coursesByCategory[cat]) {
       coursesByCategory[cat] = [];
     }

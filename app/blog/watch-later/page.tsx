@@ -29,6 +29,12 @@ export default function WatchLaterPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [removingPost, setRemovingPost] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (user) {
+      fetchWatchLater();
+    }
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (user) {
@@ -57,12 +63,12 @@ export default function WatchLaterPage() {
 
       const postIds = watchlist.map((w: any) => w.blog_post_id);
 
-      // Fetch blog posts
+      // Fetch blog posts - include both public and subscriber-only posts
       const { data: blogPosts, error: blogError } = await supabase
         .from("blog_posts")
-        .select("id, title, description, featured_image_url, reading_time_minutes, published_at, expert_id, view_count, like_count")
+        .select("id, title, description, featured_image_url, reading_time_minutes, published_at, expert_id, view_count, like_count, access_level")
         .in("id", postIds)
-        .eq("access_level", "public");
+        .in("access_level", ["public", "subscriber"]);
 
       if (blogError) throw blogError;
 

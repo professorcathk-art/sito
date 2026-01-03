@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/protected-route";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { ConnectionsContent } from "@/components/connections-content";
 
 interface Profile {
   id: string;
@@ -48,8 +49,62 @@ export default function ProfilePage() {
     if (user) {
       fetchProfile();
       fetchStats();
+      fetchRecentMessages();
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchRecentMessages = async () => {
+    if (!user) return;
+    try {
+      const { data: messagesData, error: messagesError } = await supabase
+        .from("messages")
+        .select("id, from_id, subject, content, read, created_at")
+        .eq("to_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (messagesError) {
+        console.error("Error fetching messages:", messagesError);
+      } else if (messagesData && messagesData.length > 0) {
+        const fromIds = messagesData.map((msg: any) => msg.from_id);
+        const { data: senderProfiles } = await supabase
+          .from("profiles")
+          .select("id, name")
+          .in("id", fromIds);
+
+        const senderMap = new Map(senderProfiles?.map((p: any) => [p.id, p.name]) || []);
+
+        const messages = messagesData.map((msg: any) => ({
+          id: msg.id,
+          from_id: msg.from_id,
+          from_name: senderMap.get(msg.from_id) || "Unknown",
+          subject: msg.subject,
+          content: msg.content,
+          read: msg.read,
+          created_at: msg.created_at,
+        }));
+        setRecentMessages(messages);
+        setUnreadCount(messages.filter((m) => !m.read).length);
+      } else {
+        setRecentMessages([]);
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return "Just now";
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    return date.toLocaleDateString();
+  };
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -303,40 +358,133 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
-            <h3 className="text-xl font-bold text-custom-text mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Link
-                href="/dashboard/blog"
-                className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
-              >
-                <div className="font-semibold text-custom-text mb-1">Manage Blog Posts</div>
-                <div className="text-sm text-custom-text/70">View and edit your blog posts</div>
-              </Link>
-              <Link
-                href="/courses/manage"
-                className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
-              >
-                <div className="font-semibold text-custom-text mb-1">Manage Courses</div>
-                <div className="text-sm text-custom-text/70">View and edit your courses</div>
-              </Link>
-              <Link
-                href="/products"
-                className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
-              >
-                <div className="font-semibold text-custom-text mb-1">Manage Products</div>
-                <div className="text-sm text-custom-text/70">View and edit your products</div>
-              </Link>
-              <Link
-                href={`/expert/${user?.id}`}
-                className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
-              >
-                <div className="font-semibold text-custom-text mb-1">View Public Profile</div>
-                <div className="text-sm text-custom-text/70">See how others see your profile</div>
-              </Link>
-            </div>
+          {/* Tabs */}
+          <div className="flex gap-4 mb-6 border-b border-cyber-green/30">
+            <button
+              onClick={() => setActiveTab("profile")}
+              className={`px-4 py-2 font-semibold transition-colors ${
+                activeTab === "profile"
+                  ? "text-cyber-green border-b-2 border-cyber-green"
+                  : "text-custom-text/70 hover:text-custom-text"
+              }`}
+            >
+              Profile
+            </button>
+            <button
+              onClick={() => setActiveTab("messages")}
+              className={`px-4 py-2 font-semibold transition-colors ${
+                activeTab === "messages"
+                  ? "text-cyber-green border-b-2 border-cyber-green"
+                  : "text-custom-text/70 hover:text-custom-text"
+              }`}
+            >
+              Recent Messages
+              {unreadCount > 0 && (
+                <span className="ml-2 bg-cyber-green text-dark-green-950 text-xs px-2 py-0.5 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab("connections")}
+              className={`px-4 py-2 font-semibold transition-colors ${
+                activeTab === "connections"
+                  ? "text-cyber-green border-b-2 border-cyber-green"
+                  : "text-custom-text/70 hover:text-custom-text"
+              }`}
+            >
+              Connections
+            </button>
           </div>
+
+          {/* Tab Content */}
+          {activeTab === "profile" && (
+            <>
+              {/* Quick Links */}
+              <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
+                <h3 className="text-xl font-bold text-custom-text mb-4">Quick Actions</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Link
+                    href="/dashboard/blog"
+                    className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+                  >
+                    <div className="font-semibold text-custom-text mb-1">Manage Blog Posts</div>
+                    <div className="text-sm text-custom-text/70">View and edit your blog posts</div>
+                  </Link>
+                  <Link
+                    href="/courses/manage"
+                    className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+                  >
+                    <div className="font-semibold text-custom-text mb-1">Manage Courses</div>
+                    <div className="text-sm text-custom-text/70">View and edit your courses</div>
+                  </Link>
+                  <Link
+                    href="/products"
+                    className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+                  >
+                    <div className="font-semibold text-custom-text mb-1">Manage Products</div>
+                    <div className="text-sm text-custom-text/70">View and edit your products</div>
+                  </Link>
+                  <Link
+                    href={`/expert/${user?.id}`}
+                    className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+                  >
+                    <div className="font-semibold text-custom-text mb-1">View Public Profile</div>
+                    <div className="text-sm text-custom-text/70">See how others see your profile</div>
+                  </Link>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === "messages" && (
+            <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-custom-text">Recent Messages</h2>
+                <Link
+                  href="/messages"
+                  className="text-cyber-green hover:text-cyber-green-light font-semibold hover:underline"
+                >
+                  View All →
+                </Link>
+              </div>
+              {recentMessages.length > 0 ? (
+                <div className="space-y-4">
+                  {recentMessages.map((message) => (
+                    <Link
+                      key={message.id}
+                      href={`/messages`}
+                      className="block bg-dark-green-900/30 border border-cyber-green/20 rounded-lg p-4 hover:bg-dark-green-900/50 hover:border-cyber-green/40 transition-all"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`font-semibold ${message.read ? "text-custom-text/80" : "text-custom-text"}`}>
+                              {message.from_name}
+                            </span>
+                            {!message.read && (
+                              <span className="h-2 w-2 bg-cyber-green rounded-full"></span>
+                            )}
+                          </div>
+                          <p className={`text-sm ${message.read ? "text-custom-text/70" : "text-custom-text font-medium"}`}>
+                            {message.subject}
+                          </p>
+                          <p className="text-xs text-custom-text/60 mt-1 line-clamp-1">{message.content}</p>
+                        </div>
+                        <span className="text-xs text-custom-text/60 ml-4">{formatTimeAgo(message.created_at)}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-custom-text/70 text-center py-4">No messages yet</p>
+              )}
+            </div>
+          )}
+
+          {activeTab === "connections" && (
+            <ConnectionsContent />
+          )}
         </div>
       </DashboardLayout>
     </ProtectedRoute>

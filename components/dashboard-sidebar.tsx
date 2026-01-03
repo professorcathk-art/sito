@@ -71,11 +71,6 @@ export function DashboardSidebar() {
 
   const menuItems: SidebarItem[] = [
     {
-      name: "Dashboard",
-      href: "/dashboard",
-      icon: "📊",
-    },
-    {
       name: "Profile",
       href: "/profile",
       icon: "👤",

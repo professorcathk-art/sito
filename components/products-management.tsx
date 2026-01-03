@@ -54,6 +54,7 @@ export function ProductsManagement() {
     pricing_type: "one-off" as "one-off" | "hourly",
     product_type: "appointment" as "course" | "appointment",
     course_id: "",
+    category: "",
   });
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"products" | "interests">("products");
@@ -78,6 +79,19 @@ export function ProductsManagement() {
     content: "",
   });
   const [currentCourseId, setCurrentCourseId] = useState<string | null>(null);
+  const [showQuestionnaireForm, setShowQuestionnaireForm] = useState(false);
+  const [questionnaireType, setQuestionnaireType] = useState<"course_enrollment" | "appointment" | null>(null);
+  const [currentQuestionnaireId, setCurrentQuestionnaireId] = useState<string | null>(null);
+  const [questionnaireFields, setQuestionnaireFields] = useState<any[]>([]);
+  const [showFieldForm, setShowFieldForm] = useState(false);
+  const [editingField, setEditingField] = useState<any | null>(null);
+  const [fieldForm, setFieldForm] = useState({
+    field_type: "text" as "text" | "email" | "textarea" | "select" | "checkbox" | "radio",
+    label: "",
+    placeholder: "",
+    required: false,
+    options: "",
+  });
 
   useEffect(() => {
     if (user) {
@@ -220,6 +234,11 @@ export function ProductsManagement() {
       return;
     }
 
+    if (formData.product_type === "course" && !formData.category) {
+      setError("Please select a category for your course");
+      return;
+    }
+
     try {
       if (formData.product_type === "course") {
         // For course: auto-create course and product
@@ -232,7 +251,7 @@ export function ProductsManagement() {
             description: formData.description,
             is_free: coursePrice === 0,
             price: coursePrice,
-            category: null, // Category can be set later in course management
+            category: formData.category || "",
             published: false,
           })
           .select()
@@ -253,12 +272,20 @@ export function ProductsManagement() {
 
         if (productError) throw productError;
 
-        // Set current product and course, show questionnaire form instead of course form
+        // Set current product and course, show questionnaire form inline
         setCurrentProductId(newProduct.id);
         setCurrentCourseId(newCourse.id);
         setShowAddForm(false);
-        // Redirect to questionnaire management to create enrollment questionnaire
-        router.push(`/questionnaires/manage?product_id=${newProduct.id}&type=course_enrollment`);
+        setShowQuestionnaireForm(true);
+        setQuestionnaireType("course_enrollment");
+        setQuestionnaireFields([]);
+        setFieldForm({
+          field_type: "text",
+          label: "",
+          placeholder: "",
+          required: false,
+          options: "",
+        });
         setFormData({
           name: "",
           description: "",
@@ -266,6 +293,7 @@ export function ProductsManagement() {
           pricing_type: "one-off",
           product_type: "appointment",
           course_id: "",
+          category: "",
         });
         return;
       } else if (formData.product_type === "appointment") {
@@ -285,6 +313,7 @@ export function ProductsManagement() {
         setCurrentProductId(newProduct.id);
         setShowAppointmentForm(true);
         setShowAddForm(false);
+        setQuestionnaireType("appointment");
         setFormData({
           name: "",
           description: "",
@@ -292,6 +321,7 @@ export function ProductsManagement() {
           pricing_type: "one-off",
           product_type: "appointment",
           course_id: "",
+          category: "",
         });
         return;
       }
@@ -309,7 +339,7 @@ export function ProductsManagement() {
           productData.price = parseFloat(formData.price) || 0;
         }
 
-        // If updating a course product, also update the course price and description
+        // If updating a course product, also update the course price, description, and category
         if (formData.product_type === "course" && editingProduct.course_id) {
           const courseUpdateData: any = {};
           
@@ -320,6 +350,11 @@ export function ProductsManagement() {
           // Update course description if provided
           if (formData.description) {
             courseUpdateData.description = formData.description;
+          }
+          
+          // Update course category if provided
+          if (formData.category) {
+            courseUpdateData.category = formData.category;
           }
           
           if (Object.keys(courseUpdateData).length > 0) {
@@ -363,8 +398,26 @@ export function ProductsManagement() {
     }
   };
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = async (product: Product) => {
     setEditingProduct(product);
+    let category = "";
+    
+    // If it's a course product, fetch the course category
+    if (product.product_type === "course" && product.course_id) {
+      try {
+        const { data: courseData } = await supabase
+          .from("courses")
+          .select("category")
+          .eq("id", product.course_id)
+          .single();
+        if (courseData) {
+          category = courseData.category || "";
+        }
+      } catch (err) {
+        console.error("Error fetching course category:", err);
+      }
+    }
+    
     setFormData({
       name: product.name,
       description: product.description,
@@ -372,6 +425,7 @@ export function ProductsManagement() {
       pricing_type: product.pricing_type,
       product_type: (product.product_type === "service" ? "appointment" : product.product_type) || "appointment",
       course_id: product.course_id || "",
+      category: category,
     });
     setShowAddForm(true);
   };
@@ -455,6 +509,7 @@ export function ProductsManagement() {
                 pricing_type: "one-off",
                 product_type: "appointment",
                 course_id: "",
+                category: "",
               });
             }}
             className="bg-cyber-green text-custom-text px-4 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
@@ -541,6 +596,23 @@ export function ProductsManagement() {
               </p>
             </div>
 
+            {formData.product_type === "course" && (
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">
+                  Category *
+                </label>
+                <input
+                  type="text"
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                  placeholder="e.g., AI Courses, Business, Design, Marketing"
+                  required
+                />
+                <p className="text-xs text-custom-text/60 mt-1">Choose a category to help users discover your course</p>
+              </div>
+            )}
+
             {(formData.product_type === "appointment" || editingProduct) && (
               <div>
                 <label className="block text-sm font-medium text-custom-text mb-2">
@@ -571,7 +643,7 @@ export function ProductsManagement() {
                 type="submit"
                 className="bg-cyber-green text-custom-text px-6 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
               >
-                {editingProduct ? "Update Product" : formData.product_type === "course" ? "Next: Create Lessons" : "Next: Set Up Sessions"}
+                {editingProduct ? "Update Product" : formData.product_type === "course" ? "Next: Create Form" : "Next: Set Up Sessions"}
               </button>
               <button
                 type="button"
@@ -647,9 +719,18 @@ export function ProductsManagement() {
               if (error) throw error;
 
               alert(`Successfully created ${slots.length} appointment slots!`);
+              // Show questionnaire form after slots are created
               setShowAppointmentForm(false);
-              setCurrentProductId(null);
-              fetchProducts();
+              setShowQuestionnaireForm(true);
+              setQuestionnaireType("appointment");
+              setQuestionnaireFields([]);
+              setFieldForm({
+                field_type: "text",
+                label: "",
+                placeholder: "",
+                required: false,
+                options: "",
+              });
             } catch (err: any) {
               console.error("Error creating slots:", err);
               alert("Failed to create appointment slots. Please try again.");
@@ -733,6 +814,287 @@ export function ProductsManagement() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Questionnaire Form (Embedded) */}
+      {showQuestionnaireForm && currentProductId && questionnaireType && (
+        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 mb-6">
+          <h3 className="text-xl font-bold text-custom-text mb-4">
+            {questionnaireType === "course_enrollment" ? "Create Course Enrollment Form" : "Create Appointment Booking Form"}
+          </h3>
+          <p className="text-sm text-custom-text/70 mb-6">
+            Add custom questions for users to fill out before {questionnaireType === "course_enrollment" ? "enrolling" : "booking"}.
+          </p>
+
+          {/* Existing Fields List */}
+          {questionnaireFields.length > 0 && (
+            <div className="mb-6 space-y-2">
+              {questionnaireFields.map((field, index) => (
+                <div key={field.id || index} className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-3 flex items-center justify-between">
+                  <div className="flex-1">
+                    <span className="text-custom-text font-semibold">{field.label}</span>
+                    <span className="text-custom-text/60 text-sm ml-2">({field.field_type})</span>
+                    {field.required && <span className="text-red-400 text-sm ml-2">*</span>}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingField(field);
+                        setFieldForm({
+                          field_type: field.field_type,
+                          label: field.label,
+                          placeholder: field.placeholder || "",
+                          required: field.required,
+                          options: field.options ? (Array.isArray(field.options) ? field.options.join(", ") : "") : "",
+                        });
+                        setShowFieldForm(true);
+                      }}
+                      className="text-cyber-green hover:text-cyber-green-light text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!confirm("Delete this field?")) return;
+                        try {
+                          if (field.id && currentQuestionnaireId) {
+                            const { error } = await supabase
+                              .from("questionnaire_fields")
+                              .delete()
+                              .eq("id", field.id);
+                            if (error) throw error;
+                          }
+                          setQuestionnaireFields(questionnaireFields.filter((_, i) => i !== index));
+                        } catch (err) {
+                          console.error("Error deleting field:", err);
+                          alert("Failed to delete field.");
+                        }
+                      }}
+                      className="text-red-400 hover:text-red-300 text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add/Edit Field Form */}
+          {showFieldForm && (
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!user || !currentQuestionnaireId) return;
+
+              try {
+                const options = fieldForm.field_type === "select" || fieldForm.field_type === "radio" || fieldForm.field_type === "checkbox"
+                  ? fieldForm.options.split(",").map(o => o.trim()).filter(Boolean)
+                  : null;
+
+                if (editingField && editingField.id) {
+                  // Update existing field
+                  const { error } = await supabase
+                    .from("questionnaire_fields")
+                    .update({
+                      field_type: fieldForm.field_type,
+                      label: fieldForm.label,
+                      placeholder: fieldForm.placeholder || null,
+                      required: fieldForm.required,
+                      options: options && options.length > 0 ? options : null,
+                    })
+                    .eq("id", editingField.id);
+                  if (error) throw error;
+                  setQuestionnaireFields(questionnaireFields.map(f => f.id === editingField.id ? { ...f, ...fieldForm, options } : f));
+                  setEditingField(null);
+                } else {
+                  // Add new field
+                  const newField = {
+                    questionnaire_id: currentQuestionnaireId,
+                    field_type: fieldForm.field_type,
+                    label: fieldForm.label,
+                    placeholder: fieldForm.placeholder || null,
+                    required: fieldForm.required,
+                    options: options && options.length > 0 ? options : null,
+                    order_index: questionnaireFields.length,
+                  };
+                  const { data, error } = await supabase.from("questionnaire_fields").insert(newField).select().single();
+                  if (error) throw error;
+                  setQuestionnaireFields([...questionnaireFields, data]);
+                }
+
+                setFieldForm({
+                  field_type: "text",
+                  label: "",
+                  placeholder: "",
+                  required: false,
+                  options: "",
+                });
+                setShowFieldForm(false);
+              } catch (err: any) {
+                console.error("Error saving field:", err);
+                alert("Failed to save field. Please try again.");
+              }
+            }} className="space-y-4 mb-4 bg-dark-green-900/30 p-4 rounded-lg">
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">Field Type *</label>
+                <select
+                  value={fieldForm.field_type}
+                  onChange={(e) => setFieldForm({ ...fieldForm, field_type: e.target.value as any })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  required
+                >
+                  <option value="text">Text</option>
+                  <option value="email">Email</option>
+                  <option value="textarea">Textarea</option>
+                  <option value="select">Select</option>
+                  <option value="radio">Radio</option>
+                  <option value="checkbox">Checkbox</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">Label *</label>
+                <input
+                  type="text"
+                  value={fieldForm.label}
+                  onChange={(e) => setFieldForm({ ...fieldForm, label: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">Placeholder</label>
+                <input
+                  type="text"
+                  value={fieldForm.placeholder}
+                  onChange={(e) => setFieldForm({ ...fieldForm, placeholder: e.target.value })}
+                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                />
+              </div>
+              {(fieldForm.field_type === "select" || fieldForm.field_type === "radio" || fieldForm.field_type === "checkbox") && (
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">Options (comma-separated) *</label>
+                  <input
+                    type="text"
+                    value={fieldForm.options}
+                    onChange={(e) => setFieldForm({ ...fieldForm, options: e.target.value })}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    placeholder="Option 1, Option 2, Option 3"
+                    required
+                  />
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={fieldForm.required}
+                  onChange={(e) => setFieldForm({ ...fieldForm, required: e.target.checked })}
+                  className="w-4 h-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                />
+                <label className="text-sm text-custom-text">Required field</label>
+              </div>
+              <div className="flex gap-4">
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                >
+                  {editingField ? "Update Field" : "Add Field"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowFieldForm(false);
+                    setEditingField(null);
+                    setFieldForm({
+                      field_type: "text",
+                      label: "",
+                      placeholder: "",
+                      required: false,
+                      options: "",
+                    });
+                  }}
+                  className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 mt-6">
+            {!showFieldForm && (
+              <button
+                type="button"
+                onClick={async () => {
+                  // Create questionnaire if it doesn't exist
+                  if (!currentQuestionnaireId && user) {
+                    try {
+                      const type = questionnaireType === "course_enrollment" ? "course_interest" : "appointment";
+                      const { data, error } = await supabase
+                        .from("questionnaires")
+                        .insert({
+                          expert_id: user.id,
+                          type,
+                          title: questionnaireType === "course_enrollment" ? "Course Enrollment Questionnaire" : "Appointment Questionnaire",
+                          is_active: true,
+                        })
+                        .select()
+                        .single();
+                      if (error) throw error;
+                      setCurrentQuestionnaireId(data.id);
+                    } catch (err: any) {
+                      console.error("Error creating questionnaire:", err);
+                      if (err.code === "23505") {
+                        // Questionnaire already exists, fetch it
+                        const type = questionnaireType === "course_enrollment" ? "course_interest" : "appointment";
+                        const { data } = await supabase
+                          .from("questionnaires")
+                          .select("id")
+                          .eq("expert_id", user.id)
+                          .eq("type", type)
+                          .single();
+                        if (data) {
+                          setCurrentQuestionnaireId(data.id);
+                          const { data: fieldsData } = await supabase
+                            .from("questionnaire_fields")
+                            .select("*")
+                            .eq("questionnaire_id", data.id)
+                            .order("order_index", { ascending: true });
+                          if (fieldsData) setQuestionnaireFields(fieldsData);
+                        }
+                      } else {
+                        alert("Failed to create questionnaire.");
+                      }
+                    }
+                  }
+                  setShowFieldForm(true);
+                }}
+                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              >
+                + Add Field
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={async () => {
+                // Save and close questionnaire form
+                setShowQuestionnaireForm(false);
+                setCurrentProductId(null);
+                setCurrentCourseId(null);
+                setQuestionnaireType(null);
+                setCurrentQuestionnaireId(null);
+                setQuestionnaireFields([]);
+                fetchProducts();
+                alert("Questionnaire saved successfully! Your product is ready.");
+              }}
+              className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+            >
+              {questionnaireFields.length === 0 ? "Skip & Finish" : "Save & Finish"}
+            </button>
+          </div>
         </div>
       )}
 
