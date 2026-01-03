@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
+import { CourseActions } from "@/components/course-actions";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
@@ -144,7 +145,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
           )}
 
-          <CourseActions courseId={course.id} expertId={course.expert_id} />
+          <CourseActions courseId={course.id} expertId={course.expert_id} currentUserId={user?.id} />
         </div>
       </div>
       <Footer />

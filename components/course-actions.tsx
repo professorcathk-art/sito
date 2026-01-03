@@ -1,16 +1,13 @@
-"use client";
-
-import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
 
 interface CourseActionsProps {
   courseId: string;
   expertId: string;
+  currentUserId?: string;
 }
 
-export function CourseActions({ courseId, expertId }: CourseActionsProps) {
-  const { user } = useAuth();
-  const isExpert = user?.id === expertId;
+export function CourseActions({ courseId, expertId, currentUserId }: CourseActionsProps) {
+  const isExpert = currentUserId === expertId;
 
   if (isExpert) {
     return (
