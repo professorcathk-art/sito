@@ -139,12 +139,19 @@ export default function LearningRequestsPage() {
                 Students post what they want to learn. Experts can find and connect with them.
               </p>
             </div>
-            {user && (
+            {user ? (
               <button
                 onClick={() => setShowCreateForm(!showCreateForm)}
                 className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
               >
                 {showCreateForm ? "Cancel" : "+ Post Request"}
+              </button>
+            ) : (
+              <button
+                onClick={() => router.push("/login?redirect=/learning-requests")}
+                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              >
+                Sign In to Post a Learning Request
               </button>
             )}
           </div>

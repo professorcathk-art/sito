@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { HeroSection } from "@/components/hero-section";
-import { CategorySection } from "@/components/category-section";
 import { FeaturesSection } from "@/components/features-section";
 import { FeaturedExperts } from "@/components/featured-experts";
 import { FeaturedCourses } from "@/components/featured-courses";
@@ -17,7 +16,6 @@ export default function Home() {
       <FeaturedExperts />
       <FeaturedBlogPosts />
       <FeaturedCourses />
-      <CategorySection />
       <FeaturesSection />
       <TestimonialsSection />
       <Footer />

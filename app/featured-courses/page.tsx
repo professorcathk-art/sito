@@ -61,12 +61,13 @@ export default function FeaturedCoursesPage() {
         const courseIds = productsData.map((p: any) => p.course_id).filter(Boolean);
         const expertIds = Array.from(new Set(productsData.map((p: any) => p.expert_id)));
 
-        // Fetch course details
+        // Fetch course details - filter out deleted courses
         const { data: coursesData, error: coursesError } = await supabase
           .from("courses")
           .select("id, title, description, cover_image_url, price, is_free, category")
           .in("id", courseIds)
-          .eq("published", true);
+          .eq("published", true)
+          .not("id", "is", null);
 
         if (coursesError) {
           console.error("Courses query error:", coursesError);

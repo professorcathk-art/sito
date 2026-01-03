@@ -13,12 +13,10 @@ export default function CreateBlogPostPage() {
   const supabase = createClient();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     content: "",
-    featuredImageUrl: "",
     accessLevel: "public" as "public" | "subscriber",
     notifySubscribers: true,
   });
@@ -35,44 +33,6 @@ export default function CreateBlogPostPage() {
     }
   }, [user, router]);
 
-  const handleFeaturedImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image size must be less than 5MB");
-      return;
-    }
-
-    setUploadingImage(true);
-    try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `blog-featured/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("blog-resources")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage.from("blog-resources").getPublicUrl(filePath);
-      setFormData({ ...formData, featuredImageUrl: data.publicUrl });
-    } catch (err: any) {
-      console.error("Error uploading image:", err);
-      alert("Failed to upload image. Please try again.");
-    } finally {
-      setUploadingImage(false);
-    }
-  };
 
   const handleFileUpload = (fileUrl: string, fileName: string, fileType: string, fileSize: number) => {
     setUploadedFiles([...uploadedFiles, { url: fileUrl, fileName, fileType, fileSize }]);
@@ -185,27 +145,6 @@ export default function CreateBlogPostPage() {
                   placeholder="Brief description of your post"
                   rows={3}
                 />
-              </div>
-
-              {/* Featured Image */}
-              <div>
-                <label className="block text-sm font-medium text-custom-text mb-2">
-                  Featured Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFeaturedImageUpload}
-                  disabled={uploadingImage}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                />
-                {formData.featuredImageUrl && (
-                  <img
-                    src={formData.featuredImageUrl}
-                    alt="Featured"
-                    className="mt-4 max-w-md rounded-lg"
-                  />
-                )}
               </div>
 
               {/* Content */}

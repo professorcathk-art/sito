@@ -41,10 +41,12 @@ export function FeaturedCourses() {
             expert_id,
             created_at,
             product_type,
-            course_id
+            course_id,
+            courses!inner(id, published)
           `)
           .eq("product_type", "course")
           .not("course_id", "is", null)
+          .eq("courses.published", true)
           .order("created_at", { ascending: false })
           .limit(50);
 

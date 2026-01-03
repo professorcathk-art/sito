@@ -278,7 +278,7 @@ export default function BlogFeedPage() {
                 <div
                   key={post.id}
                   className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
-                  style={{ height: "160px" }} // Fixed height like Twitter/Threads
+                  style={{ minHeight: "120px" }} // Flexible height
                 >
                   {post.has_access ? (
                     <Link
@@ -286,26 +286,8 @@ export default function BlogFeedPage() {
                       onClick={() => trackView(post.id)}
                       className="flex h-full"
                     >
-                      {/* Featured Image */}
-                      <div className="w-48 sm:w-64 flex-shrink-0 relative">
-                        {post.featured_image_url ? (
-                          <Image
-                            src={post.featured_image_url}
-                            alt={post.title}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-dark-green-800 to-dark-green-900 flex items-center justify-center">
-                            <span className="text-4xl text-cyber-green font-bold">
-                              {post.title.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
                       {/* Content */}
-                      <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
+                      <div className="flex-1 p-4 flex flex-col justify-between min-w-0 w-full">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-sm font-semibold text-custom-text truncate">
@@ -380,29 +362,8 @@ export default function BlogFeedPage() {
                       }}
                       className="flex h-full cursor-pointer"
                     >
-                      {/* Featured Image - Blurred */}
-                      <div className="w-48 sm:w-64 flex-shrink-0 relative">
-                        {post.featured_image_url ? (
-                          <div className="relative w-full h-full">
-                            <Image
-                              src={post.featured_image_url}
-                              alt={post.title}
-                              fill
-                              className="object-cover blur-sm opacity-50"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="text-4xl text-cyber-green">🔒</div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-dark-green-800 to-dark-green-900 flex items-center justify-center opacity-50">
-                            <div className="text-4xl text-cyber-green">🔒</div>
-                          </div>
-                        )}
-                      </div>
-
                       {/* Content - Masked */}
-                      <div className="flex-1 p-4 flex flex-col justify-between min-w-0 relative">
+                      <div className="flex-1 p-4 flex flex-col justify-between min-w-0 w-full relative">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-sm font-semibold text-custom-text/60 truncate">
