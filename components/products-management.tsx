@@ -57,7 +57,6 @@ export function ProductsManagement() {
   });
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"products" | "interests">("products");
-  const [descriptionMode, setDescriptionMode] = useState<"edit" | "preview">("edit");
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
   const [showAppointmentForm, setShowAppointmentForm] = useState(false);
   const [showCourseForm, setShowCourseForm] = useState(false);
