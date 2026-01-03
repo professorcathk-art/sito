@@ -14,6 +14,7 @@ interface Product {
   expert_id: string;
   expert_name: string;
   expert_avatar_url?: string;
+  course_id?: string;
   created_at: string;
 }
 
@@ -28,7 +29,7 @@ export function FeaturedCourses() {
       try {
         console.log("FeaturedCourses: Fetching products...");
         // Fetch products from listed experts
-        // First, get all products
+        // Only fetch course products, exclude 1-on-1 sessions
         const { data: productsData, error: productsError } = await supabase
           .from("products")
           .select(`
@@ -38,8 +39,12 @@ export function FeaturedCourses() {
             price,
             pricing_type,
             expert_id,
-            created_at
+            created_at,
+            product_type,
+            course_id
           `)
+          .eq("product_type", "course")
+          .not("course_id", "is", null)
           .order("created_at", { ascending: false })
           .limit(50);
 

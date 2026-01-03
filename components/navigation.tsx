@@ -60,24 +60,15 @@ export function Navigation() {
             </Link>
             {loading ? (
               <div className="text-custom-text/80 animate-pulse text-sm lg:text-base">Loading...</div>
-            ) : user ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
-                >
-                  Dashboard
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
-                >
-                  Sign Out
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
-                </button>
-              </>
-            ) : (
+                    ) : user ? (
+                      <Link
+                        href="/dashboard"
+                        className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
+                      >
+                        Dashboard
+                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
+                      </Link>
+                    ) : (
               <>
                 <Link
                   href="/login"
@@ -155,21 +146,13 @@ export function Navigation() {
               {loading ? (
                 <div className="text-custom-text/80 animate-pulse py-2">Loading...</div>
               ) : user ? (
-                <>
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block text-custom-text/90 hover:text-cyber-green transition-colors py-2"
-                  >
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="block w-full text-left text-custom-text/90 hover:text-cyber-green transition-colors py-2"
-                  >
-                    Sign Out
-                  </button>
-                </>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block text-custom-text/90 hover:text-cyber-green transition-colors py-2"
+                >
+                  Dashboard
+                </Link>
               ) : (
                 <>
                   <Link

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
+import { SubscribeButton } from "@/components/subscribe-button";
 
 interface BlogPost {
   id: string;
@@ -155,45 +156,65 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
           <p className="text-xl text-custom-text/80 mb-6">{blogPost.description}</p>
         )}
 
-        <div className="flex items-center gap-4 text-custom-text/70 mb-6">
+        <div className="mb-6">
           {blogPost.profiles && (
-            <Link
-              href={`/expert/${blogPost.profiles?.id || blogPost.expert_id}`}
-              className="flex items-center gap-2 hover:text-cyber-green transition-colors"
-            >
-              {blogPost.profiles.avatar_url ? (
-                <img
-                  src={blogPost.profiles.avatar_url}
-                  alt={blogPost.profiles.name}
-                  className="w-10 h-10 rounded-full"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-dark-green-800 flex items-center justify-center">
-                  {blogPost.profiles.name.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <div>
-                <div className="font-semibold">{blogPost.profiles.name}</div>
-                {blogPost.profiles.title && (
-                  <div className="text-sm">{blogPost.profiles.title}</div>
+            <div className="flex items-start gap-4 mb-4">
+              <Link
+                href={`/expert/${blogPost.profiles?.id || blogPost.expert_id}`}
+                className="flex items-center gap-2 hover:text-cyber-green transition-colors"
+              >
+                {blogPost.profiles.avatar_url ? (
+                  <img
+                    src={blogPost.profiles.avatar_url}
+                    alt={blogPost.profiles.name}
+                    className="w-12 h-12 rounded-full"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-dark-green-800 flex items-center justify-center">
+                    {blogPost.profiles.name.charAt(0).toUpperCase()}
+                  </div>
                 )}
-              </div>
-            </Link>
+                <div>
+                  <div className="font-semibold">{blogPost.profiles.name}</div>
+                  {blogPost.profiles.title && (
+                    <div className="text-sm text-custom-text/70">{blogPost.profiles.title}</div>
+                  )}
+                </div>
+              </Link>
+            </div>
           )}
-          <span>•</span>
-          <time dateTime={blogPost.published_at}>
-            {new Date(blogPost.published_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </time>
-          {blogPost.reading_time_minutes && (
-            <>
-              <span>•</span>
-              <span>{blogPost.reading_time_minutes} min read</span>
-            </>
+          {user && blogPost.profiles && user.id !== blogPost.profiles.id && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              <SubscribeButton expertId={blogPost.profiles.id} expertName={blogPost.profiles.name} />
+              <Link
+                href={`/messages?expert=${blogPost.profiles.id}`}
+                className="px-4 py-2 bg-dark-green-800/50 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm font-medium"
+              >
+                Message
+              </Link>
+              <Link
+                href={`/expert/${blogPost.profiles.id}`}
+                className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors text-sm font-medium"
+              >
+                Connect
+              </Link>
+            </div>
           )}
+          <div className="flex items-center gap-4 text-custom-text/70 text-sm">
+            <time dateTime={blogPost.published_at}>
+              {new Date(blogPost.published_at).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </time>
+            {blogPost.reading_time_minutes && (
+              <>
+                <span>•</span>
+                <span>{blogPost.reading_time_minutes} min read</span>
+              </>
+            )}
+          </div>
         </div>
 
         {blogPost.featured_image_url && (

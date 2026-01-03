@@ -305,6 +305,18 @@ export function ProductsManagement() {
 
         if (formData.product_type === "course" && formData.course_id) {
           productData.course_id = formData.course_id;
+          
+          // If updating a course product, also update the course price
+          if (formData.price) {
+            const coursePrice = parseFloat(formData.price) || 0;
+            const { error: courseUpdateError } = await supabase
+              .from("courses")
+              .update({ price: coursePrice })
+              .eq("id", formData.course_id)
+              .eq("expert_id", user.id);
+            
+            if (courseUpdateError) throw courseUpdateError;
+          }
         }
 
         // Add price if provided

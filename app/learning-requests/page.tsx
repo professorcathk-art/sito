@@ -104,7 +104,8 @@ export default function LearningRequestsPage() {
       await fetchRequests();
     } catch (err: any) {
       console.error("Error creating learning request:", err);
-      alert("Failed to post learning request. Please try again.");
+      console.error("Error details:", JSON.stringify(err, null, 2));
+      alert(`Failed to post learning request: ${err.message || "Please try again."}`);
     }
   };
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
 
@@ -16,13 +17,20 @@ interface Message {
 }
 
 export function DashboardContent() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const router = useRouter();
   const supabase = createClient();
   const [hasProfile, setHasProfile] = useState(false);
   const [isListed, setIsListed] = useState(false);
   const [recentMessages, setRecentMessages] = useState<Message[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   useEffect(() => {
     async function fetchDashboardData() {

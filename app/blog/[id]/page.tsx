@@ -58,7 +58,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     return (
     <div className="min-h-screen bg-custom-bg flex flex-col">
       <Navigation />
-      <div className="pt-16 pb-12 flex-1">
+      <div className="pt-24 pb-12 flex-1">
         <BlogPostView blogPost={blogPostWithProfile} />
       </div>
       <Footer />

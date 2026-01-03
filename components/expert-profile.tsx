@@ -355,7 +355,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
       <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8">
         <div className="flex items-start justify-between mb-6">
           <div className="flex-1">

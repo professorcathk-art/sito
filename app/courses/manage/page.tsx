@@ -406,13 +406,67 @@ export default function ManageCoursePage() {
                       </label>
                     </div>
                   </div>
-                  <button
-                    onClick={handleSaveCourse}
-                    disabled={saving}
-                    className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
-                  >
-                    {saving ? "Saving..." : "Save Course Details"}
-                  </button>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={handleSaveCourse}
+                      disabled={saving}
+                      className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+                    >
+                      {saving ? "Saving..." : "Save Course Details"}
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!selectedCourse || !user) return;
+                        if (!confirm("Are you sure you want to delete this course? This action cannot be undone.")) return;
+                        
+                        try {
+                          // Delete associated product first
+                          const { error: productError } = await supabase
+                            .from("products")
+                            .delete()
+                            .eq("course_id", selectedCourse.id)
+                            .eq("expert_id", user.id);
+                          
+                          if (productError) throw productError;
+                          
+                          // Delete course lessons
+                          const { error: lessonsError } = await supabase
+                            .from("course_lessons")
+                            .delete()
+                            .eq("course_id", selectedCourse.id);
+                          
+                          if (lessonsError) throw lessonsError;
+                          
+                          // Delete course enrollments
+                          const { error: enrollmentsError } = await supabase
+                            .from("course_enrollments")
+                            .delete()
+                            .eq("course_id", selectedCourse.id);
+                          
+                          if (enrollmentsError) throw enrollmentsError;
+                          
+                          // Finally delete the course
+                          const { error: courseError } = await supabase
+                            .from("courses")
+                            .delete()
+                            .eq("id", selectedCourse.id)
+                            .eq("expert_id", user.id);
+                          
+                          if (courseError) throw courseError;
+                          
+                          alert("Course deleted successfully!");
+                          setSelectedCourse(null);
+                          await fetchCourses();
+                        } catch (err) {
+                          console.error("Error deleting course:", err);
+                          alert("Failed to delete course. Please try again.");
+                        }
+                      }}
+                      className="px-6 py-3 bg-red-900/50 text-red-300 font-semibold rounded-lg hover:bg-red-900/70 transition-colors"
+                    >
+                      Delete Course
+                    </button>
+                  </div>
                 </div>
               </div>
 
