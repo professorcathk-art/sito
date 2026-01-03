@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Navigation } from "@/components/navigation";
 import { BlogPostView } from "@/components/blog-post-view";
+import { BlogPostSidebar } from "@/components/blog-post-sidebar";
 import { Footer } from "@/components/footer";
 import { notFound } from "next/navigation";
 
@@ -58,8 +59,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     return (
     <div className="min-h-screen bg-custom-bg flex flex-col">
       <Navigation />
-      <div className="pt-24 pb-12 flex-1">
-        <BlogPostView blogPost={blogPostWithProfile} />
+      <div className="pt-24 pb-12 flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="lg:w-3/4">
+            <BlogPostView blogPost={blogPostWithProfile} />
+          </div>
+          <div className="lg:w-1/4">
+            <BlogPostSidebar expertId={blogPost.expert_id} currentBlogPostId={blogPost.id} />
+          </div>
+        </div>
       </div>
       <Footer />
     </div>

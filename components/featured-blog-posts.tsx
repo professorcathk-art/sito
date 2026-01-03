@@ -23,7 +23,7 @@ export function FeaturedBlogPosts() {
             View All →
           </Link>
         </div>
-        <BlogPostsList limit={6} />
+        <BlogPostsList limit={5} />
       </div>
     </section>
   );

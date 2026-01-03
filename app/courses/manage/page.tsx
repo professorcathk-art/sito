@@ -135,6 +135,13 @@ export default function ManageCoursePage() {
 
   const handleSaveCourse = async () => {
     if (!selectedCourse || !user) return;
+
+    // Authorization check: Only course owner can edit
+    if (selectedCourse.expert_id !== user.id) {
+      alert("You don't have permission to edit this course. Only the course owner can make changes.");
+      return;
+    }
+
     setSaving(true);
     try {
       const { error } = await supabase
@@ -174,6 +181,12 @@ export default function ManageCoursePage() {
   const handleAddLesson = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !selectedCourse) return;
+
+    // Authorization check: Only course owner can add lessons
+    if (selectedCourse.expert_id !== user.id) {
+      alert("You don't have permission to add lessons to this course. Only the course owner can make changes.");
+      return;
+    }
 
     try {
       const newLesson = {
@@ -221,6 +234,12 @@ export default function ManageCoursePage() {
     e.preventDefault();
     if (!user || !editingLesson || !selectedCourse) return;
 
+    // Authorization check: Only course owner can edit
+    if (selectedCourse.expert_id !== user.id) {
+      alert("You don't have permission to edit this course. Only the course owner can make changes.");
+      return;
+    }
+
     try {
       const updatedLesson = {
         title: lessonForm.title,
@@ -257,6 +276,12 @@ export default function ManageCoursePage() {
   const handleDeleteLesson = async (lessonId: string) => {
     if (!confirm("Are you sure you want to delete this lesson?")) return;
     if (!user || !selectedCourse) return;
+
+    // Authorization check: Only course owner can delete lessons
+    if (selectedCourse.expert_id !== user.id) {
+      alert("You don't have permission to delete lessons from this course. Only the course owner can make changes.");
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -487,20 +512,23 @@ export default function ManageCoursePage() {
                           </p>
                           <p className="text-custom-text/70 text-sm">{lesson.description}</p>
                         </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEditLesson(lesson)}
-                            className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg hover:bg-blue-900/70 transition-colors text-sm"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteLesson(lesson.id)}
-                            className="px-3 py-1 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900/70 transition-colors text-sm"
-                          >
-                            Delete
-                          </button>
-                        </div>
+                        {/* Only show edit/delete buttons for course owner */}
+                        {selectedCourse.expert_id === user?.id && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditLesson(lesson)}
+                              className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg hover:bg-blue-900/70 transition-colors text-sm"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteLesson(lesson.id)}
+                              className="px-3 py-1 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900/70 transition-colors text-sm"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

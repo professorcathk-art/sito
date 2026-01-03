@@ -54,13 +54,22 @@ export function CourseEnrollment({
 
       setIsEnrolled(!!enrollment);
 
-      // Check if registered interest
-      const { data: interest } = await supabase
-        .from("product_interests")
+      // Check if registered interest - need to get product_id from course_id
+      const { data: product } = await supabase
+        .from("products")
         .select("id")
-        .eq("product_id", courseId) // Assuming product_id matches course_id for courses
-        .eq("user_id", currentUserId)
+        .eq("course_id", courseId)
         .single();
+      
+      if (product) {
+        const { data: interest } = await supabase
+          .from("product_interests")
+          .select("id")
+          .eq("product_id", product.id)
+          .eq("user_id", currentUserId)
+          .single();
+        setHasRegisteredInterest(!!interest);
+      }
 
       setHasRegisteredInterest(!!interest);
     } catch (err) {
@@ -112,49 +121,54 @@ export function CourseEnrollment({
         .eq("course_id", courseId)
         .single();
 
-      if (product) {
-        const interestData: any = {
-          product_id: product.id,
-          user_id: currentUserId,
-        };
-
-        if (questionnaireResponse) {
-          interestData.questionnaire_response_id = questionnaireResponse.id;
-        }
-
-        const { error } = await supabase
-          .from("product_interests")
-          .insert(interestData);
-
-        if (error) throw error;
-
-        // Notify expert
-        try {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("email")
-            .eq("id", currentUserId)
-            .single();
-
-          if (profile?.email) {
-            await fetch("/api/notify-product-interest", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                productId: product.id,
-                expertId,
-                userId: currentUserId,
-                userEmail: profile.email,
-              }),
-            });
-          }
-        } catch (err) {
-          console.error("Error sending notification:", err);
-        }
-
-        alert("Interest registered successfully! The expert will be notified.");
-        setHasRegisteredInterest(true);
+      if (!product) {
+        throw new Error("Product not found for this course");
       }
+
+      const interestData: any = {
+        product_id: product.id,
+        user_id: currentUserId,
+      };
+
+      if (questionnaireResponse && questionnaireResponse.id) {
+        interestData.questionnaire_response_id = questionnaireResponse.id;
+      }
+
+      const { error } = await supabase
+        .from("product_interests")
+        .insert(interestData);
+
+      if (error) {
+        console.error("Error inserting interest:", error);
+        throw error;
+      }
+
+      // Notify expert
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("id", currentUserId)
+          .single();
+
+        if (profile?.email) {
+          await fetch("/api/notify-product-interest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              productId: product.id,
+              expertId,
+              userId: currentUserId,
+              userEmail: profile.email,
+            }),
+          });
+        }
+      } catch (err) {
+        console.error("Error sending notification:", err);
+      }
+
+      alert("Interest registered successfully! The expert will be notified.");
+      setHasRegisteredInterest(true);
     } catch (err: any) {
       console.error("Error registering interest:", err);
       alert("Failed to register interest. Please try again.");
@@ -247,7 +261,7 @@ export function CourseEnrollment({
         .insert({
           questionnaire_id: questionnaireId,
           user_id: currentUserId,
-          responses: responses,
+          responses: responses, // Note: column is 'responses' not 'response_data' based on migration
         })
         .select()
         .single();

@@ -614,20 +614,35 @@ export function ProductsManagement() {
               </div>
             )}
 
-            {(formData.product_type === "appointment" || editingProduct) && (
-              <div>
-                <label className="block text-sm font-medium text-custom-text mb-2">
-                  Price (USD) {formData.product_type === "appointment" ? "(per hour)" : ""}
-                </label>
+            <div>
+              <label className="block text-sm font-medium text-custom-text mb-2">
+                Price (USD) * {formData.product_type === "appointment" ? "(per hour)" : ""}
+              </label>
+              <div className="flex items-center gap-4 mb-2">
                 <input
                   type="number"
                   step="0.01"
                   min="0"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                  className="flex-1 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
                   placeholder="0.00"
+                  required
                 />
+                <label className="flex items-center gap-2 text-custom-text">
+                  <input
+                    type="checkbox"
+                    checked={formData.price === "0" || formData.price === ""}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setFormData({ ...formData, price: "0" });
+                      }
+                    }}
+                    className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                  />
+                  <span className="text-sm">Free</span>
+                </label>
+              </div>
               </div>
             )}
 
