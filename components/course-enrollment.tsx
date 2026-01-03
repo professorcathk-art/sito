@@ -118,6 +118,24 @@ export function CourseEnrollment({
 
     setProcessing(true);
     try {
+      // Get user email from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", currentUserId)
+        .maybeSingle();
+
+      // Fallback to auth user email if profile email not found
+      let userEmail = profile?.email;
+      if (!userEmail) {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        userEmail = authUser?.email;
+      }
+
+      if (!userEmail) {
+        throw new Error("User email not found");
+      }
+
       // Get product ID for this course - use maybeSingle to handle no results
       const { data: product, error: productError } = await supabase
         .from("products")
@@ -137,6 +155,7 @@ export function CourseEnrollment({
       const interestData: any = {
         product_id: product.id,
         user_id: currentUserId,
+        user_email: userEmail,
       };
 
       if (questionnaireResponse && questionnaireResponse.id) {
@@ -157,24 +176,16 @@ export function CourseEnrollment({
 
       // Notify expert
       try {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("email")
-          .eq("id", currentUserId)
-          .single();
-
-        if (profile?.email) {
-          await fetch("/api/notify-product-interest", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              productId: product.id,
-              expertId,
-              userId: currentUserId,
-              userEmail: profile.email,
-            }),
-          });
-        }
+        await fetch("/api/notify-product-interest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productId: product.id,
+            expertId,
+            userId: currentUserId,
+            userEmail: userEmail,
+          }),
+        });
       } catch (err) {
         console.error("Error sending notification:", err);
       }
