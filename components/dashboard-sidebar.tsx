@@ -118,6 +118,11 @@ export function DashboardSidebar() {
       icon: "💾",
     },
     {
+      name: "Questionnaires",
+      href: "/questionnaires/manage",
+      icon: "📋",
+    },
+    {
       name: "Manage Appointments",
       href: "/appointments/manage",
       icon: "📅",
