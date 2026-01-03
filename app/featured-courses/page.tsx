@@ -310,7 +310,7 @@ export default function FeaturedCoursesPage() {
                                   <p className="text-white/80 text-sm mb-2">{course.expert_name}</p>
                                   <div className="flex items-center justify-between">
                                     <span className="text-cyber-green font-semibold">
-                                      {course.is_free ? "Free" : `$${course.price}`}
+                                      {course.price === 0 || !course.price ? "Free" : `$${course.price.toFixed(2)}`}
                                     </span>
                                   </div>
                                 </div>
