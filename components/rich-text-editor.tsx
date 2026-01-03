@@ -19,7 +19,7 @@ lowlight.register("typescript", typescript);
 lowlight.register("python", python);
 lowlight.register("css", css);
 lowlight.register("html", html);
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 interface RichTextEditorProps {
