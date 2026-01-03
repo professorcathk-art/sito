@@ -161,7 +161,7 @@ export default function ProfilePage() {
         <DashboardLayout>
           <div className="px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center py-12 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg">
-              <p className="text-custom-text/80 text-lg mb-4">You haven't set up your profile yet.</p>
+              <p className="text-custom-text/80 text-lg mb-4">You haven&apos;t set up your profile yet.</p>
               <button
                 onClick={() => router.push("/profile/setup")}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
