@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Navigation } from "@/components/navigation";
+import { Footer } from "@/components/footer";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -152,9 +153,9 @@ export default function FeaturedCoursesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-custom-bg">
+    <div className="min-h-screen bg-custom-bg flex flex-col">
       <Navigation />
-      <div className="pt-24 pb-20">
+      <div className="pt-24 pb-20 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2">Featured Courses</h1>
@@ -329,6 +330,7 @@ export default function FeaturedCoursesPage() {
           display: none;
         }
       `}</style>
+      <Footer />
     </div>
   );
 }

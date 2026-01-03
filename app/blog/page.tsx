@@ -158,7 +158,7 @@ export default function BlogFeedPage() {
           });
         if (error) throw error;
       }
-      // Refresh posts to update like count
+      // Refresh posts to update like count and view count
       await fetchBlogPosts();
     } catch (error) {
       console.error("Error toggling like:", error);
@@ -208,7 +208,7 @@ export default function BlogFeedPage() {
     if (!user) return; // Only track for logged-in users
     
     try {
-      await supabase
+      const { error } = await supabase
         .from("blog_views")
         .upsert({
           blog_post_id: postId,
@@ -216,6 +216,11 @@ export default function BlogFeedPage() {
         }, {
           onConflict: "blog_post_id,user_id",
         });
+      
+      if (!error) {
+        // Refresh posts to update view count
+        await fetchBlogPosts();
+      }
     } catch (error) {
       console.error("Error tracking view:", error);
     }
@@ -292,21 +297,6 @@ export default function BlogFeedPage() {
                     <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                          {post.expert_avatar_url ? (
-                            <Image
-                              src={post.expert_avatar_url}
-                              alt={post.expert_name}
-                              width={24}
-                              height={24}
-                              className="rounded-full"
-                            />
-                          ) : (
-                            <div className="w-6 h-6 rounded-full bg-dark-green-700 flex items-center justify-center">
-                              <span className="text-xs text-cyber-green font-bold">
-                                {post.expert_name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                          )}
                           <span className="text-sm font-semibold text-custom-text truncate">
                             {post.expert_name}
                           </span>
@@ -374,6 +364,7 @@ export default function BlogFeedPage() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

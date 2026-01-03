@@ -38,13 +38,6 @@ export function Navigation() {
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
             </Link>
             <Link
-              href="/about"
-              className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
-            >
-              About
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
-            </Link>
-            <Link
               href="/featured-courses"
               className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
             >
@@ -130,13 +123,6 @@ export function Navigation() {
                 className="block text-custom-text/90 hover:text-cyber-green transition-colors py-2"
               >
                 Find Experts
-              </Link>
-              <Link
-                href="/about"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-custom-text/90 hover:text-cyber-green transition-colors py-2"
-              >
-                About
               </Link>
               <Link
                 href="/featured-courses"

@@ -33,6 +33,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
   const { user } = useAuth();
   const [hasAccess, setHasAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
+  const [viewTracked, setViewTracked] = useState(false);
 
   useEffect(() => {
     async function checkAccess() {

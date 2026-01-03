@@ -24,14 +24,14 @@ function DirectoryLoading() {
 
 export default function DirectoryPage() {
   return (
-    <div className="min-h-screen bg-custom-bg relative overflow-hidden">
-      
+    <div className="min-h-screen bg-custom-bg relative overflow-hidden flex flex-col">
       <Navigation />
-      <div className="pt-16">
+      <div className="pt-16 flex-1">
         <Suspense fallback={<DirectoryLoading />}>
           <ExpertDirectory />
         </Suspense>
       </div>
+      <Footer />
     </div>
   );
 }
