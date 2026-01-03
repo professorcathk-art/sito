@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Navigation } from "@/components/navigation";
 import { BlogPostView } from "@/components/blog-post-view";
+import { Footer } from "@/components/footer";
 import { notFound } from "next/navigation";
 
 interface BlogPostPageProps {

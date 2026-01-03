@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Navigation } from "@/components/navigation";
 import { ExpertDirectory } from "@/components/expert-directory";
+import { Footer } from "@/components/footer";
 
 function DirectoryLoading() {
   return (

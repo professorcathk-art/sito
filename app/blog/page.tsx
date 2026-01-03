@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Navigation } from "@/components/navigation";
+import { Footer } from "@/components/footer";
 import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
 import Image from "next/image";
