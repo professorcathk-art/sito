@@ -15,6 +15,7 @@ interface Questionnaire {
 
 interface QuestionnaireField {
   id: string;
+  questionnaire_id: string;
   field_type: "text" | "email" | "textarea" | "select" | "checkbox" | "radio";
   label: string;
   placeholder: string | null;
@@ -153,7 +154,7 @@ export default function ManageQuestionnairesPage() {
         label: fieldForm.label,
         placeholder: fieldForm.placeholder || null,
         required: fieldForm.required,
-        options: options ? JSON.stringify(options) : null,
+        options: options && options.length > 0 ? options : null,
         order_index: fields.length,
       };
 
@@ -204,7 +205,7 @@ export default function ManageQuestionnairesPage() {
           label: fieldForm.label,
           placeholder: fieldForm.placeholder || null,
           required: fieldForm.required,
-          options: options ? JSON.stringify(options) : null,
+          options: options && options.length > 0 ? options : null,
         })
         .eq("id", editingField.id)
         .eq("questionnaire_id", selectedQuestionnaire.id);
