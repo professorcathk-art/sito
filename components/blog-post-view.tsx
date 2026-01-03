@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { SubscribeButton } from "@/components/subscribe-button";
+import { BlogPostSidebar } from "@/components/blog-post-sidebar";
 
 interface BlogPost {
   id: string;
@@ -35,6 +36,8 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
   const [hasAccess, setHasAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [viewTracked, setViewTracked] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<"none" | "pending" | "accepted" | "rejected">("none");
 
   useEffect(() => {
     async function checkAccess() {
@@ -145,9 +148,11 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
   }
 
   return (
-    <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Header */}
-      <header className="mb-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex gap-8">
+        <article className="flex-1">
+          {/* Header */}
+          <header className="mb-8">
         <h1 className="text-4xl sm:text-5xl font-bold text-custom-text mb-4">
           {blogPost.title}
         </h1>
@@ -192,12 +197,25 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
               >
                 Message
               </Link>
-              <Link
-                href={`/expert/${blogPost.profiles.id}`}
-                className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors text-sm font-medium"
+              <button
+                onClick={handleConnect}
+                disabled={connecting || connectionStatus !== "none"}
+                className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                  connectionStatus === "pending"
+                    ? "border-cyber-green/50 text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
+                    : connectionStatus === "accepted"
+                    ? "border-cyber-green text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
+                    : "border-cyber-green/30 text-custom-text hover:bg-dark-green-800/50 hover:border-cyber-green"
+                }`}
               >
-                Connect
-              </Link>
+                {connecting
+                  ? "Connecting..."
+                  : connectionStatus === "pending"
+                  ? "Pending"
+                  : connectionStatus === "accepted"
+                  ? "Connected"
+                  : "Connect"}
+              </button>
             </div>
           )}
           <div className="flex items-center gap-4 text-custom-text/70 text-sm">
@@ -226,12 +244,15 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
         )}
       </header>
 
-      {/* Content */}
-      <div
-        className="prose prose-invert prose-lg max-w-none blog-content"
-        dangerouslySetInnerHTML={{ __html: blogPost.content }}
-      />
-    </article>
+          {/* Content */}
+          <div
+            className="prose prose-invert prose-lg max-w-none blog-content"
+            dangerouslySetInnerHTML={{ __html: blogPost.content }}
+          />
+        </article>
+        <BlogPostSidebar currentPostId={blogPost.id} expertId={blogPost.expert_id} />
+      </div>
+    </div>
   );
 }
 

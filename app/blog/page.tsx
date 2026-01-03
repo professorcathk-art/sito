@@ -45,7 +45,7 @@ export default function BlogFeedPage() {
       // Fetch all blog posts (public and subscriber-only)
       const { data: blogPosts, error: blogError } = await supabase
         .from("blog_posts")
-        .select("id, title, description, featured_image_url, reading_time_minutes, published_at, expert_id, view_count, like_count, access_level")
+        .select("id, title, description, content, featured_image_url, reading_time_minutes, published_at, expert_id, view_count, like_count, access_level")
         .in("access_level", ["public", "subscriber"])
         .not("published_at", "is", null)
         .order("published_at", { ascending: false })
@@ -305,9 +305,19 @@ export default function BlogFeedPage() {
                           <h3 className="text-lg font-bold text-custom-text mb-1 line-clamp-2">
                             {post.title}
                           </h3>
-                          <p className="text-sm text-custom-text/70 line-clamp-2 mb-2">
-                            {post.description}
-                          </p>
+                          {post.description && (
+                            <p className="text-sm text-custom-text/70 line-clamp-2 mb-2">
+                              {post.description}
+                            </p>
+                          )}
+                          {post.content && !post.description && (
+                            <div 
+                              className="text-sm text-custom-text/70 line-clamp-3 mb-2"
+                              dangerouslySetInnerHTML={{ 
+                                __html: post.content.replace(/<[^>]*>/g, '').substring(0, 200) + '...' 
+                              }}
+                            />
+                          )}
                         </div>
 
                         {/* Footer */}
