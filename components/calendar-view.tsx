@@ -138,59 +138,63 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
       </div>
 
       {/* Selected Date Slots */}
-      {selectedDate && selectedDateSlots.length > 0 && (
+      {selectedDate && (
         <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
           <h3 className="text-xl font-bold text-custom-text mb-4">
-            Slots for {new Date(selectedDate).toLocaleDateString("en-US", {
+            Timeslots for {new Date(selectedDate).toLocaleDateString("en-US", {
               month: "long",
               day: "numeric",
               year: "numeric",
             })}
           </h3>
-          <div className="space-y-3">
-            {selectedDateSlots.map((slot) => {
-              const startTime = new Date(slot.start_time).toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              });
-              const endTime = new Date(slot.end_time).toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              });
+          {selectedDateSlots.length > 0 ? (
+            <div className="space-y-3">
+              {selectedDateSlots.map((slot) => {
+                const startTime = new Date(slot.start_time).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                });
+                const endTime = new Date(slot.end_time).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                });
 
-              return (
-                <div
-                  key={slot.id}
-                  className="flex items-center justify-between p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg"
-                >
-                  <div>
-                    <p className="text-custom-text font-semibold">
-                      {startTime} - {endTime}
-                    </p>
-                    <p className="text-sm text-custom-text/70">
-                      ${slot.rate_per_hour}/hour •{" "}
-                      {slot.is_available ? (
-                        <span className="text-green-300">Available</span>
-                      ) : (
-                        <span className="text-red-300">Unavailable</span>
-                      )}
-                    </p>
+                return (
+                  <div
+                    key={slot.id}
+                    className="flex items-center justify-between p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg"
+                  >
+                    <div>
+                      <p className="text-custom-text font-semibold">
+                        {startTime} - {endTime}
+                      </p>
+                      <p className="text-sm text-custom-text/70">
+                        ${slot.rate_per_hour}/hour •{" "}
+                        {slot.is_available ? (
+                          <span className="text-green-300">Available</span>
+                        ) : (
+                          <span className="text-red-300">Unavailable</span>
+                        )}
+                      </p>
+                    </div>
+                    {showToggle && onSlotToggle && (
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={slot.is_available}
+                          onChange={(e) => onSlotToggle(slot.id, e.target.checked)}
+                          className="w-5 h-5 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                        />
+                        <span className="text-sm text-custom-text">Available</span>
+                      </label>
+                    )}
                   </div>
-                  {showToggle && onSlotToggle && (
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={slot.is_available}
-                        onChange={(e) => onSlotToggle(slot.id, e.target.checked)}
-                        className="w-5 h-5 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
-                      />
-                      <span className="text-sm text-custom-text">Available</span>
-                    </label>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-custom-text/70 text-center py-4">No timeslots available for this date.</p>
+          )}
         </div>
       )}
     </div>
