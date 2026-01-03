@@ -106,7 +106,7 @@ export default function DashboardBlogPage() {
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-12 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg">
-              <p className="text-custom-text/80 text-lg mb-4">You haven't created any blog posts yet.</p>
+              <p className="text-custom-text/80 text-lg mb-4">You haven&apos;t created any blog posts yet.</p>
               <button
                 onClick={() => router.push("/blog/create")}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
