@@ -155,7 +155,17 @@ export function DashboardContent() {
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-4xl font-bold text-custom-text mb-8">Dashboard</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-4xl font-bold text-custom-text">Dashboard</h1>
+        {user && (
+          <button
+            onClick={handleSignOut}
+            className="px-4 py-2 bg-red-900/50 text-red-300 font-semibold rounded-lg hover:bg-red-900/70 transition-colors text-sm"
+          >
+            Sign Out
+          </button>
+        )}
+      </div>
 
       {!hasProfile ? (
         <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 mb-8">

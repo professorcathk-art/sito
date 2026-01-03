@@ -102,6 +102,7 @@ export function FeaturedCourses() {
               expert_id: product.expert_id,
               expert_name: profile.name || "Anonymous Expert",
               expert_avatar_url: profile.avatar_url || undefined,
+              course_id: product.course_id,
               created_at: product.created_at,
             };
           })
@@ -165,7 +166,7 @@ export function FeaturedCourses() {
           {featuredProducts.map((product, index) => (
             <Link
               key={product.id}
-              href={`/expert/${product.expert_id}`}
+              href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
               className="group bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-5 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
