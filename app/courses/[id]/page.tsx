@@ -14,6 +14,7 @@ interface CoursePageProps {
 export default async function CoursePage({ params }: CoursePageProps) {
   const { id } = await params;
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   
   try {
     const { data: course, error } = await supabase
