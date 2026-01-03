@@ -70,8 +70,6 @@ export function CourseEnrollment({
           .single();
         setHasRegisteredInterest(!!interest);
       }
-
-      setHasRegisteredInterest(!!interest);
     } catch (err) {
       console.error("Error checking enrollment status:", err);
     } finally {

@@ -272,20 +272,71 @@ export function ProductsManagement() {
 
         if (productError) throw productError;
 
-        // Set current product and course, show questionnaire form inline
-        setCurrentProductId(newProduct.id);
-        setCurrentCourseId(newCourse.id);
-        setShowAddForm(false);
-        setShowQuestionnaireForm(true);
-        setQuestionnaireType("course_enrollment");
-        setQuestionnaireFields([]);
-        setFieldForm({
-          field_type: "text",
-          label: "",
-          placeholder: "",
-          required: false,
-          options: "",
-        });
+        // Auto-create questionnaire with default fields (name, email)
+        try {
+          const { data: questionnaire, error: qError } = await supabase
+            .from("questionnaires")
+            .insert({
+              expert_id: user.id,
+              type: "course_enrollment",
+              title: "Course Enrollment Questionnaire",
+              is_active: true,
+            })
+            .select()
+            .single();
+
+          if (qError && qError.code !== "23505") throw qError;
+
+          const questionnaireId = questionnaire?.id || (await supabase
+            .from("questionnaires")
+            .select("id")
+            .eq("expert_id", user.id)
+            .eq("type", "course_enrollment")
+            .single()).data?.id;
+
+          if (questionnaireId) {
+            // Create default fields: Name and Email
+            const defaultFields = [
+              { questionnaire_id: questionnaireId, field_type: "text", label: "Name", placeholder: "Enter your name", required: true, order_index: 0 },
+              { questionnaire_id: questionnaireId, field_type: "email", label: "Email", placeholder: "Enter your email", required: true, order_index: 1 },
+            ];
+
+            const { data: createdFields, error: fieldsError } = await supabase
+              .from("questionnaire_fields")
+              .insert(defaultFields)
+              .select();
+
+            if (fieldsError) {
+              // Fields might already exist, fetch them
+              const { data: existingFields } = await supabase
+                .from("questionnaire_fields")
+                .select("*")
+                .eq("questionnaire_id", questionnaireId)
+                .order("order_index", { ascending: true });
+              setQuestionnaireFields(existingFields || []);
+            } else {
+              setQuestionnaireFields(createdFields || []);
+            }
+          }
+
+          // Set current product and course, show questionnaire form inline
+          setCurrentProductId(newProduct.id);
+          setCurrentCourseId(newCourse.id);
+          setShowAddForm(false);
+          setShowQuestionnaireForm(true);
+          setQuestionnaireType("course_enrollment");
+          setCurrentQuestionnaireId(questionnaireId || null);
+          setFieldForm({
+            field_type: "text",
+            label: "",
+            placeholder: "",
+            required: false,
+            options: "",
+          });
+        } catch (err) {
+          console.error("Error creating questionnaire:", err);
+          alert("Failed to create questionnaire. Please try again.");
+        }
         setFormData({
           name: "",
           description: "",
@@ -643,8 +694,7 @@ export function ProductsManagement() {
                   <span className="text-sm">Free</span>
                 </label>
               </div>
-              </div>
-            )}
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-custom-text mb-2">Description *</label>
@@ -1097,6 +1147,12 @@ export function ProductsManagement() {
             <button
               type="button"
               onClick={async () => {
+                // Questionnaire is mandatory - ensure it has at least name and email fields
+                if (questionnaireFields.length === 0) {
+                  alert("Please add at least Name and Email fields to your questionnaire. This is required.");
+                  return;
+                }
+                
                 // Save and close questionnaire form
                 setShowQuestionnaireForm(false);
                 setCurrentProductId(null);
@@ -1107,9 +1163,9 @@ export function ProductsManagement() {
                 fetchProducts();
                 alert("Questionnaire saved successfully! Your product is ready.");
               }}
-              className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+              className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
             >
-              {questionnaireFields.length === 0 ? "Skip & Finish" : "Save & Finish"}
+              Save & Finish
             </button>
           </div>
         </div>

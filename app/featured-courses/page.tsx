@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/contexts/auth-context";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import Link from "next/link";
@@ -23,7 +24,9 @@ interface Course {
 
 export default function FeaturedCoursesPage() {
   const supabase = createClient();
+  const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -140,8 +143,87 @@ export default function FeaturedCoursesPage() {
       }
     }
 
+    async function fetchEnrolledCourses() {
+      if (!user) {
+        setEnrolledCourses([]);
+        return;
+      }
+      try {
+        // Fetch enrolled courses
+        const { data: enrollments, error: enrollmentError } = await supabase
+          .from("course_enrollments")
+          .select(`
+            course_id,
+            courses!inner(
+              id,
+              title,
+              description,
+              cover_image_url,
+              category,
+              expert_id
+            )
+          `)
+          .eq("user_id", user.id);
+
+        if (enrollmentError) throw enrollmentError;
+
+        if (!enrollments || enrollments.length === 0) {
+          setEnrolledCourses([]);
+          return;
+        }
+
+        // Get course IDs and expert IDs
+        const courseIds = enrollments.map((e: any) => e.courses.id).filter(Boolean);
+        const expertIds = Array.from(new Set(enrollments.map((e: any) => e.courses.expert_id)));
+
+        // Fetch products for these courses to get price
+        const { data: productsData } = await supabase
+          .from("products")
+          .select("id, price, course_id")
+          .in("course_id", courseIds)
+          .eq("product_type", "course");
+
+        // Fetch expert profiles
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, name, avatar_url")
+          .in("id", expertIds);
+
+        // Combine data
+        const formattedEnrolled = enrollments
+          .map((e: any) => {
+            const course = e.courses;
+            const product = productsData?.find((p: any) => p.course_id === course.id);
+            const profile = profilesData?.find((p: any) => p.id === course.expert_id);
+
+            if (!course) return null;
+
+            return {
+              id: course.id,
+              title: course.title,
+              description: course.description,
+              cover_image_url: course.cover_image_url,
+              price: product?.price || 0,
+              is_free: (product?.price || 0) === 0,
+              category: course.category,
+              expert_id: course.expert_id,
+              expert_name: profile?.name || "Expert",
+              expert_avatar_url: profile?.avatar_url,
+              course_id: course.id,
+            };
+          })
+          .filter((item) => item !== null) as Course[];
+
+        setEnrolledCourses(formattedEnrolled);
+      } catch (err) {
+        console.error("Error fetching enrolled courses:", err);
+        setEnrolledCourses([]);
+      }
+    }
+
     fetchCourses();
-  }, [supabase, searchQuery, selectedCategory]);
+    fetchEnrolledCourses();
+  }, [supabase, searchQuery, selectedCategory, user]);
 
   // Get unique categories (excluding null and "Uncategorized")
   const categories = Array.from(new Set(courses.map((c) => c.category).filter((cat): cat is string => cat !== null && cat !== "Uncategorized"))) as string[];
@@ -215,7 +297,7 @@ export default function FeaturedCoursesPage() {
             <div className="text-center py-12">
               <p className="text-custom-text/80 animate-pulse">Loading courses...</p>
             </div>
-          ) : courses.length === 0 ? (
+          ) : courses.length === 0 && (!user || enrolledCourses.length === 0) ? (
             <div className="text-center py-12">
               <p className="text-custom-text/80 text-lg">
                 {searchQuery || selectedCategory ? "No courses found matching your criteria." : "No courses available yet."}
@@ -223,6 +305,59 @@ export default function FeaturedCoursesPage() {
             </div>
           ) : (
             <div className="space-y-12">
+              {/* Enrolled Courses Section - Only show if user is logged in */}
+              {user && enrolledCourses.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-custom-text mb-4">Your Enrolled Courses</h2>
+                  <div className="relative">
+                    <div className="overflow-x-auto scrollbar-hide pb-4">
+                      <div className="flex gap-4" style={{ width: 'max-content' }}>
+                        {enrolledCourses.map((course) => (
+                          <Link
+                            key={course.id}
+                            href={`/courses/${course.id}`}
+                            className="group flex-shrink-0 w-48 sm:w-56 md:w-64 transition-transform hover:scale-105"
+                          >
+                            <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-dark-green-800/30 border border-cyber-green/30 group-hover:border-cyber-green transition-colors">
+                              {course.cover_image_url ? (
+                                <Image
+                                  src={course.cover_image_url}
+                                  alt={course.title}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800 to-dark-green-900 p-4">
+                                  <span className="text-lg sm:text-xl md:text-2xl text-cyber-green font-bold text-center line-clamp-3">
+                                    {course.title}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="absolute bottom-0 left-0 right-0 p-4">
+                                  <h3 className="text-white font-bold text-lg mb-1 line-clamp-2">{course.title}</h3>
+                                  <p className="text-white/80 text-sm mb-2">{course.expert_name}</p>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-cyber-green font-semibold">
+                                      {course.price === 0 || !course.price ? "Free" : `$${course.price.toFixed(2)}`}
+                                    </span>
+                                    {course.category && (
+                                      <span className="text-xs text-white/60 bg-white/20 px-2 py-1 rounded">
+                                        {course.category}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Trending Courses Section */}
               {trendingCourses.length > 0 && (
                 <div>
@@ -312,6 +447,11 @@ export default function FeaturedCoursesPage() {
                                     <span className="text-cyber-green font-semibold">
                                       {course.price === 0 || !course.price ? "Free" : `$${course.price.toFixed(2)}`}
                                     </span>
+                                    {course.category && (
+                                      <span className="text-xs text-white/60 bg-white/20 px-2 py-1 rounded">
+                                        {course.category}
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -327,15 +467,6 @@ export default function FeaturedCoursesPage() {
           )}
         </div>
       </div>
-      <style jsx>{`
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
       <Footer />
     </div>
   );

@@ -8,6 +8,7 @@ import { BlogPostsList } from "@/components/blog-posts-list";
 import { ExpertCourses } from "@/components/expert-courses";
 import { ExpertCoursesWithProducts } from "@/components/expert-courses-with-products";
 import { SubscribeButton } from "@/components/subscribe-button";
+import { CourseEnrollment } from "@/components/course-enrollment";
 
 interface Expert {
   id: string;

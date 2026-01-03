@@ -65,7 +65,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <BlogPostView blogPost={blogPostWithProfile} />
           </div>
           <div className="lg:w-1/4">
-            <BlogPostSidebar expertId={blogPost.expert_id} currentBlogPostId={blogPost.id} />
+            <BlogPostSidebar expertId={blogPost.expert_id} currentPostId={blogPost.id} />
           </div>
         </div>
       </div>

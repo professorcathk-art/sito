@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/contexts/auth-context";
 
 interface QuestionnaireField {
   id: string;
@@ -21,14 +22,42 @@ interface QuestionnaireFormProps {
 
 export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel }: QuestionnaireFormProps) {
   const supabase = createClient();
+  const { user } = useAuth();
   const [fields, setFields] = useState<QuestionnaireField[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [responses, setResponses] = useState<Record<string, any>>({});
+  const [userProfile, setUserProfile] = useState<{ name?: string; email?: string } | null>(null);
 
   useEffect(() => {
     fetchFields();
-  }, [questionnaireId]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [questionnaireId, user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("name, email")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile) {
+        setUserProfile({ name: profile.name || undefined, email: profile.email || undefined });
+      } else {
+        // Fallback to auth user email
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser?.email) {
+          setUserProfile({ email: authUser.email });
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching user profile:", err);
+    }
+  };
 
   const fetchFields = async () => {
     try {
@@ -41,13 +70,21 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel }: Quest
       if (error) throw error;
       setFields(data || []);
       
-      // Initialize responses
+      // Initialize responses with prefilled user data
       const initialResponses: Record<string, any> = {};
       (data || []).forEach((field) => {
         if (field.field_type === "checkbox") {
           initialResponses[field.id] = [];
         } else {
-          initialResponses[field.id] = "";
+          // Prefill name and email fields if available
+          const labelLower = field.label.toLowerCase();
+          if (labelLower.includes("name") && userProfile?.name) {
+            initialResponses[field.id] = userProfile.name;
+          } else if (labelLower.includes("email") && userProfile?.email) {
+            initialResponses[field.id] = userProfile.email;
+          } else {
+            initialResponses[field.id] = "";
+          }
         }
       });
       setResponses(initialResponses);
