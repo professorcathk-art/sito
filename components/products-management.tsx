@@ -1172,8 +1172,8 @@ export function ProductsManagement() {
                   }
                   
                   // Now create the course and product
-                  if (!pendingCourseData) {
-                    alert("Course data not found. Please start over.");
+                  if (!pendingCourseData || !user) {
+                    alert("Course data not found or user not authenticated. Please start over.");
                     return;
                   }
                   
