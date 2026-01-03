@@ -178,10 +178,57 @@ export function CourseEnrollment({
       }
 
       if (questionnaireId) {
-        setQuestionnaireId(questionnaireId);
-        setQuestionnaireType("interest");
-        setShowQuestionnaire(true);
-        return;
+        // Verify fields exist before showing form
+        const { data: fieldsData, error: fieldsCheckError } = await supabase
+          .from("questionnaire_fields")
+          .select("id")
+          .eq("questionnaire_id", questionnaireId)
+          .limit(1);
+
+        if (fieldsCheckError) {
+          console.error("Error checking fields:", fieldsCheckError);
+        }
+
+        if (fieldsData && fieldsData.length > 0) {
+          // Fields exist, show the form
+          setQuestionnaireId(questionnaireId);
+          setQuestionnaireType("interest");
+          setShowQuestionnaire(true);
+          return;
+        } else {
+          // No fields exist, create default ones
+          console.log("No fields found, creating default fields");
+          const { error: fieldsError } = await supabase
+            .from("questionnaire_fields")
+            .insert([
+              {
+                questionnaire_id: questionnaireId,
+                field_type: "text",
+                label: "Name",
+                placeholder: "Enter your name",
+                required: true,
+                order_index: 0,
+              },
+              {
+                questionnaire_id: questionnaireId,
+                field_type: "email",
+                label: "Email",
+                placeholder: "Enter your email",
+                required: true,
+                order_index: 1,
+              },
+            ]);
+
+          if (fieldsError) {
+            console.error("Error creating default fields:", fieldsError);
+            // Still show form - QuestionnaireForm will handle empty fields
+          }
+          
+          setQuestionnaireId(questionnaireId);
+          setQuestionnaireType("interest");
+          setShowQuestionnaire(true);
+          return;
+        }
       } else {
         // No questionnaire available - allow registration without form
         console.log("No questionnaire available, registering interest directly");
@@ -418,18 +465,52 @@ export function CourseEnrollment({
     );
   }
 
+  // Show questionnaire form as modal overlay
   if (showQuestionnaire && questionnaireId) {
     return (
-      <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
-        <h3 className="text-xl font-bold text-custom-text mb-4">
-          {questionnaireType === "interest" ? "Register Interest" : "Enroll in Course"}
-        </h3>
-        <QuestionnaireForm
-          questionnaireId={questionnaireId}
-          onSubmit={handleQuestionnaireSubmit}
-          onCancel={() => setShowQuestionnaire(false)}
-        />
-      </div>
+      <>
+        {/* Modal Overlay */}
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-dark-green-800/95 border border-cyber-green/50 rounded-lg p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-custom-text">
+                {questionnaireType === "interest" ? "Register Interest" : "Enroll in Course"}
+              </h3>
+              <button
+                onClick={() => setShowQuestionnaire(false)}
+                className="text-custom-text/70 hover:text-custom-text transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <QuestionnaireForm
+              questionnaireId={questionnaireId}
+              onSubmit={handleQuestionnaireSubmit}
+              onCancel={() => setShowQuestionnaire(false)}
+            />
+          </div>
+        </div>
+        {/* Keep the buttons visible but disabled */}
+        <div className="flex gap-4 opacity-50 pointer-events-none">
+          {!hasRegisteredInterest && (
+            <button
+              disabled
+              className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg"
+            >
+              Register Interest
+            </button>
+          )}
+          <button
+            disabled
+            className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg"
+          >
+            {isFree ? "Enroll (Free)" : `Enroll ($${coursePrice})`}
+          </button>
+        </div>
+      </>
     );
   }
 
