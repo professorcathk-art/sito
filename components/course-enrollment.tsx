@@ -83,7 +83,7 @@ export function CourseEnrollment({
       return;
     }
 
-    // Check for questionnaire - use maybeSingle to handle no results gracefully
+    // ALWAYS check for questionnaire - form is mandatory for lead collection
     try {
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
@@ -106,14 +106,16 @@ export function CourseEnrollment({
         return;
       } else {
         console.log("No questionnaire found for expert:", expertId, "type: course_interest");
+        // If no questionnaire exists, show an error - questionnaire should be mandatory
+        alert("Registration form is not available. Please contact the expert or try again later.");
+        return;
       }
     } catch (err) {
-      // No questionnaire found or error checking, continue without questionnaire
+      // Error checking for questionnaire
       console.error("Error checking for questionnaire:", err);
+      alert("Unable to load registration form. Please try again later.");
+      return;
     }
-
-    // No questionnaire, register interest directly
-    await registerInterest();
   };
 
   const registerInterest = async (questionnaireResponse?: any) => {
@@ -284,7 +286,15 @@ export function CourseEnrollment({
   };
 
   const handleQuestionnaireSubmit = async (responses: any) => {
-    if (!questionnaireId || !questionnaireType) return;
+    if (!questionnaireId || !questionnaireType) {
+      console.error("Missing questionnaireId or questionnaireType");
+      return;
+    }
+
+    if (!responses || Object.keys(responses).length === 0) {
+      alert("Please fill out all required fields before submitting.");
+      return;
+    }
 
     try {
       const { data: response, error } = await supabase
@@ -297,7 +307,10 @@ export function CourseEnrollment({
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error inserting questionnaire response:", error);
+        throw error;
+      }
 
       if (questionnaireType === "interest") {
         await registerInterest(response);
@@ -306,7 +319,7 @@ export function CourseEnrollment({
       }
     } catch (err: any) {
       console.error("Error submitting questionnaire:", err);
-      alert("Failed to submit questionnaire. Please try again.");
+      alert(`Failed to submit questionnaire: ${err.message || "Please try again."}`);
     }
   };
 
