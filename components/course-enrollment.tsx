@@ -230,15 +230,92 @@ export function CourseEnrollment({
           return;
         }
       } else {
-        // No questionnaire available - allow registration without form
-        console.log("No questionnaire available, registering interest directly");
-        await registerInterest();
-        return;
+        // No questionnaire available - create one with default fields (MANDATORY)
+        console.log("No questionnaire available, creating mandatory one for expert:", expertId);
+        try {
+          const { data: newQuestionnaire, error: createError } = await supabase
+            .from("questionnaires")
+            .insert({
+              expert_id: expertId,
+              type: "course_interest",
+              title: "Course Interest Form",
+              is_active: true,
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            // If duplicate key error, fetch existing one
+            if (createError.code === "23505") {
+              const { data: existing } = await supabase
+                .from("questionnaires")
+                .select("id")
+                .eq("expert_id", expertId)
+                .eq("type", "course_interest")
+                .maybeSingle();
+              if (existing?.id) {
+                await supabase
+                  .from("questionnaires")
+                  .update({ is_active: true })
+                  .eq("id", existing.id);
+                questionnaireId = existing.id;
+              }
+            } else {
+              console.error("Error creating questionnaire:", createError);
+              alert("Unable to load registration form. Please try again later.");
+              return;
+            }
+          } else {
+            questionnaireId = newQuestionnaire?.id || null;
+          }
+
+          // Create default Name and Email fields
+          if (questionnaireId) {
+            const { error: fieldsError } = await supabase
+              .from("questionnaire_fields")
+              .insert([
+                {
+                  questionnaire_id: questionnaireId,
+                  field_type: "text",
+                  label: "Name",
+                  placeholder: "Enter your name",
+                  required: true,
+                  order_index: 0,
+                },
+                {
+                  questionnaire_id: questionnaireId,
+                  field_type: "email",
+                  label: "Email",
+                  placeholder: "Enter your email",
+                  required: true,
+                  order_index: 1,
+                },
+              ]);
+
+            if (fieldsError) {
+              console.error("Error creating default fields:", fieldsError);
+            }
+          }
+
+          if (questionnaireId) {
+            setQuestionnaireId(questionnaireId);
+            setQuestionnaireType("interest");
+            setShowQuestionnaire(true);
+            return;
+          } else {
+            alert("Unable to create registration form. Please try again later.");
+            return;
+          }
+        } catch (createErr) {
+          console.error("Error creating questionnaire:", createErr);
+          alert("Unable to load registration form. Please try again later.");
+          return;
+        }
       }
     } catch (err) {
-      // Error checking for questionnaire - allow registration anyway
+      // Error checking for questionnaire - show error, don't allow registration
       console.error("Error checking for questionnaire:", err);
-      await registerInterest();
+      alert("Unable to load registration form. Please try again later.");
       return;
     }
   };
