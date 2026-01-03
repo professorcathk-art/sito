@@ -9,19 +9,16 @@ import { ProtectedRoute } from "@/components/protected-route";
 import { RichTextEditor } from "@/components/rich-text-editor";
 import Link from "next/link";
 
-      const { error } = await supabase
-        .from("courses")
-        .update({
-          title: courseForm.title,
-          description: courseForm.description || null,
-          cover_image_url: courseForm.coverImageUrl || null,
-          price: parseFloat(courseForm.price) || 0,
-          is_free: courseForm.isFree,
-          published: courseForm.published,
-          category: courseForm.category || null,
-        })
-        .eq("id", selectedCourse.id)
-        .eq("expert_id", user.id);
+interface Course {
+  id: string;
+  title: string;
+  description: string | null;
+  cover_image_url: string | null;
+  price: number;
+  is_free: boolean;
+  published: boolean;
+  category: string | null;
+}
 
 interface Lesson {
   id: string;
