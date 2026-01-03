@@ -1142,6 +1142,89 @@ export function ProductsManagement() {
             </form>
           )}
 
+          {/* Field Templates */}
+          {!showFieldForm && questionnaireFields.length === 0 && (
+            <div className="mb-6">
+              <p className="text-sm text-custom-text/70 mb-4">Quick add common fields:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  { type: "text", label: "Phone Number", placeholder: "Enter your phone number", required: true },
+                  { type: "text", label: "Country Code", placeholder: "+1, +852, etc.", required: false },
+                  { type: "textarea", label: "Message", placeholder: "Tell us about your interest...", required: false },
+                  { type: "select", label: "Preferred Contact Method", options: "Email, Phone, WhatsApp", required: false },
+                  { type: "text", label: "Company/Organization", placeholder: "Optional", required: false },
+                  { type: "text", label: "Job Title", placeholder: "Optional", required: false },
+                ].map((template, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={async () => {
+                      if (!currentQuestionnaireId && user) {
+                        // Create questionnaire if needed
+                        try {
+                          const type = questionnaireType === "course_enrollment" ? "course_interest" : "appointment";
+                          const { data, error } = await supabase
+                            .from("questionnaires")
+                            .insert({
+                              expert_id: user.id,
+                              type,
+                              title: questionnaireType === "course_enrollment" ? "Course Enrollment Questionnaire" : "Appointment Questionnaire",
+                              is_active: true,
+                            })
+                            .select()
+                            .single();
+                          if (error && error.code !== "23505") throw error;
+                          if (error && error.code === "23505") {
+                            const { data: existing } = await supabase
+                              .from("questionnaires")
+                              .select("id")
+                              .eq("expert_id", user.id)
+                              .eq("type", type)
+                              .maybeSingle();
+                            if (existing) setCurrentQuestionnaireId(existing.id);
+                          } else if (data) {
+                            setCurrentQuestionnaireId(data.id);
+                          }
+                        } catch (err) {
+                          console.error("Error creating questionnaire:", err);
+                        }
+                      }
+                      if (!currentQuestionnaireId) {
+                        alert("Please create questionnaire first");
+                        return;
+                      }
+                      try {
+                        const options = template.options ? template.options.split(",").map(o => o.trim()) : null;
+                        const { data, error } = await supabase
+                          .from("questionnaire_fields")
+                          .insert({
+                            questionnaire_id: currentQuestionnaireId,
+                            field_type: template.type,
+                            label: template.label,
+                            placeholder: template.placeholder,
+                            required: template.required,
+                            options: options,
+                            order_index: questionnaireFields.length,
+                          })
+                          .select()
+                          .single();
+                        if (error) throw error;
+                        setQuestionnaireFields([...questionnaireFields, data]);
+                      } catch (err: any) {
+                        console.error("Error adding template field:", err);
+                        alert("Failed to add field. Please try again.");
+                      }
+                    }}
+                    className="px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text hover:bg-dark-green-800/50 transition-colors text-left"
+                  >
+                    <div className="font-semibold">{template.label}</div>
+                    <div className="text-xs text-custom-text/60">{template.type}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-4 mt-6">
             {!showFieldForm && (
@@ -1193,7 +1276,7 @@ export function ProductsManagement() {
                 }}
                 className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
               >
-                + Add Field
+                + Add Custom Field
               </button>
             )}
             {questionnaireType === "course_enrollment" ? (
