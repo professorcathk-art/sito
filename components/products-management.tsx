@@ -241,169 +241,78 @@ export function ProductsManagement() {
 
     try {
       if (formData.product_type === "course") {
-        // For course: auto-create course and product
-        const coursePrice = formData.price ? parseFloat(formData.price) || 0 : 0;
-        const { data: newCourse, error: courseError } = await supabase
-          .from("courses")
-          .insert({
-            expert_id: user.id,
-            title: formData.name,
-            description: formData.description,
-            is_free: coursePrice === 0,
-            price: coursePrice,
-            category: formData.category || "",
-            published: true, // Publish directly when created from product page
-          })
-          .select()
-          .single();
-
-        if (courseError) throw courseError;
-
-        // Create product linked to course - sync price
-        const { data: newProduct, error: productError } = await supabase.from("products").insert({
-          expert_id: user.id,
-          name: formData.name,
-          description: formData.description,
-          product_type: "course",
-          course_id: newCourse.id,
-          price: coursePrice,
-          pricing_type: "one-off",
-        }).select().single();
-
-        if (productError) throw productError;
-
-        // Auto-create questionnaire with default fields (name, email)
+        // For course: FIRST create questionnaire (mandatory), THEN create course
+        // Step 1: Create questionnaire with mandatory name and email fields
         let questionnaireId: string | null = null;
+        
         try {
-          // First check if questionnaire already exists - use maybeSingle to handle no results
-          const { data: existingQ, error: existingQError } = await supabase
+          // Create new questionnaire for this course
+          const { data: questionnaire, error: qError } = await supabase
             .from("questionnaires")
-            .select("id")
-            .eq("expert_id", user.id)
-            .eq("type", "course_enrollment")
-            .eq("is_active", true)
-            .maybeSingle();
+            .insert({
+              expert_id: user.id,
+              type: "course_enrollment",
+              title: `${formData.name} - Enrollment Form`,
+              is_active: true,
+            })
+            .select()
+            .single();
 
-          if (existingQError && existingQError.code !== "PGRST116") {
-            // PGRST116 is "no rows returned" which is fine
-            console.error("Error checking for existing questionnaire:", existingQError);
+          if (qError) {
+            console.error("Error creating questionnaire:", qError);
+            throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
           }
 
-          if (existingQ?.id) {
-            questionnaireId = existingQ.id;
-          } else {
-            // Create new questionnaire
-            const { data: questionnaire, error: qError } = await supabase
-              .from("questionnaires")
-              .insert({
-                expert_id: user.id,
-                type: "course_enrollment",
-                title: "Course Enrollment Questionnaire",
-                is_active: true,
-              })
-              .select()
-              .single();
-
-            if (qError) {
-              console.error("Error creating questionnaire:", qError);
-              // If unique constraint violation, try to fetch existing one
-              if (qError.code === "23505") {
-                const { data: existingQ2, error: fetchError } = await supabase
-                  .from("questionnaires")
-                  .select("id")
-                  .eq("expert_id", user.id)
-                  .eq("type", "course_enrollment")
-                  .maybeSingle();
-                
-                if (fetchError && fetchError.code !== "PGRST116") {
-                  console.error("Error fetching existing questionnaire:", fetchError);
-                } else {
-                  questionnaireId = existingQ2?.id || null;
-                }
-              } else {
-                // Don't throw - just log and continue without questionnaire
-                console.error("Failed to create questionnaire:", qError);
-                // Set questionnaireId to null so we proceed without it
-                questionnaireId = null;
-              }
-            } else {
-              questionnaireId = questionnaire?.id || null;
-            }
+          questionnaireId = questionnaire?.id || null;
+          if (!questionnaireId) {
+            throw new Error("Failed to create form. Please try again.");
           }
 
-          if (questionnaireId) {
-            // Check if fields already exist
-            const { data: existingFields } = await supabase
-              .from("questionnaire_fields")
-              .select("*")
-              .eq("questionnaire_id", questionnaireId)
-              .order("order_index", { ascending: true });
+          // Create mandatory fields: Name and Email
+          const defaultFields = [
+            { questionnaire_id: questionnaireId, field_type: "text", label: "Name", placeholder: "Enter your name", required: true, order_index: 0 },
+            { questionnaire_id: questionnaireId, field_type: "email", label: "Email", placeholder: "Enter your email", required: true, order_index: 1 },
+          ];
 
-            if (!existingFields || existingFields.length === 0) {
-              // Create default fields: Name and Email
-              const defaultFields = [
-                { questionnaire_id: questionnaireId, field_type: "text", label: "Name", placeholder: "Enter your name", required: true, order_index: 0 },
-                { questionnaire_id: questionnaireId, field_type: "email", label: "Email", placeholder: "Enter your email", required: true, order_index: 1 },
-              ];
+          const { error: fieldsError } = await supabase
+            .from("questionnaire_fields")
+            .insert(defaultFields);
 
-              const { error: fieldsError } = await supabase
-                .from("questionnaire_fields")
-                .insert(defaultFields);
-
-              if (fieldsError && fieldsError.code !== "23505") {
-                console.error("Error creating questionnaire fields:", fieldsError);
-              }
-            }
-
-            // Fetch fields for display
-            const { data: fieldsData } = await supabase
-              .from("questionnaire_fields")
-              .select("*")
-              .eq("questionnaire_id", questionnaireId)
-              .order("order_index", { ascending: true });
-            setQuestionnaireFields(fieldsData || []);
+          if (fieldsError) {
+            console.error("Error creating questionnaire fields:", fieldsError);
+            throw new Error(`Failed to create form fields: ${fieldsError.message || "Please try again."}`);
           }
 
-          // Set current product and course, show questionnaire form inline only if questionnaire exists
-          setCurrentProductId(newProduct.id);
-          setCurrentCourseId(newCourse.id);
+          // Fetch fields for display
+          const { data: fieldsData } = await supabase
+            .from("questionnaire_fields")
+            .select("*")
+            .eq("questionnaire_id", questionnaireId)
+            .order("order_index", { ascending: true });
+          setQuestionnaireFields(fieldsData || []);
+
+          // Show questionnaire form for editing (user can add more fields)
+          setShowQuestionnaireForm(true);
+          setQuestionnaireType("course_enrollment");
+          setCurrentQuestionnaireId(questionnaireId);
+          setFieldForm({
+            field_type: "text",
+            label: "",
+            placeholder: "",
+            required: false,
+            options: "",
+          });
+          
+          // Store form data temporarily (don't create course yet)
+          // User will click "Publish Course" after questionnaire is ready
           setShowAddForm(false);
           
-          if (questionnaireId) {
-            setShowQuestionnaireForm(true);
-            setQuestionnaireType("course_enrollment");
-            setCurrentQuestionnaireId(questionnaireId);
-            setFieldForm({
-              field_type: "text",
-              label: "",
-              placeholder: "",
-              required: false,
-              options: "",
-            });
-          } else {
-            // No questionnaire - just refresh products list
-            fetchProducts();
-            alert("Course created successfully! You can add a questionnaire later if needed.");
-          }
         } catch (err: any) {
           console.error("Error creating questionnaire:", err);
-          // Don't show error alert - just log and continue
-          // Still set the product and course so user can proceed
-          setCurrentProductId(newProduct.id);
-          setCurrentCourseId(newCourse.id);
-          setShowAddForm(false);
-          fetchProducts();
+          setError(err.message || "Failed to create form. Please try again.");
+          throw err;
         }
-        setFormData({
-          name: "",
-          description: "",
-          price: "",
-          pricing_type: "one-off",
-          product_type: "appointment",
-          course_id: "",
-          category: "",
-        });
-        return;
+        return; // Don't create course yet - wait for questionnaire completion
       } else if (formData.product_type === "appointment") {
         // For appointment: create product first, then show appointment form inline
         const { data: newProduct, error: productError } = await supabase.from("products").insert({
@@ -966,13 +875,15 @@ export function ProductsManagement() {
       )}
 
       {/* Questionnaire Form (Embedded) */}
-      {showQuestionnaireForm && currentProductId && questionnaireType && (
+      {showQuestionnaireForm && questionnaireType && (
         <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 mb-6">
           <h3 className="text-xl font-bold text-custom-text mb-4">
-            {questionnaireType === "course_enrollment" ? "Create Course Enrollment Form" : "Create Appointment Booking Form"}
+            {questionnaireType === "course_enrollment" ? "Create Enrollment Form (Required)" : "Create Appointment Booking Form"}
           </h3>
           <p className="text-sm text-custom-text/70 mb-6">
-            Add custom questions for users to fill out before {questionnaireType === "course_enrollment" ? "enrolling" : "booking"}.
+            {questionnaireType === "course_enrollment" 
+              ? "Create a form for users to fill out before enrolling. Name and Email fields are already added and are required. You can add more fields if needed. Click 'Publish Course' when ready."
+              : "Add custom questions for users to fill out before booking."}
           </p>
 
           {/* Existing Fields List */}
@@ -1225,29 +1136,111 @@ export function ProductsManagement() {
                 + Add Field
               </button>
             )}
-            <button
-              type="button"
-              onClick={async () => {
-                // Questionnaire is mandatory - ensure it has at least name and email fields
-                if (questionnaireFields.length === 0) {
-                  alert("Please add at least Name and Email fields to your questionnaire. This is required.");
-                  return;
-                }
-                
-                // Save and close questionnaire form
-                setShowQuestionnaireForm(false);
-                setCurrentProductId(null);
-                setCurrentCourseId(null);
-                setQuestionnaireType(null);
-                setCurrentQuestionnaireId(null);
-                setQuestionnaireFields([]);
-                fetchProducts();
-                alert("Questionnaire saved successfully! Your product is ready.");
-              }}
-              className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
-            >
-              Save & Finish
-            </button>
+            {questionnaireType === "course_enrollment" ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  // Questionnaire is mandatory - ensure it has at least name and email fields
+                  if (questionnaireFields.length === 0) {
+                    alert("Please add at least Name and Email fields to your form. This is required.");
+                    return;
+                  }
+                  
+                  // Verify name and email fields exist
+                  const hasName = questionnaireFields.some(f => 
+                    f.label.toLowerCase().includes("name") && f.field_type === "text"
+                  );
+                  const hasEmail = questionnaireFields.some(f => 
+                    f.label.toLowerCase().includes("email") && f.field_type === "email"
+                  );
+                  
+                  if (!hasName || !hasEmail) {
+                    alert("Your form must include both Name (text field) and Email (email field). Please add these fields.");
+                    return;
+                  }
+                  
+                  // Now create the course and product
+                  try {
+                    const coursePrice = formData.price ? parseFloat(formData.price) || 0 : 0;
+                    
+                    // Create course
+                    const { data: newCourse, error: courseError } = await supabase
+                      .from("courses")
+                      .insert({
+                        expert_id: user.id,
+                        title: formData.name,
+                        description: formData.description,
+                        is_free: coursePrice === 0,
+                        price: coursePrice,
+                        category: formData.category || "",
+                        published: true, // Publish after questionnaire is ready
+                      })
+                      .select()
+                      .single();
+
+                    if (courseError) throw courseError;
+
+                    // Create product linked to course
+                    const { data: newProduct, error: productError } = await supabase.from("products").insert({
+                      expert_id: user.id,
+                      name: formData.name,
+                      description: formData.description,
+                      product_type: "course",
+                      course_id: newCourse.id,
+                      price: coursePrice,
+                      pricing_type: "one-off",
+                    }).select().single();
+
+                    if (productError) throw productError;
+
+                    // Link questionnaire to product (if needed)
+                    // The questionnaire is already created and linked to expert
+                    
+                    // Reset form and close questionnaire form
+                    setShowQuestionnaireForm(false);
+                    setCurrentProductId(null);
+                    setCurrentCourseId(null);
+                    setQuestionnaireType(null);
+                    setCurrentQuestionnaireId(null);
+                    setQuestionnaireFields([]);
+                    setFormData({
+                      name: "",
+                      description: "",
+                      price: "",
+                      pricing_type: "one-off",
+                      product_type: "appointment",
+                      course_id: "",
+                      category: "",
+                    });
+                    fetchProducts();
+                    alert("Course published successfully! Your course is now live.");
+                  } catch (err: any) {
+                    console.error("Error publishing course:", err);
+                    alert(`Failed to publish course: ${err.message || "Please try again."}`);
+                  }
+                }}
+                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              >
+                Publish Course
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={async () => {
+                  // For appointments, just save questionnaire
+                  setShowQuestionnaireForm(false);
+                  setCurrentProductId(null);
+                  setQuestionnaireType(null);
+                  setCurrentQuestionnaireId(null);
+                  setQuestionnaireFields([]);
+                  fetchProducts();
+                  alert("Form saved successfully!");
+                }}
+                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              >
+                Save & Finish
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -314,6 +314,10 @@ export default function ManageAppointmentsPage() {
               ) : (
                 <CalendarView
                   slots={slots}
+                  onDateSelect={(date) => {
+                    // Date selection is handled internally by CalendarView
+                    // This callback can be used for additional actions if needed
+                  }}
                   onSlotToggle={async (slotId, isAvailable) => {
                     try {
                       const { error } = await supabase

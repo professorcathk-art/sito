@@ -118,15 +118,20 @@ export function CourseEnrollment({
 
     setProcessing(true);
     try {
-      // Get product ID for this course
-      const { data: product } = await supabase
+      // Get product ID for this course - use maybeSingle to handle no results
+      const { data: product, error: productError } = await supabase
         .from("products")
         .select("id")
         .eq("course_id", courseId)
-        .single();
+        .maybeSingle();
+
+      if (productError && productError.code !== "PGRST116") {
+        console.error("Error fetching product:", productError);
+        throw new Error(`Failed to find product: ${productError.message}`);
+      }
 
       if (!product) {
-        throw new Error("Product not found for this course");
+        throw new Error("Product not found for this course. Please contact the expert.");
       }
 
       const interestData: any = {
@@ -144,7 +149,10 @@ export function CourseEnrollment({
 
       if (error) {
         console.error("Error inserting interest:", error);
-        throw error;
+        if (error.code === "23505") {
+          throw new Error("You have already registered interest in this course.");
+        }
+        throw new Error(`Failed to register interest: ${error.message || "Please try again."}`);
       }
 
       // Notify expert
@@ -175,7 +183,7 @@ export function CourseEnrollment({
       setHasRegisteredInterest(true);
     } catch (err: any) {
       console.error("Error registering interest:", err);
-      alert("Failed to register interest. Please try again.");
+      alert(err.message || "Failed to register interest. Please try again.");
     } finally {
       setProcessing(false);
       setShowQuestionnaire(false);
