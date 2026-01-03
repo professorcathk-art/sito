@@ -65,7 +65,7 @@ export default function CreateBlogPostPage() {
           title: formData.title,
           description: formData.description || null,
           content: formData.content,
-          featured_image_url: formData.featuredImageUrl || null,
+          featured_image_url: null,
           access_level: formData.accessLevel,
           notify_subscribers: formData.notifySubscribers,
           reading_time_minutes: readingTime,

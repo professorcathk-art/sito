@@ -22,7 +22,6 @@ export default function EditBlogPostPage() {
     title: "",
     description: "",
     content: "",
-    featuredImageUrl: "",
     accessLevel: "public" as "public" | "subscriber",
     notifySubscribers: false,
   });
