@@ -459,7 +459,7 @@ export default function ManageCoursePage() {
                 <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
                   <p className="text-custom-text/80 mb-4">No courses found.</p>
                   <p className="text-custom-text/60 text-sm mb-4">
-                    {user?.id === courses.find(c => c.expert_id === user.id)?.expert_id 
+                    {user && courses.some(c => c.expert_id === user.id)
                       ? "Create a course from the Products page first."
                       : "You haven't enrolled in any courses yet. Purchase a course to get started."}
                   </p>
