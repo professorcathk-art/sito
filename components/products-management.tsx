@@ -281,8 +281,8 @@ export function ProductsManagement() {
       console.log("Fetching interests for products:", products.map(p => p.id));
       const productIds = products.map((p) => p.id);
       
-      // First, get all interests for the expert's products, including questionnaire responses
-      // Note: questionnaire_response_id might not be in schema cache yet, so we handle it gracefully
+      // First, get all interests for the expert's products
+      // Simplified query to avoid RLS issues with questionnaire_responses join
       const { data, error } = await supabase
         .from("product_interests")
         .select(`
@@ -292,18 +292,22 @@ export function ProductsManagement() {
           user_email,
           country_code,
           phone_number,
+          questionnaire_response_id,
           created_at,
-          products!inner(name, expert_id),
-          questionnaire_responses(responses)
+          products!inner(name, expert_id)
         `)
         .in("product_id", productIds)
         .eq("products.expert_id", user.id);
 
       if (error) {
         console.error("Error fetching interests:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
+        console.error("Error code:", error.code);
+        console.error("Error message:", error.message);
         // If no interests found, that's okay
         if (error.code !== "PGRST116") {
-          throw error;
+          // Don't throw - just log and set empty array
+          console.warn("Non-fatal error fetching interests, continuing with empty array");
         }
         setInterests([]);
         return;
@@ -328,13 +332,32 @@ export function ProductsManagement() {
         }
       }
 
+      // Fetch questionnaire responses separately if questionnaire_response_id exists
+      const questionnaireResponseIds = Array.from(
+        new Set((data || []).map((item: any) => item.questionnaire_response_id).filter(Boolean))
+      );
+      const questionnaireResponsesMap: { [key: string]: any } = {};
+      
+      if (questionnaireResponseIds.length > 0) {
+        const { data: responsesData } = await supabase
+          .from("questionnaire_responses")
+          .select("id, responses")
+          .in("id", questionnaireResponseIds);
+        
+        if (responsesData) {
+          responsesData.forEach((resp: any) => {
+            questionnaireResponsesMap[resp.id] = resp.responses;
+          });
+        }
+      }
+
       const interestsData = (data || []).map((item: any) => {
         // Extract name and email from questionnaire responses if available
         let formName = item.user_email; // Default to email
         let formEmail = item.user_email;
         
-        if (item.questionnaire_responses && item.questionnaire_responses.responses) {
-          const responses = item.questionnaire_responses.responses;
+        if (item.questionnaire_response_id && questionnaireResponsesMap[item.questionnaire_response_id]) {
+          const responses = questionnaireResponsesMap[item.questionnaire_response_id];
           // Try to find name and email in responses
           Object.values(responses).forEach((value: any) => {
             if (typeof value === 'string') {
@@ -356,7 +379,9 @@ export function ProductsManagement() {
           user_name: formName || userNameMap[item.user_id] || "Unknown User",
           country_code: item.country_code || undefined,
           phone_number: item.phone_number || undefined,
-          questionnaire_responses: item.questionnaire_responses?.responses || null,
+          questionnaire_responses: item.questionnaire_response_id 
+            ? questionnaireResponsesMap[item.questionnaire_response_id] || null 
+            : null,
           created_at: item.created_at,
         };
       });

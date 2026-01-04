@@ -39,8 +39,19 @@ export default function PurchasesPage() {
     try {
       const purchasesData: Purchase[] = [];
       
-      // Fetch enrollments with payment_intent_id (paid courses)
-      const { data: enrollments, error: enrollmentsError } = await supabase
+      // Get user email for email-based enrollment lookup
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", user.id)
+        .maybeSingle();
+      
+      const userEmail = profile?.email;
+      const { data: authUser } = await supabase.auth.getUser();
+      const finalUserEmail = userEmail || authUser?.user?.email;
+      
+      // Fetch enrollments by user_id (paid and free courses)
+      const { data: enrollmentsById, error: enrollmentsByIdError } = await supabase
         .from("course_enrollments")
         .select(`
           id,
@@ -52,25 +63,65 @@ export default function PurchasesPage() {
             title,
             description,
             cover_image_url,
-            price
+            price,
+            is_free
           )
         `)
         .eq("user_id", user.id)
-        .not("payment_intent_id", "is", null)
         .order("enrolled_at", { ascending: false });
 
-      if (enrollmentsError) throw enrollmentsError;
+      if (enrollmentsByIdError) {
+        console.error("Error fetching enrollments by user_id:", enrollmentsByIdError);
+      }
+
+      // Fetch enrollments by email (for offline payment enrollments)
+      let enrollmentsByEmail: any[] = [];
+      if (finalUserEmail) {
+        const { data, error: enrollmentsByEmailError } = await supabase
+          .from("course_enrollments")
+          .select(`
+            id,
+            course_id,
+            payment_intent_id,
+            enrolled_at,
+            courses (
+              id,
+              title,
+              description,
+              cover_image_url,
+              price,
+              is_free
+            )
+          `)
+          .eq("user_email", finalUserEmail)
+          .order("enrolled_at", { ascending: false });
+        
+        if (enrollmentsByEmailError) {
+          console.error("Error fetching enrollments by email:", enrollmentsByEmailError);
+        } else if (data) {
+          enrollmentsByEmail = data;
+        }
+      }
+
+      // Combine enrollments and remove duplicates
+      const allEnrollments = [...(enrollmentsById || []), ...enrollmentsByEmail];
+      const uniqueEnrollments = Array.from(
+        new Map(allEnrollments.map((e: any) => [e.id, e])).values()
+      );
+      
+      const enrollments = uniqueEnrollments;
 
       (enrollments || []).forEach((enrollment: any) => {
+        // Include both paid and free courses
         purchasesData.push({
           id: enrollment.id,
           course_id: enrollment.course_id,
           course_title: enrollment.courses?.title || "Unknown Course",
           course_description: enrollment.courses?.description || null,
           course_cover_image: enrollment.courses?.cover_image_url || null,
-          payment_intent_id: enrollment.payment_intent_id,
+          payment_intent_id: enrollment.payment_intent_id || null,
           enrolled_at: enrollment.enrolled_at,
-          price: enrollment.courses?.price || null,
+          price: enrollment.courses?.price || (enrollment.courses?.is_free ? 0 : null),
           type: "course",
         });
       });
