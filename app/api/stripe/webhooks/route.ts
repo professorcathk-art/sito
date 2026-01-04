@@ -19,7 +19,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getStripeClient, getStripeWebhookSecret } from "@/lib/stripe/server";
+import { getStripeClient, getStripeWebhookSecrets } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
 
@@ -28,8 +28,11 @@ export async function POST(request: NextRequest) {
     // Initialize Stripe client
     const stripeClient = getStripeClient();
 
-    // Get webhook secret for signature verification
-    const webhookSecret = getStripeWebhookSecret();
+    // Get webhook secrets for signature verification
+    // Support multiple secrets for different webhook endpoints:
+    // - Platform events (checkout.session.completed) - one secret
+    // - Connected account events (account.updated) - another secret
+    const webhookSecrets = getStripeWebhookSecrets();
 
     // Get raw body for signature verification
     const body = await request.text();
@@ -43,32 +46,42 @@ export async function POST(request: NextRequest) {
     }
 
     /**
-     * Parse thin event from Stripe
+     * Parse webhook event from Stripe
+     * 
+     * Try each webhook secret until one works (for multiple endpoints)
      * 
      * Thin events only contain:
      * - Event ID
      * - Event type
      * - Account ID (for connected accounts)
      * 
-     * For thin events, we need to:
-     * 1. Parse the event to get the event ID
-     * 2. Fetch the full event data using the event ID
-     * 
      * Note: The Stripe SDK's webhooks.constructEvent() works for both regular and thin events.
-     * For thin events, the event object will have minimal data, so we fetch the full event.
      */
-    let event: Stripe.Event;
-    try {
-      // Parse the webhook event (works for both regular and thin events)
-      event = stripeClient.webhooks.constructEvent(
-        body,
-        signature,
-        webhookSecret
-      );
-    } catch (err: any) {
-      console.error("Webhook signature verification failed:", err.message);
+    let event: Stripe.Event | null = null;
+    let lastError: Error | null = null;
+
+    // Try each webhook secret (different endpoints have different secrets)
+    for (const webhookSecret of webhookSecrets) {
+      try {
+        event = stripeClient.webhooks.constructEvent(
+          body,
+          signature,
+          webhookSecret
+        );
+        // Success - break out of loop
+        break;
+      } catch (err: any) {
+        // Save error and try next secret
+        lastError = err;
+        continue;
+      }
+    }
+
+    // If all secrets failed, return error
+    if (!event) {
+      console.error("Webhook signature verification failed with all secrets:", lastError?.message);
       return NextResponse.json(
-        { error: `Webhook signature verification failed: ${err.message}` },
+        { error: `Webhook signature verification failed: ${lastError?.message || "Unknown error"}` },
         { status: 400 }
       );
     }

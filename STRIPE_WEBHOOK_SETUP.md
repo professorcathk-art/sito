@@ -55,8 +55,14 @@ After creating the endpoint:
    ```
    STRIPE_WEBHOOK_SECRET=whsec_...
    ```
+   **Note:** If you have multiple webhook endpoints (e.g., one for platform events, one for connected accounts), you can use comma-separated secrets:
+   ```
+   STRIPE_WEBHOOK_SECRET=whsec_secret1,whsec_secret2
+   ```
 4. Make sure to add it to **Production**, **Preview**, and **Development** environments
 5. Redeploy your application
+
+**Important:** The code will try each secret until one matches, so you can use multiple secrets if needed.
 
 ## Events Explained
 

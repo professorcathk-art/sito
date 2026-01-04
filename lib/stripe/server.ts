@@ -93,14 +93,17 @@ export function getStripePublishableKey(): string {
 }
 
 /**
- * Get the webhook secret for verifying webhook signatures
+ * Get the webhook secret(s) for verifying webhook signatures
  * 
- * This secret is used to verify that webhook events are actually from Stripe.
+ * This function supports multiple webhook secrets (comma-separated) for different endpoints.
+ * Stripe gives you a different secret for each webhook endpoint:
+ * - Platform events (checkout.session.completed) - one secret
+ * - Connected account events (account.updated) - another secret
  * 
- * @returns {string} The webhook secret
+ * @returns {string[]} Array of webhook secrets to try
  * @throws {Error} If STRIPE_WEBHOOK_SECRET is not set
  */
-export function getStripeWebhookSecret(): string {
+export function getStripeWebhookSecrets(): string[] {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   
   if (!webhookSecret) {
@@ -111,6 +114,18 @@ export function getStripeWebhookSecret(): string {
     );
   }
 
-  return webhookSecret;
+  // Support multiple secrets (comma-separated) or single secret
+  return webhookSecret.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+/**
+ * Get a single webhook secret (for backward compatibility)
+ * 
+ * @returns {string} The first webhook secret
+ * @throws {Error} If STRIPE_WEBHOOK_SECRET is not set
+ */
+export function getStripeWebhookSecret(): string {
+  const secrets = getStripeWebhookSecrets();
+  return secrets[0];
 }
 
