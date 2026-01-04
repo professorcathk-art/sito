@@ -35,12 +35,31 @@ export function CourseEnrollment({
   const [productContactEmail, setProductContactEmail] = useState<string | null>(null);
   const [showOfflinePaymentInfo, setShowOfflinePaymentInfo] = useState(false);
 
+  const fetchProductPaymentInfo = async () => {
+    try {
+      const { data: product } = await supabase
+        .from("products")
+        .select("payment_method, contact_email")
+        .eq("course_id", courseId)
+        .maybeSingle();
+      
+      if (product) {
+        setProductPaymentMethod(product.payment_method || "stripe");
+        setProductContactEmail(product.contact_email);
+      }
+    } catch (err) {
+      console.error("Error fetching product payment info:", err);
+    }
+  };
+
   useEffect(() => {
     if (user && currentUserId) {
       checkEnrollmentStatus();
+      fetchProductPaymentInfo();
     } else {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, currentUserId, courseId]);
 
   const checkEnrollmentStatus = async () => {
@@ -674,7 +693,7 @@ export function CourseEnrollment({
               <p className="text-lg font-semibold text-cyber-green">{productContactEmail}</p>
             </div>
             <p className="text-sm text-custom-text/60 mb-4">
-              After completing the payment with the expert, they will add you to the course and you'll be able to access it in your Classroom.
+              After completing the payment with the expert, they will add you to the course and you&apos;ll be able to access it in your Classroom.
             </p>
             <div className="flex gap-4">
               <button
