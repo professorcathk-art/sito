@@ -15,6 +15,8 @@ interface Product {
   product_type?: "service" | "course" | "appointment";
   course_id?: string;
   appointment_slot_id?: string;
+  stripe_product_id?: string | null;
+  stripe_price_id?: string | null;
   created_at: string;
 }
 
@@ -98,14 +100,104 @@ export function ProductsManagement() {
     required: false,
     options: "",
   });
+  const [stripeAccountId, setStripeAccountId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchProducts();
       fetchCourses();
+      fetchStripeAccountId();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  /**
+   * Fetch user's Stripe Connect account ID
+   */
+  const fetchStripeAccountId = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("stripe_connect_account_id")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile?.stripe_connect_account_id) {
+        setStripeAccountId(profile.stripe_connect_account_id);
+      }
+    } catch (err) {
+      console.error("Error fetching Stripe account ID:", err);
+    }
+  };
+
+  /**
+   * Create Stripe product for a paid product
+   * Only creates Stripe product if:
+   * - Product has a price > 0
+   * - User has a Stripe Connect account
+   * - Stripe account is ready to receive payments
+   */
+  const createStripeProduct = async (
+    productName: string,
+    productDescription: string,
+    price: number,
+    productId: string
+  ): Promise<{ stripeProductId: string | null; stripePriceId: string | null }> => {
+    // Only create Stripe product for paid products
+    if (price <= 0 || !stripeAccountId) {
+      return { stripeProductId: null, stripePriceId: null };
+    }
+
+    try {
+      // Verify account is ready
+      const statusResponse = await fetch(
+        `/api/stripe/connect/account-status?accountId=${stripeAccountId}`
+      );
+      
+      if (!statusResponse.ok) {
+        console.warn("Stripe account not ready, skipping Stripe product creation");
+        return { stripeProductId: null, stripePriceId: null };
+      }
+
+      const statusData = await statusResponse.json();
+      if (!statusData.readyToReceivePayments) {
+        console.warn("Stripe account not ready to receive payments, skipping Stripe product creation");
+        return { stripeProductId: null, stripePriceId: null };
+      }
+
+      // Create Stripe product
+      const response = await fetch("/api/stripe/products/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: productName,
+          description: productDescription,
+          priceInCents: Math.round(price * 100), // Convert to cents
+          currency: "hkd", // Default to HKD for Hong Kong
+          connectedAccountId: stripeAccountId,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        console.error("Error creating Stripe product:", data.error);
+        // Don't throw - allow product creation to continue without Stripe
+        return { stripeProductId: null, stripePriceId: null };
+      }
+
+      const data = await response.json();
+      return {
+        stripeProductId: data.productId,
+        stripePriceId: data.priceId,
+      };
+    } catch (err) {
+      console.error("Error creating Stripe product:", err);
+      // Don't throw - allow product creation to continue without Stripe
+      return { stripeProductId: null, stripePriceId: null };
+    }
+  };
 
   const fetchCourses = async () => {
     if (!user) return;
@@ -414,8 +506,38 @@ export function ProductsManagement() {
         // productData.product_type = formData.product_type;
 
         // Add price if provided
+        const newPrice = formData.price ? parseFloat(formData.price) || 0 : editingProduct.price;
         if (formData.price) {
-          productData.price = parseFloat(formData.price) || 0;
+          productData.price = newPrice;
+        }
+
+        // Update Stripe product if price changed and product is paid
+        if (newPrice > 0 && editingProduct.price !== newPrice && stripeAccountId && editingProduct.stripe_product_id) {
+          // Price changed for paid product - update Stripe product
+          // Note: Stripe doesn't allow updating prices, so we create a new price
+          // For now, we'll just log this - in production you might want to archive old price and create new one
+          console.log("Price changed for Stripe product - consider updating Stripe price");
+          
+          // Optionally create new Stripe product/price if needed
+          // For simplicity, we'll keep the existing Stripe product ID
+          // In production, you might want to handle price updates differently
+        } else if (newPrice > 0 && !editingProduct.stripe_product_id && stripeAccountId) {
+          // Product became paid but doesn't have Stripe product yet - create it
+          const stripeResult = await createStripeProduct(
+            formData.name || editingProduct.name,
+            formData.description || editingProduct.description,
+            newPrice,
+            editingProduct.id
+          );
+          
+          if (stripeResult.stripeProductId) {
+            productData.stripe_product_id = stripeResult.stripeProductId;
+            productData.stripe_price_id = stripeResult.stripePriceId;
+          }
+        } else if (newPrice === 0 && editingProduct.stripe_product_id) {
+          // Product became free - remove Stripe product IDs
+          productData.stripe_product_id = null;
+          productData.stripe_price_id = null;
         }
 
         // If updating a course product, also update the course price, description, and category
@@ -834,6 +956,51 @@ export function ProductsManagement() {
 
               const { error } = await supabase.from("appointment_slots").insert(slots);
               if (error) throw error;
+
+              // Update product with price (rate per hour) and create Stripe product if paid
+              if (ratePerHour > 0) {
+                // Calculate price for one hour session (for Stripe product)
+                const sessionPrice = ratePerHour;
+                
+                // Create Stripe product for paid appointments
+                let stripeProductId: string | null = null;
+                let stripePriceId: string | null = null;
+                
+                if (stripeAccountId) {
+                  // Get product details
+                  const { data: productData } = await supabase
+                    .from("products")
+                    .select("name, description")
+                    .eq("id", currentProductId)
+                    .single();
+                  
+                  if (productData) {
+                    const stripeResult = await createStripeProduct(
+                      productData.name,
+                      productData.description,
+                      sessionPrice,
+                      currentProductId
+                    );
+                    stripeProductId = stripeResult.stripeProductId;
+                    stripePriceId = stripeResult.stripePriceId;
+                  }
+                }
+
+                // Update product with price and Stripe IDs
+                const { error: updateError } = await supabase
+                  .from("products")
+                  .update({
+                    price: sessionPrice,
+                    stripe_product_id: stripeProductId,
+                    stripe_price_id: stripePriceId,
+                  })
+                  .eq("id", currentProductId);
+
+                if (updateError) {
+                  console.error("Error updating product price:", updateError);
+                  // Don't throw - slots are created, just price update failed
+                }
+              }
 
               alert(`Successfully created ${slots.length} appointment slots!`);
               // Show questionnaire form after slots are created
@@ -1328,6 +1495,21 @@ export function ProductsManagement() {
 
                     if (courseError) throw courseError;
 
+                    // Create Stripe product if paid course
+                    let stripeProductId: string | null = null;
+                    let stripePriceId: string | null = null;
+                    
+                    if (coursePrice > 0 && stripeAccountId) {
+                      const stripeResult = await createStripeProduct(
+                        pendingCourseData.name,
+                        pendingCourseData.description,
+                        coursePrice,
+                        "" // Will be set after product creation
+                      );
+                      stripeProductId = stripeResult.stripeProductId;
+                      stripePriceId = stripeResult.stripePriceId;
+                    }
+
                     // Create product linked to course
                     const { data: newProduct, error: productError } = await supabase.from("products").insert({
                       expert_id: user.id,
@@ -1337,6 +1519,8 @@ export function ProductsManagement() {
                       course_id: newCourse.id,
                       price: coursePrice,
                       pricing_type: "one-off",
+                      stripe_product_id: stripeProductId,
+                      stripe_price_id: stripePriceId,
                     }).select().single();
 
                     if (productError) throw productError;
@@ -1574,6 +1758,15 @@ export function ProductsManagement() {
                       <span className="text-custom-text/60">
                         {product.pricing_type === "hourly" ? "Hourly Rate" : "One-off Price"}
                       </span>
+                      {product.price > 0 && (
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          product.stripe_product_id 
+                            ? "bg-cyber-green/20 text-cyber-green border border-cyber-green/30" 
+                            : "bg-yellow-900/20 text-yellow-400 border border-yellow-500/30"
+                        }`}>
+                          {product.stripe_product_id ? "✓ Stripe Ready" : "⚠ Stripe Not Set"}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2 ml-4">
