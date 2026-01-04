@@ -82,16 +82,43 @@ export default function ManageCoursePage() {
 
       if (expertError) throw expertError;
 
-      // Fetch courses where user is enrolled
-      const { data: enrollments, error: enrollmentError } = await supabase
+      // Fetch courses where user is enrolled (by user_id or email)
+      const { data: userProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", user.id)
+        .maybeSingle();
+      
+      const userEmail = userProfile?.email;
+      const { data: authUser } = await supabase.auth.getUser();
+      const finalUserEmail = userEmail || authUser?.user?.email;
+
+      // Fetch enrollments by user_id
+      const { data: enrollmentsById, error: enrollmentByIdError } = await supabase
         .from("course_enrollments")
         .select("course_id, courses(*)")
         .eq("user_id", user.id);
 
-      if (enrollmentError) throw enrollmentError;
+      if (enrollmentByIdError) throw enrollmentByIdError;
+
+      // Fetch enrollments by email (for offline payment enrollments)
+      let enrollmentsByEmail: any[] = [];
+      if (finalUserEmail) {
+        const { data, error: enrollmentByEmailError } = await supabase
+          .from("course_enrollments")
+          .select("course_id, courses(*)")
+          .eq("user_email", finalUserEmail);
+        
+        if (enrollmentByEmailError) {
+          console.error("Error fetching enrollments by email:", enrollmentByEmailError);
+        } else if (data) {
+          enrollmentsByEmail = data;
+        }
+      }
 
       // Combine expert courses and enrolled courses
-      const enrolledCourses = (enrollments || []).map((e: any) => e.courses).filter(Boolean);
+      const allEnrollments = [...(enrollmentsById || []), ...enrollmentsByEmail];
+      const enrolledCourses = allEnrollments.map((e: any) => e.courses).filter(Boolean);
       const allCourses = [...(expertCourses || []), ...enrolledCourses];
       
       // Remove duplicates
@@ -122,6 +149,85 @@ export default function ManageCoursePage() {
     }
   };
 
+  const fetchEnrollments = async (courseId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("course_enrollments")
+        .select(`
+          id,
+          user_id,
+          user_email,
+          enrolled_at,
+          profiles:user_id(name, email)
+        `)
+        .eq("course_id", courseId);
+
+      if (error) throw error;
+      setEnrollments(data || []);
+    } catch (err) {
+      console.error("Error fetching enrollments:", err);
+    }
+  };
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCourse || !user || !memberEmail.trim()) return;
+
+    // Authorization check: Only course owner can add members
+    if (selectedCourse.expert_id !== user.id) {
+      alert("You don't have permission to add members. Only the course owner can do this.");
+      return;
+    }
+
+    try {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(memberEmail.trim())) {
+        alert("Please enter a valid email address.");
+        return;
+      }
+
+      // Check if already enrolled (by email or user_id)
+      const { data: existing } = await supabase
+        .from("course_enrollments")
+        .select("id, user_email, user_id")
+        .eq("course_id", selectedCourse.id)
+        .or(`user_email.eq.${memberEmail.trim()},user_id.eq.${user.id}`)
+        .maybeSingle();
+
+      if (existing) {
+        alert("This email is already enrolled in the course.");
+        return;
+      }
+
+      // Add enrollment by email
+      const { error } = await supabase
+        .from("course_enrollments")
+        .insert({
+          course_id: selectedCourse.id,
+          user_email: memberEmail.trim(),
+          user_id: null, // Email-based enrollment doesn't have user_id
+        });
+
+      if (error) {
+        if (error.code === "23505") {
+          alert("This email is already enrolled in the course.");
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      alert("Member added successfully! They can now access the course.");
+      setMemberEmail("");
+      setShowAddMemberForm(false);
+      await fetchEnrollments(selectedCourse.id);
+    } catch (err: any) {
+      console.error("Error adding member:", err);
+      alert(`Failed to add member: ${err.message || "Please try again."}`);
+    }
+  };
+
   const handleSelectCourse = async (course: Course) => {
     setSelectedCourse(course);
     setCourseForm({
@@ -134,6 +240,9 @@ export default function ManageCoursePage() {
       category: course.category || "",
     });
     await fetchLessons(course.id);
+    if (course.expert_id === user?.id) {
+      await fetchEnrollments(course.id);
+    }
   };
 
   const handleSaveCourse = async () => {
