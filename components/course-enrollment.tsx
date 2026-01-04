@@ -188,42 +188,13 @@ export function CourseEnrollment({
           setShowQuestionnaire(true);
           return;
         } else {
-          // No fields exist, create default ones
-          console.log("No fields found, creating default fields");
-          const { error: fieldsError } = await supabase
-            .from("questionnaire_fields")
-            .insert([
-              {
-                questionnaire_id: questionnaireId,
-                field_type: "text",
-                label: "Name",
-                placeholder: "Enter your name",
-                required: true,
-                order_index: 0,
-              },
-              {
-                questionnaire_id: questionnaireId,
-                field_type: "email",
-                label: "Email",
-                placeholder: "Enter your email",
-                required: true,
-                order_index: 1,
-              },
-            ]);
-
-          if (fieldsError) {
-            console.error("Error creating default fields:", fieldsError);
-            // Still show form - QuestionnaireForm will handle empty fields
-          }
-          
-          setQuestionnaireId(questionnaireId);
-          setQuestionnaireType("interest");
-          setShowQuestionnaire(true);
+          // No fields exist - DO NOT CREATE (only experts can create fields)
+          console.log("No fields found for questionnaire");
+          alert("The expert has not set up a registration form for this course. Please contact them directly.");
+          setProcessing(false);
           return;
         }
-      } else {
-        // No questionnaire available - create one with default fields (MANDATORY)
-        console.log("No questionnaire available, creating mandatory one for expert:", expertId);
+      }
         try {
           const { data: newQuestionnaire, error: createError } = await supabase
             .from("questionnaires")
