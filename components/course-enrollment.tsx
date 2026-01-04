@@ -153,11 +153,15 @@ export function CourseEnrollment({
         .from("questionnaires")
         .select("id, is_active")
         .eq("product_id", product.id)
+        .eq("is_active", true)  // Only get active questionnaires
         .maybeSingle();
 
-      // PGRST116 is "no rows returned" which is fine
-      if (qError && qError.code !== "PGRST116") {
+      // Log the error for debugging
+      if (qError) {
         console.error("Error checking for questionnaire:", qError);
+        console.error("Error code:", qError.code);
+        console.error("Error message:", qError.message);
+        console.error("Product ID:", product.id);
       }
 
       if (questionnaire?.id) {
@@ -342,11 +346,15 @@ export function CourseEnrollment({
         .from("questionnaires")
         .select("id, is_active")
         .eq("product_id", product.id)
+        .eq("is_active", true)  // Only get active questionnaires
         .maybeSingle();
       
-      // PGRST116 is "no rows returned" which is fine
-      if (qError && qError.code !== "PGRST116") {
+      // Log the error for debugging
+      if (qError) {
         console.error("Error checking for questionnaire:", qError);
+        console.error("Error code:", qError.code);
+        console.error("Error message:", qError.message);
+        console.error("Product ID:", product.id);
       }
 
       if (questionnaire?.id) {
