@@ -129,9 +129,9 @@ export default function BookAppointmentPage() {
     setSelectedSlot(slot);
 
     // Check for questionnaire first (MANDATORY)
-    // Questionnaire is linked to product_id, so we need to get product_id from slot
-    try {
-      let productId = slot.product_id;
+      // Questionnaire is linked to product_id, so we need to get product_id from slot
+      try {
+        let productId = (slot as any).product_id;
       
       // If slot doesn't have product_id, find the appointment product for this expert
       if (!productId) {
