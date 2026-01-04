@@ -282,6 +282,7 @@ export function ProductsManagement() {
       const productIds = products.map((p) => p.id);
       
       // First, get all interests for the expert's products, including questionnaire responses
+      // Note: questionnaire_response_id might not be in schema cache yet, so we handle it gracefully
       const { data, error } = await supabase
         .from("product_interests")
         .select(`
@@ -291,7 +292,6 @@ export function ProductsManagement() {
           user_email,
           country_code,
           phone_number,
-          questionnaire_response_id,
           created_at,
           products!inner(name, expert_id),
           questionnaire_responses(responses)
