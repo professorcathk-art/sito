@@ -15,6 +15,11 @@ interface AppointmentSlot {
   duration_minutes?: number;
   rate_per_hour: number;
   is_available: boolean;
+  product_id?: string | null;
+  products?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 interface BookedAppointment {
@@ -40,19 +45,40 @@ export default function ManageAppointmentsPage() {
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState<"slots" | "bookings">("slots");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [products, setProducts] = useState<Array<{ id: string; name: string }>>([]);
   const [formData, setFormData] = useState({
     date: "",
     startTime: "",
     endTime: "",
     intervalMinutes: "60",
     ratePerHour: "100",
+    productId: "",
   });
 
   useEffect(() => {
     if (!user) return;
     fetchSlots();
     fetchBookedAppointments();
+    fetchProducts();
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchProducts = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name")
+        .eq("expert_id", user.id)
+        .eq("product_type", "appointment")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    }
+  };
 
   const fetchBookedAppointments = async () => {
     if (!user) return;
@@ -110,7 +136,10 @@ export default function ManageAppointmentsPage() {
     try {
       const { data, error } = await supabase
         .from("appointment_slots")
-        .select("*")
+        .select(`
+          *,
+          products(id, name)
+        `)
         .eq("expert_id", user.id)
         .order("start_time", { ascending: true });
 
@@ -155,6 +184,7 @@ export default function ManageAppointmentsPage() {
 
         slots.push({
           expert_id: user.id,
+          product_id: formData.productId || null,
           start_time: currentTime.toISOString(),
           end_time: slotEnd.toISOString(),
           rate_per_hour: ratePerHour,
@@ -179,8 +209,10 @@ export default function ManageAppointmentsPage() {
         startTime: "", 
         endTime: "", 
         intervalMinutes: "60",
-        ratePerHour: "100" 
+        ratePerHour: "100",
+        productId: "",
       });
+      setSelectedProductId(null);
       fetchSlots();
       alert(`Successfully created ${slots.length} appointment slot(s)!`);
     } catch (err: any) {
@@ -219,12 +251,22 @@ export default function ManageAppointmentsPage() {
         <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-4xl font-bold text-custom-text">Manage Appointments</h1>
-            <Link
-              href="/products"
+            <button
+              onClick={() => {
+                if (products.length === 0) {
+                  alert("Please create an appointment product first in the Products page.");
+                  return;
+                }
+                setShowForm(true);
+                if (products.length === 1) {
+                  setFormData({ ...formData, productId: products[0].id });
+                  setSelectedProductId(products[0].id);
+                }
+              }}
               className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
             >
-              Create Timeslots from Products
-            </Link>
+              Add Timeslots
+            </button>
           </div>
 
           {/* Tabs */}
@@ -314,34 +356,92 @@ export default function ManageAppointmentsPage() {
                 </div>
               ) : (
                 <>
-                  <CalendarView
-                    slots={slots}
-                    onDateSelect={(date) => {
-                      setSelectedDate(date);
-                    }}
-                    onSlotToggle={async (slotId, isAvailable) => {
-                      try {
-                        const { error } = await supabase
-                          .from("appointment_slots")
-                          .update({ is_available: isAvailable })
-                          .eq("id", slotId)
-                          .eq("expert_id", user?.id);
-                        if (error) throw error;
-                        fetchSlots();
-                      } catch (err) {
-                        console.error("Error toggling slot:", err);
-                        alert("Failed to update slot availability.");
-                      }
-                    }}
-                    showToggle={true}
-                    hideSlotsDisplay={true}
-                  />
+                  {/* Group slots by product */}
+                  {products.length > 0 && (
+                    <div className="mb-6 space-y-6">
+                      {products.map((product) => {
+                        const productSlots = slots.filter(s => s.product_id === product.id);
+                        if (productSlots.length === 0) return null;
+                        
+                        return (
+                          <div key={product.id} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                            <h3 className="text-xl font-bold text-custom-text mb-4">{product.name}</h3>
+                            <CalendarView
+                              slots={productSlots}
+                              onDateSelect={(date) => {
+                                setSelectedDate(date);
+                                setSelectedProductId(product.id);
+                              }}
+                              onSlotToggle={async (slotId, isAvailable) => {
+                                try {
+                                  const { error } = await supabase
+                                    .from("appointment_slots")
+                                    .update({ is_available: isAvailable })
+                                    .eq("id", slotId)
+                                    .eq("expert_id", user?.id);
+                                  if (error) throw error;
+                                  fetchSlots();
+                                } catch (err) {
+                                  console.error("Error toggling slot:", err);
+                                  alert("Failed to update slot availability.");
+                                }
+                              }}
+                              showToggle={true}
+                              hideSlotsDisplay={true}
+                            />
+                            <div className="mt-4">
+                              <button
+                                onClick={() => {
+                                  setShowForm(true);
+                                  setFormData({ ...formData, productId: product.id });
+                                  setSelectedProductId(product.id);
+                                }}
+                                className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm"
+                              >
+                                + Add Timeslots for {product.name}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      
+                      {/* Show unlinked slots */}
+                      {slots.filter(s => !s.product_id).length > 0 && (
+                        <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                          <h3 className="text-xl font-bold text-custom-text mb-4">Unlinked Timeslots</h3>
+                          <CalendarView
+                            slots={slots.filter(s => !s.product_id)}
+                            onDateSelect={(date) => {
+                              setSelectedDate(date);
+                              setSelectedProductId(null);
+                            }}
+                            onSlotToggle={async (slotId, isAvailable) => {
+                              try {
+                                const { error } = await supabase
+                                  .from("appointment_slots")
+                                  .update({ is_available: isAvailable })
+                                  .eq("id", slotId)
+                                  .eq("expert_id", user?.id);
+                                if (error) throw error;
+                                fetchSlots();
+                              } catch (err) {
+                                console.error("Error toggling slot:", err);
+                                alert("Failed to update slot availability.");
+                              }
+                            }}
+                            showToggle={true}
+                            hideSlotsDisplay={true}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   {/* Show slots for selected date */}
                   {selectedDate && slots.filter(s => {
                     const slotDate = new Date(s.start_time);
                     const dateStr = `${slotDate.getFullYear()}-${String(slotDate.getMonth() + 1).padStart(2, '0')}-${String(slotDate.getDate()).padStart(2, '0')}`;
-                    return dateStr === selectedDate;
+                    return dateStr === selectedDate && (selectedProductId ? s.product_id === selectedProductId : true);
                   }).length > 0 && (
                     <div className="mt-6 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
                       <h3 className="text-xl font-bold text-custom-text mb-4">
@@ -354,13 +454,18 @@ export default function ManageAppointmentsPage() {
                             year: "numeric",
                           });
                         })()}
+                        {selectedProductId && products.find(p => p.id === selectedProductId) && (
+                          <span className="text-lg text-custom-text/70 ml-2">
+                            - {products.find(p => p.id === selectedProductId)?.name}
+                          </span>
+                        )}
                       </h3>
                       <div className="space-y-3">
                         {slots
                           .filter(s => {
                             const slotDate = new Date(s.start_time);
                             const dateStr = `${slotDate.getFullYear()}-${String(slotDate.getMonth() + 1).padStart(2, '0')}-${String(slotDate.getDate()).padStart(2, '0')}`;
-                            return dateStr === selectedDate;
+                            return dateStr === selectedDate && (selectedProductId ? s.product_id === selectedProductId : true);
                           })
                           .map((slot) => {
                             const startTime = new Date(slot.start_time).toLocaleTimeString("en-US", {
@@ -388,6 +493,11 @@ export default function ManageAppointmentsPage() {
                                       <span className="text-green-300">Available</span>
                                     ) : (
                                       <span className="text-red-300">Unavailable</span>
+                                    )}
+                                    {slot.products && (
+                                      <span className="ml-2 text-xs text-custom-text/60">
+                                        ({slot.products.name})
+                                      </span>
                                     )}
                                   </p>
                                 </div>
@@ -418,12 +528,57 @@ export default function ManageAppointmentsPage() {
             </div>
           )}
 
-          {false && showForm && (
+          {showForm && (
             <form onSubmit={handleCreateSlots} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-custom-text mb-6">Create Appointment Slots</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-custom-text">Add Appointment Slots</h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForm(false);
+                    setFormData({
+                      date: "",
+                      startTime: "",
+                      endTime: "",
+                      intervalMinutes: "60",
+                      ratePerHour: "100",
+                      productId: "",
+                    });
+                    setSelectedProductId(null);
+                  }}
+                  className="text-custom-text/60 hover:text-custom-text"
+                >
+                  ✕
+                </button>
+              </div>
               <p className="text-custom-text/70 mb-6 text-sm">
                 Set a time range and interval, and the system will automatically create multiple booking slots for you.
               </p>
+              
+              {products.length > 0 && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    Product *
+                  </label>
+                  <select
+                    value={formData.productId}
+                    onChange={(e) => {
+                      setFormData({ ...formData, productId: e.target.value });
+                      setSelectedProductId(e.target.value);
+                    }}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    required
+                  >
+                    <option value="">Select a product...</option>
+                    {products.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
@@ -493,12 +648,32 @@ export default function ManageAppointmentsPage() {
                   required
                 />
               </div>
-              <button
-                type="submit"
-                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
-              >
-                Create Slots
-              </button>
+              <div className="flex gap-4">
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                >
+                  Create Slots
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForm(false);
+                    setFormData({
+                      date: "",
+                      startTime: "",
+                      endTime: "",
+                      intervalMinutes: "60",
+                      ratePerHour: "100",
+                      productId: "",
+                    });
+                    setSelectedProductId(null);
+                  }}
+                  className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           )}
 

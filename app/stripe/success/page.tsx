@@ -19,14 +19,21 @@ function SuccessContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [courseId, setCourseId] = useState<string | null>(null);
+  const [appointmentId, setAppointmentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (sessionId) {
-      // Fetch session details to get course_id
+      // Fetch session details to get course_id or appointment_id
       fetch(`/api/stripe/checkout/session?session_id=${sessionId}`)
         .then((res) => res.json())
         .then((data) => {
-          if (data.course_id) {
+          if (data.appointment_id) {
+            setAppointmentId(data.appointment_id);
+            // Redirect to Manage Appointments after a short delay
+            setTimeout(() => {
+              router.push("/appointments/manage");
+            }, 3000);
+          } else if (data.course_id) {
             setCourseId(data.course_id);
             // Redirect to classroom after a short delay
             setTimeout(() => {
@@ -71,6 +78,11 @@ function SuccessContent() {
               </h1>
               <p className="text-custom-text/80 mb-6">
                 Thank you for your purchase. Your payment has been processed successfully.
+                {appointmentId && (
+                  <span className="block mt-2 text-sm">
+                    Your appointment has been booked. Redirecting to Manage Appointments...
+                  </span>
+                )}
                 {courseId && (
                   <span className="block mt-2 text-sm">
                     You have been enrolled in the course. Redirecting to your classroom...
@@ -83,12 +95,21 @@ function SuccessContent() {
                 </p>
               )}
               <div className="flex gap-4 justify-center">
-                <Link
-                  href="/courses/manage"
-                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
-                >
-                  Go to Classroom
-                </Link>
+                {appointmentId ? (
+                  <Link
+                    href="/appointments/manage"
+                    className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                  >
+                    Go to Manage Appointments
+                  </Link>
+                ) : (
+                  <Link
+                    href="/courses/manage"
+                    className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                  >
+                    Go to Classroom
+                  </Link>
+                )}
                 <Link
                   href="/dashboard"
                   className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"

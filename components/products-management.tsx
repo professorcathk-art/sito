@@ -621,7 +621,17 @@ export function ProductsManagement() {
       }
 
       if (editingProduct) {
-        // Update existing product - DO NOT CREATE NEW COURSE
+        // Update existing product - DO NOT CREATE NEW PRODUCT
+        // Warn user if somehow a new product would be created
+        if (!editingProduct.id) {
+          const shouldContinue = confirm(
+            "Warning: Product ID not found. This will create a new product instead of updating. Continue?"
+          );
+          if (!shouldContinue) {
+            return;
+          }
+        }
+        
         const productData: any = {
           name: formData.name,
           description: formData.description,
@@ -1111,8 +1121,20 @@ export function ProductsManagement() {
                 type="submit"
                 className="bg-cyber-green text-custom-text px-6 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
               >
-                {editingProduct ? "Update Product" : formData.product_type === "course" ? "Next: Create Form" : "Next: Set Up Sessions"}
+                {editingProduct 
+                  ? "Update Product" 
+                  : formData.product_type === "course" 
+                    ? "Next: Create Form" 
+                    : "Next: Set Up Sessions"}
               </button>
+              {editingProduct && editingProduct.product_type === "appointment" && (
+                <Link
+                  href="/appointments/manage"
+                  className="px-6 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-center"
+                >
+                  Manage Timeslots
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={() => {

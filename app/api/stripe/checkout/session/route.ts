@@ -27,12 +27,14 @@ export async function GET(request: NextRequest) {
       expand: ["payment_intent"],
     });
 
-    // Extract course_id from metadata
+    // Extract course_id and appointment_id from metadata
     const courseId = session.metadata?.course_id || null;
+    const appointmentId = session.metadata?.appointment_id || null;
 
     return NextResponse.json({
       session_id: session.id,
       course_id: courseId,
+      appointment_id: appointmentId,
       payment_status: session.payment_status,
     });
   } catch (error: any) {

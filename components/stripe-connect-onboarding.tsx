@@ -534,7 +534,7 @@ export function StripeConnectOnboarding() {
                     </p>
                     {accountStatus?.accountId && (
                       <a
-                        href={`https://dashboard.stripe.com/connect/accounts/${accountStatus.accountId}`}
+                        href={`https://dashboard.stripe.com/connect/accounts/overview/${accountStatus.accountId}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-block mt-3 px-4 py-2 bg-cyber-green/20 border border-cyber-green/50 text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors text-sm font-medium"

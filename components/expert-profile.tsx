@@ -545,6 +545,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                     }
                     
                     if (appointmentProduct) {
+                      // Call handleRegisterInterest which will show the questionnaire form
                       await handleRegisterInterest(appointmentProduct.id);
                     } else {
                       alert("Appointment service not available. Please contact the expert.");
