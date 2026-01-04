@@ -579,12 +579,12 @@ export default function ManageAppointmentsPage() {
                       
                       if (undisplayedSlots.length === 0) return null;
                       
-                      console.warn(`⚠️ Found ${undisplayedSlots.length} slots that weren't displayed!`);
+                      console.warn(`⚠️ Found ${undisplayedSlots.length} slots that were not displayed!`);
                       return (
                         <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-6">
                           <h3 className="text-xl font-bold text-custom-text mb-4">All Timeslots (Fallback Display)</h3>
                           <p className="text-sm text-red-200 mb-4">
-                            Showing {undisplayedSlots.length} slot(s) that weren't grouped properly
+                            Showing {undisplayedSlots.length} slot(s) that were not grouped properly
                           </p>
                           <CalendarView
                             slots={undisplayedSlots}
