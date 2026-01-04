@@ -462,6 +462,8 @@ export function ProductsManagement() {
             description: formData.description,
             price: formData.price,
             category: formData.category || "",
+            payment_method: formData.payment_method,
+            contact_email: formData.contact_email || "",
           });
           setShowAddForm(false);
           
@@ -497,6 +499,8 @@ export function ProductsManagement() {
           product_type: "appointment",
           course_id: "",
           category: "",
+          payment_method: "stripe",
+          contact_email: "",
         });
         return;
       }
@@ -611,6 +615,8 @@ export function ProductsManagement() {
           product_type: "appointment",
           course_id: "",
           category: "",
+          payment_method: "stripe",
+          contact_email: "",
         });
         setShowAddForm(false);
         setEditingProduct(null);
@@ -629,6 +635,8 @@ export function ProductsManagement() {
         product_type: "appointment",
         course_id: "",
         category: "",
+        payment_method: "stripe",
+        contact_email: "",
       });
       setShowAddForm(false);
       setEditingProduct(null);
@@ -975,6 +983,8 @@ export function ProductsManagement() {
                     product_type: "appointment",
                     course_id: "",
                     category: "",
+                    payment_method: "stripe",
+                    contact_email: "",
                   });
                 }}
                 className="px-6 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
