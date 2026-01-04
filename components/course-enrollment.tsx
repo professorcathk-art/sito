@@ -582,7 +582,7 @@ export function CourseEnrollment({
       return;
     }
 
-    // Check for questionnaire - use 'course_interest' to match DB constraint
+    // Check for questionnaire - use course_interest to match DB constraint
     try {
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
