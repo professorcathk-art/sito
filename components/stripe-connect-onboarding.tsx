@@ -109,12 +109,12 @@ export function StripeConnectOnboarding() {
           setSelectedCountry(countryCode);
         }
       } else {
-        // Default to US if no country set
-        setSelectedCountry("us");
+        // Default to Hong Kong if no country set
+        setSelectedCountry("hk");
       }
     } catch (err) {
       console.error("Error fetching user country:", err);
-      setSelectedCountry("us"); // Default fallback
+      setSelectedCountry("hk"); // Default fallback to Hong Kong
     }
   };
 

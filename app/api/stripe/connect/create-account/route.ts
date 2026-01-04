@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { displayName, contactEmail, country = "us" } = body;
+    const { displayName, contactEmail, country = "hk" } = body;
 
     // Validate required fields
     if (!displayName || !contactEmail) {
