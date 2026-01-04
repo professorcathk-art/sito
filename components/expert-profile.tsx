@@ -914,11 +914,12 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
 
                   if (responseError) throw responseError;
 
-                  // Register interest
+                  // Register interest with questionnaire response
                   const { error: interestError } = await supabase.from("product_interests").insert({
                     product_id: currentProductForInterest,
                     user_id: user.id,
                     user_email: userEmail,
+                    questionnaire_response_id: responseData.id,
                   });
 
                   if (interestError) {

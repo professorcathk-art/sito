@@ -39,6 +39,7 @@ interface ProductInterest {
   user_name: string;
   country_code?: string;
   phone_number?: string;
+  questionnaire_responses?: Record<string, any> | null;
   created_at: string;
 }
 
@@ -280,7 +281,7 @@ export function ProductsManagement() {
       console.log("Fetching interests for products:", products.map(p => p.id));
       const productIds = products.map((p) => p.id);
       
-      // First, get all interests for the expert's products
+      // First, get all interests for the expert's products, including questionnaire responses
       const { data, error } = await supabase
         .from("product_interests")
         .select(`
@@ -290,8 +291,10 @@ export function ProductsManagement() {
           user_email,
           country_code,
           phone_number,
+          questionnaire_response_id,
           created_at,
-          products!inner(name, expert_id)
+          products!inner(name, expert_id),
+          questionnaire_responses(responses)
         `)
         .in("product_id", productIds)
         .eq("products.expert_id", user.id);
@@ -325,17 +328,38 @@ export function ProductsManagement() {
         }
       }
 
-      const interestsData = (data || []).map((item: any) => ({
-        id: item.id,
-        product_id: item.product_id,
-        product_name: item.products?.name || "Unknown Product",
-        user_id: item.user_id,
-        user_email: item.user_email,
-        user_name: userNameMap[item.user_id] || "Unknown User",
-        country_code: item.country_code || undefined,
-        phone_number: item.phone_number || undefined,
-        created_at: item.created_at,
-      }));
+      const interestsData = (data || []).map((item: any) => {
+        // Extract name and email from questionnaire responses if available
+        let formName = item.user_email; // Default to email
+        let formEmail = item.user_email;
+        
+        if (item.questionnaire_responses && item.questionnaire_responses.responses) {
+          const responses = item.questionnaire_responses.responses;
+          // Try to find name and email in responses
+          Object.values(responses).forEach((value: any) => {
+            if (typeof value === 'string') {
+              if (value.includes('@')) {
+                formEmail = value;
+              } else if (value.length > 2 && !value.includes('@')) {
+                formName = value;
+              }
+            }
+          });
+        }
+        
+        return {
+          id: item.id,
+          product_id: item.product_id,
+          product_name: item.products?.name || "Unknown Product",
+          user_id: item.user_id,
+          user_email: formEmail || item.user_email,
+          user_name: formName || userNameMap[item.user_id] || "Unknown User",
+          country_code: item.country_code || undefined,
+          phone_number: item.phone_number || undefined,
+          questionnaire_responses: item.questionnaire_responses?.responses || null,
+          created_at: item.created_at,
+        };
+      });
 
       setInterests(interestsData);
     } catch (err: any) {
@@ -367,6 +391,139 @@ export function ProductsManagement() {
     }
 
     try {
+      // Check if editing first - skip questionnaire flow for edits
+      if (editingProduct) {
+        // Update existing product - DO NOT CREATE NEW PRODUCT
+        // Warn user if somehow a new product would be created
+        if (!editingProduct.id) {
+          const shouldContinue = confirm(
+            "Warning: Product ID not found. This will create a new product instead of updating. Continue?"
+          );
+          if (!shouldContinue) {
+            return;
+          }
+        }
+        
+        const productData: any = {
+          name: formData.name,
+          description: formData.description,
+        };
+
+        // Don't change product_type when updating
+        // productData.product_type = formData.product_type;
+
+        // Add price if provided
+        const newPrice = formData.price ? parseFloat(formData.price) || 0 : editingProduct.price;
+        if (formData.price) {
+          productData.price = newPrice;
+        }
+
+        // Update payment method and contact email
+        productData.payment_method = formData.payment_method || "stripe";
+        if (formData.payment_method === "offline") {
+          productData.contact_email = formData.contact_email || null;
+          // Clear Stripe IDs if switching to offline
+          if (editingProduct.stripe_product_id) {
+            productData.stripe_product_id = null;
+            productData.stripe_price_id = null;
+          }
+        } else {
+          productData.contact_email = null;
+        }
+
+        // Update Stripe product if price changed and product is paid
+        if (newPrice > 0 && editingProduct.price !== newPrice && stripeAccountId && editingProduct.stripe_product_id) {
+          // Price changed for paid product - update Stripe product
+          // Note: Stripe doesn't allow updating prices, so we create a new price
+          // For now, we'll just log this - in production you might want to archive old price and create new one
+          console.log("Price changed for Stripe product - consider updating Stripe price");
+          
+          // Optionally create new Stripe product/price if needed
+          // For simplicity, we'll keep the existing Stripe product ID
+          // In production, you might want to handle price updates differently
+        } else if (newPrice > 0 && !editingProduct.stripe_product_id && stripeAccountId) {
+          // Product became paid but doesn't have Stripe product yet - create it
+          const stripeResult = await createStripeProduct(
+            formData.name || editingProduct.name,
+            formData.description || editingProduct.description,
+            newPrice,
+            editingProduct.id
+          );
+          
+          if (stripeResult.stripeProductId) {
+            productData.stripe_product_id = stripeResult.stripeProductId;
+            productData.stripe_price_id = stripeResult.stripePriceId;
+          }
+        } else if (newPrice === 0 && editingProduct.stripe_product_id) {
+          // Product became free - remove Stripe product IDs
+          productData.stripe_product_id = null;
+          productData.stripe_price_id = null;
+        }
+
+        // If updating a course product, also update the course price, description, and category
+        if (editingProduct.product_type === "course" && editingProduct.course_id) {
+          const courseUpdateData: any = {};
+          
+          if (formData.price) {
+            courseUpdateData.price = parseFloat(formData.price) || 0;
+            courseUpdateData.is_free = parseFloat(formData.price) === 0;
+          }
+          
+          // Update course title if product name changed
+          if (formData.name) {
+            courseUpdateData.title = formData.name;
+          }
+          
+          // Update course description if provided
+          if (formData.description) {
+            courseUpdateData.description = formData.description;
+          }
+          
+          // Update course category if provided
+          if (formData.category) {
+            courseUpdateData.category = formData.category;
+          }
+          
+          if (Object.keys(courseUpdateData).length > 0) {
+            const { error: courseUpdateError } = await supabase
+              .from("courses")
+              .update(courseUpdateData)
+              .eq("id", editingProduct.course_id)
+              .eq("expert_id", user.id);
+            
+            if (courseUpdateError) throw courseUpdateError;
+          }
+        }
+
+        const { error } = await supabase
+          .from("products")
+          .update(productData)
+          .eq("id", editingProduct.id)
+          .eq("expert_id", user.id);
+
+        if (error) throw error;
+        
+        alert("Product updated successfully!");
+        setFormData({
+          name: "",
+          description: "",
+          price: "",
+          pricing_type: "one-off",
+          product_type: "appointment",
+          course_id: "",
+          category: "",
+          payment_method: "stripe",
+          contact_email: "",
+        });
+        setShowAddForm(false);
+        setEditingProduct(null);
+        fetchProducts();
+        if (activeTab === "interests") {
+          fetchInterests();
+        }
+        return; // Exit early, don't create new product
+      }
+
       if (formData.product_type === "course") {
         // For course: FIRST create questionnaire (mandatory), THEN create course
         // Step 1: Create questionnaire with mandatory name and email fields
@@ -619,138 +776,6 @@ export function ProductsManagement() {
           throw err;
         }
         return; // Don't create product yet - wait for questionnaire completion
-      }
-
-      if (editingProduct) {
-        // Update existing product - DO NOT CREATE NEW PRODUCT
-        // Warn user if somehow a new product would be created
-        if (!editingProduct.id) {
-          const shouldContinue = confirm(
-            "Warning: Product ID not found. This will create a new product instead of updating. Continue?"
-          );
-          if (!shouldContinue) {
-            return;
-          }
-        }
-        
-        const productData: any = {
-          name: formData.name,
-          description: formData.description,
-        };
-
-        // Don't change product_type when updating
-        // productData.product_type = formData.product_type;
-
-        // Add price if provided
-        const newPrice = formData.price ? parseFloat(formData.price) || 0 : editingProduct.price;
-        if (formData.price) {
-          productData.price = newPrice;
-        }
-
-        // Update payment method and contact email
-        productData.payment_method = formData.payment_method || "stripe";
-        if (formData.payment_method === "offline") {
-          productData.contact_email = formData.contact_email || null;
-          // Clear Stripe IDs if switching to offline
-          if (editingProduct.stripe_product_id) {
-            productData.stripe_product_id = null;
-            productData.stripe_price_id = null;
-          }
-        } else {
-          productData.contact_email = null;
-        }
-
-        // Update Stripe product if price changed and product is paid
-        if (newPrice > 0 && editingProduct.price !== newPrice && stripeAccountId && editingProduct.stripe_product_id) {
-          // Price changed for paid product - update Stripe product
-          // Note: Stripe doesn't allow updating prices, so we create a new price
-          // For now, we'll just log this - in production you might want to archive old price and create new one
-          console.log("Price changed for Stripe product - consider updating Stripe price");
-          
-          // Optionally create new Stripe product/price if needed
-          // For simplicity, we'll keep the existing Stripe product ID
-          // In production, you might want to handle price updates differently
-        } else if (newPrice > 0 && !editingProduct.stripe_product_id && stripeAccountId) {
-          // Product became paid but doesn't have Stripe product yet - create it
-          const stripeResult = await createStripeProduct(
-            formData.name || editingProduct.name,
-            formData.description || editingProduct.description,
-            newPrice,
-            editingProduct.id
-          );
-          
-          if (stripeResult.stripeProductId) {
-            productData.stripe_product_id = stripeResult.stripeProductId;
-            productData.stripe_price_id = stripeResult.stripePriceId;
-          }
-        } else if (newPrice === 0 && editingProduct.stripe_product_id) {
-          // Product became free - remove Stripe product IDs
-          productData.stripe_product_id = null;
-          productData.stripe_price_id = null;
-        }
-
-        // If updating a course product, also update the course price, description, and category
-        if (editingProduct.product_type === "course" && editingProduct.course_id) {
-          const courseUpdateData: any = {};
-          
-          if (formData.price) {
-            courseUpdateData.price = parseFloat(formData.price) || 0;
-            courseUpdateData.is_free = parseFloat(formData.price) === 0;
-          }
-          
-          // Update course title if product name changed
-          if (formData.name) {
-            courseUpdateData.title = formData.name;
-          }
-          
-          // Update course description if provided
-          if (formData.description) {
-            courseUpdateData.description = formData.description;
-          }
-          
-          // Update course category if provided
-          if (formData.category) {
-            courseUpdateData.category = formData.category;
-          }
-          
-          if (Object.keys(courseUpdateData).length > 0) {
-            const { error: courseUpdateError } = await supabase
-              .from("courses")
-              .update(courseUpdateData)
-              .eq("id", editingProduct.course_id)
-              .eq("expert_id", user.id);
-            
-            if (courseUpdateError) throw courseUpdateError;
-          }
-        }
-
-        const { error } = await supabase
-          .from("products")
-          .update(productData)
-          .eq("id", editingProduct.id)
-          .eq("expert_id", user.id);
-
-        if (error) throw error;
-        
-        alert("Product updated successfully!");
-        setFormData({
-          name: "",
-          description: "",
-          price: "",
-          pricing_type: "one-off",
-          product_type: "appointment",
-          course_id: "",
-          category: "",
-          payment_method: "stripe",
-          contact_email: "",
-        });
-        setShowAddForm(false);
-        setEditingProduct(null);
-        fetchProducts();
-        if (activeTab === "interests") {
-          fetchInterests();
-        }
-        return; // Exit early, don't create new product
       }
 
       setFormData({
@@ -1815,6 +1840,20 @@ export function ProductsManagement() {
               <button
                 type="button"
                 onClick={async () => {
+                  // Check if editing - if so, just save the questionnaire and return
+                  if (editingProduct && editingProduct.product_type === "appointment") {
+                    // Just save questionnaire updates, don't create new product or show appointment form
+                    setShowQuestionnaireForm(false);
+                    setQuestionnaireType(null);
+                    setCurrentQuestionnaireId(null);
+                    setQuestionnaireFields([]);
+                    setShowAddForm(false);
+                    setEditingProduct(null);
+                    fetchProducts();
+                    alert("Product updated successfully!");
+                    return;
+                  }
+                  
                   // Questionnaire is mandatory - ensure it has at least name and email fields
                   if (questionnaireFields.length === 0) {
                     alert("Please add at least Name and Email fields to your form. This is required.");
@@ -1874,7 +1913,7 @@ export function ProductsManagement() {
                 }}
                 className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
               >
-                Continue to Set Up Slots
+                {editingProduct && editingProduct.product_type === "appointment" ? "Save Updates" : "Continue to Set Up Slots"}
               </button>
             )}
           </div>
@@ -2171,6 +2210,20 @@ export function ProductsManagement() {
                         {interest.country_code && interest.phone_number 
                           ? `${interest.country_code} ${interest.phone_number}` 
                           : interest.phone_number || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-custom-text/70">
+                        {interest.questionnaire_responses ? (
+                          <details className="cursor-pointer">
+                            <summary className="text-cyber-green hover:text-cyber-green-light">View Form Data</summary>
+                            <div className="mt-2 p-2 bg-dark-green-900/50 rounded text-xs">
+                              {Object.entries(interest.questionnaire_responses).map(([key, value]: [string, any]) => (
+                                <div key={key} className="mb-1">
+                                  <span className="font-semibold">{key}:</span> {String(value)}
+                                </div>
+                              ))}
+                            </div>
+                          </details>
+                        ) : "-"}
                       </td>
                       <td className="px-4 py-3 text-sm text-custom-text/70">
                         {new Date(interest.created_at).toLocaleDateString()}
