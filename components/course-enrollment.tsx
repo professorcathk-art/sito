@@ -356,7 +356,10 @@ export function CourseEnrollment({
           }
         } catch (createErr) {
           console.error("Error creating questionnaire:", createErr);
-          alert("Unable to load registration form. Please try again later.");
+          // Try to continue without questionnaire - allow registration with basic info
+          // Don't block the user, but log the error
+          console.warn("Questionnaire creation failed, attempting to register interest without form");
+          await registerInterest();
           return;
         }
       }
