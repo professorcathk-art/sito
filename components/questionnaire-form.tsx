@@ -98,11 +98,31 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel }: Quest
         .order("order_index", { ascending: true });
 
       if (error) throw error;
-      setFields(data || []);
+      
+      // Parse options from JSONB if needed
+      const parsedFields = (data || []).map((field: any) => {
+        // Handle options - Supabase returns JSONB as parsed object/array, but ensure it's an array
+        if (field.options) {
+          if (typeof field.options === 'string') {
+            try {
+              field.options = JSON.parse(field.options);
+            } catch (e) {
+              // If parsing fails, try splitting by comma
+              field.options = field.options.split(',').map((opt: string) => opt.trim());
+            }
+          } else if (!Array.isArray(field.options)) {
+            // If it's an object, convert to array
+            field.options = Object.values(field.options);
+          }
+        }
+        return field;
+      });
+      
+      setFields(parsedFields);
       
       // Initialize responses with prefilled user data
       const initialResponses: Record<string, any> = {};
-      (data || []).forEach((field) => {
+      parsedFields.forEach((field) => {
         if (field.field_type === "checkbox") {
           initialResponses[field.id] = [];
         } else {
