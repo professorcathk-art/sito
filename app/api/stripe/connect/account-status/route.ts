@@ -60,58 +60,61 @@ export async function GET(request: NextRequest) {
       accountId = profile.stripe_connect_account_id;
     }
 
+    if (!accountId) {
+      return NextResponse.json(
+        { error: "Account ID is required" },
+        { status: 400 }
+      );
+    }
+
     /**
      * Retrieve the account with full details
      * 
-     * We include:
-     * - configuration.recipient: To check transfer capabilities
-     * - requirements: To check onboarding status
-     * 
-     * Note: Using type assertion for V2 API as TypeScript types may not be fully updated
+     * For Express accounts, we check:
+     * - capabilities: To see if transfers are enabled
+     * - charges_enabled: Whether account can receive payments
+     * - details_submitted: Whether onboarding is complete
      */
-    const account = await (stripeClient as any).v2.core.accounts.retrieve(accountId, {
-      include: ["configuration.recipient", "requirements"],
-    });
+    const account = await stripeClient.accounts.retrieve(accountId);
 
     /**
      * Check if account is ready to receive payments
      * 
-     * The account can receive payments when:
-     * - stripe_transfers capability status is "active"
-     * This means Stripe can transfer funds to this account
+     * For Express accounts:
+     * - charges_enabled: true means account can receive payments
+     * - transfers_enabled: true means we can transfer funds to this account
      */
     const readyToReceivePayments =
-      account?.configuration?.recipient?.capabilities?.stripe_balance
-        ?.stripe_transfers?.status === "active";
+      account.charges_enabled === true && account.details_submitted === true;
 
     /**
      * Check onboarding completion status
      * 
-     * Onboarding is complete when:
-     * - requirements.summary.minimum_deadline.status is NOT "currently_due" or "past_due"
-     * 
-     * Status values:
-     * - "currently_due": User needs to provide information
-     * - "past_due": User missed a deadline
-     * - "pending_verification": Information provided, awaiting verification
-     * - null/undefined: No requirements outstanding
+     * For Express accounts:
+     * - details_submitted: true means onboarding is complete
+     * - If false, user still needs to complete onboarding
      */
-    const requirementsStatus =
-      account.requirements?.summary?.minimum_deadline?.status;
-    const onboardingComplete =
-      requirementsStatus !== "currently_due" &&
-      requirementsStatus !== "past_due";
+    const onboardingComplete = account.details_submitted === true;
+    
+    // Get requirements status if available
+    const requirementsStatus = account.requirements?.currently_due?.length > 0
+      ? "currently_due"
+      : account.requirements?.past_due?.length > 0
+      ? "past_due"
+      : "complete";
 
     return NextResponse.json({
       accountId: account.id,
       readyToReceivePayments,
       onboardingComplete,
-      requirementsStatus: requirementsStatus || "complete",
+      requirementsStatus: requirementsStatus,
       account: {
         id: account.id,
-        display_name: account.display_name,
-        dashboard: account.dashboard,
-        capabilities: account.configuration?.recipient?.capabilities,
+        display_name: account.metadata?.display_name || account.email || "Account",
+        type: account.type,
+        charges_enabled: account.charges_enabled,
+        transfers_enabled: account.capabilities?.transfers === "active",
+        details_submitted: account.details_submitted,
       },
     });
 

@@ -71,54 +71,29 @@ export async function POST(request: NextRequest) {
     }
 
     /**
-     * Create a Stripe Connect account using V2 API
+     * Create a Stripe Connect account using Express accounts API
+     * 
+     * Note: Using standard Accounts API with Express type as V2 API
+     * may not be available in current SDK version. Express accounts work
+     * well for marketplace platforms with application fees.
      * 
      * Key points:
-     * - We use v2.core.accounts.create (V2 API)
-     * - We do NOT pass 'type' at the top level
-     * - Platform is responsible for fees (fees_collector: 'application')
-     * - Platform is responsible for losses (losses_collector: 'application')
-     * - Dashboard type is 'express' for simplified onboarding
-     * - We request stripe_transfers capability for the recipient
+     * - type: 'express' for simplified onboarding
+     * - Platform collects application fees (not passed here, set in checkout)
+     * - country: Required for Express accounts
+     * - email: Contact email for account notifications
      */
-    // Using type assertion for V2 API (TypeScript types may not be fully updated)
-    const account = await (stripeClient as any).v2.core.accounts.create({
-      // Display name shown in Stripe Dashboard
-      display_name: displayName,
-      
-      // Contact email for account notifications
-      contact_email: contactEmail,
-      
-      // Country code (ISO 3166-1 alpha-2)
-      identity: {
-        country: country,
+    const account = await stripeClient.accounts.create({
+      type: "express",
+      country: country,
+      email: contactEmail,
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
       },
-      
-      // Use Express dashboard for simplified onboarding
-      dashboard: "express",
-      
-      // Platform responsibilities
-      defaults: {
-        responsibilities: {
-          // Platform collects fees (application fee)
-          fees_collector: "application",
-          // Platform is responsible for chargebacks/refunds
-          losses_collector: "application",
-        },
-      },
-      
-      // Configure recipient capabilities
-      configuration: {
-        recipient: {
-          capabilities: {
-            stripe_balance: {
-              stripe_transfers: {
-                // Request ability to transfer funds to this account
-                requested: true,
-              },
-            },
-          },
-        },
+      // Store display name in metadata
+      metadata: {
+        display_name: displayName,
       },
     });
 

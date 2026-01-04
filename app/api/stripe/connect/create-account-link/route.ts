@@ -66,32 +66,22 @@ export async function POST(request: NextRequest) {
     const finalReturnUrl = returnUrl || `${baseUrl}/dashboard/stripe-connect?accountId=${accountId}`;
 
     /**
-     * Create an account link using V2 API
+     * Create an account link for Express account onboarding
      * 
      * Account links are used to:
      * 1. Onboard new connected accounts (collect bank details, identity verification)
      * 2. Update account information (change bank details, update business info)
      * 
      * Key points:
-     * - use_case.type: 'account_onboarding' for initial setup
-     * - configurations: ['recipient'] matches our account configuration
+     * - type: 'account_onboarding' for initial setup
      * - refresh_url: Where to redirect if link expires
      * - return_url: Where to redirect after successful onboarding
      */
-    // Using type assertion for V2 API (TypeScript types may not be fully updated)
-    const accountLink = await (stripeClient as any).v2.core.accountLinks.create({
+    const accountLink = await stripeClient.accountLinks.create({
       account: accountId,
-      use_case: {
-        type: "account_onboarding",
-        account_onboarding: {
-          // Match the configuration type we used when creating the account
-          configurations: ["recipient"],
-          // URL to redirect to if the link expires (user needs to refresh)
-          refresh_url: refreshUrl,
-          // URL to redirect to after successful onboarding
-          return_url: finalReturnUrl,
-        },
-      },
+      refresh_url: refreshUrl,
+      return_url: finalReturnUrl,
+      type: "account_onboarding",
     });
 
     return NextResponse.json({

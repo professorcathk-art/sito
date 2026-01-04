@@ -73,128 +73,84 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    /**
-     * For thin events, fetch the full event data
-     * 
-     * Thin events only contain the event ID and type.
-     * We need to retrieve the full event object to get all the details.
-     * 
-     * Check if this is a thin event by checking if it has minimal data.
-     * For V2 account events, we always fetch the full event.
-     */
-    if (event.type.startsWith("v2.core.account")) {
-      // Fetch full event data for V2 account events
-      // Using type assertion for V2 API (TypeScript types may not be fully updated)
-      const fullEvent = await (stripeClient as any).v2.core.events.retrieve(event.id);
-      event = fullEvent as any; // Use the full event data
-    }
-
     console.log(`Received webhook event: ${event.type} for account: ${event.account}`);
 
     /**
      * Handle different event types
      * 
-     * We handle:
-     * 1. Account requirements updated - User needs to provide more info
-     * 2. Capability status updated - Transfer capability status changed
-     * 
-     * Note: Using string comparison for V2 event types as TypeScript types may not include them
+     * For Express accounts, we handle:
+     * 1. account.updated - Account information or status changed
+     * 2. account.application.deauthorized - Account disconnected
      */
-    const eventType = event.type as string;
+    const eventType = event.type;
     
-    if (eventType === "v2.core.account[requirements].updated") {
-        /**
-         * Account requirements have changed
-         * 
-         * This happens when:
-         * - User needs to provide additional information
-         * - Regulatory requirements change
-         * - Account verification status changes
-         * 
-         * We should:
-         * 1. Fetch the account to get current requirements
-         * 2. Update our database with the new status
-         * 3. Notify the user if action is required
-         */
-        const accountId = event.account;
-        if (!accountId) {
-          console.error("No account ID in requirements.updated event");
-        } else {
+    if (eventType === "account.updated") {
+      /**
+       * Account has been updated
+       * 
+       * This happens when:
+       * - User completes onboarding (details_submitted changes to true)
+       * - Account capabilities change
+       * - Requirements are updated
+       * 
+       * We should:
+       * 1. Fetch the account to get current status
+       * 2. Update our database with the new status
+       * 3. Notify the user if action is required
+       */
+      const accountId = (event.data?.object as any)?.id || (event.account as string);
+      if (!accountId) {
+        console.error("No account ID in account.updated event");
+      } else {
+        // Fetch account to get current status
+        const account = await stripeClient.accounts.retrieve(accountId as string);
 
-        // Fetch account with requirements
-        // Using type assertion for V2 API
-        const account = await (stripeClient as any).v2.core.accounts.retrieve(
-          accountId as string,
-          {
-            include: ["requirements"],
-          }
-        );
-
-        const requirementsStatus =
-          account.requirements?.summary?.minimum_deadline?.status;
+        const onboardingComplete = account.details_submitted === true;
+        const readyToReceivePayments = 
+          account.charges_enabled === true && account.details_submitted === true;
 
         // Update database with new status
         const supabase = await createClient();
         await supabase
           .from("profiles")
           .update({
-            stripe_connect_onboarding_complete:
-              requirementsStatus !== "currently_due" &&
-              requirementsStatus !== "past_due",
+            stripe_connect_onboarding_complete: onboardingComplete,
           })
           .eq("stripe_connect_account_id", accountId);
 
         console.log(
-          `Account ${accountId} requirements updated. Status: ${requirementsStatus}`
+          `Account ${accountId} updated. Onboarding: ${onboardingComplete}, Ready: ${readyToReceivePayments}`
         );
 
-          // TODO: Send notification to user if action required
-          // if (requirementsStatus === 'currently_due' || requirementsStatus === 'past_due') {
-          //   await sendNotificationEmail(userId, 'Action required for your Stripe account');
-          // }
-        }
-    } else if (eventType === "v2.core.account[.recipient].capability_status_updated") {
-        /**
-         * Capability status has been updated
-         * 
-         * This happens when:
-         * - Transfer capability becomes active (ready to receive payments)
-         * - Transfer capability is restricted or disabled
-         * 
-         * We should:
-         * 1. Check if transfers are now active
-         * 2. Update our database
-         * 3. Notify the user
-         */
-        const accountId = event.account;
-        if (!accountId) {
-          console.error("No account ID in capability_status_updated event");
-        } else {
+        // TODO: Send notification to user if action required
+        // if (!onboardingComplete) {
+        //   await sendNotificationEmail(userId, 'Action required for your Stripe account');
+        // }
+      }
+    } else if (eventType === "account.application.deauthorized") {
+      /**
+       * Account has been disconnected
+       * 
+       * This happens when:
+       * - User disconnects their Stripe account
+       * - Account is deauthorized
+       * 
+       * We should:
+       * 1. Update database to mark account as disconnected
+       * 2. Notify the user
+       */
+      const accountId = event.account as string;
+      if (accountId) {
+        const supabase = await createClient();
+        await supabase
+          .from("profiles")
+          .update({
+            stripe_connect_onboarding_complete: false,
+          })
+          .eq("stripe_connect_account_id", accountId);
 
-        // Fetch account with capabilities
-        // Using type assertion for V2 API
-        const account = await (stripeClient as any).v2.core.accounts.retrieve(
-          accountId as string,
-          {
-            include: ["configuration.recipient"],
-          }
-        );
-
-        const transferStatus =
-          account.configuration?.recipient?.capabilities?.stripe_balance
-            ?.stripe_transfers?.status;
-
-        const readyToReceivePayments = transferStatus === "active";
-
-        console.log(
-          `Account ${accountId} transfer capability updated. Status: ${transferStatus}, Ready: ${readyToReceivePayments}`
-        );
-
-          // TODO: Update database and notify user
-          // if (readyToReceivePayments) {
-          //   await sendNotificationEmail(userId, 'Your account is now ready to receive payments!');
-          // }
-        }
+        console.log(`Account ${accountId} deauthorized`);
+      }
     } else {
       console.log(`Unhandled event type: ${event.type}`);
     }
