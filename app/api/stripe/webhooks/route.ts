@@ -152,21 +152,25 @@ export async function POST(request: NextRequest) {
 
         if (!existingEnrollment) {
           // Create enrollment
-          const { error: enrollError } = await supabase
+          const { data: newEnrollment, error: enrollError } = await supabase
             .from("course_enrollments")
             .insert({
               course_id: courseId,
               user_id: userId,
               payment_intent_id: paymentIntentId || null,
-            });
+            })
+            .select()
+            .single();
 
           if (enrollError) {
             console.error("Error creating enrollment from webhook:", enrollError);
+            console.error("Enrollment error details:", JSON.stringify(enrollError, null, 2));
           } else {
-            console.log(`Enrollment created for user ${userId} in course ${courseId}`);
+            console.log(`✅ Enrollment created successfully for user ${userId} in course ${courseId}`);
+            console.log(`Enrollment ID: ${newEnrollment?.id}`);
           }
         } else {
-          console.log(`Enrollment already exists for user ${userId} in course ${courseId}`);
+          console.log(`ℹ️ Enrollment already exists for user ${userId} in course ${courseId}`);
         }
       } else {
         console.warn("Missing course_id or user_id in checkout session metadata");

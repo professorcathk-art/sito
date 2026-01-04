@@ -69,6 +69,17 @@ export default function ManageCoursePage() {
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Refresh courses when page becomes visible (in case webhook completed)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && user) {
+        fetchCourses();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const fetchCourses = async () => {
     if (!user) return;
     setLoading(true);
@@ -96,10 +107,15 @@ export default function ManageCoursePage() {
       // Fetch enrollments by user_id
       const { data: enrollmentsById, error: enrollmentByIdError } = await supabase
         .from("course_enrollments")
-        .select("course_id, courses(*)")
+        .select("course_id, courses(*), payment_intent_id")
         .eq("user_id", user.id);
 
-      if (enrollmentByIdError) throw enrollmentByIdError;
+      if (enrollmentByIdError) {
+        console.error("Error fetching enrollments by user_id:", enrollmentByIdError);
+        throw enrollmentByIdError;
+      }
+      
+      console.log(`Found ${enrollmentsById?.length || 0} enrollments by user_id for user ${user.id}`);
 
       // Fetch enrollments by email (for offline payment enrollments)
       let enrollmentsByEmail: any[] = [];
@@ -427,7 +443,15 @@ export default function ManageCoursePage() {
     <ProtectedRoute>
       <DashboardLayout>
         <div className="px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-4xl font-bold text-custom-text mb-8">Classroom</h1>
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-4xl font-bold text-custom-text">Classroom</h1>
+            <button
+              onClick={() => fetchCourses()}
+              className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+            >
+              🔄 Refresh
+            </button>
+          </div>
 
           {!selectedCourse ? (
             <div className="space-y-4">
@@ -435,14 +459,24 @@ export default function ManageCoursePage() {
                 <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
                   <p className="text-custom-text/80 mb-4">No courses found.</p>
                   <p className="text-custom-text/60 text-sm mb-4">
-                    Create a course from the Products page first.
+                    {user?.id === courses.find(c => c.expert_id === user.id)?.expert_id 
+                      ? "Create a course from the Products page first."
+                      : "You haven't enrolled in any courses yet. Purchase a course to get started."}
                   </p>
-                  <Link
-                    href="/products"
-                    className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
-                  >
-                    Go to Products
-                  </Link>
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={() => fetchCourses()}
+                      className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                    >
+                      🔄 Refresh
+                    </button>
+                    <Link
+                      href="/products"
+                      className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                    >
+                      Browse Courses
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

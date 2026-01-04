@@ -122,6 +122,11 @@ export function DashboardSidebar() {
       href: "/dashboard/stripe-connect",
       icon: "💳",
     },
+    {
+      name: "Purchase History",
+      href: "/dashboard/purchases",
+      icon: "🛒",
+    },
     ...(isAdmin
       ? [
           {
