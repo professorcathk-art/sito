@@ -130,6 +130,19 @@ export async function POST(request: NextRequest) {
     console.error("Error creating checkout session:", error);
 
     if (error.type === "StripeInvalidRequestError") {
+      // Handle region restriction errors
+      if (error.message?.includes("restricted outside of your platform's region") || 
+          error.message?.includes("can't be sent to accounts located")) {
+        return NextResponse.json(
+          { 
+            error: "Region restriction: Your Stripe platform account and connected account must be in the same region. " +
+                   "Please contact support or configure your Stripe account to allow cross-region transfers. " +
+                   "Error details: " + error.message
+          },
+          { status: 400 }
+        );
+      }
+      
       return NextResponse.json(
         { error: `Stripe error: ${error.message}` },
         { status: 400 }

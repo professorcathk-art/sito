@@ -124,6 +124,19 @@ export async function POST(request: NextRequest) {
 
     // Handle Stripe-specific errors
     if (error.type === "StripeInvalidRequestError") {
+      // Handle region restriction errors
+      if (error.message?.includes("restricted outside of your platform's region") || 
+          error.message?.includes("can't be sent to accounts located")) {
+        return NextResponse.json(
+          { 
+            error: "Region restriction: Your Stripe platform account and connected accounts must be in the same region. " +
+                   "Your platform account region determines which countries can receive transfers. " +
+                   "Please ensure your Stripe account is set up in the same region as your users, or contact Stripe support to enable cross-region transfers."
+          },
+          { status: 400 }
+        );
+      }
+      
       return NextResponse.json(
         { error: `Stripe error: ${error.message}` },
         { status: 400 }

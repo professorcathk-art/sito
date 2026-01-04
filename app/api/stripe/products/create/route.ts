@@ -81,9 +81,8 @@ export async function POST(request: NextRequest) {
      * - Transfer funds to the connected account (destination charge)
      * - Collect application fee for the platform
      */
-    const product = await stripeClient.products.create({
+    const productData: any = {
       name: name,
-      description: description || "",
       
       // Create price inline with the product
       default_price_data: {
@@ -99,7 +98,15 @@ export async function POST(request: NextRequest) {
         connected_account_id: connectedAccountId,
         created_by_user_id: user.id,
       },
-    });
+    };
+
+    // Only include description if it's not empty
+    // Stripe doesn't allow empty strings for description
+    if (description && description.trim().length > 0) {
+      productData.description = description.trim();
+    }
+
+    const product = await stripeClient.products.create(productData);
 
     // Extract the default price ID
     // When using default_price_data, Stripe creates a price and sets it as default
