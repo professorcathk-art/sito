@@ -111,11 +111,33 @@ export async function POST(request: NextRequest) {
        * 3. Store payment_intent_id for tracking
        */
       const session = event.data.object as Stripe.Checkout.Session;
-      const courseId = session.metadata?.course_id;
-      const userId = session.metadata?.user_id;
+      
+      // Try to get metadata from session first, then from payment intent
+      let courseId = session.metadata?.course_id;
+      let userId = session.metadata?.user_id;
+      
+      // If not in session metadata, try to get from payment intent
+      if ((!courseId || !userId || userId === "guest") && session.payment_intent) {
+        const paymentIntentId = typeof session.payment_intent === "string" 
+          ? session.payment_intent 
+          : session.payment_intent?.id;
+        
+        if (paymentIntentId) {
+          try {
+            const paymentIntent = await stripeClient.paymentIntents.retrieve(paymentIntentId);
+            courseId = courseId || paymentIntent.metadata?.course_id;
+            userId = userId || paymentIntent.metadata?.user_id;
+          } catch (err) {
+            console.error("Error retrieving payment intent:", err);
+          }
+        }
+      }
+      
       const paymentIntentId = typeof session.payment_intent === "string" 
         ? session.payment_intent 
         : session.payment_intent?.id;
+
+      console.log(`Webhook metadata - courseId: ${courseId}, userId: ${userId}, paymentIntentId: ${paymentIntentId}`);
 
       if (courseId && userId && userId !== "guest") {
         const supabase = await createClient();

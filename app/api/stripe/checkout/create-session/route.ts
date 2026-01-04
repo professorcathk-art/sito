@@ -100,13 +100,21 @@ export async function POST(request: NextRequest) {
           destination: connectedAccountId,
         },
 
-        // Store metadata for tracking and enrollment
+        // Store metadata for tracking and enrollment (in payment intent)
         metadata: {
           connected_account_id: connectedAccountId,
           application_fee_percent: applicationFeePercent.toString(),
           user_id: user?.id || "guest",
           course_id: body.courseId || "",
         },
+      },
+
+      // Store metadata at session level too (for webhook access)
+      metadata: {
+        connected_account_id: connectedAccountId,
+        application_fee_percent: applicationFeePercent.toString(),
+        user_id: user?.id || "guest",
+        course_id: body.courseId || "",
       },
 
       // Payment mode (one-time payment)

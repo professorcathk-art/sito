@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/auth-context";
 
 interface QuestionnaireField {
   id: string;
+  questionnaire_id?: string; // Optional for temporary fields
   field_type: "text" | "email" | "textarea" | "select" | "checkbox" | "radio";
   label: string;
   placeholder: string | null;
@@ -61,6 +62,35 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel }: Quest
 
   const fetchFields = async () => {
     try {
+      // Handle temporary questionnaire IDs (when questionnaire creation fails)
+      if (questionnaireId.startsWith("temp-")) {
+        // Use default fields for temporary questionnaires
+        setFields([
+          {
+            id: "temp-name",
+            questionnaire_id: questionnaireId,
+            field_type: "text",
+            label: "Name",
+            placeholder: "Enter your name",
+            required: true,
+            options: null,
+            order_index: 0,
+          },
+          {
+            id: "temp-email",
+            questionnaire_id: questionnaireId,
+            field_type: "email",
+            label: "Email",
+            placeholder: "Enter your email",
+            required: true,
+            options: null,
+            order_index: 1,
+          },
+        ]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("questionnaire_fields")
         .select("*")
