@@ -134,6 +134,7 @@ export default function ManageAppointmentsPage() {
     if (!user) return;
 
     try {
+      setLoading(true);
       // Fetch ALL slots for this expert (including booked ones for calendar view)
       const { data, error } = await supabase
         .from("appointment_slots")
@@ -144,7 +145,13 @@ export default function ManageAppointmentsPage() {
         .eq("expert_id", user.id)
         .order("start_time", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching slots:", error);
+        throw error;
+      }
+      
+      console.log(`📅 Fetched ${data?.length || 0} slots for expert ${user.id}`);
+      console.log("Slots data:", data);
       
       // Also check which slots are booked and mark them as unavailable
       const { data: bookedSlots } = await supabase
@@ -161,6 +168,7 @@ export default function ManageAppointmentsPage() {
         is_available: slot.is_available && !bookedSlotIds.has(slot.id),
       }));
       
+      console.log(`✅ Setting ${slotsWithStatus.length} slots (${slotsWithStatus.filter(s => s.is_available).length} available)`);
       setSlots(slotsWithStatus);
     } catch (err) {
       console.error("Error fetching appointment slots:", err);
@@ -367,12 +375,31 @@ export default function ManageAppointmentsPage() {
               ) : slots.length === 0 ? (
                 <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
                   <p className="text-custom-text/80 mb-4">No appointment slots created yet.</p>
-                  <p className="text-custom-text/60 text-sm">
+                  <p className="text-custom-text/60 text-sm mb-4">
                     Create time slots to allow users to book 1-on-1 sessions with you.
                   </p>
+                  <button
+                    onClick={() => {
+                      fetchSlots();
+                      fetchProducts();
+                    }}
+                    className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                  >
+                    Refresh
+                  </button>
                 </div>
               ) : (
                 <>
+                  {/* Debug info - remove in production */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="mb-4 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg text-xs text-yellow-200">
+                      <p>Debug: Found {slots.length} total slots</p>
+                      <p>Products: {products.length}</p>
+                      <p>Slots with product_id: {slots.filter(s => s.product_id).length}</p>
+                      <p>Slots without product_id: {slots.filter(s => !s.product_id).length}</p>
+                    </div>
+                  )}
+                  
                   {/* Group slots by product */}
                   <div className="mb-6 space-y-6">
                     {/* Show slots grouped by product */}
