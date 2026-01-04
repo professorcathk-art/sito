@@ -143,14 +143,15 @@ export default function BookAppointmentPage() {
       }
 
       if (questionnaire?.id) {
-        // Verify fields exist
+        // Fetch ALL fields (not just check if they exist)
         const { data: fieldsData } = await supabase
           .from("questionnaire_fields")
-          .select("id")
+          .select("*")
           .eq("questionnaire_id", questionnaire.id)
-          .limit(1);
+          .order("order_index", { ascending: true });
 
         if (fieldsData && fieldsData.length > 0) {
+          // Show form with ALL fields
           setQuestionnaireId(questionnaire.id);
           setShowQuestionnaire(true);
           return;

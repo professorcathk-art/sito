@@ -497,6 +497,19 @@ export function ProductsManagement() {
             if (courseUpdateError) throw courseUpdateError;
           }
         }
+        
+        // If updating an appointment product, also update rate_per_hour for all slots
+        if (editingProduct.product_type === "appointment" && formData.price) {
+          const newRatePerHour = parseFloat(formData.price) || 0;
+          if (newRatePerHour > 0 && editingProduct.price !== newRatePerHour) {
+            // Update all slots' rate_per_hour for this product
+            await supabase
+              .from("appointment_slots")
+              .update({ rate_per_hour: newRatePerHour })
+              .eq("product_id", editingProduct.id)
+              .eq("expert_id", user.id);
+          }
+        }
 
         const { error } = await supabase
           .from("products")
@@ -823,10 +836,28 @@ export function ProductsManagement() {
       }
     }
     
+    // For appointment products, get rate_per_hour from slots if available
+    let appointmentRate = product.price.toString();
+    if (product.product_type === "appointment") {
+      try {
+        const { data: slotsData } = await supabase
+          .from("appointment_slots")
+          .select("rate_per_hour")
+          .eq("product_id", product.id)
+          .limit(1)
+          .single();
+        if (slotsData?.rate_per_hour) {
+          appointmentRate = slotsData.rate_per_hour.toString();
+        }
+      } catch (err) {
+        // Use product price as fallback
+      }
+    }
+    
     setFormData({
       name: product.name,
       description: product.description,
-      price: product.price.toString(),
+      price: appointmentRate,
       pricing_type: product.pricing_type,
       product_type: (product.product_type === "service" ? "appointment" : product.product_type) || "appointment",
       course_id: product.course_id || "",
@@ -1238,7 +1269,16 @@ export function ProductsManagement() {
               }
 
               const { error } = await supabase.from("appointment_slots").insert(slots);
-              if (error) throw error;
+              if (error) {
+                console.error("Error inserting slots:", error);
+                throw error;
+              }
+              
+              console.log(`✅ Created ${slots.length} slots with product_id: ${currentProductId}`);
+              
+              // Refresh slots in Manage Appointments page by triggering a page reload hint
+              // Note: User will need to navigate to Manage Appointments to see them
+              alert(`Successfully created ${slots.length} appointment slot(s)! They will be visible in the Manage Appointments page.`);
 
               // Update product with price (rate per hour) and create Stripe product if paid
               if (ratePerHour > 0) {

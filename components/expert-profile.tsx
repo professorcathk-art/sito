@@ -548,7 +548,19 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                       // Call handleRegisterInterest which will show the questionnaire form
                       await handleRegisterInterest(appointmentProduct.id);
                     } else {
-                      alert("Appointment service not available. Please contact the expert.");
+                      // Try to find any appointment product
+                      const { data: anyAppointmentProduct } = await supabase
+                        .from("products")
+                        .select("id")
+                        .eq("expert_id", expertId)
+                        .eq("product_type", "appointment")
+                        .maybeSingle();
+                      
+                      if (anyAppointmentProduct) {
+                        await handleRegisterInterest(anyAppointmentProduct.id);
+                      } else {
+                        alert("Appointment service not available. Please contact the expert.");
+                      }
                     }
                   }}
                   className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
