@@ -20,7 +20,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getStripeClient, getStripeWebhookSecrets } from "@/lib/stripe/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
 
 export async function POST(request: NextRequest) {
@@ -140,7 +140,8 @@ export async function POST(request: NextRequest) {
       console.log(`Webhook metadata - courseId: ${courseId}, userId: ${userId}, paymentIntentId: ${paymentIntentId}`);
 
       if (courseId && userId && userId !== "guest") {
-        const supabase = await createClient();
+        // Use service role client to bypass RLS for webhook operations
+        const supabase = createServiceRoleClient();
         
         // Check if enrollment already exists
         const { data: existingEnrollment } = await supabase
@@ -200,8 +201,8 @@ export async function POST(request: NextRequest) {
         const readyToReceivePayments = 
           account.charges_enabled === true && account.details_submitted === true;
 
-        // Update database with new status
-        const supabase = await createClient();
+        // Update database with new status - use service role to bypass RLS
+        const supabase = createServiceRoleClient();
         await supabase
           .from("profiles")
           .update({
@@ -232,7 +233,8 @@ export async function POST(request: NextRequest) {
        */
       const accountId = event.account as string;
       if (accountId) {
-        const supabase = await createClient();
+        // Use service role client to bypass RLS for webhook operations
+        const supabase = createServiceRoleClient();
         await supabase
           .from("profiles")
           .update({

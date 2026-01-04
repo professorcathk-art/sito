@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 
 export async function createClient() {
@@ -23,6 +24,36 @@ export async function createClient() {
             // user sessions.
           }
         },
+      },
+    }
+  );
+}
+
+/**
+ * Create a Supabase client with service role key (bypasses RLS)
+ * 
+ * Use this ONLY for server-side operations that need to bypass Row Level Security,
+ * such as webhooks or admin operations.
+ * 
+ * WARNING: Never expose the service role key to the client-side!
+ */
+export function createServiceRoleClient() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!serviceRoleKey) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY is not set in environment variables. " +
+      "This is required for webhook operations that need to bypass RLS."
+    );
+  }
+
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
       },
     }
   );
