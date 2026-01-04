@@ -130,12 +130,12 @@ export default function BookAppointmentPage() {
 
     // Check for questionnaire first (MANDATORY)
     try {
+      // Don't filter by is_active - experts may have inactive questionnaires
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
-        .select("id")
+        .select("id, is_active")
         .eq("expert_id", expertId)
         .eq("type", "appointment")
-        .eq("is_active", true)
         .maybeSingle();
 
       if (qError && qError.code !== "PGRST116") {
@@ -182,57 +182,10 @@ export default function BookAppointmentPage() {
           return;
         }
       } else {
-        // No questionnaire - create one with default fields (MANDATORY)
-        const { data: newQuestionnaire, error: createError } = await supabase
-          .from("questionnaires")
-          .insert({
-            expert_id: expertId,
-            type: "appointment",
-            title: "Appointment Booking Form",
-            is_active: true,
-          })
-          .select()
-          .single();
-
-        if (createError && createError.code === "23505") {
-          // Duplicate - fetch existing
-          const { data: existing } = await supabase
-            .from("questionnaires")
-            .select("id")
-            .eq("expert_id", expertId)
-            .eq("type", "appointment")
-            .maybeSingle();
-          if (existing?.id) {
-            setQuestionnaireId(existing.id);
-            setShowQuestionnaire(true);
-            return;
-          }
-        } else if (newQuestionnaire?.id) {
-          // Create default fields
-          await supabase
-            .from("questionnaire_fields")
-            .insert([
-              {
-                questionnaire_id: newQuestionnaire.id,
-                field_type: "text",
-                label: "Name",
-                placeholder: "Enter your name",
-                required: true,
-                order_index: 0,
-              },
-              {
-                questionnaire_id: newQuestionnaire.id,
-                field_type: "email",
-                label: "Email",
-                placeholder: "Enter your email",
-                required: true,
-                order_index: 1,
-              },
-            ]);
-          setQuestionnaireId(newQuestionnaire.id);
-          setShowQuestionnaire(true);
-          return;
-        }
+        // No questionnaire exists - DO NOT CREATE (only experts can create questionnaires)
+        alert("Booking form is not yet set up by the expert. Please contact them directly.");
+        setBooking(false);
+        return;
       }
     } catch (err) {
       console.error("Error setting up questionnaire:", err);

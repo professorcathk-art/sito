@@ -199,37 +199,12 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
 
         let finalQuestionnaireId = questionnaire?.id || null;
 
-        // Create questionnaire if it doesn't exist
+        // Don't create questionnaire - only experts can create them
+        // If questionnaire doesn't exist, show error
         if (!finalQuestionnaireId) {
-          const { data: newQuestionnaire, error: createError } = await supabase
-            .from("questionnaires")
-            .insert({
-              expert_id: expertId,
-              type: "appointment",
-              title: "Appointment Booking Form",
-              is_active: true,
-            })
-            .select()
-            .single();
-
-          if (createError) {
-            if (createError.code === "23505") {
-              // Duplicate - fetch existing
-              const { data: existing } = await supabase
-                .from("questionnaires")
-                .select("id")
-                .eq("expert_id", expertId)
-                .eq("type", "appointment")
-                .maybeSingle();
-              if (existing?.id) {
-                finalQuestionnaireId = existing.id;
-              }
-            } else {
-              console.error("Error creating questionnaire:", createError);
-            }
-          } else {
-            finalQuestionnaireId = newQuestionnaire?.id || null;
-          }
+          console.error("No questionnaire found for appointment product");
+          alert("Appointment form is not yet set up by the expert. Please contact them directly.");
+          return;
         }
 
         // Ensure default fields exist

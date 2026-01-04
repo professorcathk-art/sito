@@ -132,13 +132,12 @@ export function CourseEnrollment({
     try {
       let questionnaireId: string | null = null;
       
-      // First, check if questionnaire exists
+      // First, check if questionnaire exists (don't filter by is_active - experts may have inactive ones)
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
-        .select("id")
+        .select("id, is_active")
         .eq("expert_id", expertId)
         .eq("type", "course_interest")
-        .eq("is_active", true)
         .maybeSingle();
 
       // PGRST116 is "no rows returned" which is fine
@@ -148,7 +147,17 @@ export function CourseEnrollment({
 
       if (questionnaire?.id) {
         questionnaireId = questionnaire.id;
-        console.log("Found questionnaire:", questionnaireId);
+        console.log("Found questionnaire:", questionnaireId, "is_active:", questionnaire.is_active);
+        
+        // If questionnaire is inactive, try to activate it (but this might fail due to RLS)
+        if (!questionnaire.is_active) {
+          console.warn("Questionnaire is inactive, attempting to activate...");
+          // Note: This will fail if user is not the expert, but that's okay
+          await supabase
+            .from("questionnaires")
+            .update({ is_active: true })
+            .eq("id", questionnaire.id);
+        }
       } else {
         // No questionnaire exists - DO NOT CREATE (only experts can create questionnaires)
         // Instead, show error message to user
