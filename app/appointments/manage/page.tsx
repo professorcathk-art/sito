@@ -136,14 +136,40 @@ export default function ManageAppointmentsPage() {
     try {
       setLoading(true);
       // Fetch ALL slots for this expert (including booked ones for calendar view)
-      const { data, error } = await supabase
+      // Fetch slots first, then fetch products separately to avoid relationship ambiguity
+      const { data: slotsData, error } = await supabase
         .from("appointment_slots")
-        .select(`
-          *,
-          products(id, name)
-        `)
+        .select("*")
         .eq("expert_id", user.id)
         .order("start_time", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching slots:", error);
+        throw error;
+      }
+      
+      // Fetch products separately for slots that have product_id
+      const productIds = Array.from(new Set((slotsData || []).map((s: any) => s.product_id).filter(Boolean)));
+      let productsMap: Record<string, { id: string; name: string }> = {};
+      
+      if (productIds.length > 0) {
+        const { data: productsData } = await supabase
+          .from("products")
+          .select("id, name")
+          .in("id", productIds);
+        
+        if (productsData) {
+          productsData.forEach((p: any) => {
+            productsMap[p.id] = p;
+          });
+        }
+      }
+      
+      // Combine slots with product data
+      const data = (slotsData || []).map((slot: any) => ({
+        ...slot,
+        products: slot.product_id ? productsMap[slot.product_id] || null : null,
+      }));
 
       if (error) {
         console.error("Error fetching slots:", error);

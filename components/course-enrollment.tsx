@@ -150,76 +150,11 @@ export function CourseEnrollment({
         questionnaireId = questionnaire.id;
         console.log("Found questionnaire:", questionnaireId);
       } else {
-        // No questionnaire exists - create a default one with Name and Email fields
-        console.log("No questionnaire found, creating default one for expert:", expertId);
-        try {
-          const { data: newQuestionnaire, error: createError } = await supabase
-            .from("questionnaires")
-            .insert({
-              expert_id: expertId,
-              type: "course_interest",
-              title: "Course Interest Form",
-              is_active: true,
-            })
-            .select()
-            .single();
-
-          if (createError) {
-            // If duplicate key error, fetch existing one (might be inactive)
-            if (createError.code === "23505") {
-              const { data: existing } = await supabase
-                .from("questionnaires")
-                .select("id")
-                .eq("expert_id", expertId)
-                .eq("type", "course_interest")
-                .maybeSingle();
-              if (existing?.id) {
-                // Activate it if it was inactive
-                await supabase
-                  .from("questionnaires")
-                  .update({ is_active: true })
-                  .eq("id", existing.id);
-                questionnaireId = existing.id;
-              }
-            } else {
-              console.error("Error creating default questionnaire:", createError);
-              // Continue without questionnaire - allow registration anyway
-            }
-          } else {
-            questionnaireId = newQuestionnaire?.id || null;
-            
-            // Create default Name and Email fields
-            if (questionnaireId) {
-              const { error: fieldsError } = await supabase
-                .from("questionnaire_fields")
-                .insert([
-                  {
-                    questionnaire_id: questionnaireId,
-                    field_type: "text",
-                    label: "Name",
-                    placeholder: "Enter your name",
-                    required: true,
-                    order_index: 0,
-                  },
-                  {
-                    questionnaire_id: questionnaireId,
-                    field_type: "email",
-                    label: "Email",
-                    placeholder: "Enter your email",
-                    required: true,
-                    order_index: 1,
-                  },
-                ]);
-
-              if (fieldsError) {
-                console.error("Error creating default fields:", fieldsError);
-              }
-            }
-          }
-        } catch (createErr) {
-          console.error("Error creating default questionnaire:", createErr);
-          // Continue without questionnaire - allow registration anyway
-        }
+        // No questionnaire exists - DO NOT CREATE (only experts can create questionnaires)
+        // Instead, show error message to user
+        console.log("No questionnaire found for expert:", expertId);
+        alert("Registration form is not yet set up by the expert. Please contact them directly or try again later.");
+        return;
       }
 
       if (questionnaireId) {
