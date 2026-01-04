@@ -300,7 +300,7 @@ export function StripeConnectOnboarding() {
               </button>
               <p className="text-custom-text/60 text-sm text-center">
                 Click the button above to complete your Stripe account setup. 
-                You'll need to provide business information, bank details, and identity verification.
+                You will need to provide business information, bank details, and identity verification.
               </p>
             </div>
           )}
