@@ -17,6 +17,8 @@ interface Product {
   appointment_slot_id?: string;
   stripe_product_id?: string | null;
   stripe_price_id?: string | null;
+  payment_method?: "stripe" | "offline" | null;
+  contact_email?: string | null;
   created_at: string;
 }
 
@@ -54,6 +56,8 @@ export function ProductsManagement() {
     description: string;
     price: string;
     category: string;
+    payment_method: "stripe" | "offline";
+    contact_email: string;
   } | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -63,6 +67,8 @@ export function ProductsManagement() {
     product_type: "appointment" as "course" | "appointment",
     course_id: "",
     category: "",
+    payment_method: "stripe" as "stripe" | "offline",
+    contact_email: "",
   });
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"products" | "interests">("products");
@@ -511,6 +517,19 @@ export function ProductsManagement() {
           productData.price = newPrice;
         }
 
+        // Update payment method and contact email
+        productData.payment_method = formData.payment_method || "stripe";
+        if (formData.payment_method === "offline") {
+          productData.contact_email = formData.contact_email || null;
+          // Clear Stripe IDs if switching to offline
+          if (editingProduct.stripe_product_id) {
+            productData.stripe_product_id = null;
+            productData.stripe_price_id = null;
+          }
+        } else {
+          productData.contact_email = null;
+        }
+
         // Update Stripe product if price changed and product is paid
         if (newPrice > 0 && editingProduct.price !== newPrice && stripeAccountId && editingProduct.stripe_product_id) {
           // Price changed for paid product - update Stripe product
@@ -734,6 +753,8 @@ export function ProductsManagement() {
                 product_type: "appointment",
                 course_id: "",
                 category: "",
+                payment_method: "stripe",
+                contact_email: "",
               });
             }}
             className="bg-cyber-green text-custom-text px-4 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
@@ -867,6 +888,64 @@ export function ProductsManagement() {
                 </label>
               </div>
             </div>
+
+            {formData.price && parseFloat(formData.price) > 0 && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    Payment Method *
+                  </label>
+                  <select
+                    value={formData.payment_method}
+                    onChange={(e) => {
+                      const method = e.target.value as "stripe" | "offline";
+                      setFormData({
+                        ...formData,
+                        payment_method: method,
+                        contact_email: method === "offline" && !formData.contact_email ? (user?.email || "") : formData.contact_email,
+                      });
+                    }}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                    required
+                  >
+                    <option value="stripe">Stripe (Online Payment)</option>
+                    <option value="offline">Offline Payment (Show Contact Email)</option>
+                  </select>
+                  <p className="text-xs text-custom-text/60 mt-1">
+                    {formData.payment_method === "stripe" && "Users will pay via Stripe checkout. Make sure you have set up your Stripe account."}
+                    {formData.payment_method === "offline" && "Users will see your contact email and can transact offline. After payment, you can manually add them to the course."}
+                  </p>
+                </div>
+
+                {formData.payment_method === "offline" && (
+                  <div>
+                    <label className="block text-sm font-medium text-custom-text mb-2">
+                      Contact Email *
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.contact_email}
+                      onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                      placeholder="your@email.com"
+                      required
+                    />
+                    <p className="text-xs text-custom-text/60 mt-1">This email will be shown to users for offline payment transactions</p>
+                  </div>
+                )}
+
+                {formData.payment_method === "stripe" && !stripeAccountId && (
+                  <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+                    <p className="text-sm text-yellow-400">
+                      ⚠️ You need to set up a Stripe account to accept online payments.{" "}
+                      <a href="/dashboard/stripe-connect" className="underline hover:text-yellow-300">
+                        Set up Stripe account
+                      </a>
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-custom-text mb-2">Description *</label>
@@ -1510,6 +1589,10 @@ export function ProductsManagement() {
                       stripePriceId = stripeResult.stripePriceId;
                     }
 
+                    // Get payment method and contact email from form (stored in pendingCourseData or formData)
+                    // Note: payment_method and contact_email should be stored when questionnaire form is shown
+                    // For now, we'll get it from the current formData state
+                    
                     // Create product linked to course
                     const { data: newProduct, error: productError } = await supabase.from("products").insert({
                       expert_id: user.id,
@@ -1521,6 +1604,8 @@ export function ProductsManagement() {
                       pricing_type: "one-off",
                       stripe_product_id: stripeProductId,
                       stripe_price_id: stripePriceId,
+                      payment_method: pendingCourseData.payment_method || "stripe",
+                      contact_email: pendingCourseData.payment_method === "offline" ? pendingCourseData.contact_email : null,
                     }).select().single();
 
                     if (productError) throw productError;

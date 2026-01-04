@@ -59,6 +59,9 @@ export default function ManageCoursePage() {
     category: "",
   });
   const [isRichTextMode, setIsRichTextMode] = useState(false);
+  const [showAddMemberForm, setShowAddMemberForm] = useState(false);
+  const [memberEmail, setMemberEmail] = useState("");
+  const [enrollments, setEnrollments] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -714,6 +717,86 @@ export default function ManageCoursePage() {
                   </>
                 )}
               </div>
+
+              {/* Course Members - Only show for course owner */}
+              {selectedCourse.expert_id === user?.id && (
+                <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-custom-text">Course Members</h2>
+                    <button
+                      onClick={() => setShowAddMemberForm(!showAddMemberForm)}
+                      className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                    >
+                      {showAddMemberForm ? "Cancel" : "+ Add Member"}
+                    </button>
+                  </div>
+
+                  {/* Add Member Form */}
+                  {showAddMemberForm && (
+                    <form onSubmit={handleAddMember} className="mb-6 p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg">
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-custom-text mb-2">
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          value={memberEmail}
+                          onChange={(e) => setMemberEmail(e.target.value)}
+                          className="w-full px-4 py-2 bg-dark-green-800/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                          placeholder="student@example.com"
+                          required
+                        />
+                        <p className="text-xs text-custom-text/60 mt-1">
+                          Add a member by email. They will be able to access the course after you add them.
+                        </p>
+                      </div>
+                      <button
+                        type="submit"
+                        className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                      >
+                        Add Member
+                      </button>
+                    </form>
+                  )}
+
+                  {/* Members List */}
+                  <div className="space-y-2">
+                    {enrollments.length === 0 ? (
+                      <p className="text-custom-text/60 text-sm">No members enrolled yet.</p>
+                    ) : (
+                      <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg overflow-hidden">
+                        <table className="w-full">
+                          <thead className="bg-dark-green-900/50 border-b border-cyber-green/30">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Name</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Email</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Enrolled</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {enrollments.map((enrollment) => (
+                              <tr
+                                key={enrollment.id}
+                                className="border-b border-cyber-green/10 hover:bg-dark-green-900/30 transition-colors"
+                              >
+                                <td className="px-4 py-3 text-sm text-custom-text">
+                                  {enrollment.profiles?.name || "N/A"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-custom-text">
+                                  {enrollment.user_email || enrollment.profiles?.email || "N/A"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-custom-text/70">
+                                  {new Date(enrollment.enrolled_at).toLocaleDateString()}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

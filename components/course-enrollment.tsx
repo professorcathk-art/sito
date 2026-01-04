@@ -31,6 +31,9 @@ export function CourseEnrollment({
   const [questionnaireId, setQuestionnaireId] = useState<string | null>(null);
   const [questionnaireType, setQuestionnaireType] = useState<"enroll" | "interest" | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [productPaymentMethod, setProductPaymentMethod] = useState<"stripe" | "offline" | null>(null);
+  const [productContactEmail, setProductContactEmail] = useState<string | null>(null);
+  const [showOfflinePaymentInfo, setShowOfflinePaymentInfo] = useState(false);
 
   useEffect(() => {
     if (user && currentUserId) {
@@ -44,15 +47,38 @@ export function CourseEnrollment({
     if (!user || !currentUserId) return;
 
     try {
-      // Check if enrolled
-      const { data: enrollment } = await supabase
+      // Get user email for email-based enrollment check
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", currentUserId)
+        .maybeSingle();
+      
+      const userEmail = profile?.email;
+      const { data: authUser } = await supabase.auth.getUser();
+      const finalUserEmail = userEmail || authUser?.user?.email;
+
+      // Check if enrolled by user_id
+      const { data: enrollmentById } = await supabase
         .from("course_enrollments")
         .select("id")
         .eq("course_id", courseId)
         .eq("user_id", currentUserId)
-        .single();
+        .maybeSingle();
 
-      setIsEnrolled(!!enrollment);
+      // Check if enrolled by email (for offline payment enrollments)
+      let enrollmentByEmail = null;
+      if (finalUserEmail) {
+        const { data } = await supabase
+          .from("course_enrollments")
+          .select("id")
+          .eq("course_id", courseId)
+          .eq("user_email", finalUserEmail)
+          .maybeSingle();
+        enrollmentByEmail = data;
+      }
+
+      setIsEnrolled(!!enrollmentById || !!enrollmentByEmail);
 
       // Check if registered interest - need to get product_id from course_id
       const { data: product } = await supabase
@@ -474,9 +500,51 @@ export function CourseEnrollment({
         setIsEnrolled(true);
         router.push("/courses/manage");
       } else {
-        // Paid course - redirect to Stripe checkout
-        // TODO: Implement Stripe checkout
-        alert("Stripe payment integration coming soon!");
+        // Paid course - check payment method
+        if (productPaymentMethod === "offline" && productContactEmail) {
+          // Show offline payment information
+          setShowOfflinePaymentInfo(true);
+        } else {
+          // Stripe payment - redirect to checkout
+          // Get product info for Stripe checkout
+          const { data: product } = await supabase
+            .from("products")
+            .select("id, stripe_product_id, stripe_price_id")
+            .eq("course_id", courseId)
+            .maybeSingle();
+
+          if (product?.stripe_product_id && product?.stripe_price_id) {
+            // Redirect to Stripe checkout
+            try {
+              const response = await fetch("/api/stripe/checkout/create-session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  priceId: product.stripe_price_id,
+                  productId: product.stripe_product_id,
+                  courseId: courseId,
+                }),
+              });
+
+              if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || "Failed to create checkout session");
+              }
+
+              const data = await response.json();
+              if (data.url) {
+                window.location.href = data.url;
+              } else {
+                throw new Error("No checkout URL returned");
+              }
+            } catch (err: any) {
+              console.error("Error creating checkout session:", err);
+              alert(`Failed to start payment: ${err.message || "Please try again."}`);
+            }
+          } else {
+            alert("Payment method not configured. Please contact the expert.");
+          }
+        }
       }
     } catch (err: any) {
       console.error("Error enrolling:", err);
@@ -592,24 +660,62 @@ export function CourseEnrollment({
   }
 
   return (
-    <div className="flex gap-4">
-      {!hasRegisteredInterest && (
-        <button
-          onClick={handleRegisterInterest}
-          disabled={processing}
-          className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors disabled:opacity-50"
-        >
-          {processing ? "Processing..." : "Register Interest"}
-        </button>
+    <>
+      {/* Offline Payment Info Modal */}
+      {showOfflinePaymentInfo && productContactEmail && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-dark-green-800/95 border border-cyber-green/50 rounded-lg p-6 md:p-8 w-full max-w-md">
+            <h3 className="text-2xl font-bold text-custom-text mb-4">Offline Payment</h3>
+            <p className="text-custom-text/80 mb-4">
+              This course uses offline payment. Please contact the expert directly to complete your enrollment.
+            </p>
+            <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-4 mb-4">
+              <p className="text-sm text-custom-text/60 mb-2">Contact Email:</p>
+              <p className="text-lg font-semibold text-cyber-green">{productContactEmail}</p>
+            </div>
+            <p className="text-sm text-custom-text/60 mb-4">
+              After completing the payment with the expert, they will add you to the course and you'll be able to access it in your Classroom.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setShowOfflinePaymentInfo(false);
+                  setProcessing(false);
+                }}
+                className="flex-1 px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+              >
+                Close
+              </button>
+              <a
+                href={`mailto:${productContactEmail}?subject=Course Enrollment - ${courseId}`}
+                className="flex-1 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-center"
+              >
+                Send Email
+              </a>
+            </div>
+          </div>
+        </div>
       )}
-      <button
-        onClick={handleEnroll}
-        disabled={processing}
-        className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
-      >
-        {processing ? "Processing..." : isFree ? "Enroll (Free)" : `Enroll ($${coursePrice})`}
-      </button>
-    </div>
+
+      <div className="flex gap-4">
+        {!hasRegisteredInterest && (
+          <button
+            onClick={handleRegisterInterest}
+            disabled={processing}
+            className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors disabled:opacity-50"
+          >
+            {processing ? "Processing..." : "Register Interest"}
+          </button>
+        )}
+        <button
+          onClick={handleEnroll}
+          disabled={processing}
+          className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+        >
+          {processing ? "Processing..." : isFree ? "Enroll (Free)" : `Enroll ($${coursePrice})`}
+        </button>
+      </div>
+    </>
   );
 }
 
