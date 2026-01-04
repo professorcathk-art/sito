@@ -541,6 +541,51 @@ export default function ManageAppointmentsPage() {
                         />
                       </div>
                     )}
+                    
+                    {/* FALLBACK: Show ALL slots if none were displayed above */}
+                    {(() => {
+                      const displayedSlots = new Set([
+                        ...(products.length > 0 ? products.flatMap(p => slots.filter(s => s.product_id === p.id).map(s => s.id)) : []),
+                        ...slots.filter(s => s.product_id && s.products).map(s => s.id),
+                        ...slots.filter(s => !s.product_id).map(s => s.id),
+                      ]);
+                      const undisplayedSlots = slots.filter(s => !displayedSlots.has(s.id));
+                      
+                      if (undisplayedSlots.length === 0) return null;
+                      
+                      console.warn(`⚠️ Found ${undisplayedSlots.length} slots that weren't displayed!`);
+                      return (
+                        <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-6">
+                          <h3 className="text-xl font-bold text-custom-text mb-4">All Timeslots (Fallback Display)</h3>
+                          <p className="text-sm text-red-200 mb-4">
+                            Showing {undisplayedSlots.length} slot(s) that weren't grouped properly
+                          </p>
+                          <CalendarView
+                            slots={undisplayedSlots}
+                            onDateSelect={(date) => {
+                              setSelectedDate(date);
+                              setSelectedProductId(null);
+                            }}
+                            onSlotToggle={async (slotId, isAvailable) => {
+                              try {
+                                const { error } = await supabase
+                                  .from("appointment_slots")
+                                  .update({ is_available: isAvailable })
+                                  .eq("id", slotId)
+                                  .eq("expert_id", user?.id);
+                                if (error) throw error;
+                                fetchSlots();
+                              } catch (err) {
+                                console.error("Error toggling slot:", err);
+                                alert("Failed to update slot availability.");
+                              }
+                            }}
+                            showToggle={true}
+                            hideSlotsDisplay={true}
+                          />
+                        </div>
+                      );
+                    })()}
                   </div>
                   
                   {/* Show slots for selected date */}
