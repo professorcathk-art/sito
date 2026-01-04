@@ -655,13 +655,86 @@ export function CourseEnrollment({
         setQuestionnaireType("enroll");
         setShowQuestionnaire(true);
         return;
+      } else {
+        // No questionnaire exists - create one with default fields (MANDATORY)
+        console.log("No questionnaire available, creating mandatory one for enrollment");
+        try {
+          const { data: newQuestionnaire, error: createError } = await supabase
+            .from("questionnaires")
+            .insert({
+              expert_id: expertId,
+              type: "course_interest",
+              title: "Course Enrollment Form",
+              is_active: true,
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            // If duplicate key error, fetch existing one
+            if (createError.code === "23505") {
+              const { data: existing } = await supabase
+                .from("questionnaires")
+                .select("id")
+                .eq("expert_id", expertId)
+                .eq("type", "course_interest")
+                .maybeSingle();
+              if (existing?.id) {
+                await supabase
+                  .from("questionnaires")
+                  .update({ is_active: true })
+                  .eq("id", existing.id);
+                setQuestionnaireId(existing.id);
+                setQuestionnaireType("enroll");
+                setShowQuestionnaire(true);
+                return;
+              }
+            } else {
+              console.error("Error creating questionnaire:", createError);
+            }
+          } else {
+            const questionnaireId = newQuestionnaire?.id || null;
+            if (questionnaireId) {
+              // Create default Name and Email fields
+              await supabase
+                .from("questionnaire_fields")
+                .insert([
+                  {
+                    questionnaire_id: questionnaireId,
+                    field_type: "text",
+                    label: "Name",
+                    placeholder: "Enter your name",
+                    required: true,
+                    order_index: 0,
+                  },
+                  {
+                    questionnaire_id: questionnaireId,
+                    field_type: "email",
+                    label: "Email",
+                    placeholder: "Enter your email",
+                    required: true,
+                    order_index: 1,
+                  },
+                ]);
+              
+              setQuestionnaireId(questionnaireId);
+              setQuestionnaireType("enroll");
+              setShowQuestionnaire(true);
+              return;
+            }
+          }
+        } catch (createErr) {
+          console.error("Error creating questionnaire:", createErr);
+        }
       }
     } catch (err) {
-      // No questionnaire found, continue
+      console.error("Error checking questionnaire:", err);
     }
 
-    // No questionnaire, enroll directly
-    await enroll();
+    // If we get here, something went wrong - still show form with temp ID
+    setQuestionnaireId("temp-" + Date.now());
+    setQuestionnaireType("enroll");
+    setShowQuestionnaire(true);
   };
 
   const enroll = async (questionnaireResponse?: any) => {

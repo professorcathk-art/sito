@@ -524,11 +524,28 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
               <h2 className="text-xl font-bold text-custom-text">1-on-1 Timeslots</h2>
               {user && user.id !== expert.id && (
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     // Find appointment product for this expert
-                    const appointmentProduct = products.find(p => p.product_type === "appointment");
+                    let appointmentProduct = products.find(p => p.product_type === "appointment");
+                    
+                    // If not found in products array, fetch it
+                    if (!appointmentProduct) {
+                      const { data: productData } = await supabase
+                        .from("products")
+                        .select("id, name, product_type")
+                        .eq("expert_id", expertId)
+                        .eq("product_type", "appointment")
+                        .maybeSingle();
+                      
+                      if (productData) {
+                        appointmentProduct = productData as any;
+                        // Add to products array for future use
+                        setProducts([...products, productData as any]);
+                      }
+                    }
+                    
                     if (appointmentProduct) {
-                      setShowInterestForm(appointmentProduct.id);
+                      await handleRegisterInterest(appointmentProduct.id);
                     } else {
                       alert("Appointment service not available. Please contact the expert.");
                     }

@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { Navigation } from "@/components/navigation";
 import { ProtectedRoute } from "@/components/protected-route";
 import { CalendarView } from "@/components/calendar-view";
+import { QuestionnaireForm } from "@/components/questionnaire-form";
 
 interface AppointmentSlot {
   id: string;
@@ -34,6 +35,9 @@ export default function BookAppointmentPage() {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [questionnaireId, setQuestionnaireId] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<AppointmentSlot | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -108,6 +112,125 @@ export default function BookAppointmentPage() {
       return;
     }
 
+    // Store selected slot for later use
+    setSelectedSlot(slot);
+
+    // Check for questionnaire first (MANDATORY)
+    try {
+      const { data: questionnaire, error: qError } = await supabase
+        .from("questionnaires")
+        .select("id")
+        .eq("expert_id", expertId)
+        .eq("type", "appointment")
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (qError && qError.code !== "PGRST116") {
+        console.error("Error checking for questionnaire:", qError);
+      }
+
+      if (questionnaire?.id) {
+        // Verify fields exist
+        const { data: fieldsData } = await supabase
+          .from("questionnaire_fields")
+          .select("id")
+          .eq("questionnaire_id", questionnaire.id)
+          .limit(1);
+
+        if (fieldsData && fieldsData.length > 0) {
+          setQuestionnaireId(questionnaire.id);
+          setShowQuestionnaire(true);
+          return;
+        } else {
+          // No fields - create default ones
+          await supabase
+            .from("questionnaire_fields")
+            .insert([
+              {
+                questionnaire_id: questionnaire.id,
+                field_type: "text",
+                label: "Name",
+                placeholder: "Enter your name",
+                required: true,
+                order_index: 0,
+              },
+              {
+                questionnaire_id: questionnaire.id,
+                field_type: "email",
+                label: "Email",
+                placeholder: "Enter your email",
+                required: true,
+                order_index: 1,
+              },
+            ]);
+          setQuestionnaireId(questionnaire.id);
+          setShowQuestionnaire(true);
+          return;
+        }
+      } else {
+        // No questionnaire - create one with default fields (MANDATORY)
+        const { data: newQuestionnaire, error: createError } = await supabase
+          .from("questionnaires")
+          .insert({
+            expert_id: expertId,
+            type: "appointment",
+            title: "Appointment Booking Form",
+            is_active: true,
+          })
+          .select()
+          .single();
+
+        if (createError && createError.code === "23505") {
+          // Duplicate - fetch existing
+          const { data: existing } = await supabase
+            .from("questionnaires")
+            .select("id")
+            .eq("expert_id", expertId)
+            .eq("type", "appointment")
+            .maybeSingle();
+          if (existing?.id) {
+            setQuestionnaireId(existing.id);
+            setShowQuestionnaire(true);
+            return;
+          }
+        } else if (newQuestionnaire?.id) {
+          // Create default fields
+          await supabase
+            .from("questionnaire_fields")
+            .insert([
+              {
+                questionnaire_id: newQuestionnaire.id,
+                field_type: "text",
+                label: "Name",
+                placeholder: "Enter your name",
+                required: true,
+                order_index: 0,
+              },
+              {
+                questionnaire_id: newQuestionnaire.id,
+                field_type: "email",
+                label: "Email",
+                placeholder: "Enter your email",
+                required: true,
+                order_index: 1,
+              },
+            ]);
+          setQuestionnaireId(newQuestionnaire.id);
+          setShowQuestionnaire(true);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Error setting up questionnaire:", err);
+    }
+
+    // If we get here, proceed with booking (fallback)
+    proceedWithBooking(slot);
+  };
+
+  const proceedWithBooking = async (slot: AppointmentSlot, questionnaireResponse?: any) => {
+    if (!user || !slot) return;
+
     const duration = calculateDuration(slot.start_time, slot.end_time);
     const totalAmount = calculateTotal(slot.rate_per_hour, duration);
 
@@ -157,15 +280,46 @@ export default function BookAppointmentPage() {
     // Paid appointment - check if product has Stripe setup
     setBooking(true);
     try {
-      // Fetch product linked to this slot
-      const { data: slotData } = await supabase
+      // Fetch product linked to this slot - try to find product by expert_id if slot doesn't have product_id
+      let slotData: any = null;
+      
+      // First try to get product_id from slot
+      const { data: slotWithProduct } = await supabase
         .from("appointment_slots")
-        .select("product_id, products(stripe_product_id, stripe_price_id, payment_method, contact_email)")
+        .select("product_id")
         .eq("id", slot.id)
         .single();
 
+      if (slotWithProduct?.product_id) {
+        // Slot has product_id - fetch product
+        const { data: productData } = await supabase
+          .from("products")
+          .select("id, stripe_product_id, stripe_price_id, payment_method, contact_email")
+          .eq("id", slotWithProduct.product_id)
+          .single();
+        
+        slotData = { product_id: slotWithProduct.product_id, products: productData };
+      } else {
+        // Slot doesn't have product_id - find appointment product for this expert
+        const { data: appointmentProduct } = await supabase
+          .from("products")
+          .select("id, stripe_product_id, stripe_price_id, payment_method, contact_email")
+          .eq("expert_id", expertId)
+          .eq("product_type", "appointment")
+          .maybeSingle();
+        
+        if (appointmentProduct) {
+          slotData = { product_id: appointmentProduct.id, products: appointmentProduct };
+          // Update slot with product_id for future bookings
+          await supabase
+            .from("appointment_slots")
+            .update({ product_id: appointmentProduct.id })
+            .eq("id", slot.id);
+        }
+      }
+
       if (!slotData?.product_id) {
-        alert("Appointment slot is not linked to a product. Please contact the expert.");
+        alert("Appointment service is not set up. Please contact the expert.");
         setBooking(false);
         return;
       }
@@ -210,6 +364,17 @@ export default function BookAppointmentPage() {
       // Calculate price for this specific slot duration
       const priceInCents = Math.round(totalAmount * 100);
       
+      // Store questionnaire response ID if available
+      const metadata: any = {
+        appointmentId: slot.id,
+        slotStartTime: slot.start_time,
+        slotEndTime: slot.end_time,
+      };
+      
+      if (questionnaireResponse?.id) {
+        metadata.questionnaire_response_id = questionnaireResponse.id;
+      }
+      
       // For appointments, we need to create a checkout session with the calculated amount
       // Since Stripe prices are fixed, we'll use line_items with price_data for dynamic pricing
       const response = await fetch("/api/stripe/checkout/create-session", {
@@ -227,9 +392,7 @@ export default function BookAppointmentPage() {
           },
           quantity: 1,
           connectedAccountId: connectedAccountId,
-          appointmentId: slot.id, // Store slot ID in metadata
-          slotStartTime: slot.start_time,
-          slotEndTime: slot.end_time,
+          ...metadata,
         }),
       });
 
@@ -249,6 +412,32 @@ export default function BookAppointmentPage() {
       alert(`Failed to start payment: ${err.message || "Please try again."}`);
     } finally {
       setBooking(false);
+    }
+  };
+
+  const handleQuestionnaireSubmit = async (responses: any) => {
+    if (!questionnaireId || !selectedSlot) return;
+
+    try {
+      // Save questionnaire response
+      const { data: responseData, error: responseError } = await supabase
+        .from("questionnaire_responses")
+        .insert({
+          questionnaire_id: questionnaireId,
+          user_id: user?.id,
+          responses: responses,
+        })
+        .select()
+        .single();
+
+      if (responseError) throw responseError;
+
+      // Proceed with booking
+      setShowQuestionnaire(false);
+      await proceedWithBooking(selectedSlot, responseData);
+    } catch (err: any) {
+      console.error("Error submitting questionnaire:", err);
+      alert(`Failed to submit form: ${err.message || "Please try again."}`);
     }
   };
 
@@ -388,6 +577,36 @@ export default function BookAppointmentPage() {
           </div>
         </div>
       </div>
+
+      {/* Questionnaire Form Modal */}
+      {showQuestionnaire && questionnaireId && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-dark-green-900 border border-cyber-green/30 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-custom-text">Booking Form</h2>
+              <button
+                onClick={() => {
+                  setShowQuestionnaire(false);
+                  setQuestionnaireId(null);
+                  setSelectedSlot(null);
+                }}
+                className="text-custom-text/60 hover:text-custom-text transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <QuestionnaireForm
+              questionnaireId={questionnaireId}
+              onSubmit={handleQuestionnaireSubmit}
+              onCancel={() => {
+                setShowQuestionnaire(false);
+                setQuestionnaireId(null);
+                setSelectedSlot(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }

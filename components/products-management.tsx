@@ -98,6 +98,8 @@ export function ProductsManagement() {
   const [currentQuestionnaireId, setCurrentQuestionnaireId] = useState<string | null>(null);
   const [questionnaireFields, setQuestionnaireFields] = useState<any[]>([]);
   const [showFieldForm, setShowFieldForm] = useState(false);
+  const [viewingFormProductId, setViewingFormProductId] = useState<string | null>(null);
+  const [viewingFormFields, setViewingFormFields] = useState<any[]>([]);
   const [editingField, setEditingField] = useState<any | null>(null);
   const [fieldForm, setFieldForm] = useState({
     field_type: "text" as "text" | "email" | "textarea" | "select" | "checkbox" | "radio",
@@ -2049,6 +2051,39 @@ export function ProductsManagement() {
                   </div>
                   <div className="flex gap-2 ml-4">
                     <button
+                      onClick={async () => {
+                        if (!user) return;
+                        
+                        // Determine questionnaire type based on product type
+                        const questionnaireType = product.product_type === "course" ? "course_interest" : "appointment";
+                        
+                        // Fetch questionnaire for this product
+                        const { data: questionnaire } = await supabase
+                          .from("questionnaires")
+                          .select("id")
+                          .eq("expert_id", user.id)
+                          .eq("type", questionnaireType)
+                          .maybeSingle();
+                        
+                        if (questionnaire?.id) {
+                          // Fetch fields
+                          const { data: fields } = await supabase
+                            .from("questionnaire_fields")
+                            .select("*")
+                            .eq("questionnaire_id", questionnaire.id)
+                            .order("order_index", { ascending: true });
+                          
+                          setViewingFormFields(fields || []);
+                          setViewingFormProductId(product.id);
+                        } else {
+                          alert("No form has been set up for this product yet.");
+                        }
+                      }}
+                      className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm"
+                    >
+                      View Form
+                    </button>
+                    <button
                       onClick={() => handleEdit(product)}
                       className="px-4 py-2 bg-dark-green-800/50 text-custom-text border border-cyber-green/30 rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm"
                     >
@@ -2123,6 +2158,60 @@ export function ProductsManagement() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* View Form Modal */}
+      {viewingFormProductId && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-dark-green-900 border border-cyber-green/30 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-custom-text">Product Form Preview</h2>
+              <button
+                onClick={() => {
+                  setViewingFormProductId(null);
+                  setViewingFormFields([]);
+                }}
+                className="text-custom-text/60 hover:text-custom-text transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            {viewingFormFields.length === 0 ? (
+              <p className="text-custom-text/60">No form fields have been set up yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {viewingFormFields.map((field) => (
+                  <div key={field.id} className="bg-dark-green-800/30 border border-cyber-green/20 rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-semibold text-custom-text">{field.label}</span>
+                          {field.required && <span className="text-red-400 text-xs">*</span>}
+                          <span className="text-xs text-custom-text/60 bg-cyber-green/20 px-2 py-1 rounded">
+                            {field.field_type}
+                          </span>
+                        </div>
+                        {field.placeholder && (
+                          <p className="text-sm text-custom-text/60 mb-2">Placeholder: {field.placeholder}</p>
+                        )}
+                        {field.options && Array.isArray(field.options) && field.options.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-sm text-custom-text/60 mb-1">Options:</p>
+                            <ul className="list-disc list-inside text-sm text-custom-text/70">
+                              {field.options.map((opt: string, idx: number) => (
+                                <li key={idx}>{opt}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
