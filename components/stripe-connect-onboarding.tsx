@@ -305,24 +305,43 @@ export function StripeConnectOnboarding() {
           {/* Country Selection */}
           <div>
             <label className="block text-sm font-medium text-custom-text mb-2">
-              Country <span className="text-red-400">*</span>
+              Select Your Country <span className="text-red-400">*</span>
             </label>
+            <p className="text-xs text-custom-text/60 mb-2">
+              This determines which Stripe region your account will be created in. 
+              Make sure it matches your business location.
+            </p>
             <select
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
-              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text focus:border-cyber-green focus:outline-none"
               disabled={creating}
+              required
             >
-              <option value="">Select your country</option>
-              {countries.map((country) => (
-                <option key={country.id} value={country.code.toLowerCase()}>
-                  {country.name}
-                </option>
-              ))}
+              <option value="">-- Select your country --</option>
+              {countries.length === 0 ? (
+                <option value="" disabled>Loading countries...</option>
+              ) : (
+                countries.map((country) => (
+                  <option key={country.id} value={country.code.toLowerCase()}>
+                    {country.name}
+                  </option>
+                ))
+              )}
             </select>
+            {userCountry && selectedCountry === userCountry && (
+              <p className="text-sm text-green-300 mt-1">
+                ✓ Using your profile country
+              </p>
+            )}
             {userCountry && !selectedCountry && (
               <p className="text-sm text-custom-text/60 mt-1">
-                Your profile country: {countries.find(c => c.code.toLowerCase() === userCountry)?.name || userCountry.toUpperCase()}
+                💡 Your profile country: {countries.find(c => c.code.toLowerCase() === userCountry)?.name || userCountry.toUpperCase()}
+              </p>
+            )}
+            {!selectedCountry && (
+              <p className="text-xs text-yellow-300 mt-1">
+                Please select your country to continue
               </p>
             )}
           </div>
