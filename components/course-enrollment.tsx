@@ -583,35 +583,44 @@ export function CourseEnrollment({
             return;
           }
 
-            // Redirect to Stripe checkout
-            try {
-              const response = await fetch("/api/stripe/checkout/create-session", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  priceId: product.stripe_price_id,
-                  connectedAccountId: connectedAccountId,
-                  courseId: courseId,
-                }),
-              });
+          // Redirect to Stripe checkout
+          try {
+            const response = await fetch("/api/stripe/checkout/create-session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                priceId: product.stripe_price_id,
+                connectedAccountId: connectedAccountId,
+                courseId: courseId,
+              }),
+            });
 
-              if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Failed to create checkout session");
-              }
-
+            if (!response.ok) {
               const data = await response.json();
-              if (data.url) {
-                window.location.href = data.url;
-              } else {
-                throw new Error("No checkout URL returned");
-              }
-            } catch (err: any) {
-              console.error("Error creating checkout session:", err);
-              alert(`Failed to start payment: ${err.message || "Please try again."}`);
+              throw new Error(data.error || "Failed to create checkout session");
             }
+
+            const data = await response.json();
+            if (data.url) {
+              window.location.href = data.url;
+            } else {
+              throw new Error("No checkout URL returned");
+            }
+          } catch (err: any) {
+            console.error("Error creating checkout session:", err);
+            alert(`Failed to start payment: ${err.message || "Please try again."}`);
+            setProcessing(false);
+          }
+        } else {
+          // Product doesn't have Stripe IDs - check if it's supposed to be offline payment
+          if (paymentMethod === "offline" && product.contact_email) {
+            setProductPaymentMethod("offline");
+            setProductContactEmail(product.contact_email);
+            setShowOfflinePaymentInfo(true);
+            setProcessing(false);
           } else {
             alert("Payment method not configured. Please contact the expert.");
+            setProcessing(false);
           }
         }
       }
