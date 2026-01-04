@@ -525,14 +525,22 @@ export function CourseEnrollment({
           setShowOfflinePaymentInfo(true);
         } else {
           // Stripe payment - redirect to checkout
-          // Get product info for Stripe checkout
+          // Get product info and expert's Stripe Connect account for Stripe checkout
           const { data: product } = await supabase
             .from("products")
-            .select("id, stripe_product_id, stripe_price_id")
+            .select("id, stripe_product_id, stripe_price_id, expert_id, profiles!inner(stripe_connect_account_id)")
             .eq("course_id", courseId)
             .maybeSingle();
 
           if (product?.stripe_product_id && product?.stripe_price_id) {
+            // Get connected account ID from expert's profile
+            const connectedAccountId = (product.profiles as any)?.stripe_connect_account_id;
+            
+            if (!connectedAccountId) {
+              alert("Expert has not set up payment processing. Please contact them directly.");
+              return;
+            }
+
             // Redirect to Stripe checkout
             try {
               const response = await fetch("/api/stripe/checkout/create-session", {
@@ -540,7 +548,7 @@ export function CourseEnrollment({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   priceId: product.stripe_price_id,
-                  productId: product.stripe_product_id,
+                  connectedAccountId: connectedAccountId,
                   courseId: courseId,
                 }),
               });

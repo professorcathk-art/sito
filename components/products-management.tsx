@@ -108,14 +108,34 @@ export function ProductsManagement() {
   });
   const [stripeAccountId, setStripeAccountId] = useState<string | null>(null);
 
+  const [isProfileListed, setIsProfileListed] = useState<boolean | null>(null);
+
   useEffect(() => {
     if (user) {
       fetchProducts();
       fetchCourses();
       fetchStripeAccountId();
+      checkProfileListing();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  const checkProfileListing = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("listed_on_marketplace")
+        .eq("id", user.id)
+        .single();
+      
+      setIsProfileListed(profile?.listed_on_marketplace || false);
+    } catch (err) {
+      console.error("Error checking profile listing:", err);
+      setIsProfileListed(false);
+    }
+  };
 
   /**
    * Fetch user's Stripe Connect account ID
@@ -748,6 +768,29 @@ export function ProductsManagement() {
 
   return (
     <div className="space-y-6 pt-8">
+      {/* Profile Listing Reminder */}
+      {isProfileListed === false && activeTab === "products" && (
+        <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <span className="text-yellow-400 text-xl">⚠️</span>
+            <div className="flex-1">
+              <p className="text-sm text-yellow-400 font-semibold mb-1">
+                List your profile publicly to make your products visible
+              </p>
+              <p className="text-xs text-yellow-300/80 mb-2">
+                Your products will only be visible to you unless you list your profile on the marketplace. This allows other users to discover and purchase your products.
+              </p>
+              <a
+                href="/profile"
+                className="text-xs text-yellow-400 underline hover:text-yellow-300"
+              >
+                Go to Profile Settings →
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-custom-text">Products & Services</h2>
         {activeTab === "products" && (
