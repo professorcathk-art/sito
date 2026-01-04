@@ -132,7 +132,7 @@ export function CourseEnrollment({
     try {
       let questionnaireId: string | null = null;
       
-      // First, check if questionnaire exists (don't filter by is_active - experts may have inactive ones)
+      // First, check if questionnaire exists (do not filter by is_active - experts may have inactive ones)
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
         .select("id, is_active")
