@@ -348,7 +348,10 @@ export function CourseEnrollment({
             setShowQuestionnaire(true);
             return;
           } else {
-            alert("Unable to create registration form. Please try again later.");
+            // If questionnaire creation failed, try to register interest without form
+            // This is a fallback - ideally questionnaire should always be created
+            console.warn("Questionnaire creation failed, attempting to register interest without form");
+            await registerInterest();
             return;
           }
         } catch (createErr) {
