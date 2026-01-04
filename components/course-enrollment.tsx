@@ -423,62 +423,10 @@ export function CourseEnrollment({
         }
       }
     } catch (err) {
-      // Error checking for questionnaire - try to create one
+      // Error checking for questionnaire - DO NOT CREATE (only experts can create)
       console.error("Error checking for questionnaire:", err);
-      try {
-        // Try to create a default questionnaire
-        const { data: newQuestionnaire, error: createError } = await supabase
-          .from("questionnaires")
-          .insert({
-            expert_id: expertId,
-            type: "course_interest",
-            title: "Course Interest Form",
-            is_active: true,
-          })
-          .select()
-          .single();
-        
-        if (!createError && newQuestionnaire?.id) {
-          // Create default fields
-          const { error: fieldsError } = await supabase
-            .from("questionnaire_fields")
-            .insert([
-              {
-                questionnaire_id: newQuestionnaire.id,
-                field_type: "text",
-                label: "Name",
-                placeholder: "Enter your name",
-                required: true,
-                order_index: 0,
-              },
-              {
-                questionnaire_id: newQuestionnaire.id,
-                field_type: "email",
-                label: "Email",
-                placeholder: "Enter your email",
-                required: true,
-                order_index: 1,
-              },
-            ]);
-          
-          if (fieldsError) {
-            console.error("Error creating default fields:", fieldsError);
-          }
-          
-          setQuestionnaireId(newQuestionnaire.id);
-          setQuestionnaireType("interest");
-          setShowQuestionnaire(true);
-          return;
-        }
-      } catch (createErr) {
-        console.error("Failed to create fallback questionnaire:", createErr);
-      }
-      
-      // Last resort: Show form with temporary ID - form will handle gracefully
-      console.warn("All questionnaire creation attempts failed, showing form with temporary ID");
-      setQuestionnaireId("temp-" + Date.now());
-      setQuestionnaireType("interest");
-      setShowQuestionnaire(true);
+      alert("Failed to load registration form. Please try again later.");
+      setProcessing(false);
       return;
     }
   };
@@ -781,49 +729,6 @@ export function CourseEnrollment({
         return;
       }
 
-      // Note: The code below was removed as it attempted to create questionnaires
-      // Only experts can create questionnaires through the Products page
-      if (false) { {
-            // Create default fields
-            await supabase
-              .from("questionnaire_fields")
-              .insert([
-                {
-                  questionnaire_id: newQuestionnaire.id,
-                  field_type: "text",
-                  label: "Name",
-                  placeholder: "Enter your name",
-                  required: true,
-                  order_index: 0,
-                },
-                {
-                  questionnaire_id: newQuestionnaire.id,
-                  field_type: "email",
-                  label: "Email",
-                  placeholder: "Enter your email",
-                  required: true,
-                  order_index: 1,
-                },
-              ]);
-
-            // Save response with the new questionnaire ID
-            const { data: responseData } = await supabase
-              .from("questionnaire_responses")
-              .insert({
-                questionnaire_id: newQuestionnaire.id,
-                user_id: currentUserId,
-                responses: responses,
-              })
-              .select()
-              .single();
-            
-            response = responseData;
-          }
-        } catch (createErr) {
-          console.error("Error creating questionnaire from temp ID:", createErr);
-          // Continue without questionnaire response
-        }
-      }
 
       if (questionnaireType === "interest") {
         await registerInterest(response);
