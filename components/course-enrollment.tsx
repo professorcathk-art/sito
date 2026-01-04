@@ -143,11 +143,16 @@ export function CourseEnrollment({
         console.error("Error fetching product:", productError);
       }
 
+      if (!product?.id) {
+        alert("Product not found for this course. Please contact the expert.");
+        return;
+      }
+
       // Check if questionnaire exists for this product (linked by product_id)
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
         .select("id, is_active")
-        .eq("product_id", product?.id)
+        .eq("product_id", product.id)
         .maybeSingle();
 
       // PGRST116 is "no rows returned" which is fine
@@ -313,13 +318,30 @@ export function CourseEnrollment({
       return;
     }
 
-    // Check for questionnaire - use course_interest to match DB constraint
+    // Check for questionnaire - query by product_id (linked to product, not expert)
     try {
+      // First, get the product_id for this course
+      const { data: product, error: productError } = await supabase
+        .from("products")
+        .select("id")
+        .eq("course_id", courseId)
+        .maybeSingle();
+
+      if (productError && productError.code !== "PGRST116") {
+        console.error("Error fetching product:", productError);
+      }
+
+      if (!product) {
+        alert("Product not found for this course. Please contact the expert.");
+        setProcessing(false);
+        return;
+      }
+
+      // Check if questionnaire exists for this product (linked by product_id)
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
         .select("id, is_active")
-        .eq("expert_id", expertId)
-        .eq("type", "course_interest")
+        .eq("product_id", product.id)
         .maybeSingle();
       
       // PGRST116 is "no rows returned" which is fine
@@ -327,14 +349,47 @@ export function CourseEnrollment({
         console.error("Error checking for questionnaire:", qError);
       }
 
-      if (questionnaire) {
-        setQuestionnaireId(questionnaire.id);
-        setQuestionnaireType("enroll");
-        setShowQuestionnaire(true);
-        return;
+      if (questionnaire?.id) {
+        // If questionnaire is inactive, try to activate it (but this might fail due to RLS)
+        if (!questionnaire.is_active) {
+          console.warn("Questionnaire is inactive, attempting to activate...");
+          // Note: This will fail if user is not the expert, but that's okay
+          await supabase
+            .from("questionnaires")
+            .update({ is_active: true })
+            .eq("id", questionnaire.id);
+        }
+
+        // Fetch ALL fields (not just check if they exist)
+        const { data: allFields, error: fieldsCheckError } = await supabase
+          .from("questionnaire_fields")
+          .select("*")
+          .eq("questionnaire_id", questionnaire.id)
+          .order("order_index", { ascending: true });
+
+        if (fieldsCheckError) {
+          console.error("Error fetching fields:", fieldsCheckError);
+        }
+
+        console.log(`📋 Found ${allFields?.length || 0} fields for questionnaire ${questionnaire.id}`);
+
+        if (allFields && allFields.length > 0) {
+          // Fields exist, show the form with ALL fields
+          console.log("Fields:", allFields.map(f => f.label));
+          setQuestionnaireId(questionnaire.id);
+          setQuestionnaireType("enroll");
+          setShowQuestionnaire(true);
+          return;
+        } else {
+          // No fields exist - DO NOT CREATE (only experts can create fields)
+          console.log("No fields found for questionnaire");
+          alert("The expert has not set up a registration form for this course. Please contact them directly.");
+          setProcessing(false);
+          return;
+        }
       } else {
         // No questionnaire exists - DO NOT CREATE (only experts can create questionnaires)
-        console.log("No questionnaire found for expert:", expertId);
+        console.log("No questionnaire found for product:", product.id);
         alert("Registration form is not yet set up by the expert. Please contact them directly or try again later.");
         setProcessing(false);
         return;

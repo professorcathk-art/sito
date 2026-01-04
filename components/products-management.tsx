@@ -2169,15 +2169,11 @@ export function ProductsManagement() {
                       onClick={async () => {
                         if (!user) return;
                         
-                        // Determine questionnaire type based on product type
-                        const questionnaireType = product.product_type === "course" ? "course_interest" : "appointment";
-                        
-                        // Fetch questionnaire for this product
+                        // Fetch questionnaire for this product (linked by product_id)
                         const { data: questionnaire } = await supabase
                           .from("questionnaires")
                           .select("id")
-                          .eq("expert_id", user.id)
-                          .eq("type", questionnaireType)
+                          .eq("product_id", product.id)
                           .maybeSingle();
                         
                         if (questionnaire?.id) {
