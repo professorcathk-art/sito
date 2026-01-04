@@ -184,13 +184,12 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
     // For appointment products, show questionnaire form
     if (product?.product_type === "appointment") {
       try {
-        // Check if questionnaire exists
+        // Check if questionnaire exists (don't filter by is_active - experts may have inactive ones)
         const { data: questionnaire, error: qError } = await supabase
           .from("questionnaires")
           .select("id")
           .eq("expert_id", expertId)
           .eq("type", "appointment")
-          .eq("is_active", true)
           .maybeSingle();
 
         if (qError && qError.code !== "PGRST116") {
