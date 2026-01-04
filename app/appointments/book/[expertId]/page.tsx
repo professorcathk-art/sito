@@ -42,6 +42,19 @@ export default function BookAppointmentPage() {
   useEffect(() => {
     fetchData();
   }, [expertId]); // eslint-disable-line react-hooks/exhaustive-deps
+  
+  // Auto-trigger booking flow if slot ID is in URL
+  useEffect(() => {
+    if (!user || slots.length === 0) return;
+    
+    const slotId = searchParams.get("slot");
+    if (slotId) {
+      const slot = slots.find(s => s.id === slotId);
+      if (slot && !selectedSlot) {
+        handleBookAppointment(slot);
+      }
+    }
+  }, [slots, user, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchData = async () => {
     try {

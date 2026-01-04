@@ -134,6 +134,7 @@ export default function ManageAppointmentsPage() {
     if (!user) return;
 
     try {
+      // Fetch ALL slots for this expert (including booked ones for calendar view)
       const { data, error } = await supabase
         .from("appointment_slots")
         .select(`
@@ -144,7 +145,23 @@ export default function ManageAppointmentsPage() {
         .order("start_time", { ascending: true });
 
       if (error) throw error;
-      setSlots(data || []);
+      
+      // Also check which slots are booked and mark them as unavailable
+      const { data: bookedSlots } = await supabase
+        .from("appointments")
+        .select("appointment_slot_id")
+        .eq("expert_id", user.id)
+        .in("status", ["confirmed", "pending"]);
+      
+      const bookedSlotIds = new Set((bookedSlots || []).map((apt: any) => apt.appointment_slot_id).filter(Boolean));
+      
+      // Update slots to mark booked ones as unavailable
+      const slotsWithStatus = (data || []).map((slot: any) => ({
+        ...slot,
+        is_available: slot.is_available && !bookedSlotIds.has(slot.id),
+      }));
+      
+      setSlots(slotsWithStatus);
     } catch (err) {
       console.error("Error fetching appointment slots:", err);
     } finally {

@@ -380,7 +380,10 @@ export function ProductsManagement() {
     setError("");
     if (!user) return;
 
-    if (!formData.name || !formData.description) {
+    // Check if description is empty (RichTextEditor might return empty HTML)
+    const descriptionText = formData.description?.replace(/<[^>]*>/g, '').trim() || '';
+    
+    if (!formData.name || !descriptionText) {
       setError("Please fill in name and description");
       return;
     }

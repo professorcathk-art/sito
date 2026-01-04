@@ -223,6 +223,7 @@ export async function POST(request: NextRequest) {
             .insert({
               expert_id: slotData.expert_id,
               user_id: userId,
+              appointment_slot_id: appointmentId, // Link to the slot
               start_time: slotStartTime,
               end_time: slotEndTime,
               duration_minutes: durationMinutes,
