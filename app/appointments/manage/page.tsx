@@ -170,11 +170,6 @@ export default function ManageAppointmentsPage() {
         ...slot,
         products: slot.product_id ? productsMap[slot.product_id] || null : null,
       }));
-
-      if (error) {
-        console.error("Error fetching slots:", error);
-        throw error;
-      }
       
       console.log(`📅 Fetched ${data?.length || 0} slots for expert ${user.id}`);
       console.log("Slots data:", data);

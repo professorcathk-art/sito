@@ -156,29 +156,9 @@ export default function BookAppointmentPage() {
           setShowQuestionnaire(true);
           return;
         } else {
-          // No fields - create default ones
-          await supabase
-            .from("questionnaire_fields")
-            .insert([
-              {
-                questionnaire_id: questionnaire.id,
-                field_type: "text",
-                label: "Name",
-                placeholder: "Enter your name",
-                required: true,
-                order_index: 0,
-              },
-              {
-                questionnaire_id: questionnaire.id,
-                field_type: "email",
-                label: "Email",
-                placeholder: "Enter your email",
-                required: true,
-                order_index: 1,
-              },
-            ]);
-          setQuestionnaireId(questionnaire.id);
-          setShowQuestionnaire(true);
+          // No fields exist - show error (only experts can create fields)
+          alert("Booking form is not yet set up by the expert. Please contact them directly.");
+          setBooking(false);
           return;
         }
       } else {
