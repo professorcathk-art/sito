@@ -374,20 +374,82 @@ export default function ManageAppointmentsPage() {
               ) : (
                 <>
                   {/* Group slots by product */}
-                  {products.length > 0 && (
-                    <div className="mb-6 space-y-6">
-                      {products.map((product) => {
-                        const productSlots = slots.filter(s => s.product_id === product.id);
-                        if (productSlots.length === 0) return null;
-                        
+                  <div className="mb-6 space-y-6">
+                    {/* Show slots grouped by product */}
+                    {products.length > 0 && products.map((product) => {
+                      const productSlots = slots.filter(s => s.product_id === product.id);
+                      if (productSlots.length === 0) return null;
+                      
+                      return (
+                        <div key={product.id} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                          <h3 className="text-xl font-bold text-custom-text mb-4">{product.name}</h3>
+                          <CalendarView
+                            slots={productSlots}
+                            onDateSelect={(date) => {
+                              setSelectedDate(date);
+                              setSelectedProductId(product.id);
+                            }}
+                            onSlotToggle={async (slotId, isAvailable) => {
+                              try {
+                                const { error } = await supabase
+                                  .from("appointment_slots")
+                                  .update({ is_available: isAvailable })
+                                  .eq("id", slotId)
+                                  .eq("expert_id", user?.id);
+                                if (error) throw error;
+                                fetchSlots();
+                              } catch (err) {
+                                console.error("Error toggling slot:", err);
+                                alert("Failed to update slot availability.");
+                              }
+                            }}
+                            showToggle={true}
+                            hideSlotsDisplay={true}
+                          />
+                          <div className="mt-4">
+                            <button
+                              onClick={() => {
+                                setShowForm(true);
+                                setFormData({ ...formData, productId: product.id });
+                                setSelectedProductId(product.id);
+                              }}
+                              className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm"
+                            >
+                              + Add Timeslots for {product.name}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Show slots with product info from join (even if product not in products array) */}
+                    {(() => {
+                      const slotsWithProducts = slots.filter(s => s.product_id && s.products);
+                      const displayedProductIds = new Set(products.map(p => p.id));
+                      const additionalSlots = slotsWithProducts.filter(s => !displayedProductIds.has(s.product_id!));
+                      
+                      if (additionalSlots.length === 0) return null;
+                      
+                      // Group by product
+                      const groupedByProduct: Record<string, typeof additionalSlots> = {};
+                      additionalSlots.forEach(slot => {
+                        const productId = slot.product_id!;
+                        if (!groupedByProduct[productId]) {
+                          groupedByProduct[productId] = [];
+                        }
+                        groupedByProduct[productId].push(slot);
+                      });
+                      
+                      return Object.entries(groupedByProduct).map(([productId, productSlots]) => {
+                        const productName = productSlots[0]?.products?.name || "Unknown Product";
                         return (
-                          <div key={product.id} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
-                            <h3 className="text-xl font-bold text-custom-text mb-4">{product.name}</h3>
+                          <div key={productId} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                            <h3 className="text-xl font-bold text-custom-text mb-4">{productName}</h3>
                             <CalendarView
                               slots={productSlots}
                               onDateSelect={(date) => {
                                 setSelectedDate(date);
-                                setSelectedProductId(product.id);
+                                setSelectedProductId(productId);
                               }}
                               onSlotToggle={async (slotId, isAvailable) => {
                                 try {
@@ -410,49 +472,49 @@ export default function ManageAppointmentsPage() {
                               <button
                                 onClick={() => {
                                   setShowForm(true);
-                                  setFormData({ ...formData, productId: product.id });
-                                  setSelectedProductId(product.id);
+                                  setFormData({ ...formData, productId: productId });
+                                  setSelectedProductId(productId);
                                 }}
                                 className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm"
                               >
-                                + Add Timeslots for {product.name}
+                                + Add Timeslots for {productName}
                               </button>
                             </div>
                           </div>
                         );
-                      })}
-                      
-                      {/* Show unlinked slots */}
-                      {slots.filter(s => !s.product_id).length > 0 && (
-                        <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
-                          <h3 className="text-xl font-bold text-custom-text mb-4">Unlinked Timeslots</h3>
-                          <CalendarView
-                            slots={slots.filter(s => !s.product_id)}
-                            onDateSelect={(date) => {
-                              setSelectedDate(date);
-                              setSelectedProductId(null);
-                            }}
-                            onSlotToggle={async (slotId, isAvailable) => {
-                              try {
-                                const { error } = await supabase
-                                  .from("appointment_slots")
-                                  .update({ is_available: isAvailable })
-                                  .eq("id", slotId)
-                                  .eq("expert_id", user?.id);
-                                if (error) throw error;
-                                fetchSlots();
-                              } catch (err) {
-                                console.error("Error toggling slot:", err);
-                                alert("Failed to update slot availability.");
-                              }
-                            }}
-                            showToggle={true}
-                            hideSlotsDisplay={true}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )}
+                      });
+                    })()}
+                    
+                    {/* Show unlinked slots */}
+                    {slots.filter(s => !s.product_id).length > 0 && (
+                      <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                        <h3 className="text-xl font-bold text-custom-text mb-4">Unlinked Timeslots</h3>
+                        <CalendarView
+                          slots={slots.filter(s => !s.product_id)}
+                          onDateSelect={(date) => {
+                            setSelectedDate(date);
+                            setSelectedProductId(null);
+                          }}
+                          onSlotToggle={async (slotId, isAvailable) => {
+                            try {
+                              const { error } = await supabase
+                                .from("appointment_slots")
+                                .update({ is_available: isAvailable })
+                                .eq("id", slotId)
+                                .eq("expert_id", user?.id);
+                              if (error) throw error;
+                              fetchSlots();
+                            } catch (err) {
+                              console.error("Error toggling slot:", err);
+                              alert("Failed to update slot availability.");
+                            }
+                          }}
+                          showToggle={true}
+                          hideSlotsDisplay={true}
+                        />
+                      </div>
+                    )}
+                  </div>
                   
                   {/* Show slots for selected date */}
                   {selectedDate && slots.filter(s => {
