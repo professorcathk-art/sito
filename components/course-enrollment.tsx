@@ -307,7 +307,9 @@ export function CourseEnrollment({
               }
             } else {
               console.error("Error creating questionnaire:", createError);
-              alert("Unable to load registration form. Please try again later.");
+              // Try to continue without questionnaire - allow registration with basic info
+              console.warn("Questionnaire creation failed, attempting to register interest without form");
+              await registerInterest();
               return;
             }
           } else {
@@ -364,9 +366,15 @@ export function CourseEnrollment({
         }
       }
     } catch (err) {
-      // Error checking for questionnaire - show error, don't allow registration
+      // Error checking for questionnaire - try fallback registration
       console.error("Error checking for questionnaire:", err);
-      alert("Unable to load registration form. Please try again later.");
+      console.warn("Questionnaire check failed, attempting to register interest without form");
+      try {
+        await registerInterest();
+      } catch (regErr) {
+        console.error("Fallback registration also failed:", regErr);
+        alert("Unable to load registration form. Please try again later.");
+      }
       return;
     }
   };
@@ -525,27 +533,55 @@ export function CourseEnrollment({
         setIsEnrolled(true);
         router.push("/courses/manage");
       } else {
-        // Paid course - check payment method
-        if (productPaymentMethod === "offline" && productContactEmail) {
-          // Show offline payment information
-          setShowOfflinePaymentInfo(true);
-        } else {
-          // Stripe payment - redirect to checkout
-          // Get product info and expert's Stripe Connect account for Stripe checkout
-          const { data: product } = await supabase
-            .from("products")
-            .select("id, stripe_product_id, stripe_price_id, expert_id, profiles!inner(stripe_connect_account_id)")
-            .eq("course_id", courseId)
-            .maybeSingle();
+        // Paid course - get product payment info
+        // Get product info and expert's Stripe Connect account for Stripe checkout
+        const { data: product } = await supabase
+          .from("products")
+          .select(`
+            id, 
+            stripe_product_id, 
+            stripe_price_id, 
+            expert_id,
+            payment_method,
+            contact_email
+          `)
+          .eq("course_id", courseId)
+          .maybeSingle();
 
-          if (product?.stripe_product_id && product?.stripe_price_id) {
-            // Get connected account ID from expert's profile
-            const connectedAccountId = (product.profiles as any)?.stripe_connect_account_id;
-            
-            if (!connectedAccountId) {
-              alert("Expert has not set up payment processing. Please contact them directly.");
-              return;
-            }
+        if (!product) {
+          alert("Product not found for this course. Please contact the expert.");
+          setProcessing(false);
+          return;
+        }
+
+        // Check payment method
+        const paymentMethod = product.payment_method || "stripe";
+        
+        if (paymentMethod === "offline" && product.contact_email) {
+          // Show offline payment information
+          setProductPaymentMethod("offline");
+          setProductContactEmail(product.contact_email);
+          setShowOfflinePaymentInfo(true);
+          setProcessing(false);
+          return;
+        }
+
+        // Stripe payment - check if Stripe IDs exist
+        if (product?.stripe_product_id && product?.stripe_price_id) {
+          // Get connected account ID from expert's profile separately
+          const { data: expertProfile } = await supabase
+            .from("profiles")
+            .select("stripe_connect_account_id")
+            .eq("id", expertId)
+            .maybeSingle();
+          
+          const connectedAccountId = expertProfile?.stripe_connect_account_id;
+          
+          if (!connectedAccountId) {
+            alert("Expert has not set up payment processing. Please contact them directly.");
+            setProcessing(false);
+            return;
+          }
 
             // Redirect to Stripe checkout
             try {

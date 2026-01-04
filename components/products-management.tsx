@@ -201,7 +201,7 @@ export function ProductsManagement() {
           name: productName,
           description: productDescription,
           priceInCents: Math.round(price * 100), // Convert to cents
-          currency: "hkd", // Default to HKD for Hong Kong
+          currency: "usd", // Use USD to match form display
           connectedAccountId: stripeAccountId,
         }),
       });
