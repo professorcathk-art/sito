@@ -235,13 +235,17 @@ export function StripeConnectOnboarding() {
               <span className="text-custom-text/80">Account Status:</span>
               <span
                 className={`font-semibold ${
-                  accountStatus.onboardingComplete
+                  accountStatus.readyToReceivePayments
                     ? "text-green-300"
+                    : accountStatus.onboardingComplete
+                    ? "text-yellow-300"
                     : "text-yellow-300"
                 }`}
               >
-                {accountStatus.onboardingComplete
+                {accountStatus.readyToReceivePayments
                   ? "Complete"
+                  : accountStatus.onboardingComplete
+                  ? "In Progress"
                   : "In Progress"}
               </span>
             </div>
@@ -261,35 +265,57 @@ export function StripeConnectOnboarding() {
 
             {accountStatus.requirementsStatus &&
               accountStatus.requirementsStatus !== "complete" && (
-                <div className="mt-2 p-3 bg-yellow-900/30 border border-yellow-500/50 rounded-lg">
-                  <p className="text-yellow-300 text-sm">
-                    Action required: {accountStatus.requirementsStatus}
+                <div className="mt-2 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg">
+                  <p className="text-yellow-300 font-semibold mb-2">
+                    ⚠️ Action Required
+                  </p>
+                  <p className="text-yellow-200 text-sm mb-2">
+                    Your Stripe account needs additional information to be verified. 
+                    This is required before you can receive payments.
+                  </p>
+                  <p className="text-yellow-300/80 text-xs">
+                    Status: {accountStatus.requirementsStatus === "currently_due" 
+                      ? "Information needed" 
+                      : accountStatus.requirementsStatus === "past_due"
+                      ? "Deadline missed - please complete soon"
+                      : accountStatus.requirementsStatus}
                   </p>
                 </div>
               )}
           </div>
 
-          {/* Onboarding Button */}
-          {!accountStatus.onboardingComplete && (
-            <button
-              onClick={handleStartOnboarding}
-              disabled={onboarding}
-              className="w-full px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
-            >
-              {onboarding
-                ? "Redirecting to Stripe..."
-                : "Onboard to Collect Payments"}
-            </button>
+          {/* Onboarding Button - Show if not ready to receive payments */}
+          {!accountStatus.readyToReceivePayments && (
+            <div className="space-y-3">
+              <button
+                onClick={handleStartOnboarding}
+                disabled={onboarding}
+                className="w-full px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+              >
+                {onboarding
+                  ? "Redirecting to Stripe..."
+                  : accountStatus.onboardingComplete
+                  ? "Complete Onboarding"
+                  : "Onboard to Collect Payments"}
+              </button>
+              <p className="text-custom-text/60 text-sm text-center">
+                Click the button above to complete your Stripe account setup. 
+                You'll need to provide business information, bank details, and identity verification.
+              </p>
+            </div>
           )}
 
-          {accountStatus.onboardingComplete &&
-            accountStatus.readyToReceivePayments && (
-              <div className="p-4 bg-green-900/30 border border-green-500/50 rounded-lg">
-                <p className="text-green-300">
-                  ✓ Your account is set up and ready to receive payments!
-                </p>
-              </div>
-            )}
+          {accountStatus.readyToReceivePayments && (
+            <div className="p-4 bg-green-900/30 border border-green-500/50 rounded-lg">
+              <p className="text-green-300 font-semibold mb-1">
+                ✓ Account Ready!
+              </p>
+              <p className="text-green-200 text-sm">
+                Your account is fully set up and ready to receive payments. 
+                You can now create products and start accepting payments.
+              </p>
+            </div>
+          )}
 
           {/* Refresh Status Button */}
           <button
