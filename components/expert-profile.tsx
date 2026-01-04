@@ -206,52 +206,24 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           return;
         }
 
-        // Ensure default fields exist
-        if (finalQuestionnaireId) {
-          const { data: existingFields } = await supabase
-            .from("questionnaire_fields")
-            .select("id, label")
-            .eq("questionnaire_id", finalQuestionnaireId);
+        // Fetch ALL fields (not just check if they exist)
+        const { data: allFields, error: fieldsCheckError } = await supabase
+          .from("questionnaire_fields")
+          .select("*")
+          .eq("questionnaire_id", finalQuestionnaireId)
+          .order("order_index", { ascending: true });
 
-          const hasName = existingFields?.some(f => f.label.toLowerCase().includes("name"));
-          const hasEmail = existingFields?.some(f => f.label.toLowerCase().includes("email"));
-
-          if (!hasName || !hasEmail) {
-            const defaultFields = [];
-            if (!hasName) {
-              defaultFields.push({
-                questionnaire_id: finalQuestionnaireId,
-                field_type: "text",
-                label: "Name",
-                placeholder: "Enter your name",
-                required: true,
-                order_index: 0,
-              });
-            }
-            if (!hasEmail) {
-              defaultFields.push({
-                questionnaire_id: finalQuestionnaireId,
-                field_type: "email",
-                label: "Email",
-                placeholder: "Enter your email",
-                required: true,
-                order_index: 1,
-              });
-            }
-
-            if (defaultFields.length > 0) {
-              await supabase.from("questionnaire_fields").insert(defaultFields);
-            }
-          }
+        if (fieldsCheckError) {
+          console.error("Error checking fields:", fieldsCheckError);
         }
 
-        if (finalQuestionnaireId) {
+        if (allFields && allFields.length > 0) {
+          // Fields exist, show the form
           setQuestionnaireId(finalQuestionnaireId);
           setCurrentProductForInterest(productId);
           setShowQuestionnaire(true);
         } else {
-          // Fallback to simple form if questionnaire creation fails
-          setShowInterestForm(productId);
+          alert("The expert has not set up a booking form for this service. Please contact them directly.");
         }
       } catch (err: any) {
         console.error("Error setting up questionnaire:", err);
