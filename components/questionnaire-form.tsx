@@ -97,7 +97,13 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel }: Quest
         .eq("questionnaire_id", questionnaireId)
         .order("order_index", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching questionnaire fields:", error);
+        throw error;
+      }
+      
+      console.log(`📋 QuestionnaireForm: Fetched ${data?.length || 0} fields for questionnaire ${questionnaireId}`);
+      console.log("Fields:", data?.map((f: any) => ({ id: f.id, label: f.label, type: f.field_type })));
       
       // Parse options from JSONB if needed
       const parsedFields = (data || []).map((field: any) => {

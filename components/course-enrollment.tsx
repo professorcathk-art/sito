@@ -223,19 +223,22 @@ export function CourseEnrollment({
       }
 
       if (questionnaireId) {
-        // Verify fields exist before showing form
-        const { data: fieldsData, error: fieldsCheckError } = await supabase
+        // Fetch ALL fields (not just check if they exist)
+        const { data: allFields, error: fieldsCheckError } = await supabase
           .from("questionnaire_fields")
-          .select("id")
+          .select("*")
           .eq("questionnaire_id", questionnaireId)
-          .limit(1);
+          .order("order_index", { ascending: true });
 
         if (fieldsCheckError) {
-          console.error("Error checking fields:", fieldsCheckError);
+          console.error("Error fetching fields:", fieldsCheckError);
         }
 
-        if (fieldsData && fieldsData.length > 0) {
-          // Fields exist, show the form
+        console.log(`📋 Found ${allFields?.length || 0} fields for questionnaire ${questionnaireId}`);
+
+        if (allFields && allFields.length > 0) {
+          // Fields exist, show the form with ALL fields
+          console.log("Fields:", allFields.map(f => f.label));
           setQuestionnaireId(questionnaireId);
           setQuestionnaireType("interest");
           setShowQuestionnaire(true);
