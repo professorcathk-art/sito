@@ -8,25 +8,42 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navigation } from "@/components/navigation";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const sessionId = searchParams.get("session_id");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [courseId, setCourseId] = useState<string | null>(null);
 
   useEffect(() => {
     if (sessionId) {
-      // You could fetch session details here to show order confirmation
-      setLoading(false);
+      // Fetch session details to get course_id
+      fetch(`/api/stripe/checkout/session?session_id=${sessionId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.course_id) {
+            setCourseId(data.course_id);
+            // Redirect to classroom after a short delay
+            setTimeout(() => {
+              router.push("/courses/manage");
+            }, 3000);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error("Error fetching session:", err);
+          setLoading(false);
+        });
     } else {
       setError("No session ID provided");
       setLoading(false);
     }
-  }, [sessionId]);
+  }, [sessionId, router]);
 
   return (
     <div className="min-h-screen bg-custom-bg">
@@ -54,6 +71,11 @@ function SuccessContent() {
               </h1>
               <p className="text-custom-text/80 mb-6">
                 Thank you for your purchase. Your payment has been processed successfully.
+                {courseId && (
+                  <span className="block mt-2 text-sm">
+                    You have been enrolled in the course. Redirecting to your classroom...
+                  </span>
+                )}
               </p>
               {sessionId && (
                 <p className="text-sm text-custom-text/60 mb-6">
@@ -62,10 +84,10 @@ function SuccessContent() {
               )}
               <div className="flex gap-4 justify-center">
                 <Link
-                  href="/stripe/storefront"
+                  href="/courses/manage"
                   className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
                 >
-                  Continue Shopping
+                  Go to Classroom
                 </Link>
                 <Link
                   href="/dashboard"

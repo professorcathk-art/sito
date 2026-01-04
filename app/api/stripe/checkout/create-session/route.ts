@@ -100,11 +100,12 @@ export async function POST(request: NextRequest) {
           destination: connectedAccountId,
         },
 
-        // Store metadata for tracking
+        // Store metadata for tracking and enrollment
         metadata: {
           connected_account_id: connectedAccountId,
           application_fee_percent: applicationFeePercent.toString(),
           user_id: user?.id || "guest",
+          course_id: body.courseId || "",
         },
       },
 

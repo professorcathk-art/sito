@@ -307,10 +307,27 @@ export function CourseEnrollment({
               }
             } else {
               console.error("Error creating questionnaire:", createError);
-              // Try to continue without questionnaire - allow registration with basic info
-              console.warn("Questionnaire creation failed, attempting to register interest without form");
-              await registerInterest();
-              return;
+              // If creation failed, try to fetch and activate existing one
+              const { data: existing } = await supabase
+                .from("questionnaires")
+                .select("id")
+                .eq("expert_id", expertId)
+                .eq("type", "course_interest")
+                .maybeSingle();
+              
+              if (existing?.id) {
+                // Activate and use existing questionnaire
+                await supabase
+                  .from("questionnaires")
+                  .update({ is_active: true })
+                  .eq("id", existing.id);
+                questionnaireId = existing.id;
+              } else {
+                // Last resort: create a minimal questionnaire with just ID fields
+                // This ensures the form always shows
+                alert("Unable to load registration form. Please try again later.");
+                return;
+              }
             }
           } else {
             questionnaireId = newQuestionnaire?.id || null;
@@ -345,36 +362,156 @@ export function CourseEnrollment({
           }
 
           if (questionnaireId) {
+            // Ensure fields exist before showing form
+            const { data: fieldsCheck } = await supabase
+              .from("questionnaire_fields")
+              .select("id")
+              .eq("questionnaire_id", questionnaireId)
+              .limit(1);
+            
+            if (!fieldsCheck || fieldsCheck.length === 0) {
+              // Create default fields if they don't exist
+              await supabase
+                .from("questionnaire_fields")
+                .insert([
+                  {
+                    questionnaire_id: questionnaireId,
+                    field_type: "text",
+                    label: "Name",
+                    placeholder: "Enter your name",
+                    required: true,
+                    order_index: 0,
+                  },
+                  {
+                    questionnaire_id: questionnaireId,
+                    field_type: "email",
+                    label: "Email",
+                    placeholder: "Enter your email",
+                    required: true,
+                    order_index: 1,
+                  },
+                ]);
+            }
+            
             setQuestionnaireId(questionnaireId);
             setQuestionnaireType("interest");
             setShowQuestionnaire(true);
             return;
           } else {
-            // If questionnaire creation failed, try to register interest without form
-            // This is a fallback - ideally questionnaire should always be created
-            console.warn("Questionnaire creation failed, attempting to register interest without form");
-            await registerInterest();
+            // Should not reach here, but if we do, show error
+            alert("Unable to load registration form. Please try again later.");
             return;
           }
         } catch (createErr) {
           console.error("Error creating questionnaire:", createErr);
-          // Try to continue without questionnaire - allow registration with basic info
-          // Don't block the user, but log the error
-          console.warn("Questionnaire creation failed, attempting to register interest without form");
-          await registerInterest();
+          // Try to fetch existing questionnaire as fallback
+          try {
+            const { data: existing } = await supabase
+              .from("questionnaires")
+              .select("id")
+              .eq("expert_id", expertId)
+              .eq("type", "course_interest")
+              .maybeSingle();
+            
+            if (existing?.id) {
+              // Activate and use existing questionnaire
+              await supabase
+                .from("questionnaires")
+                .update({ is_active: true })
+                .eq("id", existing.id);
+              
+              // Ensure fields exist
+              const { data: fieldsCheck } = await supabase
+                .from("questionnaire_fields")
+                .select("id")
+                .eq("questionnaire_id", existing.id)
+                .limit(1);
+              
+              if (!fieldsCheck || fieldsCheck.length === 0) {
+                await supabase
+                  .from("questionnaire_fields")
+                  .insert([
+                    {
+                      questionnaire_id: existing.id,
+                      field_type: "text",
+                      label: "Name",
+                      placeholder: "Enter your name",
+                      required: true,
+                      order_index: 0,
+                    },
+                    {
+                      questionnaire_id: existing.id,
+                      field_type: "email",
+                      label: "Email",
+                      placeholder: "Enter your email",
+                      required: true,
+                      order_index: 1,
+                    },
+                  ]);
+              }
+              
+              setQuestionnaireId(existing.id);
+              setQuestionnaireType("interest");
+              setShowQuestionnaire(true);
+              return;
+            }
+          } catch (fallbackErr) {
+            console.error("Fallback questionnaire fetch also failed:", fallbackErr);
+          }
+          
+          alert("Unable to load registration form. Please try again later.");
           return;
         }
       }
     } catch (err) {
-      // Error checking for questionnaire - try fallback registration
+      // Error checking for questionnaire - try to create one
       console.error("Error checking for questionnaire:", err);
-      console.warn("Questionnaire check failed, attempting to register interest without form");
       try {
-        await registerInterest();
-      } catch (regErr) {
-        console.error("Fallback registration also failed:", regErr);
-        alert("Unable to load registration form. Please try again later.");
+        // Try to create a default questionnaire
+        const { data: newQuestionnaire, error: createError } = await supabase
+          .from("questionnaires")
+          .insert({
+            expert_id: expertId,
+            type: "course_interest",
+            title: "Course Interest Form",
+            is_active: true,
+          })
+          .select()
+          .single();
+        
+        if (!createError && newQuestionnaire?.id) {
+          // Create default fields
+          await supabase
+            .from("questionnaire_fields")
+            .insert([
+              {
+                questionnaire_id: newQuestionnaire.id,
+                field_type: "text",
+                label: "Name",
+                placeholder: "Enter your name",
+                required: true,
+                order_index: 0,
+              },
+              {
+                questionnaire_id: newQuestionnaire.id,
+                field_type: "email",
+                label: "Email",
+                placeholder: "Enter your email",
+                required: true,
+                order_index: 1,
+              },
+            ]);
+          
+          setQuestionnaireId(newQuestionnaire.id);
+          setQuestionnaireType("interest");
+          setShowQuestionnaire(true);
+          return;
+        }
+      } catch (createErr) {
+        console.error("Failed to create fallback questionnaire:", createErr);
       }
+      
+      alert("Unable to load registration form. Please try again later.");
       return;
     }
   };

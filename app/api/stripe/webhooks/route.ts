@@ -81,10 +81,62 @@ export async function POST(request: NextRequest) {
      * For Express accounts, we handle:
      * 1. account.updated - Account information or status changed
      * 2. account.application.deauthorized - Account disconnected
+     * 3. checkout.session.completed - Payment successful, enroll user in course
      */
     const eventType = event.type;
     
-    if (eventType === "account.updated") {
+    if (eventType === "checkout.session.completed") {
+      /**
+       * Checkout session completed - payment successful
+       * 
+       * This happens when:
+       * - User completes payment for a course
+       * 
+       * We should:
+       * 1. Extract course_id and user_id from session metadata
+       * 2. Create enrollment in course_enrollments table
+       * 3. Store payment_intent_id for tracking
+       */
+      const session = event.data.object as Stripe.Checkout.Session;
+      const courseId = session.metadata?.course_id;
+      const userId = session.metadata?.user_id;
+      const paymentIntentId = typeof session.payment_intent === "string" 
+        ? session.payment_intent 
+        : session.payment_intent?.id;
+
+      if (courseId && userId && userId !== "guest") {
+        const supabase = await createClient();
+        
+        // Check if enrollment already exists
+        const { data: existingEnrollment } = await supabase
+          .from("course_enrollments")
+          .select("id")
+          .eq("course_id", courseId)
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (!existingEnrollment) {
+          // Create enrollment
+          const { error: enrollError } = await supabase
+            .from("course_enrollments")
+            .insert({
+              course_id: courseId,
+              user_id: userId,
+              payment_intent_id: paymentIntentId || null,
+            });
+
+          if (enrollError) {
+            console.error("Error creating enrollment from webhook:", enrollError);
+          } else {
+            console.log(`Enrollment created for user ${userId} in course ${courseId}`);
+          }
+        } else {
+          console.log(`Enrollment already exists for user ${userId} in course ${courseId}`);
+        }
+      } else {
+        console.warn("Missing course_id or user_id in checkout session metadata");
+      }
+    } else if (eventType === "account.updated") {
       /**
        * Account has been updated
        * 
