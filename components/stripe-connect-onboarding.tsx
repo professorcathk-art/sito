@@ -245,7 +245,11 @@ export function StripeConnectOnboarding() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to create account link");
+        // Show detailed error message if available
+        const errorMessage = data.details 
+          ? `${data.error}\n\nDetails: ${data.details}`
+          : data.error || "Failed to create account link";
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();

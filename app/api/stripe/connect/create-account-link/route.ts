@@ -91,6 +91,36 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error("Error creating account link:", error);
+    console.error("Error details:", {
+      type: error.type,
+      code: error.code,
+      message: error.message,
+      accountId: accountId,
+    });
+
+    // Handle Stripe-specific errors
+    if (error.type === "StripeInvalidRequestError") {
+      // Provide detailed error message
+      let errorMessage = error.message || "Failed to create account link";
+      
+      // Handle common errors with helpful messages
+      if (error.message?.includes("No such account")) {
+        errorMessage = "Stripe account not found. Please create a new account.";
+      } else if (error.message?.includes("account must be")) {
+        errorMessage = `Invalid account type: ${error.message}`;
+      } else if (error.message?.includes("region") || error.message?.includes("country")) {
+        errorMessage = `Region error: ${error.message}. Please ensure your platform account supports accounts in this region.`;
+      }
+      
+      return NextResponse.json(
+        { 
+          error: errorMessage,
+          details: error.message,
+          code: error.code,
+        },
+        { status: 400 }
+      );
+    }
 
     if (error.message?.includes("STRIPE_SECRET_KEY")) {
       return NextResponse.json(
@@ -100,7 +130,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "Failed to create account link" },
+      { 
+        error: "Failed to create account link",
+        details: error.message || "Unknown error occurred",
+      },
       { status: 500 }
     );
   }
