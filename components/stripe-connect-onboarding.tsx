@@ -25,6 +25,12 @@ interface AccountStatus {
   requirementsStatus: string;
 }
 
+interface Country {
+  id: string;
+  name: string;
+  code: string;
+}
+
 export function StripeConnectOnboarding() {
   const { user } = useAuth();
   const supabase = createClient();
@@ -33,13 +39,84 @@ export function StripeConnectOnboarding() {
   const [onboarding, setOnboarding] = useState(false);
   const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [userCountry, setUserCountry] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
+      fetchCountries();
+      fetchUserCountry();
       checkAccountStatus();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  /**
+   * Fetch list of countries for selection
+   */
+  const fetchCountries = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("countries")
+        .select("id, name, code")
+        .order("name");
+
+      if (error) {
+        console.error("Error fetching countries:", error);
+        return;
+      }
+
+      if (data) {
+        setCountries(data);
+      }
+    } catch (err) {
+      console.error("Error fetching countries:", err);
+    }
+  };
+
+  /**
+   * Fetch user's country from profile
+   */
+  const fetchUserCountry = async () => {
+    if (!user) return;
+
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select(`
+          country_id,
+          countries(code)
+        `)
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.countries && typeof profile.countries === 'object' && 'code' in profile.countries) {
+        const countryCode = (profile.countries as any).code?.toLowerCase() || null;
+        setUserCountry(countryCode);
+        setSelectedCountry(countryCode || "");
+      } else if (profile?.country_id) {
+        // If country_id exists but countries relation didn't load, fetch it separately
+        const { data: countryData } = await supabase
+          .from("countries")
+          .select("code")
+          .eq("id", profile.country_id)
+          .single();
+        
+        if (countryData?.code) {
+          const countryCode = countryData.code.toLowerCase();
+          setUserCountry(countryCode);
+          setSelectedCountry(countryCode);
+        }
+      } else {
+        // Default to US if no country set
+        setSelectedCountry("us");
+      }
+    } catch (err) {
+      console.error("Error fetching user country:", err);
+      setSelectedCountry("us"); // Default fallback
+    }
+  };
 
   /**
    * Check if user has a Stripe Connect account and get its status
@@ -100,6 +177,11 @@ export function StripeConnectOnboarding() {
   const handleCreateAccount = async () => {
     if (!user) return;
 
+    if (!selectedCountry) {
+      setError("Please select your country");
+      return;
+    }
+
     setCreating(true);
     setError(null);
 
@@ -115,13 +197,16 @@ export function StripeConnectOnboarding() {
         throw new Error("Please complete your profile with email address first");
       }
 
+      // Convert country code to lowercase for Stripe (Stripe uses lowercase: 'us', 'gb', etc.)
+      const stripeCountryCode = selectedCountry.toLowerCase();
+
       const response = await fetch("/api/stripe/connect/create-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           displayName: profile.name || "User",
           contactEmail: profile.email,
-          country: "us", // TODO: Get from user profile or location
+          country: stripeCountryCode,
         }),
       });
 
@@ -211,15 +296,41 @@ export function StripeConnectOnboarding() {
         /**
          * No account exists - show create account option
          */
-        <div>
+        <div className="space-y-4">
           <p className="text-custom-text/80 mb-4">
             Connect your Stripe account to start receiving payments. You will be able to
             accept payments from customers and receive payouts directly to your bank account.
           </p>
+
+          {/* Country Selection */}
+          <div>
+            <label className="block text-sm font-medium text-custom-text mb-2">
+              Country <span className="text-red-400">*</span>
+            </label>
+            <select
+              value={selectedCountry}
+              onChange={(e) => setSelectedCountry(e.target.value)}
+              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+              disabled={creating}
+            >
+              <option value="">Select your country</option>
+              {countries.map((country) => (
+                <option key={country.id} value={country.code.toLowerCase()}>
+                  {country.name}
+                </option>
+              ))}
+            </select>
+            {userCountry && !selectedCountry && (
+              <p className="text-sm text-custom-text/60 mt-1">
+                Your profile country: {countries.find(c => c.code.toLowerCase() === userCountry)?.name || userCountry.toUpperCase()}
+              </p>
+            )}
+          </div>
+
           <button
             onClick={handleCreateAccount}
-            disabled={creating}
-            className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+            disabled={creating || !selectedCountry}
+            className="w-full px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {creating ? "Creating Account..." : "Create Stripe Account"}
           </button>
