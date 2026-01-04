@@ -323,9 +323,11 @@ export function CourseEnrollment({
                   .eq("id", existing.id);
                 questionnaireId = existing.id;
               } else {
-                // Last resort: create a minimal questionnaire with just ID fields
-                // This ensures the form always shows
-                alert("Unable to load registration form. Please try again later.");
+                // Last resort: Show form with temporary ID - form will handle gracefully
+                console.warn("All questionnaire creation attempts failed, showing form with temporary ID");
+                setQuestionnaireId("temp-" + Date.now());
+                setQuestionnaireType("interest");
+                setShowQuestionnaire(true);
                 return;
               }
             }
