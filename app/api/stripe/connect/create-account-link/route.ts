@@ -23,6 +23,8 @@ import { getStripeClient } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
+  let accountId: string | undefined;
+  
   try {
     // Initialize Stripe client
     const stripeClient = getStripeClient();
@@ -40,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    let accountId: string | undefined = body.accountId;
+    accountId = body.accountId;
     const returnUrl = body.returnUrl;
 
     // If accountId not provided, fetch from user's profile
