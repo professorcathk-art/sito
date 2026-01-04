@@ -38,23 +38,31 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       priceId,
+      priceData, // For dynamic pricing (appointments)
       quantity = 1,
       connectedAccountId,
       applicationFeePercent = 20, // Default 20% platform fee
     } = body;
 
     // Validate required fields
-    if (!priceId || !connectedAccountId) {
+    if ((!priceId && !priceData) || !connectedAccountId) {
       return NextResponse.json(
-        { error: "priceId and connectedAccountId are required" },
+        { error: "Either priceId or priceData, and connectedAccountId are required" },
         { status: 400 }
       );
     }
 
-    // Get the price to calculate application fee
-    const price = await stripeClient.prices.retrieve(priceId);
-    const unitAmount = price.unit_amount || 0;
-    const totalAmount = unitAmount * quantity;
+    // Calculate total amount
+    let totalAmount: number;
+    if (priceData) {
+      // Dynamic pricing (for appointments with variable duration)
+      totalAmount = (priceData.unit_amount || 0) * quantity;
+    } else {
+      // Fixed pricing (for courses)
+      const price = await stripeClient.prices.retrieve(priceId);
+      const unitAmount = price.unit_amount || 0;
+      totalAmount = unitAmount * quantity;
+    }
 
     // Calculate application fee amount (platform's cut)
     // Fee is calculated as a percentage of the total amount
@@ -80,14 +88,25 @@ export async function POST(request: NextRequest) {
      * - success_url: Where to redirect after successful payment
      * - cancel_url: Where to redirect if user cancels
      */
+    // Build line items
+    const lineItems: any[] = [];
+    if (priceData) {
+      // Dynamic pricing for appointments
+      lineItems.push({
+        price_data: priceData,
+        quantity: quantity,
+      });
+    } else {
+      // Fixed pricing for courses
+      lineItems.push({
+        price: priceId,
+        quantity: quantity,
+      });
+    }
+
     const session = await stripeClient.checkout.sessions.create({
       // Line items for the checkout
-      line_items: [
-        {
-          price: priceId,
-          quantity: quantity,
-        },
-      ],
+      line_items: lineItems,
 
       // Payment intent configuration
       payment_intent_data: {
@@ -106,6 +125,9 @@ export async function POST(request: NextRequest) {
           application_fee_percent: applicationFeePercent.toString(),
           user_id: user?.id || "guest",
           course_id: body.courseId || "",
+          appointment_id: body.appointmentId || "",
+          slot_start_time: body.slotStartTime || "",
+          slot_end_time: body.slotEndTime || "",
         },
       },
 
@@ -115,6 +137,9 @@ export async function POST(request: NextRequest) {
         application_fee_percent: applicationFeePercent.toString(),
         user_id: user?.id || "guest",
         course_id: body.courseId || "",
+        appointment_id: body.appointmentId || "",
+        slot_start_time: body.slotStartTime || "",
+        slot_end_time: body.slotEndTime || "",
       },
 
       // Payment mode (one-time payment)

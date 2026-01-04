@@ -9,6 +9,7 @@ import { ExpertCourses } from "@/components/expert-courses";
 import { ExpertCoursesWithProducts } from "@/components/expert-courses-with-products";
 import { SubscribeButton } from "@/components/subscribe-button";
 import { CourseEnrollment } from "@/components/course-enrollment";
+import { QuestionnaireForm } from "@/components/questionnaire-form";
 
 interface Expert {
   id: string;
@@ -57,6 +58,9 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
     countryCode: "",
     phoneNumber: "",
   });
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [questionnaireId, setQuestionnaireId] = useState<string | null>(null);
+  const [currentProductForInterest, setCurrentProductForInterest] = useState<string | null>(null);
   const supabase = createClient();
   const { user } = useAuth();
 
@@ -174,8 +178,116 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
       return;
     }
 
-    // Show form to collect phone number (optional)
-    setShowInterestForm(productId);
+    // Find the product to check if it's an appointment
+    const product = products.find(p => p.id === productId);
+    
+    // For appointment products, show questionnaire form
+    if (product?.product_type === "appointment") {
+      try {
+        // Check if questionnaire exists
+        const { data: questionnaire, error: qError } = await supabase
+          .from("questionnaires")
+          .select("id")
+          .eq("expert_id", expertId)
+          .eq("type", "appointment")
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (qError && qError.code !== "PGRST116") {
+          console.error("Error checking for questionnaire:", qError);
+        }
+
+        let finalQuestionnaireId = questionnaire?.id || null;
+
+        // Create questionnaire if it doesn't exist
+        if (!finalQuestionnaireId) {
+          const { data: newQuestionnaire, error: createError } = await supabase
+            .from("questionnaires")
+            .insert({
+              expert_id: expertId,
+              type: "appointment",
+              title: "Appointment Booking Form",
+              is_active: true,
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            if (createError.code === "23505") {
+              // Duplicate - fetch existing
+              const { data: existing } = await supabase
+                .from("questionnaires")
+                .select("id")
+                .eq("expert_id", expertId)
+                .eq("type", "appointment")
+                .maybeSingle();
+              if (existing?.id) {
+                finalQuestionnaireId = existing.id;
+              }
+            } else {
+              console.error("Error creating questionnaire:", createError);
+            }
+          } else {
+            finalQuestionnaireId = newQuestionnaire?.id || null;
+          }
+        }
+
+        // Ensure default fields exist
+        if (finalQuestionnaireId) {
+          const { data: existingFields } = await supabase
+            .from("questionnaire_fields")
+            .select("id, label")
+            .eq("questionnaire_id", finalQuestionnaireId);
+
+          const hasName = existingFields?.some(f => f.label.toLowerCase().includes("name"));
+          const hasEmail = existingFields?.some(f => f.label.toLowerCase().includes("email"));
+
+          if (!hasName || !hasEmail) {
+            const defaultFields = [];
+            if (!hasName) {
+              defaultFields.push({
+                questionnaire_id: finalQuestionnaireId,
+                field_type: "text",
+                label: "Name",
+                placeholder: "Enter your name",
+                required: true,
+                order_index: 0,
+              });
+            }
+            if (!hasEmail) {
+              defaultFields.push({
+                questionnaire_id: finalQuestionnaireId,
+                field_type: "email",
+                label: "Email",
+                placeholder: "Enter your email",
+                required: true,
+                order_index: 1,
+              });
+            }
+
+            if (defaultFields.length > 0) {
+              await supabase.from("questionnaire_fields").insert(defaultFields);
+            }
+          }
+        }
+
+        if (finalQuestionnaireId) {
+          setQuestionnaireId(finalQuestionnaireId);
+          setCurrentProductForInterest(productId);
+          setShowQuestionnaire(true);
+        } else {
+          // Fallback to simple form if questionnaire creation fails
+          setShowInterestForm(productId);
+        }
+      } catch (err: any) {
+        console.error("Error setting up questionnaire:", err);
+        // Fallback to simple form
+        setShowInterestForm(productId);
+      }
+    } else {
+      // For non-appointment products, show simple form
+      setShowInterestForm(productId);
+    }
   };
 
   const handleSubmitInterest = async (productId: string) => {
@@ -408,7 +520,25 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
         {/* 1-on-1 Timeslots Section */}
         {appointmentSlots.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-4">1-on-1 Timeslots</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-custom-text">1-on-1 Timeslots</h2>
+              {user && user.id !== expert.id && (
+                <button
+                  onClick={() => {
+                    // Find appointment product for this expert
+                    const appointmentProduct = products.find(p => p.product_type === "appointment");
+                    if (appointmentProduct) {
+                      setShowInterestForm(appointmentProduct.id);
+                    } else {
+                      alert("Appointment service not available. Please contact the expert.");
+                    }
+                  }}
+                  className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                >
+                  Register Interest
+                </button>
+              )}
+            </div>
             <div className="space-y-3 mb-4">
               {appointmentSlots.slice(0, 3).map((slot) => {
                 const startDate = new Date(slot.start_time);
@@ -578,8 +708,8 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           </div>
         ) : null}
 
-        {/* Other Products (Appointments/Services) Section */}
-        {!loadingProducts && products.filter(p => p.product_type !== "course").length > 0 && (
+        {/* Other Products (Appointments/Services) Section - Hidden as requested */}
+        {false && !loadingProducts && products.filter(p => p.product_type !== "course").length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-bold text-custom-text mb-4">Services & Products</h2>
             <div className="space-y-4">
@@ -712,6 +842,109 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           )}
         </div>
       </div>
+
+      {/* Questionnaire Form Modal for Appointments */}
+      {showQuestionnaire && questionnaireId && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-dark-green-900 border border-cyber-green/30 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-custom-text">Register Interest</h2>
+              <button
+                onClick={() => {
+                  setShowQuestionnaire(false);
+                  setQuestionnaireId(null);
+                  setCurrentProductForInterest(null);
+                }}
+                className="text-custom-text/60 hover:text-custom-text transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <QuestionnaireForm
+              questionnaireId={questionnaireId}
+              onSubmit={async (responses) => {
+                if (!user || !currentProductForInterest) return;
+
+                try {
+                  // Get user email
+                  const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("email")
+                    .eq("id", user.id)
+                    .single();
+
+                  let userEmail = profile?.email;
+                  if (!userEmail) {
+                    const { data: { user: authUser } } = await supabase.auth.getUser();
+                    userEmail = authUser?.email;
+                  }
+
+                  if (!userEmail) {
+                    throw new Error("User email not found");
+                  }
+
+                  // Save questionnaire response
+                  const { data: responseData, error: responseError } = await supabase
+                    .from("questionnaire_responses")
+                    .insert({
+                      questionnaire_id: questionnaireId,
+                      user_id: user.id,
+                      responses: responses,
+                    })
+                    .select()
+                    .single();
+
+                  if (responseError) throw responseError;
+
+                  // Register interest
+                  const { error: interestError } = await supabase.from("product_interests").insert({
+                    product_id: currentProductForInterest,
+                    user_id: user.id,
+                    user_email: userEmail,
+                  });
+
+                  if (interestError) {
+                    if (interestError.code === "23505") {
+                      alert("You have already registered interest in this service");
+                    } else {
+                      throw interestError;
+                    }
+                  } else {
+                    alert("Interest registered! The expert will be notified.");
+                    setShowQuestionnaire(false);
+                    setQuestionnaireId(null);
+                    setCurrentProductForInterest(null);
+
+                    // Send email notification
+                    try {
+                      await fetch("/api/notify-product-interest", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          productId: currentProductForInterest,
+                          expertId,
+                          userId: user.id,
+                          userEmail: userEmail,
+                        }),
+                      });
+                    } catch (emailErr) {
+                      console.error("Error sending notification:", emailErr);
+                    }
+                  }
+                } catch (err: any) {
+                  console.error("Error submitting questionnaire:", err);
+                  alert(`Failed to register interest: ${err.message || "Please try again."}`);
+                }
+              }}
+              onCancel={() => {
+                setShowQuestionnaire(false);
+                setQuestionnaireId(null);
+                setCurrentProductForInterest(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

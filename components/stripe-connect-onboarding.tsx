@@ -25,6 +25,13 @@ interface AccountStatus {
   requirementsStatus: string;
 }
 
+interface Earnings {
+  totalAvailable: number;
+  totalPending: number;
+  totalEarnings: number;
+  currency: string;
+}
+
 interface Country {
   id: string;
   name: string;
@@ -42,6 +49,8 @@ export function StripeConnectOnboarding() {
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [userCountry, setUserCountry] = useState<string | null>(null);
+  const [earnings, setEarnings] = useState<Earnings | null>(null);
+  const [loadingEarnings, setLoadingEarnings] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -51,6 +60,13 @@ export function StripeConnectOnboarding() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  useEffect(() => {
+    if (accountStatus?.accountId && accountStatus.readyToReceivePayments) {
+      fetchEarnings();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountStatus?.accountId, accountStatus?.readyToReceivePayments]);
 
   /**
    * Fetch list of countries for selection
@@ -115,6 +131,36 @@ export function StripeConnectOnboarding() {
     } catch (err) {
       console.error("Error fetching user country:", err);
       setSelectedCountry("hk"); // Default fallback to Hong Kong
+    }
+  };
+
+  /**
+   * Fetch total earnings for the connected account
+   */
+  const fetchEarnings = async () => {
+    if (!accountStatus?.accountId) return;
+
+    setLoadingEarnings(true);
+    try {
+      const response = await fetch(
+        `/api/stripe/connect/earnings?accountId=${accountStatus.accountId}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setEarnings({
+          totalAvailable: data.totalAvailable || 0,
+          totalPending: data.totalPending || 0,
+          totalEarnings: data.totalEarnings || 0,
+          currency: data.currency || "USD",
+        });
+      } else {
+        console.error("Failed to fetch earnings");
+      }
+    } catch (err) {
+      console.error("Error fetching earnings:", err);
+    } finally {
+      setLoadingEarnings(false);
     }
   };
 
@@ -440,14 +486,59 @@ export function StripeConnectOnboarding() {
           )}
 
           {accountStatus.readyToReceivePayments && (
-            <div className="p-4 bg-green-900/30 border border-green-500/50 rounded-lg">
-              <p className="text-green-300 font-semibold mb-1">
-                ✓ Account Ready!
-              </p>
-              <p className="text-green-200 text-sm">
-                Your account is fully set up and ready to receive payments. 
-                You can now create products and start accepting payments.
-              </p>
+            <div className="space-y-4">
+              <div className="p-4 bg-green-900/30 border border-green-500/50 rounded-lg">
+                <p className="text-green-300 font-semibold mb-1">
+                  ✓ Account Ready!
+                </p>
+                <p className="text-green-200 text-sm">
+                  Your account is fully set up and ready to receive payments. 
+                  You can now create products and start accepting payments.
+                </p>
+              </div>
+
+              {/* Total Earnings Display */}
+              <div className="p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg">
+                <h3 className="text-lg font-bold text-custom-text mb-3">
+                  Total Earnings
+                </h3>
+                {loadingEarnings ? (
+                  <div className="animate-pulse">
+                    <div className="h-8 bg-dark-green-800/50 rounded w-1/2"></div>
+                  </div>
+                ) : earnings ? (
+                  <div className="space-y-2">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-cyber-green">
+                        {earnings.currency} {earnings.totalEarnings.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="text-sm text-custom-text/70 space-y-1">
+                      <div className="flex justify-between">
+                        <span>Available:</span>
+                        <span className="text-custom-text">
+                          {earnings.currency} {earnings.totalAvailable.toFixed(2)}
+                        </span>
+                      </div>
+                      {earnings.totalPending > 0 && (
+                        <div className="flex justify-between">
+                          <span>Pending:</span>
+                          <span className="text-custom-text">
+                            {earnings.currency} {earnings.totalPending.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-custom-text/60 mt-2">
+                      Funds are automatically transferred to your connected bank account according to your payout schedule.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-custom-text/60 text-sm">
+                    No earnings data available yet.
+                  </p>
+                )}
+              </div>
             </div>
           )}
 

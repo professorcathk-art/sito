@@ -137,12 +137,28 @@ export async function POST(request: NextRequest) {
         ? session.payment_intent 
         : session.payment_intent?.id;
 
-      console.log(`Webhook metadata - courseId: ${courseId}, userId: ${userId}, paymentIntentId: ${paymentIntentId}`);
+      // Get payment intent metadata if available
+      let paymentIntentMetadata: Record<string, string> = {};
+      if (paymentIntentId && typeof paymentIntentId === "string") {
+        try {
+          const paymentIntent = await stripeClient.paymentIntents.retrieve(paymentIntentId);
+          paymentIntentMetadata = paymentIntent.metadata || {};
+        } catch (err) {
+          console.error("Error retrieving payment intent:", err);
+        }
+      }
 
+      const appointmentId = session.metadata?.appointment_id || paymentIntentMetadata?.appointment_id;
+      const slotStartTime = session.metadata?.slot_start_time || paymentIntentMetadata?.slot_start_time;
+      const slotEndTime = session.metadata?.slot_end_time || paymentIntentMetadata?.slot_end_time;
+
+      console.log(`Webhook metadata - courseId: ${courseId}, userId: ${userId}, appointmentId: ${appointmentId}, paymentIntentId: ${paymentIntentId}`);
+
+      // Use service role client to bypass RLS for webhook operations
+      const supabase = createServiceRoleClient();
+
+      // Handle course enrollment
       if (courseId && userId && userId !== "guest") {
-        // Use service role client to bypass RLS for webhook operations
-        const supabase = createServiceRoleClient();
-        
         // Check if enrollment already exists
         const { data: existingEnrollment } = await supabase
           .from("course_enrollments")
@@ -173,8 +189,71 @@ export async function POST(request: NextRequest) {
         } else {
           console.log(`ℹ️ Enrollment already exists for user ${userId} in course ${courseId}`);
         }
-      } else {
-        console.warn("Missing course_id or user_id in checkout session metadata");
+      }
+
+      // Handle appointment booking
+      if (appointmentId && slotStartTime && slotEndTime && userId && userId !== "guest") {
+        try {
+          // Fetch slot details
+          const { data: slotData, error: slotError } = await supabase
+            .from("appointment_slots")
+            .select("id, expert_id, rate_per_hour, is_available")
+            .eq("id", appointmentId)
+            .single();
+
+          if (slotError || !slotData) {
+            console.error("Error fetching appointment slot:", slotError);
+            return;
+          }
+
+          if (!slotData.is_available) {
+            console.log(`ℹ️ Appointment slot ${appointmentId} is already booked`);
+            return;
+          }
+
+          // Calculate duration and total amount
+          const startDate = new Date(slotStartTime);
+          const endDate = new Date(slotEndTime);
+          const durationMinutes = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+          const totalAmount = (slotData.rate_per_hour / 60) * durationMinutes;
+
+          // Create appointment
+          const { data: appointment, error: appointmentError } = await supabase
+            .from("appointments")
+            .insert({
+              expert_id: slotData.expert_id,
+              user_id: userId,
+              start_time: slotStartTime,
+              end_time: slotEndTime,
+              duration_minutes: durationMinutes,
+              rate_per_hour: slotData.rate_per_hour,
+              total_amount: totalAmount,
+              status: "confirmed",
+              payment_intent_id: paymentIntentId || null,
+            })
+            .select()
+            .single();
+
+          if (appointmentError) {
+            console.error("Error creating appointment from webhook:", appointmentError);
+            return;
+          }
+
+          // Mark slot as unavailable
+          await supabase
+            .from("appointment_slots")
+            .update({ is_available: false })
+            .eq("id", appointmentId);
+
+          console.log(`✅ Appointment created successfully for user ${userId}`);
+          console.log(`Appointment ID: ${appointment?.id}`);
+        } catch (err: any) {
+          console.error("Error processing appointment booking:", err);
+        }
+      }
+
+      if (!courseId && !appointmentId) {
+        console.warn("Missing course_id or appointment_id in checkout session metadata");
       }
     } else if (eventType === "account.updated") {
       /**

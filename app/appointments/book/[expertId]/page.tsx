@@ -108,44 +108,145 @@ export default function BookAppointmentPage() {
       return;
     }
 
-    if (!confirm(`Book appointment for $${calculateTotal(slot.rate_per_hour, calculateDuration(slot.start_time, slot.end_time)).toFixed(2)}?`)) {
+    const duration = calculateDuration(slot.start_time, slot.end_time);
+    const totalAmount = calculateTotal(slot.rate_per_hour, duration);
+
+    if (totalAmount <= 0) {
+      // Free appointment - book directly
+      if (!confirm(`Book free appointment?`)) {
+        return;
+      }
+
+      setBooking(true);
+      try {
+        // Create appointment
+        const { data: appointment, error: appointmentError } = await supabase
+          .from("appointments")
+          .insert({
+            expert_id: expertId,
+            user_id: user.id,
+            start_time: slot.start_time,
+            end_time: slot.end_time,
+            duration_minutes: duration,
+            rate_per_hour: slot.rate_per_hour,
+            total_amount: totalAmount,
+            status: "pending",
+          })
+          .select()
+          .single();
+
+        if (appointmentError) throw appointmentError;
+
+        // Mark slot as unavailable
+        await supabase
+          .from("appointment_slots")
+          .update({ is_available: false })
+          .eq("id", slot.id);
+
+        alert("Appointment booked successfully! The expert will be notified.");
+        router.push("/dashboard");
+      } catch (err: any) {
+        console.error("Error booking appointment:", err);
+        alert("Failed to book appointment. Please try again.");
+      } finally {
+        setBooking(false);
+      }
       return;
     }
 
+    // Paid appointment - check if product has Stripe setup
     setBooking(true);
     try {
-      const duration = calculateDuration(slot.start_time, slot.end_time);
-      const totalAmount = calculateTotal(slot.rate_per_hour, duration);
-
-      // Create appointment
-      const { data: appointment, error: appointmentError } = await supabase
-        .from("appointments")
-        .insert({
-          expert_id: expertId,
-          user_id: user.id,
-          start_time: slot.start_time,
-          end_time: slot.end_time,
-          duration_minutes: duration,
-          rate_per_hour: slot.rate_per_hour,
-          total_amount: totalAmount,
-          status: "pending",
-        })
-        .select()
+      // Fetch product linked to this slot
+      const { data: slotData } = await supabase
+        .from("appointment_slots")
+        .select("product_id, products(stripe_product_id, stripe_price_id, payment_method, contact_email)")
+        .eq("id", slot.id)
         .single();
 
-      if (appointmentError) throw appointmentError;
+      if (!slotData?.product_id) {
+        alert("Appointment slot is not linked to a product. Please contact the expert.");
+        setBooking(false);
+        return;
+      }
 
-      // Mark slot as unavailable
-      await supabase
-        .from("appointment_slots")
-        .update({ is_available: false })
-        .eq("id", slot.id);
+      const product = slotData.products as any;
+      
+      // Check payment method
+      if (product.payment_method === "offline") {
+        // Show offline payment info
+        if (product.contact_email) {
+          alert(`This appointment requires offline payment. Please contact the expert at: ${product.contact_email}`);
+        } else {
+          alert("This appointment requires offline payment. Please contact the expert directly.");
+        }
+        setBooking(false);
+        return;
+      }
 
-      alert("Appointment booked successfully! The expert will be notified.");
-      router.push("/dashboard");
+      // Stripe payment - check if Stripe IDs exist
+      if (!product.stripe_product_id || !product.stripe_price_id) {
+        alert("Payment method not configured. Please contact the expert.");
+        setBooking(false);
+        return;
+      }
+
+      // Get connected account ID from expert's profile
+      const { data: expertProfile } = await supabase
+        .from("profiles")
+        .select("stripe_connect_account_id")
+        .eq("id", expertId)
+        .maybeSingle();
+      
+      const connectedAccountId = expertProfile?.stripe_connect_account_id;
+      
+      if (!connectedAccountId) {
+        alert("Expert has not set up payment processing. Please contact them directly.");
+        setBooking(false);
+        return;
+      }
+
+      // Create Stripe checkout session
+      // Calculate price for this specific slot duration
+      const priceInCents = Math.round(totalAmount * 100);
+      
+      // For appointments, we need to create a checkout session with the calculated amount
+      // Since Stripe prices are fixed, we'll use line_items with price_data for dynamic pricing
+      const response = await fetch("/api/stripe/checkout/create-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          // Use price_data for dynamic pricing based on slot duration
+          priceData: {
+            unit_amount: priceInCents,
+            currency: "usd",
+            product_data: {
+              name: `Appointment - ${new Date(slot.start_time).toLocaleDateString()}`,
+              description: `1-on-1 session with ${expert?.name || "Expert"}`,
+            },
+          },
+          quantity: 1,
+          connectedAccountId: connectedAccountId,
+          appointmentId: slot.id, // Store slot ID in metadata
+          slotStartTime: slot.start_time,
+          slotEndTime: slot.end_time,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create checkout session");
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (err: any) {
       console.error("Error booking appointment:", err);
-      alert("Failed to book appointment. Please try again.");
+      alert(`Failed to start payment: ${err.message || "Please try again."}`);
     } finally {
       setBooking(false);
     }

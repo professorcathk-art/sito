@@ -494,35 +494,128 @@ export function ProductsManagement() {
         }
         return; // Don't create course yet - wait for questionnaire completion
       } else if (formData.product_type === "appointment") {
-        // For appointment: create product first, then show appointment form inline
-        const { data: newProduct, error: productError } = await supabase.from("products").insert({
-          expert_id: user.id,
-          name: formData.name,
-          description: formData.description,
-          product_type: "appointment",
-          price: 0,
-          pricing_type: "hourly",
-        }).select().single();
+        // For appointment: questionnaire-first workflow (similar to courses)
+        // Store product data temporarily, show questionnaire form first
+        try {
+          // Check if questionnaire already exists
+          const { data: existingQuestionnaire } = await supabase
+            .from("questionnaires")
+            .select("id")
+            .eq("expert_id", user.id)
+            .eq("type", "appointment")
+            .maybeSingle();
 
-        if (productError) throw productError;
+          let questionnaireId = existingQuestionnaire?.id || null;
 
-        // Set current product and show appointment form
-        setCurrentProductId(newProduct.id);
-        setShowAppointmentForm(true);
-        setShowAddForm(false);
-        setQuestionnaireType("appointment");
-        setFormData({
-          name: "",
-          description: "",
-          price: "",
-          pricing_type: "one-off",
-          product_type: "appointment",
-          course_id: "",
-          category: "",
-          payment_method: "stripe",
-          contact_email: "",
-        });
-        return;
+          // Create questionnaire if it doesn't exist
+          if (!questionnaireId) {
+            const { data: questionnaire, error: qError } = await supabase
+              .from("questionnaires")
+              .insert({
+                expert_id: user.id,
+                type: "appointment",
+                title: "Appointment Booking Form",
+                is_active: true,
+              })
+              .select()
+              .single();
+
+            if (qError) {
+              console.error("Error creating questionnaire:", qError);
+              // If it's a duplicate key error, try to fetch the existing one
+              if (qError.code === "23505") {
+                const { data: existing } = await supabase
+                  .from("questionnaires")
+                  .select("id")
+                  .eq("expert_id", user.id)
+                  .eq("type", "appointment")
+                  .maybeSingle();
+                if (existing?.id) {
+                  questionnaireId = existing.id;
+                } else {
+                  throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
+                }
+              } else {
+                throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
+              }
+            } else {
+              questionnaireId = questionnaire?.id || null;
+            }
+          }
+
+          if (!questionnaireId) {
+            throw new Error("Failed to create form. Please try again.");
+          }
+
+          // Check if fields already exist
+          const { data: existingFields } = await supabase
+            .from("questionnaire_fields")
+            .select("id, label")
+            .eq("questionnaire_id", questionnaireId);
+
+          const hasNameField = existingFields?.some(f => f.label.toLowerCase().includes("name"));
+          const hasEmailField = existingFields?.some(f => f.label.toLowerCase().includes("email"));
+
+          // Only create mandatory fields if they don't exist
+          if (!hasNameField || !hasEmailField) {
+            const defaultFields = [];
+            if (!hasNameField) {
+              defaultFields.push({ questionnaire_id: questionnaireId, field_type: "text", label: "Name", placeholder: "Enter your name", required: true, order_index: 0 });
+            }
+            if (!hasEmailField) {
+              defaultFields.push({ questionnaire_id: questionnaireId, field_type: "email", label: "Email", placeholder: "Enter your email", required: true, order_index: 1 });
+            }
+
+            if (defaultFields.length > 0) {
+              const { error: fieldsError } = await supabase
+                .from("questionnaire_fields")
+                .insert(defaultFields);
+
+              if (fieldsError) {
+                console.error("Error creating questionnaire fields:", fieldsError);
+                throw new Error(`Failed to create form fields: ${fieldsError.message || "Please try again."}`);
+              }
+            }
+          }
+
+          // Fetch fields for display
+          const { data: fieldsData } = await supabase
+            .from("questionnaire_fields")
+            .select("*")
+            .eq("questionnaire_id", questionnaireId)
+            .order("order_index", { ascending: true });
+          setQuestionnaireFields(fieldsData || []);
+
+          // Show questionnaire form for editing (user can add more fields)
+          setShowQuestionnaireForm(true);
+          setQuestionnaireType("appointment");
+          setCurrentQuestionnaireId(questionnaireId);
+          setFieldForm({
+            field_type: "text",
+            label: "",
+            placeholder: "",
+            required: false,
+            options: "",
+          });
+          
+          // Store form data temporarily (don't create product yet)
+          // User will click "Publish Appointment Service" after questionnaire is ready
+          setPendingCourseData({
+            name: formData.name,
+            description: formData.description,
+            price: "0", // Price will be set in appointment form
+            category: "",
+            payment_method: formData.payment_method,
+            contact_email: formData.contact_email || "",
+          });
+          setShowAddForm(false);
+          
+        } catch (err: any) {
+          console.error("Error creating questionnaire:", err);
+          setError(err.message || "Failed to create form. Please try again.");
+          throw err;
+        }
+        return; // Don't create product yet - wait for questionnaire completion
       }
 
       if (editingProduct) {
@@ -911,36 +1004,39 @@ export function ProductsManagement() {
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium text-custom-text mb-2">
-                Price (USD) * {formData.product_type === "appointment" ? "(per hour)" : ""}
-              </label>
-              <div className="flex items-center gap-4 mb-2">
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className="flex-1 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
-                  placeholder="0.00"
-                  required
-                />
-                <label className="flex items-center gap-2 text-custom-text">
-                  <input
-                    type="checkbox"
-                    checked={formData.price === "0" || formData.price === ""}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setFormData({ ...formData, price: "0" });
-                      }
-                    }}
-                    className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
-                  />
-                  <span className="text-sm">Free</span>
+            {/* Price field - hidden for appointments (price set in appointment form) */}
+            {formData.product_type !== "appointment" && (
+              <div>
+                <label className="block text-sm font-medium text-custom-text mb-2">
+                  Price (USD) *
                 </label>
+                <div className="flex items-center gap-4 mb-2">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="flex-1 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                    placeholder="0.00"
+                    required
+                  />
+                  <label className="flex items-center gap-2 text-custom-text">
+                    <input
+                      type="checkbox"
+                      checked={formData.price === "0" || formData.price === ""}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData({ ...formData, price: "0" });
+                        }
+                      }}
+                      className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                    />
+                    <span className="text-sm">Free</span>
+                  </label>
+                </div>
               </div>
-            </div>
+            )}
 
             {formData.price && parseFloat(formData.price) > 0 && (
               <>
@@ -1136,19 +1232,11 @@ export function ProductsManagement() {
                 }
               }
 
-              alert(`Successfully created ${slots.length} appointment slots!`);
-              // Show questionnaire form after slots are created
+              alert(`Successfully created ${slots.length} appointment slots! Your appointment service is now published.`);
+              // Close appointment form - product is now complete
               setShowAppointmentForm(false);
-              setShowQuestionnaireForm(true);
-              setQuestionnaireType("appointment");
-              setQuestionnaireFields([]);
-              setFieldForm({
-                field_type: "text",
-                label: "",
-                placeholder: "",
-                required: false,
-                options: "",
-              });
+              setCurrentProductId(null);
+              fetchProducts();
             } catch (err: any) {
               console.error("Error creating slots:", err);
               alert("Failed to create appointment slots. Please try again.");
@@ -1702,18 +1790,66 @@ export function ProductsManagement() {
               <button
                 type="button"
                 onClick={async () => {
-                  // For appointments, just save questionnaire
-                  setShowQuestionnaireForm(false);
-                  setCurrentProductId(null);
-                  setQuestionnaireType(null);
-                  setCurrentQuestionnaireId(null);
-                  setQuestionnaireFields([]);
-                  fetchProducts();
-                  alert("Form saved successfully!");
+                  // Questionnaire is mandatory - ensure it has at least name and email fields
+                  if (questionnaireFields.length === 0) {
+                    alert("Please add at least Name and Email fields to your form. This is required.");
+                    return;
+                  }
+                  
+                  // Verify name and email fields exist
+                  const hasName = questionnaireFields.some(f => 
+                    f.label.toLowerCase().includes("name") && f.field_type === "text"
+                  );
+                  const hasEmail = questionnaireFields.some(f => 
+                    f.label.toLowerCase().includes("email") && f.field_type === "email"
+                  );
+                  
+                  if (!hasName || !hasEmail) {
+                    alert("Your form must include both Name (text field) and Email (email field). Please add these fields.");
+                    return;
+                  }
+                  
+                  // Now create the appointment product and show appointment form
+                  if (!pendingCourseData || !user) {
+                    alert("Product data not found or user not authenticated. Please start over.");
+                    return;
+                  }
+                  
+                  try {
+                    // Create product first (without price - price will be set in appointment form)
+                    const { data: newProduct, error: productError } = await supabase.from("products").insert({
+                      expert_id: user.id,
+                      name: pendingCourseData.name,
+                      description: pendingCourseData.description,
+                      product_type: "appointment",
+                      price: 0, // Will be set when slots are created
+                      pricing_type: "hourly",
+                      payment_method: pendingCourseData.payment_method || "stripe",
+                      contact_email: pendingCourseData.payment_method === "offline" ? pendingCourseData.contact_email : null,
+                    }).select().single();
+
+                    if (productError) throw productError;
+
+                    // Set current product and show appointment form
+                    setCurrentProductId(newProduct.id);
+                    setShowQuestionnaireForm(false);
+                    setShowAppointmentForm(true);
+                    
+                    // Reset questionnaire form state
+                    setQuestionnaireType(null);
+                    setCurrentQuestionnaireId(null);
+                    setQuestionnaireFields([]);
+                    setPendingCourseData(null);
+                    
+                    alert("Form saved! Now set up your appointment slots and pricing.");
+                  } catch (err: any) {
+                    console.error("Error creating appointment product:", err);
+                    alert(`Failed to create appointment service: ${err.message || "Please try again."}`);
+                  }
                 }}
                 className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
               >
-                Save & Finish
+                Continue to Set Up Slots
               </button>
             )}
           </div>
