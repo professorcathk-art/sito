@@ -677,6 +677,8 @@ export function ProductsManagement() {
       product_type: (product.product_type === "service" ? "appointment" : product.product_type) || "appointment",
       course_id: product.course_id || "",
       category: category,
+      payment_method: product.payment_method || "stripe",
+      contact_email: product.contact_email || "",
     });
     setShowAddForm(true);
   };
@@ -1639,6 +1641,8 @@ export function ProductsManagement() {
                       product_type: "appointment",
                       course_id: "",
                       category: "",
+                      payment_method: "stripe",
+                      contact_email: "",
                     });
                     fetchProducts();
                     alert("Course published successfully! Your course is now live.");
