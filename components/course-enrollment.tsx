@@ -195,8 +195,14 @@ export function CourseEnrollment({
           return;
         }
       }
-        try {
-          const { data: newQuestionnaire, error: createError } = await supabase
+    } catch (err) {
+      // Error checking for questionnaire - DO NOT CREATE (only experts can create)
+      console.error("Error checking for questionnaire:", err);
+      alert("Failed to load registration form. Please try again later.");
+      setProcessing(false);
+      return;
+    }
+  };
             .from("questionnaires")
             .insert({
               expert_id: expertId,
