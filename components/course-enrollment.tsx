@@ -586,10 +586,9 @@ export function CourseEnrollment({
     try {
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
-        .select("id")
+        .select("id, is_active")
         .eq("expert_id", expertId)
         .eq("type", "course_interest")
-        .eq("is_active", true)
         .maybeSingle();
       
       // PGRST116 is "no rows returned" which is fine
