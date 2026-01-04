@@ -304,3 +304,4 @@ curl https://sito.club/api/stripe/webhooks
 
 **Ready to test?** Start with Step 1 and work through each step. If you encounter any issues, check the "Common Issues & Solutions" section above.
 
+

@@ -8,3 +8,4 @@ CREATE INDEX IF NOT EXISTS idx_courses_category ON courses(category);
 -- Add comment
 COMMENT ON COLUMN courses.category IS 'Category of the course (e.g., AI Courses, Business, Design, etc.)';
 
+

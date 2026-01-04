@@ -164,3 +164,4 @@ Make sure `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` are server-side only (
 
 **Need help?** Check Vercel's docs: https://vercel.com/docs/concepts/projects/environment-variables
 
+

@@ -5,3 +5,4 @@ ADD COLUMN IF NOT EXISTS appointment_slot_id UUID REFERENCES appointment_slots(i
 -- Add index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_appointments_appointment_slot_id ON appointments(appointment_slot_id);
 
+

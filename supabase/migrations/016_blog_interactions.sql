@@ -137,3 +137,4 @@ CREATE TRIGGER trigger_update_blog_like_count_delete
   FOR EACH ROW
   EXECUTE FUNCTION update_blog_like_count();
 
+

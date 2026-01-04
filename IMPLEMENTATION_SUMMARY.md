@@ -209,3 +209,4 @@ The current design still has cyber/glow effects. To achieve Netflix/MasterClass 
 - File uploads are restricted to authenticated users
 - Admin features require is_admin flag check
 
+

@@ -39,3 +39,4 @@ This is a larger refactor and can be done later if needed.
 - Classroom page currently shows courses for experts only - student view with progress tracking can be added later
 - Stripe payment integration for paid courses is marked as TODO in the enrollment component
 
+

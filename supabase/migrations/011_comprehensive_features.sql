@@ -482,3 +482,4 @@ FROM auth.users
 WHERE email = 'chris.lau@sito.club'
 ON CONFLICT (id) DO UPDATE SET is_admin = true;
 
+

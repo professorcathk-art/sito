@@ -9,3 +9,4 @@ CREATE INDEX IF NOT EXISTS idx_products_course_id ON products(course_id);
 CREATE INDEX IF NOT EXISTS idx_products_appointment_slot_id ON products(appointment_slot_id);
 CREATE INDEX IF NOT EXISTS idx_products_product_type ON products(product_type);
 
+

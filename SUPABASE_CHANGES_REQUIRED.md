@@ -89,3 +89,4 @@ After running the SQL:
    - Check that your display name is automatically set from your Google account
    - Verify existing Google users get their names updated
 
+

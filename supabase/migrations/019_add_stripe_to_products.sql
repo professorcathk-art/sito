@@ -11,3 +11,4 @@ CREATE INDEX IF NOT EXISTS idx_products_stripe_price_id ON products(stripe_price
 COMMENT ON COLUMN products.stripe_product_id IS 'Stripe product ID for payment processing';
 COMMENT ON COLUMN products.stripe_price_id IS 'Stripe price ID for payment processing';
 
+

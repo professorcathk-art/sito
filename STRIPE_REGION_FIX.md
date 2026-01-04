@@ -90,3 +90,4 @@ Once you've updated your platform account region:
 
 **Most Common Solution:** If your users are primarily in the US, create a US Stripe account and update your API keys.
 
+

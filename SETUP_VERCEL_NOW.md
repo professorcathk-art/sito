@@ -66,3 +66,4 @@ Paste these values into Vercel (without the variable name, just the value after 
 
 **Done?** Test at: https://sito.club/dashboard/stripe-connect
 
+

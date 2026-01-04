@@ -132,12 +132,22 @@ export function CourseEnrollment({
     try {
       let questionnaireId: string | null = null;
       
-      // First, check if questionnaire exists (do not filter by is_active - experts may have inactive ones)
+      // First, get the product_id for this course
+      const { data: product, error: productError } = await supabase
+        .from("products")
+        .select("id")
+        .eq("course_id", courseId)
+        .maybeSingle();
+
+      if (productError && productError.code !== "PGRST116") {
+        console.error("Error fetching product:", productError);
+      }
+
+      // Check if questionnaire exists for this product (linked by product_id)
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
         .select("id, is_active")
-        .eq("expert_id", expertId)
-        .eq("type", "course_interest")
+        .eq("product_id", product?.id)
         .maybeSingle();
 
       // PGRST116 is "no rows returned" which is fine

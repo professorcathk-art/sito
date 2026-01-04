@@ -99,3 +99,4 @@ The code is ready for testing. Both issues have been fixed:
 - Registration form will always show (no more "Unable to load" errors)
 - Enrollments will be created automatically after payment (webhook handles it)
 
+

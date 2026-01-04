@@ -541,64 +541,82 @@ export function ProductsManagement() {
       }
 
       if (formData.product_type === "course") {
-        // For course: FIRST create questionnaire (mandatory), THEN create course
-        // Step 1: Create questionnaire with mandatory name and email fields
-        let questionnaireId: string | null = null;
-        
+        // For course: Create course and product first, THEN create questionnaire linked to product
         try {
-          // Check if questionnaire already exists for this expert and type
-          const { data: existingQuestionnaire } = await supabase
-            .from("questionnaires")
-            .select("id")
-            .eq("expert_id", user.id)
-            .eq("type", "course_interest")
-            .eq("is_active", true)
-            .maybeSingle();
+          // Create course first
+          const coursePrice = formData.price ? parseFloat(formData.price) || 0 : 0;
+          const { data: newCourse, error: courseError } = await supabase
+            .from("courses")
+            .insert({
+              expert_id: user.id,
+              title: formData.name,
+              description: formData.description,
+              is_free: coursePrice === 0,
+              price: coursePrice,
+              category: formData.category,
+              published: false, // Will be published after questionnaire is ready
+            })
+            .select()
+            .single();
 
-          if (existingQuestionnaire?.id) {
-            // Use existing questionnaire
-            questionnaireId = existingQuestionnaire.id;
-            console.log("Using existing questionnaire:", questionnaireId);
-          } else {
-            // Create new questionnaire for this course
-            // Note: Database constraint only allows 'appointment' or 'course_interest'
-            const { data: questionnaire, error: qError } = await supabase
-              .from("questionnaires")
-              .insert({
-                expert_id: user.id,
-                type: "course_interest", // Use 'course_interest' instead of 'course_enrollment' to match DB constraint
-                title: `${formData.name} - Enrollment Form`,
-                is_active: true,
-              })
-              .select()
-              .single();
+          if (courseError) throw courseError;
 
-            if (qError) {
-              console.error("Error creating questionnaire:", qError);
-              // If it's a duplicate key error, try to fetch the existing one
-              if (qError.code === "23505") {
-                const { data: existing } = await supabase
-                  .from("questionnaires")
-                  .select("id")
-                  .eq("expert_id", user.id)
-                  .eq("type", "course_interest")
-                  .maybeSingle();
-                if (existing?.id) {
-                  questionnaireId = existing.id;
-                } else {
-                  throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
-                }
-              } else {
-                throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
-              }
-            } else {
-              questionnaireId = questionnaire?.id || null;
-            }
+          // Create product linked to course
+          const { data: newProduct, error: productError } = await supabase
+            .from("products")
+            .insert({
+              expert_id: user.id,
+              name: formData.name,
+              description: formData.description,
+              product_type: "course",
+              course_id: newCourse.id,
+              price: coursePrice,
+              pricing_type: "one-off",
+              payment_method: formData.payment_method || "stripe",
+              contact_email: formData.payment_method === "offline" ? formData.contact_email : null,
+            })
+            .select()
+            .single();
+
+          if (productError) {
+            // If product creation fails, delete the course
+            await supabase.from("courses").delete().eq("id", newCourse.id);
+            throw productError;
           }
+
+          // Now create questionnaire linked to this product
+          const { data: questionnaire, error: qError } = await supabase
+            .from("questionnaires")
+            .insert({
+              expert_id: user.id,
+              product_id: newProduct.id,
+              type: "course_interest",
+              title: `${formData.name} - Enrollment Form`,
+              is_active: true,
+            })
+            .select()
+            .single();
+
+          if (qError) {
+            console.error("Error creating questionnaire:", qError);
+            // If questionnaire creation fails, delete product and course
+            await supabase.from("products").delete().eq("id", newProduct.id);
+            await supabase.from("courses").delete().eq("id", newCourse.id);
+            throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
+          }
+
+          const questionnaireId = questionnaire?.id || null;
 
           if (!questionnaireId) {
+            // If questionnaire creation failed, delete product and course
+            await supabase.from("products").delete().eq("id", newProduct.id);
+            await supabase.from("courses").delete().eq("id", newCourse.id);
             throw new Error("Failed to create form. Please try again.");
           }
+
+          // Store product and course IDs for later use
+          setCurrentProductId(newProduct.id);
+          setCurrentCourseId(newCourse.id);
 
           // Check if fields already exist
           const { data: existingFields } = await supabase
@@ -670,56 +688,74 @@ export function ProductsManagement() {
         }
         return; // Don't create course yet - wait for questionnaire completion
       } else if (formData.product_type === "appointment") {
-        // For appointment: questionnaire-first workflow (similar to courses)
-        // Store product data temporarily, show questionnaire form first
+        // For appointment: Check if expert already has an appointment product
+        // Limit to 1 appointment product per expert
         try {
-          // Check if questionnaire already exists
-          const { data: existingQuestionnaire } = await supabase
-            .from("questionnaires")
+          const { data: existingAppointmentProduct } = await supabase
+            .from("products")
             .select("id")
             .eq("expert_id", user.id)
-            .eq("type", "appointment")
+            .eq("product_type", "appointment")
             .maybeSingle();
 
-          let questionnaireId = existingQuestionnaire?.id || null;
-
-          // Create questionnaire if it doesn't exist
-          if (!questionnaireId) {
-            const { data: questionnaire, error: qError } = await supabase
-              .from("questionnaires")
-              .insert({
-                expert_id: user.id,
-                type: "appointment",
-                title: "Appointment Booking Form",
-                is_active: true,
-              })
-              .select()
-              .single();
-
-            if (qError) {
-              console.error("Error creating questionnaire:", qError);
-              // If it's a duplicate key error, try to fetch the existing one
-              if (qError.code === "23505") {
-                const { data: existing } = await supabase
-                  .from("questionnaires")
-                  .select("id")
-                  .eq("expert_id", user.id)
-                  .eq("type", "appointment")
-                  .maybeSingle();
-                if (existing?.id) {
-                  questionnaireId = existing.id;
-                } else {
-                  throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
-                }
-              } else {
-                throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
-              }
-            } else {
-              questionnaireId = questionnaire?.id || null;
-            }
+          if (existingAppointmentProduct?.id) {
+            throw new Error("You can only create one appointment product. Please edit your existing appointment product instead.");
           }
 
+          // Create product first (before questionnaire)
+          const { data: newProduct, error: productError } = await supabase
+            .from("products")
+            .insert({
+              expert_id: user.id,
+              name: formData.name,
+              description: formData.description,
+              price: 0, // Price will be set when creating appointment slots
+              pricing_type: formData.pricing_type || "one-off",
+              product_type: "appointment",
+              payment_method: formData.payment_method || "stripe",
+              contact_email: formData.contact_email || null,
+            })
+            .select()
+            .single();
+
+          if (productError) {
+            console.error("Error creating product:", productError);
+            // Check if it's the unique constraint violation (already has appointment product)
+            if (productError.code === "23505") {
+              throw new Error("You can only create one appointment product. Please edit your existing appointment product instead.");
+            }
+            throw new Error(`Failed to create product: ${productError.message || "Please try again."}`);
+          }
+
+          if (!newProduct?.id) {
+            throw new Error("Failed to create product. Please try again.");
+          }
+
+          // Now create questionnaire linked to this product
+          const { data: questionnaire, error: qError } = await supabase
+            .from("questionnaires")
+            .insert({
+              expert_id: user.id,
+              product_id: newProduct.id,
+              type: "appointment",
+              title: `${formData.name} - Booking Form`,
+              is_active: true,
+            })
+            .select()
+            .single();
+
+          if (qError) {
+            console.error("Error creating questionnaire:", qError);
+            // If questionnaire creation fails, delete the product we just created
+            await supabase.from("products").delete().eq("id", newProduct.id);
+            throw new Error(`Failed to create form: ${qError.message || "Please try again."}`);
+          }
+
+          const questionnaireId = questionnaire?.id || null;
+
           if (!questionnaireId) {
+            // If questionnaire creation failed, delete the product
+            await supabase.from("products").delete().eq("id", newProduct.id);
             throw new Error("Failed to create form. Please try again.");
           }
 
@@ -766,6 +802,7 @@ export function ProductsManagement() {
           setShowQuestionnaireForm(true);
           setQuestionnaireType("appointment");
           setCurrentQuestionnaireId(questionnaireId);
+          setCurrentProductId(newProduct.id); // Store product ID for later use
           setFieldForm({
             field_type: "text",
             label: "",
@@ -774,8 +811,8 @@ export function ProductsManagement() {
             options: "",
           });
           
-          // Store form data temporarily (don't create product yet)
-          // User will click "Publish Appointment Service" after questionnaire is ready
+          // Store form data temporarily
+          // User will click "Continue to Set Up Slots" after questionnaire is ready
           setPendingCourseData({
             name: formData.name,
             description: formData.description,
@@ -1784,70 +1821,57 @@ export function ProductsManagement() {
                     return;
                   }
                   
-                  // Now create the course and product
-                  if (!pendingCourseData || !user) {
-                    alert("Course data not found or user not authenticated. Please start over.");
+                  // Course and product already created - just publish the course
+                  if (!currentCourseId || !user) {
+                    alert("Course data not found. Please start over.");
                     return;
                   }
                   
                   try {
-                    const coursePrice = pendingCourseData.price ? parseFloat(pendingCourseData.price) || 0 : 0;
-                    
-                    // Create course
-                    const { data: newCourse, error: courseError } = await supabase
+                    // Publish the course (it was created with published: false)
+                    const { error: publishError } = await supabase
                       .from("courses")
-                      .insert({
-                        expert_id: user.id,
-                        title: pendingCourseData.name,
-                        description: pendingCourseData.description,
-                        is_free: coursePrice === 0,
-                        price: coursePrice,
-                        category: pendingCourseData.category,
-                        published: true, // Publish after questionnaire is ready
-                      })
-                      .select()
-                      .single();
+                      .update({ published: true })
+                      .eq("id", currentCourseId)
+                      .eq("expert_id", user.id);
 
-                    if (courseError) throw courseError;
+                    if (publishError) throw publishError;
 
-                    // Create Stripe product if paid course
-                    let stripeProductId: string | null = null;
-                    let stripePriceId: string | null = null;
-                    
-                    if (coursePrice > 0 && stripeAccountId) {
-                      const stripeResult = await createStripeProduct(
-                        pendingCourseData.name,
-                        pendingCourseData.description,
-                        coursePrice,
-                        "" // Will be set after product creation
-                      );
-                      stripeProductId = stripeResult.stripeProductId;
-                      stripePriceId = stripeResult.stripePriceId;
+                    // Create Stripe product if paid course and not already created
+                    if (currentProductId) {
+                      const { data: product } = await supabase
+                        .from("products")
+                        .select("price, stripe_product_id, stripe_price_id")
+                        .eq("id", currentProductId)
+                        .single();
+
+                      if (product && product.price > 0 && !product.stripe_product_id && stripeAccountId) {
+                        const { data: course } = await supabase
+                          .from("courses")
+                          .select("title, description")
+                          .eq("id", currentCourseId)
+                          .single();
+
+                        if (course) {
+                          const stripeResult = await createStripeProduct(
+                            course.title,
+                            course.description,
+                            product.price,
+                            currentProductId
+                          );
+
+                          if (stripeResult.stripeProductId) {
+                            await supabase
+                              .from("products")
+                              .update({
+                                stripe_product_id: stripeResult.stripeProductId,
+                                stripe_price_id: stripeResult.stripePriceId,
+                              })
+                              .eq("id", currentProductId);
+                          }
+                        }
+                      }
                     }
-
-                    // Get payment method and contact email from form (stored in pendingCourseData or formData)
-                    // Note: payment_method and contact_email should be stored when questionnaire form is shown
-                    // For now, we'll get it from the current formData state
-                    
-                    // Create product linked to course
-                    const { data: newProduct, error: productError } = await supabase.from("products").insert({
-                      expert_id: user.id,
-                      name: pendingCourseData.name,
-                      description: pendingCourseData.description,
-                      product_type: "course",
-                      course_id: newCourse.id,
-                      price: coursePrice,
-                      pricing_type: "one-off",
-                      stripe_product_id: stripeProductId,
-                      stripe_price_id: stripePriceId,
-                      payment_method: pendingCourseData.payment_method || "stripe",
-                      contact_email: pendingCourseData.payment_method === "offline" ? pendingCourseData.contact_email : null,
-                    }).select().single();
-
-                    if (productError) throw productError;
-
-                    // Link questionnaire to product (if needed)
-                    // The questionnaire is already created and linked to expert
                     
                     // Reset form and close questionnaire form
                     setShowQuestionnaireForm(false);
@@ -1916,29 +1940,15 @@ export function ProductsManagement() {
                     return;
                   }
                   
-                  // Now create the appointment product and show appointment form
-                  if (!pendingCourseData || !user) {
-                    alert("Product data not found or user not authenticated. Please start over.");
-                    return;
-                  }
-                  
                   try {
-                    // Create product first (without price - price will be set in appointment form)
-                    const { data: newProduct, error: productError } = await supabase.from("products").insert({
-                      expert_id: user.id,
-                      name: pendingCourseData.name,
-                      description: pendingCourseData.description,
-                      product_type: "appointment",
-                      price: 0, // Will be set when slots are created
-                      pricing_type: "hourly",
-                      payment_method: pendingCourseData.payment_method || "stripe",
-                      contact_email: pendingCourseData.payment_method === "offline" ? pendingCourseData.contact_email : null,
-                    }).select().single();
+                    // Questionnaire is already linked to product (created with product_id)
+                    // Just show appointment form to set up slots
+                    if (!currentProductId) {
+                      alert("Product ID not found. Please start over.");
+                      return;
+                    }
 
-                    if (productError) throw productError;
-
-                    // Set current product and show appointment form
-                    setCurrentProductId(newProduct.id);
+                    // Show appointment form
                     setShowQuestionnaireForm(false);
                     setShowAppointmentForm(true);
                     
@@ -1950,8 +1960,8 @@ export function ProductsManagement() {
                     
                     alert("Form saved! Now set up your appointment slots and pricing.");
                   } catch (err: any) {
-                    console.error("Error creating appointment product:", err);
-                    alert(`Failed to create appointment service: ${err.message || "Please try again."}`);
+                    console.error("Error setting up appointment:", err);
+                    alert(`Failed to set up appointment: ${err.message || "Please try again."}`);
                   }
                 }}
                 className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"

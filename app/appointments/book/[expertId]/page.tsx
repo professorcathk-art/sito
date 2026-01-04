@@ -129,13 +129,32 @@ export default function BookAppointmentPage() {
     setSelectedSlot(slot);
 
     // Check for questionnaire first (MANDATORY)
+    // Questionnaire is linked to product_id, so we need to get product_id from slot
     try {
-      // Don't filter by is_active - experts may have inactive questionnaires
+      let productId = slot.product_id;
+      
+      // If slot doesn't have product_id, find the appointment product for this expert
+      if (!productId) {
+        const { data: appointmentProduct } = await supabase
+          .from("products")
+          .select("id")
+          .eq("expert_id", expertId)
+          .eq("product_type", "appointment")
+          .maybeSingle();
+        productId = appointmentProduct?.id || null;
+      }
+
+      if (!productId) {
+        alert("Appointment product not found. Please contact the expert.");
+        setBooking(false);
+        return;
+      }
+
+      // Find questionnaire by product_id
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
         .select("id, is_active")
-        .eq("expert_id", expertId)
-        .eq("type", "appointment")
+        .eq("product_id", productId)
         .maybeSingle();
 
       if (qError && qError.code !== "PGRST116") {

@@ -7,3 +7,4 @@ ADD COLUMN IF NOT EXISTS phone_number TEXT;
 COMMENT ON COLUMN product_interests.country_code IS 'Optional country code for phone number (e.g., +1, +852)';
 COMMENT ON COLUMN product_interests.phone_number IS 'Optional phone number without country code';
 
+
