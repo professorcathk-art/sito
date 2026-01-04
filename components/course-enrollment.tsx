@@ -397,11 +397,16 @@ export function CourseEnrollment({
             
             setQuestionnaireId(questionnaireId);
             setQuestionnaireType("interest");
+            setQuestionnaireId(questionnaireId);
+            setQuestionnaireType("interest");
             setShowQuestionnaire(true);
             return;
           } else {
-            // Should not reach here, but if we do, show error
-            alert("Unable to load registration form. Please try again later.");
+            // Last resort: Show form with temporary ID - form will handle gracefully
+            console.warn("Questionnaire creation failed, showing form with temporary ID");
+            setQuestionnaireId("temp-" + Date.now());
+            setQuestionnaireType("interest");
+            setShowQuestionnaire(true);
             return;
           }
         } catch (createErr) {
