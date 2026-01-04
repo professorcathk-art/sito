@@ -97,11 +97,12 @@ export async function GET(request: NextRequest) {
     const onboardingComplete = account.details_submitted === true;
     
     // Get requirements status if available
-    const requirementsStatus = account.requirements?.currently_due?.length > 0
-      ? "currently_due"
-      : account.requirements?.past_due?.length > 0
-      ? "past_due"
-      : "complete";
+    const requirementsStatus = 
+      account.requirements?.currently_due && account.requirements.currently_due.length > 0
+        ? "currently_due"
+        : account.requirements?.past_due && account.requirements.past_due.length > 0
+        ? "past_due"
+        : "complete";
 
     return NextResponse.json({
       accountId: account.id,
