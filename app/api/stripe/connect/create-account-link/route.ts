@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    let { accountId, returnUrl } = body;
+    let accountId: string | undefined = body.accountId;
+    const returnUrl = body.returnUrl;
 
     // If accountId not provided, fetch from user's profile
     if (!accountId) {
@@ -58,6 +59,13 @@ export async function POST(request: NextRequest) {
       }
 
       accountId = profile.stripe_connect_account_id;
+    }
+
+    if (!accountId) {
+      return NextResponse.json(
+        { error: "Account ID is required" },
+        { status: 400 }
+      );
     }
 
     // Get the base URL for redirect URLs
