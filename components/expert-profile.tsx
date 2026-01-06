@@ -462,126 +462,29 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           <p className="text-custom-text/90 leading-relaxed">{expert.bio}</p>
         </div>
 
-        {/* 1-on-1 Timeslots Section */}
-        {appointmentSlots.length > 0 && (
+        {/* 1-on-1 Timeslots Section - Show View Button Only */}
+        {appointmentSlots.length > 0 && user && user.id !== expert.id && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-custom-text">1-on-1 Timeslots</h2>
-              {user && user.id !== expert.id && (
-                <button
-                  onClick={async () => {
-                    // Find appointment product for this expert
-                    let appointmentProduct = products.find(p => p.product_type === "appointment");
-                    
-                    // If not found in products array, fetch it
-                    if (!appointmentProduct) {
-                      const { data: productData } = await supabase
-                        .from("products")
-                        .select("id, name, product_type")
-                        .eq("expert_id", expertId)
-                        .eq("product_type", "appointment")
-                        .maybeSingle();
-                      
-                      if (productData) {
-                        appointmentProduct = productData as any;
-                        // Add to products array for future use
-                        setProducts([...products, productData as any]);
-                      }
-                    }
-                    
-                    if (appointmentProduct) {
-                      // Call handleRegisterInterest which will show the questionnaire form
-                      await handleRegisterInterest(appointmentProduct.id);
-                    } else {
-                      // Try to find any appointment product
-                      const { data: anyAppointmentProduct } = await supabase
-                        .from("products")
-                        .select("id")
-                        .eq("expert_id", expertId)
-                        .eq("product_type", "appointment")
-                        .maybeSingle();
-                      
-                      if (anyAppointmentProduct) {
-                        await handleRegisterInterest(anyAppointmentProduct.id);
-                      } else {
-                        alert("Appointment service not available. Please contact the expert.");
-                      }
-                    }
-                  }}
-                  className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
-                >
-                  Register Interest
-                </button>
-              )}
-            </div>
-            <div className="space-y-3 mb-4">
-              {appointmentSlots.slice(0, 3).map((slot) => {
-                const startDate = new Date(slot.start_time);
-                const endDate = new Date(slot.end_time);
-                const duration = Math.max(0, Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60)));
-                const total = duration > 0 ? (slot.rate_per_hour * duration) / 60 : 0;
-                
-                return (
-                  <div
-                    key={slot.id}
-                    className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-custom-text font-semibold">
-                          {startDate.toLocaleString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })} - {endDate.toLocaleString("en-US", {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                        <p className="text-custom-text/70 text-sm">
-                          {duration} minutes • ${slot.rate_per_hour}/hour • Total: ${total.toFixed(2)}
-                        </p>
-                      </div>
-                      {user?.id === expert.id ? null : user ? (
-                        <Link
-                          href={`/appointments/book/${expert.id}?slot=${slot.id}`}
-                          className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
-                        >
-                          Book Now
-                        </Link>
-                      ) : (
-                        <Link
-                          href={`/login?redirect=/appointments/book/${expert.id}?slot=${slot.id}`}
-                          className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
-                        >
-                          Sign In to Book
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {appointmentSlots.length > 3 && (
+              <h2 className="text-xl font-bold text-custom-text">1-on-1 Appointments</h2>
               <Link
                 href={`/appointments/book/${expert.id}`}
-                className="text-cyber-green hover:text-cyber-green-light text-sm font-medium"
+                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
               >
-                View all {appointmentSlots.length} available slots →
+                View Available Timeslots
               </Link>
-            )}
+            </div>
           </div>
         )}
 
-        {/* Book Appointment Button */}
+        {/* Book Appointment Button - Show when no slots available */}
         {user && user.id !== expert.id && appointmentSlots.length === 0 && (
           <div className="mb-6">
             <Link
               href={`/appointments/book/${expert.id}`}
               className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
             >
-              Book 1-on-1 Appointment
+              View Available Timeslots
             </Link>
           </div>
         )}

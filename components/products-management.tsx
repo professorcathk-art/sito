@@ -111,8 +111,9 @@ export function ProductsManagement() {
     options: "",
   });
   const [stripeAccountId, setStripeAccountId] = useState<string | null>(null);
-
   const [isProfileListed, setIsProfileListed] = useState<boolean | null>(null);
+  const [courseMembersMap, setCourseMembersMap] = useState<{ [courseId: string]: any[] }>({});
+  const [showMembersForProduct, setShowMembersForProduct] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -245,6 +246,116 @@ export function ProductsManagement() {
     }
   };
 
+  const fetchCourseMembers = async (courseId: string) => {
+    if (!user || !courseId) return;
+    try {
+      const { data, error } = await supabase
+        .from("course_enrollments")
+        .select(`
+          id,
+          user_id,
+          user_email,
+          enrolled_at,
+          profiles:user_id(name, email)
+        `)
+        .eq("course_id", courseId);
+
+      if (error) throw error;
+      
+      // Fetch questionnaire responses for these enrollments
+      const enrollmentIds = (data || []).map((e: any) => e.id);
+      let questionnaireResponsesMap: { [key: string]: any } = {};
+      let questionnaireFieldsMap: { [key: string]: { [key: string]: string } } = {};
+      
+      if (enrollmentIds.length > 0) {
+        // Get product_id for this course to find questionnaire
+        const { data: product } = await supabase
+          .from("products")
+          .select("id")
+          .eq("course_id", courseId)
+          .eq("product_type", "course")
+          .maybeSingle();
+        
+        if (product) {
+          // Fetch questionnaire for this product
+          const { data: questionnaire } = await supabase
+            .from("questionnaires")
+            .select("id")
+            .eq("product_id", product.id)
+            .maybeSingle();
+          
+          if (questionnaire) {
+            // Fetch questionnaire responses linked to this course via user_id and questionnaire_id
+            const { data: responsesData } = await supabase
+              .from("questionnaire_responses")
+              .select("id, responses, user_id, questionnaire_id")
+              .eq("questionnaire_id", questionnaire.id)
+              .in("user_id", (data || []).map((e: any) => e.user_id).filter(Boolean));
+            
+            if (responsesData) {
+              // Map responses by user_id
+              responsesData.forEach((resp: any) => {
+                const enrollment = (data || []).find((e: any) => e.user_id === resp.user_id);
+                if (enrollment) {
+                  questionnaireResponsesMap[enrollment.id] = resp.responses;
+                }
+              });
+              
+              // Fetch questionnaire fields to map field IDs to labels
+              const { data: fieldsData } = await supabase
+                .from("questionnaire_fields")
+                .select("id, label")
+                .eq("questionnaire_id", questionnaire.id);
+              
+              if (fieldsData) {
+                fieldsData.forEach((field: any) => {
+                  if (!questionnaireFieldsMap[questionnaire.id]) {
+                    questionnaireFieldsMap[questionnaire.id] = {};
+                  }
+                  questionnaireFieldsMap[questionnaire.id][field.id] = field.label;
+                });
+              }
+            }
+          }
+        }
+      }
+      
+      const members = (data || []).map((enrollment: any) => {
+        const responses = questionnaireResponsesMap[enrollment.id];
+        let mappedResponses: { [key: string]: any } | null = null;
+        
+        if (responses) {
+          // Map field IDs to labels
+          const questionnaireId = Object.keys(questionnaireFieldsMap)[0];
+          if (questionnaireId && questionnaireFieldsMap[questionnaireId]) {
+            mappedResponses = {};
+            Object.entries(responses).forEach(([fieldId, value]) => {
+              const label = questionnaireFieldsMap[questionnaireId][fieldId] || fieldId;
+              mappedResponses![label] = value;
+            });
+          } else {
+            mappedResponses = responses;
+          }
+        }
+        
+        return {
+          id: enrollment.id,
+          name: enrollment.profiles?.name || "N/A",
+          email: enrollment.user_email || enrollment.profiles?.email || "N/A",
+          enrolled_at: enrollment.enrolled_at,
+          questionnaire_responses: mappedResponses,
+        };
+      });
+      
+      setCourseMembersMap((prev) => ({
+        ...prev,
+        [courseId]: members,
+      }));
+    } catch (err) {
+      console.error("Error fetching course members:", err);
+    }
+  };
+
   const fetchProducts = async () => {
     if (!user) return;
     setLoading(true);
@@ -337,17 +448,39 @@ export function ProductsManagement() {
         new Set((data || []).map((item: any) => item.questionnaire_response_id).filter(Boolean))
       );
       const questionnaireResponsesMap: { [key: string]: any } = {};
+      const questionnaireFieldsMap: { [key: string]: { [key: string]: string } } = {}; // questionnaire_id -> { fieldId -> fieldLabel }
       
       if (questionnaireResponseIds.length > 0) {
         const { data: responsesData } = await supabase
           .from("questionnaire_responses")
-          .select("id, responses")
+          .select("id, responses, questionnaire_id")
           .in("id", questionnaireResponseIds);
         
         if (responsesData) {
           responsesData.forEach((resp: any) => {
             questionnaireResponsesMap[resp.id] = resp.responses;
           });
+          
+          // Fetch all questionnaire IDs and their fields to map field IDs to labels
+          const questionnaireIds = Array.from(new Set(responsesData.map((r: any) => r.questionnaire_id).filter(Boolean)));
+          if (questionnaireIds.length > 0) {
+            const { data: fieldsData } = await supabase
+              .from("questionnaire_fields")
+              .select("id, questionnaire_id, label")
+              .in("questionnaire_id", questionnaireIds);
+            
+            if (fieldsData) {
+              // Create a map: questionnaire_id -> { fieldId -> label }
+              questionnaireIds.forEach((qId: string) => {
+                questionnaireFieldsMap[qId] = {};
+                fieldsData
+                  .filter((f: any) => f.questionnaire_id === qId)
+                  .forEach((field: any) => {
+                    questionnaireFieldsMap[qId][field.id] = field.label;
+                  });
+              });
+            }
+          }
         }
       }
 
@@ -355,9 +488,27 @@ export function ProductsManagement() {
         // Extract name and email from questionnaire responses if available
         let formName = item.user_email; // Default to email
         let formEmail = item.user_email;
+        let mappedResponses: { [key: string]: any } | null = null;
         
         if (item.questionnaire_response_id && questionnaireResponsesMap[item.questionnaire_response_id]) {
           const responses = questionnaireResponsesMap[item.questionnaire_response_id];
+          
+          // Get questionnaire_id from response
+          const responseData = responsesData?.find((r: any) => r.id === item.questionnaire_response_id);
+          const questionnaireId = responseData?.questionnaire_id;
+          
+          // Map response keys (field IDs) to field labels
+          if (questionnaireId && questionnaireFieldsMap[questionnaireId]) {
+            mappedResponses = {};
+            Object.entries(responses).forEach(([fieldId, value]) => {
+              // Map field ID to label, fallback to fieldId if not found
+              const label = questionnaireFieldsMap[questionnaireId][fieldId] || fieldId;
+              mappedResponses![label] = value;
+            });
+          } else {
+            mappedResponses = responses;
+          }
+          
           // Try to find name and email in responses
           Object.values(responses).forEach((value: any) => {
             if (typeof value === 'string') {
@@ -379,9 +530,9 @@ export function ProductsManagement() {
           user_name: formName || userNameMap[item.user_id] || "Unknown User",
           country_code: item.country_code || undefined,
           phone_number: item.phone_number || undefined,
-          questionnaire_responses: item.questionnaire_response_id 
+          questionnaire_responses: mappedResponses || (item.questionnaire_response_id 
             ? questionnaireResponsesMap[item.questionnaire_response_id] || null 
-            : null,
+            : null),
           created_at: item.created_at,
         };
       });
@@ -957,20 +1108,52 @@ export function ProductsManagement() {
       return;
     }
 
-    const headers = ["Product Name", "User Name", "User Email", "Phone Number", "Registered Date"];
-    const rows = interests.map((interest) => [
-      interest.product_name,
-      interest.user_name,
-      interest.user_email,
-      interest.country_code && interest.phone_number 
-        ? `${interest.country_code} ${interest.phone_number}` 
-        : interest.phone_number || "",
-      new Date(interest.created_at).toLocaleDateString(),
-    ]);
+    // Collect all unique custom field names from questionnaire responses
+    const customFieldNames = new Set<string>();
+    interests.forEach((interest) => {
+      if (interest.questionnaire_responses) {
+        Object.keys(interest.questionnaire_responses).forEach((key) => {
+          customFieldNames.add(key);
+        });
+      }
+    });
+
+    // Build headers: standard fields + custom fields
+    const headers = [
+      "Product Name",
+      "User Name",
+      "User Email",
+      "Phone Number",
+      "Registered Date",
+      ...Array.from(customFieldNames).sort(),
+    ];
+
+    // Build rows with custom field data
+    const rows = interests.map((interest) => {
+      const baseRow = [
+        interest.product_name,
+        interest.user_name,
+        interest.user_email,
+        interest.country_code && interest.phone_number 
+          ? `${interest.country_code} ${interest.phone_number}` 
+          : interest.phone_number || "",
+        new Date(interest.created_at).toLocaleDateString(),
+      ];
+
+      // Add custom field values in the same order as headers
+      const customValues = Array.from(customFieldNames).map((fieldName) => {
+        const value = interest.questionnaire_responses?.[fieldName];
+        if (value === null || value === undefined) return "";
+        if (Array.isArray(value)) return value.join("; ");
+        return String(value);
+      });
+
+      return [...baseRow, ...customValues];
+    });
 
     const csvContent = [
       headers.join(","),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")),
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -2219,6 +2402,23 @@ export function ProductsManagement() {
                     >
                       View Form
                     </button>
+                    {product.product_type === "course" && product.course_id && (
+                      <button
+                        onClick={async () => {
+                          if (showMembersForProduct === product.id) {
+                            setShowMembersForProduct(null);
+                          } else {
+                            setShowMembersForProduct(product.id);
+                            if (!courseMembersMap[product.course_id]) {
+                              await fetchCourseMembers(product.course_id);
+                            }
+                          }
+                        }}
+                        className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm"
+                      >
+                        {showMembersForProduct === product.id ? "Hide Members" : "View Members"}
+                      </button>
+                    )}
                     <button
                       onClick={() => handleEdit(product)}
                       className="px-4 py-2 bg-dark-green-800/50 text-custom-text border border-cyber-green/30 rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm"
@@ -2233,6 +2433,55 @@ export function ProductsManagement() {
                     </button>
                   </div>
                 </div>
+                {product.product_type === "course" && product.course_id && showMembersForProduct === product.id && (
+                  <div className="mt-4 pt-4 border-t border-cyber-green/30">
+                    <h4 className="text-lg font-semibold text-custom-text mb-3">Course Members</h4>
+                    {courseMembersMap[product.course_id]?.length > 0 ? (
+                      <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg overflow-hidden">
+                        <table className="w-full">
+                          <thead className="bg-dark-green-900/50 border-b border-cyber-green/30">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Name</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Email</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Enrolled</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Form Data</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {courseMembersMap[product.course_id].map((member: any) => (
+                              <tr
+                                key={member.id}
+                                className="border-b border-cyber-green/10 hover:bg-dark-green-900/30 transition-colors"
+                              >
+                                <td className="px-4 py-3 text-sm text-custom-text">{member.name}</td>
+                                <td className="px-4 py-3 text-sm text-custom-text">{member.email}</td>
+                                <td className="px-4 py-3 text-sm text-custom-text/70">
+                                  {new Date(member.enrolled_at).toLocaleDateString()}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-custom-text/70">
+                                  {member.questionnaire_responses ? (
+                                    <details className="cursor-pointer">
+                                      <summary className="text-cyber-green hover:text-cyber-green-light">View Form Data</summary>
+                                      <div className="mt-2 p-2 bg-dark-green-900/50 rounded text-xs">
+                                        {Object.entries(member.questionnaire_responses).map(([key, value]: [string, any]) => (
+                                          <div key={key} className="mb-1">
+                                            <span className="font-semibold">{key}:</span> {String(value)}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </details>
+                                  ) : "-"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-custom-text/60 text-sm">No members enrolled yet.</p>
+                    )}
+                  </div>
+                )}
               </div>
             ))
           )}

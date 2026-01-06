@@ -19,6 +19,9 @@ interface Purchase {
   enrolled_at: string;
   price: number | null;
   type: "course" | "appointment";
+  start_time?: string;
+  end_time?: string;
+  status?: string;
 }
 
 export default function PurchasesPage() {
@@ -126,7 +129,7 @@ export default function PurchasesPage() {
         });
       });
 
-      // Fetch appointments with payment_intent_id (paid appointments)
+      // Fetch ALL appointments (both paid and free)
       const { data: appointments, error: appointmentsError } = await supabase
         .from("appointments")
         .select(`
@@ -136,6 +139,7 @@ export default function PurchasesPage() {
           total_amount,
           payment_intent_id,
           created_at,
+          status,
           products (
             id,
             name,
@@ -143,7 +147,6 @@ export default function PurchasesPage() {
           )
         `)
         .eq("user_id", user.id)
-        .not("payment_intent_id", "is", null)
         .order("created_at", { ascending: false });
 
       if (appointmentsError) throw appointmentsError;
@@ -157,6 +160,9 @@ export default function PurchasesPage() {
           enrolled_at: appointment.created_at,
           price: appointment.total_amount || null,
           type: "appointment",
+          start_time: appointment.start_time,
+          end_time: appointment.end_time,
+          status: appointment.status,
         });
       });
 
@@ -230,13 +236,23 @@ export default function PurchasesPage() {
                         </p>
                       )}
                       {purchase.type === "appointment" && (
-                        <p className="text-custom-text/70 mb-4">
-                          1-on-1 Appointment Session
-                        </p>
+                        <div className="text-custom-text/70 mb-4 space-y-1">
+                          <p>1-on-1 Appointment Session</p>
+                          {purchase.start_time && purchase.end_time && (
+                            <p className="text-sm">
+                              <span className="font-medium">Time:</span> {formatDate(purchase.start_time)} - {new Date(purchase.end_time).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                            </p>
+                          )}
+                          {purchase.status && (
+                            <p className="text-sm">
+                              <span className="font-medium">Status:</span> <span className="capitalize">{purchase.status}</span>
+                            </p>
+                          )}
+                        </div>
                       )}
                       <div className="flex items-center gap-6 text-sm text-custom-text/60">
                         <div>
-                          <span className="font-medium">Purchased:</span> {formatDate(purchase.enrolled_at)}
+                          <span className="font-medium">{purchase.type === "course" ? "Enrolled:" : "Booked:"}</span> {formatDate(purchase.enrolled_at)}
                         </div>
                         {purchase.price !== null && purchase.price > 0 && (
                           <div>
