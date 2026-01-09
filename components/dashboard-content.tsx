@@ -70,13 +70,17 @@ export function DashboardContent() {
 
       try {
         // Fetch profile status
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("listed_on_marketplace, onboarding_completed")
           .eq("id", user.id)
           .single();
 
-        if (profile) {
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          // If profile doesn't exist, that's okay - we'll show setup message
+          setHasProfile(false);
+        } else if (profile) {
           setHasProfile(true);
           setIsListed(profile.listed_on_marketplace || false);
           

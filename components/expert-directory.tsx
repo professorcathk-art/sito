@@ -100,8 +100,10 @@ export function ExpertDirectory() {
 
         if (error) {
           console.error("Error fetching experts:", error);
+          console.error("Error details:", JSON.stringify(error, null, 2));
           setExperts([]);
         } else if (data) {
+          console.log("Fetched experts:", data.length);
           let filtered = data.map((profile: any) => ({
             id: profile.id,
             name: profile.name || "Anonymous",
