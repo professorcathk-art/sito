@@ -32,7 +32,7 @@ function SuccessContent() {
         .then((res) => res.json())
         .then((res) => {
           if (!res.ok) {
-            return res.json().then(err => {
+            return res.json().then((err: any) => {
               console.error("Payment verification failed:", err);
               throw new Error(err.error || err.message || "Payment verification failed");
             });
