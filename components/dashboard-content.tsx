@@ -72,13 +72,25 @@ export function DashboardContent() {
         // Fetch profile status
         const { data: profile } = await supabase
           .from("profiles")
-          .select("listed_on_marketplace")
+          .select("listed_on_marketplace, onboarding_completed")
           .eq("id", user.id)
           .single();
 
         if (profile) {
           setHasProfile(true);
           setIsListed(profile.listed_on_marketplace || false);
+          
+          // Redirect to onboarding if not completed (only if not already on onboarding page)
+          if (!profile.onboarding_completed && typeof window !== 'undefined' && !window.location.pathname.includes('/onboarding')) {
+            router.push("/onboarding");
+            return;
+          }
+        } else {
+          // No profile yet - redirect to onboarding
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/onboarding')) {
+            router.push("/onboarding");
+            return;
+          }
         }
 
         // Fetch recent messages (last 5)

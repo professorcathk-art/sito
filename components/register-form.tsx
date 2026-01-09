@@ -69,8 +69,8 @@ export function RegisterForm() {
           // Continue anyway - profile can be created later
         }
 
-        // Redirect to profile setup
-        router.push("/profile/setup");
+        // Redirect to onboarding
+        router.push("/onboarding");
         router.refresh();
       }
     } catch (err) {
@@ -170,7 +170,7 @@ export function RegisterForm() {
           const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-              redirectTo: `${window.location.origin}/profile/setup`,
+              redirectTo: `${window.location.origin}/onboarding`,
             },
           });
           if (error) {
