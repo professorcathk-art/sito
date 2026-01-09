@@ -22,6 +22,7 @@ export function DashboardContent() {
   const supabase = createClient();
   const [hasProfile, setHasProfile] = useState(false);
   const [isListed, setIsListed] = useState(false);
+  const [isExpert, setIsExpert] = useState(false); // Has completed expert profile
   const [recentMessages, setRecentMessages] = useState<Message[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -72,7 +73,7 @@ export function DashboardContent() {
         // Fetch profile status
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
-          .select("listed_on_marketplace, onboarding_completed")
+          .select("listed_on_marketplace, onboarding_completed, category_id, bio, name")
           .eq("id", user.id)
           .single();
 
@@ -80,9 +81,12 @@ export function DashboardContent() {
           console.error("Error fetching profile:", profileError);
           // If profile doesn't exist, that's okay - we'll show setup message
           setHasProfile(false);
+          setIsExpert(false);
         } else if (profile) {
           setHasProfile(true);
           setIsListed(profile.listed_on_marketplace || false);
+          // Check if user has completed expert profile (has category_id and bio)
+          setIsExpert(!!(profile.category_id && profile.bio && profile.name));
           
           // Redirect to onboarding if not completed (only if not already on onboarding page)
           if (!profile.onboarding_completed && typeof window !== 'undefined' && !window.location.pathname.includes('/onboarding')) {
@@ -197,6 +201,19 @@ export function DashboardContent() {
             Set Up Profile
           </Link>
         </div>
+      ) : !isExpert ? (
+        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-custom-text mb-4">Become an Expert</h2>
+          <p className="text-custom-text/80 mb-6">
+            Complete your expert profile to unlock features like creating products, setting up payments, and more.
+          </p>
+          <Link
+            href="/profile/setup"
+            className="inline-block bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+          >
+            Become an Expert
+          </Link>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6">
@@ -285,7 +302,7 @@ export function DashboardContent() {
 
       <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8">
         <h2 className="text-2xl font-bold text-custom-text mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Link
             href="/directory"
             className="p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
@@ -300,6 +317,24 @@ export function DashboardContent() {
             <h3 className="text-lg font-semibold text-custom-text mb-2">Edit Profile</h3>
             <p className="text-custom-text/80">Update your expert profile information</p>
           </Link>
+          {isExpert && (
+            <>
+              <Link
+                href="/dashboard/products"
+                className="p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+              >
+                <h3 className="text-lg font-semibold text-custom-text mb-2">Manage Products</h3>
+                <p className="text-custom-text/80">Create and manage your products and courses</p>
+              </Link>
+              <Link
+                href="/dashboard/stripe-connect"
+                className="p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+              >
+                <h3 className="text-lg font-semibold text-custom-text mb-2">Payment Setup</h3>
+                <p className="text-custom-text/80">Set up payments to receive money</p>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>

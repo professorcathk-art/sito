@@ -11,6 +11,7 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { ProtectedRoute } from "@/components/protected-route";
+import { ExpertRoute } from "@/components/expert-route";
 import { StripeConnectOnboarding } from "@/components/stripe-connect-onboarding";
 import { useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
@@ -51,11 +52,13 @@ export default function StripeConnectPage() {
 
   return (
     <ProtectedRoute>
-      <DashboardLayout>
-        <Suspense fallback={<div className="text-custom-text/60">Loading...</div>}>
-          <StripeConnectContent />
-        </Suspense>
-      </DashboardLayout>
+      <ExpertRoute>
+        <DashboardLayout>
+          <Suspense fallback={<div className="text-custom-text/60">Loading...</div>}>
+            <StripeConnectContent />
+          </Suspense>
+        </DashboardLayout>
+      </ExpertRoute>
     </ProtectedRoute>
   );
 }

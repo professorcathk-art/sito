@@ -19,6 +19,7 @@ export function DashboardSidebar() {
   const supabase = createClient();
   const [unreadCount, setUnreadCount] = useState(0);
   const [pendingConnections, setPendingConnections] = useState(0);
+  const [isExpert, setIsExpert] = useState(false);
 
   useEffect(() => {
     async function fetchCounts() {
@@ -53,20 +54,22 @@ export function DashboardSidebar() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    async function checkAdmin() {
+    async function checkAdminAndExpert() {
       if (!user) return;
       try {
         const { data } = await supabase
           .from("profiles")
-          .select("is_admin")
+          .select("is_admin, category_id, bio, name")
           .eq("id", user.id)
           .single();
         setIsAdmin(data?.is_admin === true);
+        // Check if user has completed expert profile (has category_id and bio)
+        setIsExpert(!!(data?.category_id && data?.bio && data?.name));
       } catch (error) {
-        console.error("Error checking admin status:", error);
+        console.error("Error checking admin/expert status:", error);
       }
     }
-    checkAdmin();
+    checkAdminAndExpert();
   }, [user, supabase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const menuItems: SidebarItem[] = [
@@ -75,21 +78,35 @@ export function DashboardSidebar() {
       href: "/profile",
       icon: "👤",
     },
-    {
-      name: "Products",
-      href: "/products",
-      icon: "🛍️",
-    },
-    {
-      name: "Sharing Posts",
-      href: "/dashboard/blog",
-      icon: "✍️",
-    },
-    {
-      name: "Classroom",
-      href: "/courses/manage",
-      icon: "📚",
-    },
+    ...(isExpert
+      ? [
+          {
+            name: "Products",
+            href: "/products",
+            icon: "🛍️",
+          },
+          {
+            name: "Sharing Posts",
+            href: "/dashboard/blog",
+            icon: "✍️",
+          },
+          {
+            name: "Classroom",
+            href: "/courses/manage",
+            icon: "📚",
+          },
+          {
+            name: "Manage Appointments",
+            href: "/appointments/manage",
+            icon: "📅",
+          },
+          {
+            name: "Payment Setup",
+            href: "/dashboard/stripe-connect",
+            icon: "💳",
+          },
+        ]
+      : []),
     {
       name: "Messages",
       href: "/messages",
@@ -111,16 +128,6 @@ export function DashboardSidebar() {
       name: "Watch Later",
       href: "/blog/watch-later",
       icon: "💾",
-    },
-    {
-      name: "Manage Appointments",
-      href: "/appointments/manage",
-      icon: "📅",
-    },
-    {
-      name: "Payment Setup",
-      href: "/dashboard/stripe-connect",
-      icon: "💳",
     },
     {
       name: "Purchase History",
