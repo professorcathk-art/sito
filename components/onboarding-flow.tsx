@@ -144,9 +144,10 @@ export function OnboardingFlow() {
         updateData.learning_interests = learningInterests;
       }
 
+      // Use upsert to handle case where profile might not exist
       const { error } = await supabase
         .from("profiles")
-        .update(updateData)
+        .upsert(updateData, { onConflict: "id" })
         .eq("id", user.id);
 
       if (error) throw error;
@@ -162,24 +163,36 @@ export function OnboardingFlow() {
   const handleExpertSubmit = async () => {
     if (!user) return;
     
+    // Validate required fields for expert profile
+    if (!expertiseCategoryId) {
+      setError("Please select your area of expertise");
+      return;
+    }
+    
+    if (!expertBio || expertBio.trim().length < 10) {
+      setError("Please provide a bio (at least 10 characters)");
+      return;
+    }
+    
     setLoading(true);
     setError("");
 
     try {
       const updateData: any = {
         user_intention: "teach",
-        category_id: expertiseCategoryId || null,
+        category_id: expertiseCategoryId,
         expertise_level: expertiseLevel || null,
-        bio: expertBio || null,
+        bio: expertBio,
       };
 
       if (teachingInterests.length > 0) {
         updateData.teaching_interests = teachingInterests;
       }
 
+      // Use upsert to handle case where profile might not exist
       const { error } = await supabase
         .from("profiles")
-        .update(updateData)
+        .upsert(updateData, { onConflict: "id" })
         .eq("id", user.id);
 
       if (error) throw error;
@@ -204,15 +217,16 @@ export function OnboardingFlow() {
     setError("");
 
     try {
+      // Use upsert to handle case where profile might not exist
       const { error } = await supabase
         .from("profiles")
-        .update({
+        .upsert({
+          id: user.id,
           name: displayName,
           tagline: tagline || null,
           location: location || null,
           onboarding_completed: true,
-        })
-        .eq("id", user.id);
+        }, { onConflict: "id" });
 
       if (error) throw error;
 

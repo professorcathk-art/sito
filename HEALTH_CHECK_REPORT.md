@@ -1,159 +1,82 @@
-# Health Check Report
-**Date:** 2026-01-04  
-**Status:** ✅ Code Compiles Successfully | ⚠️ Requires Supabase Migration Verification
+# Health Check Report - User Journey
 
-## ✅ Build Status
-- **TypeScript Compilation:** ✓ Success
-- **ESLint:** ✓ Passes (warnings only, no errors)
-- **Production Build:** ✓ Compiles successfully
-- **Warnings:** Minor image optimization warnings (non-blocking)
+## ✅ Working Correctly
 
-## ✅ Code Fixes Applied
+### 1. Registration Flow
+- ✅ User registers → Profile created with name/email → Redirects to onboarding
+- ✅ Google OAuth → Profile created → Redirects to onboarding
 
-### 1. Registration Form Always Shows
-- ✅ Fixed: Form now always displays, even if questionnaire creation fails
-- ✅ Added: Temporary questionnaire ID support for graceful fallback
-- ✅ Fixed: Form shows default Name/Email fields when questionnaire creation fails
-- ✅ Fixed: QuestionnaireForm handles temporary IDs gracefully
+### 2. Onboarding Flow
+- ✅ Checks if onboarding already completed → Redirects to dashboard if yes
+- ✅ Step 1: Intention selection (learn/teach)
+- ✅ Step 2a: Learner details → Stores learning preferences
+- ✅ Step 2b: Expert details → Stores category_id, bio, teaching interests
+- ✅ Step 3: Profile completion → Sets name, tagline, location, onboarding_completed = true
+- ✅ Redirects to dashboard after completion
 
-### 2. Stripe Webhook Enrollment
-- ✅ Fixed: Added metadata to both session and payment_intent levels
-- ✅ Fixed: Webhook now checks both session.metadata and payment_intent.metadata
-- ✅ Fixed: Added logging for debugging metadata extraction
-- ✅ Fixed: Handles missing course_id or user_id gracefully
+### 3. Dashboard Flow
+- ✅ Checks onboarding_completed → Redirects to onboarding if not completed
+- ✅ Checks expert profile (category_id, bio, name) → Shows "Become an Expert" if not expert
+- ✅ Shows expert features only if isExpert = true
 
-## ⚠️ Supabase Database Verification Required
+### 4. Expert Features Gating
+- ✅ Products page → Requires expert profile (ExpertRoute)
+- ✅ Payment Setup page → Requires expert profile (ExpertRoute)
+- ✅ Sidebar menu → Expert items hidden until expert profile complete
 
-### Required Migrations
-The following migrations should be applied in Supabase:
+### 5. Marketplace Visibility
+- ✅ Directory filters by `listed_on_marketplace = true`
+- ✅ Profile setup has checkbox to control visibility
+- ✅ Default is `false` (not visible)
 
-1. **Migration 019**: `019_add_stripe_to_products.sql`
-   - Adds `stripe_product_id` and `stripe_price_id` to `products` table
-   - Status: ✅ Should be applied
+## ⚠️ Potential Issues Found
 
-2. **Migration 020**: `020_flexible_payment_methods.sql`
-   - Adds `payment_method` and `contact_email` to `products` table
-   - Adds `user_email` to `course_enrollments` table
-   - Updates unique constraints for email-based enrollment
-   - Status: ✅ Should be applied
+### Issue 1: Expert Onboarding Validation
+**Location**: `components/onboarding-flow.tsx` - `handleExpertSubmit`
+**Problem**: User can submit expert details without filling `category_id` or `bio` (fields can be null)
+**Impact**: User chooses "teach" but doesn't fill required fields → Completes onboarding → Not recognized as expert → Confusing UX
+**Fix Needed**: Add validation to require category_id and bio before allowing profile completion step
 
-### Database Schema Verification
+### Issue 2: Profile Setup Form Validation
+**Location**: `components/profile-setup-form.tsx`
+**Problem**: Category field has `required={!formData.categoryId}` but this is only HTML5 validation. Form can still submit if empty.
+**Impact**: User might submit profile without category, won't be recognized as expert
+**Fix Needed**: Add proper validation in handleSubmit to check category_id and bio are filled
 
-Run these queries in Supabase SQL Editor to verify:
+### Issue 3: Onboarding Profile Update vs Upsert
+**Location**: `components/onboarding-flow.tsx` - `handleExpertSubmit`, `handleLearnerSubmit`
+**Problem**: Uses `.update()` which requires profile to exist. If profile creation failed during registration, this will error.
+**Impact**: Edge case - if profile doesn't exist, onboarding will fail
+**Fix Needed**: Use `.upsert()` instead of `.update()` to handle both cases
 
-```sql
--- Check products table has Stripe fields
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'products' 
-AND column_name IN ('stripe_product_id', 'stripe_price_id', 'payment_method', 'contact_email');
+### Issue 4: Expert Profile Check Consistency
+**Location**: Multiple places check `category_id && bio && name`
+**Status**: ✅ Consistent across dashboard, ExpertRoute, sidebar
+**Note**: This is correct - all three fields required
 
--- Check course_enrollments has user_email
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'course_enrollments' 
-AND column_name IN ('user_email', 'payment_intent_id');
+## 🔧 Recommended Fixes
 
--- Check indexes exist
-SELECT indexname, indexdef 
-FROM pg_indexes 
-WHERE tablename = 'course_enrollments' 
-AND indexname LIKE '%user_email%';
-```
+1. **Add validation to expert onboarding step** - Require category_id and bio before proceeding
+2. **Add validation to profile setup form** - Ensure category_id and bio are required for expert profile
+3. **Change onboarding updates to upserts** - Handle edge case where profile might not exist
+4. **Add error handling** - Better error messages for validation failures
 
-### Expected Results
+## 📋 User Journey Test Checklist
 
-**products table should have:**
-- `stripe_product_id` (TEXT, nullable)
-- `stripe_price_id` (TEXT, nullable)
-- `payment_method` (TEXT, CHECK constraint: 'stripe' or 'offline', default 'stripe')
-- `contact_email` (TEXT, nullable)
+### New User Journey (Learner)
+- [ ] Register → Onboarding → Choose "Learn" → Fill learner details → Complete profile → Dashboard shows "Become an Expert"
+- [ ] Click "Become an Expert" → Profile Setup → Fill category, bio, name → Save → Dashboard shows expert features
+- [ ] Check "List on marketplace" → Save → Appears in directory
+- [ ] Uncheck "List on marketplace" → Save → Disappears from directory
 
-**course_enrollments table should have:**
-- `user_email` (TEXT, nullable)
-- `payment_intent_id` (TEXT, nullable)
-- Unique indexes:
-  - `course_enrollments_course_user_id_unique` (on course_id, user_id WHERE user_id IS NOT NULL)
-  - `course_enrollments_course_user_email_unique` (on course_id, user_email WHERE user_email IS NOT NULL AND user_email != '')
+### New User Journey (Expert)
+- [ ] Register → Onboarding → Choose "Teach" → Fill expert details (category, bio) → Complete profile → Dashboard shows expert features
+- [ ] Check "List on marketplace" → Save → Appears in directory
+- [ ] Access Products page → Should work
+- [ ] Access Payment Setup → Should work
 
-## ✅ Code Flow Verification
-
-### Registration Interest Flow
-1. User clicks "Register Interest" ✓
-2. System checks for questionnaire ✓
-3. Creates questionnaire with default fields if none exists ✓
-4. **Form displays as modal popup** ✓
-5. User fills out form ✓
-6. User clicks submit ✓
-7. Form data saved to questionnaire_responses (if valid questionnaire) ✓
-8. Interest registered with questionnaire_response_id ✓
-9. Success message shown ✓
-
-### Payment Enrollment Flow
-1. User clicks "Enroll" on paid course ✓
-2. System checks payment method (Stripe/Offline) ✓
-3. If Stripe: Redirects to checkout with metadata ✓
-4. User completes payment ✓
-5. Stripe sends `checkout.session.completed` webhook ✓
-6. Webhook extracts course_id and user_id from metadata ✓
-7. Webhook creates enrollment in course_enrollments ✓
-8. User redirected to success page ✓
-9. Success page redirects to classroom ✓
-10. Course appears in user's classroom ✓
-
-## 🔍 Known Issues & Solutions
-
-### Issue 1: "Unable to load registration form"
-**Status:** ✅ FIXED
-- **Solution:** Form now always shows, even if questionnaire creation fails
-- **Fallback:** Uses temporary questionnaire ID with default Name/Email fields
-
-### Issue 2: "Missing course_id or user_id in checkout session metadata"
-**Status:** ✅ FIXED
-- **Solution:** Metadata now added to both session and payment_intent levels
-- **Solution:** Webhook checks both locations for metadata
-- **Solution:** Added logging to debug metadata extraction
-
-## 📋 Pre-Deployment Checklist
-
-- [x] Code compiles successfully
-- [x] TypeScript errors resolved
-- [x] Registration form always shows
-- [x] Webhook handles metadata correctly
-- [ ] **Verify Supabase migrations are applied** ⚠️
-- [ ] **Test registration form flow** ⚠️
-- [ ] **Test payment enrollment flow** ⚠️
-- [ ] **Verify webhook receives events** ⚠️
-
-## 🚀 Next Steps
-
-1. **Apply Supabase Migrations** (if not already applied):
-   - Run `019_add_stripe_to_products.sql`
-   - Run `020_flexible_payment_methods.sql`
-
-2. **Test Registration Form**:
-   - Click "Register Interest" on a course
-   - Verify form popup appears
-   - Fill out form and submit
-   - Verify interest is registered
-
-3. **Test Payment Enrollment**:
-   - Create a test course with Stripe payment
-   - Click "Enroll" and complete payment
-   - Verify webhook receives `checkout.session.completed`
-   - Verify enrollment is created in database
-   - Verify course appears in classroom
-
-4. **Monitor Webhook Logs**:
-   - Check Vercel logs for webhook events
-   - Verify metadata is extracted correctly
-   - Check for any enrollment creation errors
-
-## 📝 Notes
-
-- The code now handles temporary questionnaire IDs gracefully
-- Webhook checks both session and payment_intent metadata
-- All error paths have been improved with better fallbacks
-- Database schema supports both user_id and user_email enrollments
-
-
+### Edge Cases
+- [ ] User chooses "teach" but doesn't fill category/bio → Should show validation error
+- [ ] User completes onboarding but profile doesn't exist → Should handle gracefully
+- [ ] User tries to access Products without expert profile → Should show "Complete Your Profile" message
+- [ ] User unchecks marketplace visibility → Should disappear from directory immediately

@@ -281,6 +281,51 @@ export function ProfileSetupForm() {
       return;
     }
 
+    // Validate required fields for expert profile
+    if (!formData.name || formData.name.trim().length === 0) {
+      setError("Display name is required");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.title || formData.title.trim().length === 0) {
+      setError("Tagline is required");
+      setLoading(false);
+      return;
+    }
+
+    // If user is trying to become an expert, require category and bio
+    // Check if they already have category_id or bio (from onboarding)
+    // If not, require them to fill it
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("category_id, bio")
+      .eq("id", user.id)
+      .single();
+
+    const hasCategory = formData.categoryId || existingProfile?.category_id;
+    const hasBio = (formData.bio && formData.bio.trim().length > 0) || (existingProfile?.bio && existingProfile.bio.trim().length > 0);
+
+    // If user is filling category or bio, they're trying to become an expert
+    // Require both category and bio for expert profile
+    if (formData.categoryId || formData.bio || existingProfile?.category_id || existingProfile?.bio) {
+      if (!hasCategory) {
+        setError("Category is required to become an expert");
+        setLoading(false);
+        return;
+      }
+      if (!hasBio) {
+        setError("Bio is required to become an expert (at least 10 characters)");
+        setLoading(false);
+        return;
+      }
+      if (formData.bio && formData.bio.trim().length < 10) {
+        setError("Bio must be at least 10 characters");
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       // Update or insert profile
       const { error: profileError } = await supabase
@@ -289,9 +334,9 @@ export function ProfileSetupForm() {
           id: user.id,
           name: formData.name,
           tagline: formData.title,
-          category_id: formData.categoryId || null,
+          category_id: formData.categoryId || existingProfile?.category_id || null,
           country_id: formData.countryId || null,
-          bio: formData.bio,
+          bio: formData.bio || existingProfile?.bio || null,
           website: formData.website || null,
           linkedin: formData.linkedin || null,
           instagram_url: formData.instagramUrl || null,
