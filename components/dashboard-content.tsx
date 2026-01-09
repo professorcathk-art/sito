@@ -136,7 +136,7 @@ export function DashboardContent() {
     }
 
     fetchDashboardData();
-  }, [user, supabase]);
+  }, [user, supabase, router]);
 
   if (loading) {
     return (

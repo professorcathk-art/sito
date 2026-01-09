@@ -270,7 +270,7 @@ export function OnboardingFlow() {
             Sito
           </Link>
           <h1 className="text-3xl font-bold text-custom-text mb-2">Welcome to Sito!</h1>
-          <p className="text-custom-text/80">Let's get you started</p>
+          <p className="text-custom-text/80">Let&apos;s get you started</p>
         </div>
 
         {/* Progress indicator */}
@@ -316,7 +316,7 @@ export function OnboardingFlow() {
             <div>
               <h2 className="text-2xl font-bold text-custom-text mb-4">What brings you to Sito?</h2>
               <p className="text-custom-text/80 mb-6">
-                We'd love to understand your goals so we can personalize your experience
+                We&apos;d love to understand your goals so we can personalize your experience
               </p>
               <div className="space-y-4">
                 <button
