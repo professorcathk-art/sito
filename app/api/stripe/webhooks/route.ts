@@ -151,8 +151,9 @@ export async function POST(request: NextRequest) {
       const appointmentId = session.metadata?.appointment_id || paymentIntentMetadata?.appointment_id;
       const slotStartTime = session.metadata?.slot_start_time || paymentIntentMetadata?.slot_start_time;
       const slotEndTime = session.metadata?.slot_end_time || paymentIntentMetadata?.slot_end_time;
+      const questionnaireResponseId = session.metadata?.questionnaire_response_id || paymentIntentMetadata?.questionnaire_response_id || null;
 
-      console.log(`Webhook metadata - courseId: ${courseId}, userId: ${userId}, appointmentId: ${appointmentId}, paymentIntentId: ${paymentIntentId}`);
+      console.log(`Webhook metadata - courseId: ${courseId}, userId: ${userId}, appointmentId: ${appointmentId}, paymentIntentId: ${paymentIntentId}, questionnaireResponseId: ${questionnaireResponseId}`);
 
       // Use service role client to bypass RLS for webhook operations
       const supabase = createServiceRoleClient();
@@ -175,6 +176,7 @@ export async function POST(request: NextRequest) {
               course_id: courseId,
               user_id: userId,
               payment_intent_id: paymentIntentId || null,
+              questionnaire_response_id: questionnaireResponseId || null,
             })
             .select()
             .single();

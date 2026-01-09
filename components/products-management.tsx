@@ -256,78 +256,65 @@ export function ProductsManagement() {
           user_id,
           user_email,
           enrolled_at,
+          questionnaire_response_id,
           profiles:user_id(name, email)
         `)
         .eq("course_id", courseId);
 
       if (error) throw error;
       
-      // Fetch questionnaire responses for these enrollments
-      const enrollmentIds = (data || []).map((e: any) => e.id);
+      // Fetch questionnaire responses using questionnaire_response_id from enrollments
+      const questionnaireResponseIds = (data || []).map((e: any) => e.questionnaire_response_id).filter(Boolean);
       let questionnaireResponsesMap: { [key: string]: any } = {};
       let questionnaireFieldsMap: { [key: string]: { [key: string]: string } } = {};
       
-      if (enrollmentIds.length > 0) {
-        // Get product_id for this course to find questionnaire
-        const { data: product } = await supabase
-          .from("products")
-          .select("id")
-          .eq("course_id", courseId)
-          .eq("product_type", "course")
-          .maybeSingle();
+      if (questionnaireResponseIds.length > 0) {
+        // Fetch questionnaire responses by ID
+        const { data: responsesData } = await supabase
+          .from("questionnaire_responses")
+          .select("id, responses, questionnaire_id")
+          .in("id", questionnaireResponseIds);
         
-        if (product) {
-          // Fetch questionnaire for this product
-          const { data: questionnaire } = await supabase
-            .from("questionnaires")
-            .select("id")
-            .eq("product_id", product.id)
-            .maybeSingle();
+        if (responsesData) {
+          // Map responses by response ID
+          responsesData.forEach((resp: any) => {
+            questionnaireResponsesMap[resp.id] = resp.responses;
+          });
           
-          if (questionnaire) {
-            // Fetch questionnaire responses linked to this course via user_id and questionnaire_id
-            const { data: responsesData } = await supabase
-              .from("questionnaire_responses")
-              .select("id, responses, user_id, questionnaire_id")
-              .eq("questionnaire_id", questionnaire.id)
-              .in("user_id", (data || []).map((e: any) => e.user_id).filter(Boolean));
+          // Get all unique questionnaire IDs
+          const questionnaireIds = Array.from(new Set(responsesData.map((r: any) => r.questionnaire_id).filter(Boolean)));
+          
+          if (questionnaireIds.length > 0) {
+            // Fetch questionnaire fields to map field IDs to labels
+            const { data: fieldsData } = await supabase
+              .from("questionnaire_fields")
+              .select("id, questionnaire_id, label")
+              .in("questionnaire_id", questionnaireIds);
             
-            if (responsesData) {
-              // Map responses by user_id
-              responsesData.forEach((resp: any) => {
-                const enrollment = (data || []).find((e: any) => e.user_id === resp.user_id);
-                if (enrollment) {
-                  questionnaireResponsesMap[enrollment.id] = resp.responses;
+            if (fieldsData) {
+              fieldsData.forEach((field: any) => {
+                if (!questionnaireFieldsMap[field.questionnaire_id]) {
+                  questionnaireFieldsMap[field.questionnaire_id] = {};
                 }
+                questionnaireFieldsMap[field.questionnaire_id][field.id] = field.label;
               });
-              
-              // Fetch questionnaire fields to map field IDs to labels
-              const { data: fieldsData } = await supabase
-                .from("questionnaire_fields")
-                .select("id, label")
-                .eq("questionnaire_id", questionnaire.id);
-              
-              if (fieldsData) {
-                fieldsData.forEach((field: any) => {
-                  if (!questionnaireFieldsMap[questionnaire.id]) {
-                    questionnaireFieldsMap[questionnaire.id] = {};
-                  }
-                  questionnaireFieldsMap[questionnaire.id][field.id] = field.label;
-                });
-              }
             }
           }
         }
       }
       
       const members = (data || []).map((enrollment: any) => {
-        const responses = questionnaireResponsesMap[enrollment.id];
         let mappedResponses: { [key: string]: any } | null = null;
         
-        if (responses) {
-          // Map field IDs to labels
-          const questionnaireId = Object.keys(questionnaireFieldsMap)[0];
+        if (enrollment.questionnaire_response_id && questionnaireResponsesMap[enrollment.questionnaire_response_id]) {
+          const responses = questionnaireResponsesMap[enrollment.questionnaire_response_id];
+          
+          // Find questionnaire_id from response data
+          const responseData = responsesData?.find((r: any) => r.id === enrollment.questionnaire_response_id);
+          const questionnaireId = responseData?.questionnaire_id;
+          
           if (questionnaireId && questionnaireFieldsMap[questionnaireId]) {
+            // Map field IDs to labels
             mappedResponses = {};
             Object.entries(responses).forEach(([fieldId, value]) => {
               const label = questionnaireFieldsMap[questionnaireId][fieldId] || fieldId;
@@ -1105,30 +1092,80 @@ export function ProductsManagement() {
     }
   };
 
-  const downloadInterestsCSV = () => {
+  const downloadInterestsCSV = async () => {
     if (interests.length === 0) {
       alert("No interests to download");
       return;
     }
 
-    // Collect all unique custom field names from questionnaire responses
-    const customFieldNames = new Set<string>();
+    // Collect all unique questionnaire IDs to fetch field mappings
+    const questionnaireIds = new Set<string>();
     interests.forEach((interest) => {
       if (interest.questionnaire_responses) {
-        Object.keys(interest.questionnaire_responses).forEach((key) => {
-          customFieldNames.add(key);
+        // Find questionnaire ID from product
+        const product = products.find(p => p.id === interest.product_id);
+        if (product) {
+          // We'll need to fetch questionnaire ID from product
+        }
+      }
+    });
+
+    // Fetch all questionnaire fields to map field IDs to labels
+    const questionnaireFieldsMap: { [questionnaireId: string]: { [fieldId: string]: string } } = {};
+    const productQuestionnaireMap: { [productId: string]: string } = {};
+    
+    // Get questionnaire IDs for all products
+    const productIds = Array.from(new Set(interests.map(i => i.product_id)));
+    if (productIds.length > 0) {
+      const { data: questionnaires } = await supabase
+        .from("questionnaires")
+        .select("id, product_id")
+        .in("product_id", productIds);
+      
+      if (questionnaires) {
+        questionnaires.forEach((q: any) => {
+          productQuestionnaireMap[q.product_id] = q.id;
+          questionnaireIds.add(q.id);
+        });
+      }
+    }
+
+    // Fetch all fields for all questionnaires
+    if (questionnaireIds.size > 0) {
+      const { data: fieldsData } = await supabase
+        .from("questionnaire_fields")
+        .select("id, questionnaire_id, label")
+        .in("questionnaire_id", Array.from(questionnaireIds));
+      
+      if (fieldsData) {
+        fieldsData.forEach((field: any) => {
+          if (!questionnaireFieldsMap[field.questionnaire_id]) {
+            questionnaireFieldsMap[field.questionnaire_id] = {};
+          }
+          questionnaireFieldsMap[field.questionnaire_id][field.id] = field.label;
+        });
+      }
+    }
+
+    // Collect all unique custom field labels (not IDs) from questionnaire responses
+    const customFieldLabels = new Set<string>();
+    interests.forEach((interest) => {
+      if (interest.questionnaire_responses) {
+        // questionnaire_responses already has labels as keys (from fetchInterests)
+        Object.keys(interest.questionnaire_responses).forEach((label) => {
+          customFieldLabels.add(label);
         });
       }
     });
 
-    // Build headers: standard fields + custom fields
+    // Build headers: standard fields + custom fields (using labels)
     const headers = [
       "Product Name",
       "User Name",
       "User Email",
       "Phone Number",
       "Registered Date",
-      ...Array.from(customFieldNames).sort(),
+      ...Array.from(customFieldLabels).sort(),
     ];
 
     // Build rows with custom field data
@@ -1143,9 +1180,9 @@ export function ProductsManagement() {
         new Date(interest.created_at).toLocaleDateString(),
       ];
 
-      // Add custom field values in the same order as headers
-      const customValues = Array.from(customFieldNames).map((fieldName) => {
-        const value = interest.questionnaire_responses?.[fieldName];
+      // Add custom field values in the same order as headers (using labels)
+      const customValues = Array.from(customFieldLabels).map((fieldLabel) => {
+        const value = interest.questionnaire_responses?.[fieldLabel];
         if (value === null || value === undefined) return "";
         if (Array.isArray(value)) return value.join("; ");
         return String(value);

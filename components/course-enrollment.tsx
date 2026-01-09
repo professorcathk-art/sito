@@ -495,6 +495,7 @@ export function CourseEnrollment({
                 priceId: product.stripe_price_id,
                 connectedAccountId: connectedAccountId,
                 courseId: courseId,
+                questionnaireResponseId: questionnaireResponse?.id || null,
               }),
             });
 

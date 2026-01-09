@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
           appointment_id: body.appointmentId || "",
           slot_start_time: body.slotStartTime || "",
           slot_end_time: body.slotEndTime || "",
+          questionnaire_response_id: body.questionnaireResponseId || "",
         },
       },
 
@@ -140,6 +141,7 @@ export async function POST(request: NextRequest) {
         appointment_id: body.appointmentId || "",
         slot_start_time: body.slotStartTime || "",
         slot_end_time: body.slotEndTime || "",
+        questionnaire_response_id: body.questionnaireResponseId || "",
       },
 
       // Payment mode (one-time payment)
