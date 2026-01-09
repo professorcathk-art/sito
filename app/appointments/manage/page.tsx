@@ -411,6 +411,50 @@ export default function ManageAppointmentsPage() {
             </button>
           </div>
 
+          {/* My Bookings Section */}
+          {activeTab === "my-bookings" && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-custom-text mb-6">My Bookings</h2>
+              {loadingMyBookings ? (
+                <div className="animate-pulse space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-20 bg-dark-green-800/50 rounded-lg"></div>
+                  ))}
+                </div>
+              ) : myBookings.length === 0 ? (
+                <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
+                  <p className="text-custom-text/80 mb-4">You haven&apos;t booked any appointments yet.</p>
+                  <p className="text-custom-text/60 text-sm">
+                    Browse experts and book appointments to see them here.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {myBookings.map((appointment) => (
+                    <div
+                      key={appointment.id}
+                      className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-lg font-semibold text-custom-text mb-2">
+                            {formatDateTime(appointment.start_time)} - {formatDateTime(appointment.end_time)}
+                          </p>
+                          <p className="text-custom-text/70 mb-1">
+                            Expert: {appointment.profiles?.name || "Unknown Expert"} ({appointment.profiles?.email || "N/A"})
+                          </p>
+                          <p className="text-custom-text/70">
+                            ${appointment.rate_per_hour}/hour • Total: ${appointment.total_amount.toFixed(2)} • Status: {appointment.status}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Booked Appointments Section */}
           {activeTab === "bookings" && (
             <div className="mb-8">
