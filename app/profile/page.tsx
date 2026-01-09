@@ -125,7 +125,7 @@ export default function ProfilePage() {
           instagram_url,
           verified,
           listed_on_marketplace,
-          categories(name),
+          categories!profiles_category_id_fkey(name),
           countries(name)
         `)
         .eq("id", user.id)

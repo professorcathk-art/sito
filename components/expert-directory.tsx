@@ -80,7 +80,7 @@ export function ExpertDirectory() {
             category_id,
             country_id,
             avatar_url,
-            categories(name),
+            categories!profiles_category_id_fkey(name),
             countries(name)
           `)
           .eq("listed_on_marketplace", true)

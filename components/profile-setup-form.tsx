@@ -96,7 +96,7 @@ export function ProfileSetupForm() {
               category_id,
               country_id,
               avatar_url,
-              categories(name),
+              categories!profiles_category_id_fkey(name),
               countries(name)
             `)
             .eq("id", user.id)

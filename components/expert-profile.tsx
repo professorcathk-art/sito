@@ -80,7 +80,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
             instagram_url,
             verified,
             listed_on_marketplace,
-            categories(name),
+            categories!profiles_category_id_fkey(name),
             countries(name)
           `)
           .eq("id", expertId);
