@@ -133,6 +133,7 @@ export function OnboardingFlow() {
 
     try {
       const updateData: any = {
+        id: user.id,
         user_intention: "learn",
         learning_category_id: learningCategoryId || null,
         learning_location: learningLocation || null,
@@ -147,8 +148,7 @@ export function OnboardingFlow() {
       // Use upsert to handle case where profile might not exist
       const { error } = await supabase
         .from("profiles")
-        .upsert(updateData, { onConflict: "id" })
-        .eq("id", user.id);
+        .upsert(updateData, { onConflict: "id" });
 
       if (error) throw error;
 
@@ -179,6 +179,7 @@ export function OnboardingFlow() {
 
     try {
       const updateData: any = {
+        id: user.id,
         user_intention: "teach",
         category_id: expertiseCategoryId,
         expertise_level: expertiseLevel || null,
@@ -192,8 +193,7 @@ export function OnboardingFlow() {
       // Use upsert to handle case where profile might not exist
       const { error } = await supabase
         .from("profiles")
-        .upsert(updateData, { onConflict: "id" })
-        .eq("id", user.id);
+        .upsert(updateData, { onConflict: "id" });
 
       if (error) throw error;
 
