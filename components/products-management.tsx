@@ -449,12 +449,15 @@ export function ProductsManagement() {
       );
       const questionnaireResponsesMap: { [key: string]: any } = {};
       const questionnaireFieldsMap: { [key: string]: { [key: string]: string } } = {}; // questionnaire_id -> { fieldId -> fieldLabel }
+      let responsesData: any[] | null = null;
       
       if (questionnaireResponseIds.length > 0) {
-        const { data: responsesData } = await supabase
+        const { data: responsesDataResult } = await supabase
           .from("questionnaire_responses")
           .select("id, responses, questionnaire_id")
           .in("id", questionnaireResponseIds);
+        
+        responsesData = responsesDataResult || null;
         
         if (responsesData) {
           responsesData.forEach((resp: any) => {
@@ -2409,8 +2412,9 @@ export function ProductsManagement() {
                             setShowMembersForProduct(null);
                           } else {
                             setShowMembersForProduct(product.id);
-                            if (!courseMembersMap[product.course_id]) {
-                              await fetchCourseMembers(product.course_id);
+                            const courseId = product.course_id;
+                            if (courseId && !courseMembersMap[courseId]) {
+                              await fetchCourseMembers(courseId);
                             }
                           }
                         }}
