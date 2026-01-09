@@ -109,6 +109,24 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Log metadata being sent for debugging
+    const sessionMetadata = {
+      connected_account_id: connectedAccountId,
+      application_fee_percent: applicationFeePercent.toString(),
+      user_id: user?.id || "guest",
+      course_id: courseId || "",
+      appointment_id: appointmentId || "",
+      slot_start_time: slotStartTime || "",
+      slot_end_time: slotEndTime || "",
+      questionnaire_response_id: questionnaireResponseId || "",
+    };
+    
+    console.log("Creating checkout session with metadata:", JSON.stringify(sessionMetadata, null, 2));
+    console.log("Connected Account ID:", connectedAccountId);
+    console.log("User ID:", user?.id);
+    console.log("Course ID:", courseId);
+    console.log("Appointment ID:", appointmentId);
+
     const session = await stripeClient.checkout.sessions.create({
       // Line items for the checkout
       line_items: lineItems,
@@ -125,29 +143,11 @@ export async function POST(request: NextRequest) {
         },
 
         // Store metadata for tracking and enrollment (in payment intent)
-        metadata: {
-          connected_account_id: connectedAccountId,
-          application_fee_percent: applicationFeePercent.toString(),
-          user_id: user?.id || "guest",
-          course_id: courseId || "",
-          appointment_id: appointmentId || "",
-          slot_start_time: slotStartTime || "",
-          slot_end_time: slotEndTime || "",
-          questionnaire_response_id: questionnaireResponseId || "",
-        },
+        metadata: sessionMetadata,
       },
 
       // Store metadata at session level too (for webhook access)
-      metadata: {
-        connected_account_id: connectedAccountId,
-        application_fee_percent: applicationFeePercent.toString(),
-        user_id: user?.id || "guest",
-        course_id: courseId || "",
-        appointment_id: appointmentId || "",
-        slot_start_time: slotStartTime || "",
-        slot_end_time: slotEndTime || "",
-        questionnaire_response_id: questionnaireResponseId || "",
-      },
+      metadata: sessionMetadata,
 
       // Payment mode (one-time payment)
       mode: "payment",
@@ -161,6 +161,9 @@ export async function POST(request: NextRequest) {
       // Customer email (if user is logged in)
       customer_email: user?.email || undefined,
     });
+
+    console.log("Checkout session created:", session.id);
+    console.log("Checkout URL:", session.url);
 
     return NextResponse.json({
       sessionId: session.id,

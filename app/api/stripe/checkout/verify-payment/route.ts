@@ -30,11 +30,17 @@ export async function POST(request: NextRequest) {
       expand: ["payment_intent"],
     });
 
+    console.log("Verify Payment - Session ID:", sessionId);
+    console.log("Verify Payment - Payment Status:", session.payment_status);
+    console.log("Verify Payment - Session Metadata:", JSON.stringify(session.metadata, null, 2));
+
     // Only process if payment was successful
     if (session.payment_status !== "paid") {
+      console.log("Payment not completed. Status:", session.payment_status);
       return NextResponse.json({
         success: false,
-        message: "Payment not completed",
+        message: `Payment not completed. Status: ${session.payment_status}`,
+        payment_status: session.payment_status,
       });
     }
 
@@ -69,10 +75,20 @@ export async function POST(request: NextRequest) {
     const finalSlotEndTime = slotEndTime || paymentIntentMetadata?.slot_end_time;
     const finalQuestionnaireResponseId = questionnaireResponseId || paymentIntentMetadata?.questionnaire_response_id || null;
 
+    console.log("Verify Payment - Extracted Data:");
+    console.log("  Course ID:", finalCourseId);
+    console.log("  User ID:", finalUserId);
+    console.log("  Appointment ID:", finalAppointmentId);
+    console.log("  Slot Start:", finalSlotStartTime);
+    console.log("  Slot End:", finalSlotEndTime);
+
     if (!finalUserId || finalUserId === "guest") {
+      console.error("User ID not found in session metadata");
       return NextResponse.json({
         success: false,
         message: "User ID not found in session",
+        session_metadata: session.metadata,
+        payment_intent_metadata: paymentIntentMetadata,
       });
     }
 
@@ -101,12 +117,15 @@ export async function POST(request: NextRequest) {
 
         if (enrollError) {
           console.error("Error creating enrollment from success page:", enrollError);
+          console.error("Enrollment error details:", JSON.stringify(enrollError, null, 2));
           return NextResponse.json({
             success: false,
             error: enrollError.message,
+            details: enrollError,
           });
         }
 
+        console.log(`✅ Enrollment created: ${newEnrollment?.id} for user ${finalUserId} in course ${finalCourseId}`);
         return NextResponse.json({
           success: true,
           type: "course",
@@ -183,9 +202,11 @@ export async function POST(request: NextRequest) {
 
         if (appointmentError) {
           console.error("Error creating appointment from success page:", appointmentError);
+          console.error("Appointment error details:", JSON.stringify(appointmentError, null, 2));
           return NextResponse.json({
             success: false,
             error: appointmentError.message,
+            details: appointmentError,
           });
         }
 
@@ -195,6 +216,7 @@ export async function POST(request: NextRequest) {
           .update({ is_available: false })
           .eq("id", finalAppointmentId);
 
+        console.log(`✅ Appointment created: ${appointment?.id} for user ${finalUserId}`);
         return NextResponse.json({
           success: true,
           type: "appointment",

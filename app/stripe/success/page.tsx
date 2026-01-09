@@ -30,13 +30,33 @@ function SuccessContent() {
         body: JSON.stringify({ sessionId }),
       })
         .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) {
+            return res.json().then(err => {
+              console.error("Payment verification failed:", err);
+              throw new Error(err.error || err.message || "Payment verification failed");
+            });
+          }
+          return res.json();
+        })
         .then((verifyData) => {
           console.log("Payment verification result:", verifyData);
+          
+          if (!verifyData.success) {
+            setError(`Payment verification failed: ${verifyData.message || "Unknown error"}`);
+            setLoading(false);
+            return;
+          }
           
           // Then fetch session details for redirect
           return fetch(`/api/stripe/checkout/session?session_id=${sessionId}`);
         })
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Failed to fetch session details");
+          }
+          return res.json();
+        })
         .then((data) => {
           if (data.appointment_id) {
             setAppointmentId(data.appointment_id);
