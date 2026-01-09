@@ -40,10 +40,12 @@ export default function ManageAppointmentsPage() {
   const supabase = createClient();
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
   const [bookedAppointments, setBookedAppointments] = useState<BookedAppointment[]>([]);
+  const [myBookings, setMyBookings] = useState<BookedAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingBookings, setLoadingBookings] = useState(true);
+  const [loadingMyBookings, setLoadingMyBookings] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [activeTab, setActiveTab] = useState<"slots" | "bookings">("slots");
+  const [activeTab, setActiveTab] = useState<"slots" | "bookings" | "my-bookings">("slots");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [products, setProducts] = useState<Array<{ id: string; name: string }>>([]);
@@ -60,6 +62,7 @@ export default function ManageAppointmentsPage() {
     if (!user) return;
     fetchSlots();
     fetchBookedAppointments();
+    fetchMyBookings();
     fetchProducts();
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -119,6 +122,7 @@ export default function ManageAppointmentsPage() {
         rate_per_hour: apt.rate_per_hour,
         total_amount: apt.total_amount,
         status: apt.status,
+        payment_intent_id: apt.payment_intent_id,
         profiles: profileMap[apt.user_id] || { name: "Unknown", email: "N/A" },
       }));
 
@@ -127,6 +131,48 @@ export default function ManageAppointmentsPage() {
       console.error("Error fetching booked appointments:", err);
     } finally {
       setLoadingBookings(false);
+    }
+  };
+
+  const fetchMyBookings = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select(`
+          *,
+          profiles!appointments_expert_id_fkey (
+            id,
+            name,
+            title,
+            email
+          )
+        `)
+        .eq("user_id", user.id)
+        .order("start_time", { ascending: false });
+
+      if (error) throw error;
+
+      const appointments = (data || []).map((apt: any) => ({
+        id: apt.id,
+        start_time: apt.start_time,
+        end_time: apt.end_time,
+        rate_per_hour: apt.rate_per_hour,
+        total_amount: apt.total_amount,
+        status: apt.status,
+        payment_intent_id: apt.payment_intent_id,
+        profiles: apt.profiles ? {
+          name: apt.profiles.name || "Unknown Expert",
+          email: apt.profiles.email || "N/A",
+        } : { name: "Unknown Expert", email: "N/A" },
+      }));
+
+      setMyBookings(appointments);
+    } catch (err) {
+      console.error("Error fetching my bookings:", err);
+    } finally {
+      setLoadingMyBookings(false);
     }
   };
 
@@ -318,6 +364,16 @@ export default function ManageAppointmentsPage() {
           {/* Tabs */}
           <div className="flex gap-4 border-b border-cyber-green/30 mb-6">
             <button
+              onClick={() => setActiveTab("my-bookings")}
+              className={`px-4 py-2 font-semibold transition-colors ${
+                activeTab === "my-bookings"
+                  ? "text-cyber-green border-b-2 border-cyber-green"
+                  : "text-custom-text/70 hover:text-custom-text"
+              }`}
+            >
+              My Bookings ({myBookings.length})
+            </button>
+            <button
               onClick={() => setActiveTab("bookings")}
               className={`px-4 py-2 font-semibold transition-colors ${
                 activeTab === "bookings"
@@ -325,7 +381,7 @@ export default function ManageAppointmentsPage() {
                   : "text-custom-text/70 hover:text-custom-text"
               }`}
             >
-              Booked Appointments ({bookedAppointments.length})
+              Booked with Me ({bookedAppointments.length})
             </button>
             <button
               onClick={() => setActiveTab("slots")}

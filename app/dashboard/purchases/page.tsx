@@ -260,9 +260,17 @@ export default function PurchasesPage() {
                           </div>
                         )}
                         {purchase.payment_intent_id && (
-                          <div>
+                          <div className="flex items-center gap-2">
                             <span className="font-medium">Payment ID:</span>{" "}
                             <span className="font-mono text-xs">{purchase.payment_intent_id.slice(0, 20)}...</span>
+                            <a
+                              href={`/api/stripe/invoice/${purchase.payment_intent_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-cyber-green hover:text-cyber-green-light text-sm underline"
+                            >
+                              View Receipt
+                            </a>
                           </div>
                         )}
                       </div>
