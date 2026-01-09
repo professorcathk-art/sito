@@ -23,6 +23,13 @@ ADD COLUMN IF NOT EXISTS teaching_interests TEXT[]; -- What they want to teach
 ALTER TABLE profiles 
 ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT false;
 
+-- Mark existing users as having completed onboarding
+-- (Users who already have profiles with some data are considered to have completed onboarding)
+UPDATE profiles 
+SET onboarding_completed = true 
+WHERE (onboarding_completed IS NULL OR onboarding_completed = false)
+AND (name IS NOT NULL OR bio IS NOT NULL OR category_id IS NOT NULL);
+
 -- Create index for onboarding status
 CREATE INDEX IF NOT EXISTS idx_profiles_onboarding_completed ON profiles(onboarding_completed);
 
