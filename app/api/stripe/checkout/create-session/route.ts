@@ -42,6 +42,11 @@ export async function POST(request: NextRequest) {
       quantity = 1,
       connectedAccountId,
       applicationFeePercent = 20, // Default 20% platform fee
+      courseId,
+      appointmentId, // Can be camelCase from frontend
+      slotStartTime, // Can be camelCase from frontend
+      slotEndTime, // Can be camelCase from frontend
+      questionnaireResponseId, // Can be camelCase from frontend
     } = body;
 
     // Validate required fields
@@ -124,11 +129,11 @@ export async function POST(request: NextRequest) {
           connected_account_id: connectedAccountId,
           application_fee_percent: applicationFeePercent.toString(),
           user_id: user?.id || "guest",
-          course_id: body.courseId || "",
-          appointment_id: body.appointmentId || "",
-          slot_start_time: body.slotStartTime || "",
-          slot_end_time: body.slotEndTime || "",
-          questionnaire_response_id: body.questionnaireResponseId || "",
+          course_id: courseId || "",
+          appointment_id: appointmentId || "",
+          slot_start_time: slotStartTime || "",
+          slot_end_time: slotEndTime || "",
+          questionnaire_response_id: questionnaireResponseId || "",
         },
       },
 
@@ -137,11 +142,11 @@ export async function POST(request: NextRequest) {
         connected_account_id: connectedAccountId,
         application_fee_percent: applicationFeePercent.toString(),
         user_id: user?.id || "guest",
-        course_id: body.courseId || "",
-        appointment_id: body.appointmentId || "",
-        slot_start_time: body.slotStartTime || "",
-        slot_end_time: body.slotEndTime || "",
-        questionnaire_response_id: body.questionnaireResponseId || "",
+        course_id: courseId || "",
+        appointment_id: appointmentId || "",
+        slot_start_time: slotStartTime || "",
+        slot_end_time: slotEndTime || "",
+        questionnaire_response_id: questionnaireResponseId || "",
       },
 
       // Payment mode (one-time payment)

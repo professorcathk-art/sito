@@ -331,17 +331,6 @@ export default function BookAppointmentPage() {
       // Calculate price for this specific slot duration
       const priceInCents = Math.round(totalAmount * 100);
       
-      // Store questionnaire response ID if available
-      const metadata: any = {
-        appointmentId: slot.id,
-        slotStartTime: slot.start_time,
-        slotEndTime: slot.end_time,
-      };
-      
-      if (questionnaireResponse?.id) {
-        metadata.questionnaire_response_id = questionnaireResponse.id;
-      }
-      
       // For appointments, we need to create a checkout session with the calculated amount
       // Since Stripe prices are fixed, we'll use line_items with price_data for dynamic pricing
       const response = await fetch("/api/stripe/checkout/create-session", {
@@ -359,7 +348,11 @@ export default function BookAppointmentPage() {
           },
           quantity: 1,
           connectedAccountId: connectedAccountId,
-          ...metadata,
+          // Use snake_case keys to match API expectations
+          appointmentId: slot.id,
+          slotStartTime: slot.start_time,
+          slotEndTime: slot.end_time,
+          questionnaireResponseId: questionnaireResponse?.id || null,
         }),
       });
 
