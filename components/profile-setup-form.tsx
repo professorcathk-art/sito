@@ -328,6 +328,7 @@ export function ProfileSetupForm() {
 
     try {
       // Update or insert profile
+      // Use upsert with onConflict to handle both insert and update cases
       const { error: profileError } = await supabase
         .from("profiles")
         .upsert({
@@ -343,7 +344,7 @@ export function ProfileSetupForm() {
           avatar_url: formData.avatarUrl || null,
           listed_on_marketplace: formData.listedOnMarketplace,
           updated_at: new Date().toISOString(),
-        });
+        }, { onConflict: "id" });
 
       if (profileError) {
         throw profileError;
