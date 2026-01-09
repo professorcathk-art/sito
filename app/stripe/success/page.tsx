@@ -29,35 +29,33 @@ function SuccessContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId }),
       })
-        .then((res) => res.json())
-        .then((res) => {
+        .then(async (res) => {
           if (!res.ok) {
-            return res.json().then((err: any) => {
-              console.error("Payment verification failed:", err);
-              throw new Error(err.error || err.message || "Payment verification failed");
-            });
+            const err = await res.json();
+            console.error("Payment verification failed:", err);
+            throw new Error(err.error || err.message || "Payment verification failed");
           }
           return res.json();
         })
-        .then((verifyData) => {
+        .then(async (verifyData: any) => {
           console.log("Payment verification result:", verifyData);
           
           if (!verifyData.success) {
             setError(`Payment verification failed: ${verifyData.message || "Unknown error"}`);
             setLoading(false);
-            return;
+            return null;
           }
           
           // Then fetch session details for redirect
-          return fetch(`/api/stripe/checkout/session?session_id=${sessionId}`);
-        })
-        .then((res) => {
-          if (!res.ok) {
+          const sessionRes = await fetch(`/api/stripe/checkout/session?session_id=${sessionId}`);
+          if (!sessionRes.ok) {
             throw new Error("Failed to fetch session details");
           }
-          return res.json();
+          return sessionRes.json();
         })
-        .then((data) => {
+        .then((data: any) => {
+          if (!data) return; // Early return if verification failed
+          
           if (data.appointment_id) {
             setAppointmentId(data.appointment_id);
             // Redirect to My Bookings after a short delay
@@ -75,6 +73,7 @@ function SuccessContent() {
         })
         .catch((err) => {
           console.error("Error processing payment:", err);
+          setError(err.message || "Failed to process payment");
           setLoading(false);
         });
     } else {
