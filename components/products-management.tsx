@@ -267,13 +267,16 @@ export function ProductsManagement() {
       const questionnaireResponseIds = (data || []).map((e: any) => e.questionnaire_response_id).filter(Boolean);
       let questionnaireResponsesMap: { [key: string]: any } = {};
       let questionnaireFieldsMap: { [key: string]: { [key: string]: string } } = {};
+      let responsesData: any[] | null = null;
       
       if (questionnaireResponseIds.length > 0) {
         // Fetch questionnaire responses by ID
-        const { data: responsesData } = await supabase
+        const { data: responsesDataResult } = await supabase
           .from("questionnaire_responses")
           .select("id, responses, questionnaire_id")
           .in("id", questionnaireResponseIds);
+        
+        responsesData = responsesDataResult || null;
         
         if (responsesData) {
           // Map responses by response ID
