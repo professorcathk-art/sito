@@ -144,23 +144,33 @@ export default function ManageAppointmentsPage() {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      // Fetch appointments first
+      const { data: appointmentsData, error } = await supabase
         .from("appointments")
-        .select(`
-          *,
-          profiles!appointments_expert_id_fkey (
-            id,
-            name,
-            title,
-            email
-          )
-        `)
+        .select("*")
         .eq("user_id", user.id)
         .order("start_time", { ascending: false });
 
       if (error) throw error;
 
-      const appointments = (data || []).map((apt: any) => ({
+      // Fetch profiles separately for the expert_ids
+      const expertIds = Array.from(new Set((appointmentsData || []).map((apt: any) => apt.expert_id).filter(Boolean)));
+      let profilesMap: Record<string, { id: string; name: string; title: string | null; email: string }> = {};
+      
+      if (expertIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, name, title, email")
+          .in("id", expertIds);
+        
+        if (profilesData) {
+          profilesData.forEach((p: any) => {
+            profilesMap[p.id] = p;
+          });
+        }
+      }
+
+      const appointments = (appointmentsData || []).map((apt: any) => ({
         id: apt.id,
         start_time: apt.start_time,
         end_time: apt.end_time,
@@ -168,9 +178,9 @@ export default function ManageAppointmentsPage() {
         total_amount: apt.total_amount,
         status: apt.status,
         payment_intent_id: apt.payment_intent_id,
-        profiles: apt.profiles ? {
-          name: apt.profiles.name || "Unknown Expert",
-          email: apt.profiles.email || "N/A",
+        profiles: profilesMap[apt.expert_id] ? {
+          name: profilesMap[apt.expert_id].name || "Unknown Expert",
+          email: profilesMap[apt.expert_id].email || "N/A",
         } : { name: "Unknown Expert", email: "N/A" },
       }));
 

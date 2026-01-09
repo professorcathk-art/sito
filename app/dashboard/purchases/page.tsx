@@ -140,22 +140,39 @@ export default function PurchasesPage() {
           payment_intent_id,
           created_at,
           status,
-          products (
-            id,
-            name,
-            description
-          )
+          appointment_slot_id
         `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (appointmentsError) throw appointmentsError;
 
+      // Fetch appointment slots and products separately
+      const slotIds = Array.from(new Set((appointments || []).map((apt: any) => apt.appointment_slot_id).filter(Boolean)));
+      let productsMap: Record<string, { id: string; name: string; description: string | null }> = {};
+      
+      if (slotIds.length > 0) {
+        // Fetch slots with their products
+        const { data: slotsData } = await supabase
+          .from("appointment_slots")
+          .select("id, product_id, products(id, name, description)")
+          .in("id", slotIds);
+        
+        if (slotsData) {
+          slotsData.forEach((slot: any) => {
+            if (slot.product_id && slot.products) {
+              productsMap[slot.id] = slot.products;
+            }
+          });
+        }
+      }
+
       (appointments || []).forEach((appointment: any) => {
+        const product = appointment.appointment_slot_id ? productsMap[appointment.appointment_slot_id] : null;
         purchasesData.push({
           id: appointment.id,
           appointment_id: appointment.id,
-          appointment_title: appointment.products?.name || "1-on-1 Appointment",
+          appointment_title: product?.name || "1-on-1 Appointment",
           payment_intent_id: appointment.payment_intent_id,
           enrolled_at: appointment.created_at,
           price: appointment.total_amount || null,
