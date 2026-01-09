@@ -64,6 +64,12 @@ export default function ManageAppointmentsPage() {
     fetchBookedAppointments();
     fetchMyBookings();
     fetchProducts();
+    
+    // Check if we should show "My Bookings" tab (from success page redirect)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") === "my-bookings") {
+      setActiveTab("my-bookings");
+    }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchProducts = async () => {

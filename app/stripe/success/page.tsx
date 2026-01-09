@@ -23,15 +23,26 @@ function SuccessContent() {
 
   useEffect(() => {
     if (sessionId) {
-      // Fetch session details to get course_id or appointment_id
-      fetch(`/api/stripe/checkout/session?session_id=${sessionId}`)
+      // First, verify payment and create enrollment/appointment if needed
+      fetch(`/api/stripe/checkout/verify-payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      })
+        .then((res) => res.json())
+        .then((verifyData) => {
+          console.log("Payment verification result:", verifyData);
+          
+          // Then fetch session details for redirect
+          return fetch(`/api/stripe/checkout/session?session_id=${sessionId}`);
+        })
         .then((res) => res.json())
         .then((data) => {
           if (data.appointment_id) {
             setAppointmentId(data.appointment_id);
-            // Redirect to Manage Appointments after a short delay
+            // Redirect to My Bookings after a short delay
             setTimeout(() => {
-              router.push("/appointments/manage");
+              router.push("/appointments/manage?tab=my-bookings");
             }, 3000);
           } else if (data.course_id) {
             setCourseId(data.course_id);
@@ -43,7 +54,7 @@ function SuccessContent() {
           setLoading(false);
         })
         .catch((err) => {
-          console.error("Error fetching session:", err);
+          console.error("Error processing payment:", err);
           setLoading(false);
         });
     } else {
