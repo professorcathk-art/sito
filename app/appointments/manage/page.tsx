@@ -528,37 +528,39 @@ export default function ManageAppointmentsPage() {
           )}
 
           {/* Tabs */}
-          <div className="flex gap-4 border-b border-cyber-green/30 mb-6">
-            <button
-              onClick={() => setActiveTab("my-bookings")}
-              className={`px-4 py-2 font-semibold transition-colors ${
-                activeTab === "my-bookings"
-                  ? "text-cyber-green border-b-2 border-cyber-green"
-                  : "text-custom-text/70 hover:text-custom-text"
-              }`}
-            >
-              My Bookings ({myBookings.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("bookings")}
-              className={`px-4 py-2 font-semibold transition-colors ${
-                activeTab === "bookings"
-                  ? "text-cyber-green border-b-2 border-cyber-green"
-                  : "text-custom-text/70 hover:text-custom-text"
-              }`}
-            >
-              Booked with Me ({bookedAppointments.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("slots")}
-              className={`px-4 py-2 font-semibold transition-colors ${
-                activeTab === "slots"
-                  ? "text-cyber-green border-b-2 border-cyber-green"
-                  : "text-custom-text/70 hover:text-custom-text"
-              }`}
-            >
-              Available Timeslots ({slots.filter(s => s.is_available).length})
-            </button>
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 border-b border-cyber-green/30 mb-6 scrollbar-hide">
+            <div className="flex gap-2 sm:gap-4 min-w-max">
+              <button
+                onClick={() => setActiveTab("my-bookings")}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === "my-bookings"
+                    ? "text-cyber-green border-b-2 border-cyber-green"
+                    : "text-custom-text/70 hover:text-custom-text"
+                }`}
+              >
+                My Bookings ({myBookings.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("bookings")}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === "bookings"
+                    ? "text-cyber-green border-b-2 border-cyber-green"
+                    : "text-custom-text/70 hover:text-custom-text"
+                }`}
+              >
+                Booked with Me ({bookedAppointments.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("slots")}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === "slots"
+                    ? "text-cyber-green border-b-2 border-cyber-green"
+                    : "text-custom-text/70 hover:text-custom-text"
+                }`}
+              >
+                Available Timeslots ({slots.filter(s => s.is_available).length})
+              </button>
+            </div>
           </div>
 
           {/* My Bookings Section */}

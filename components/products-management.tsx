@@ -1459,30 +1459,32 @@ export function ProductsManagement() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-cyber-green/30">
-        <button
-          onClick={() => setActiveTab("products")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "products"
-              ? "text-cyber-green border-b-2 border-cyber-green"
-              : "text-custom-text/70 hover:text-custom-text"
-          }`}
-        >
-          My Products ({products.length})
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab("interests");
-            fetchInterests(); // Fetch interests when tab is clicked
-          }}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "interests"
-              ? "text-cyber-green border-b-2 border-cyber-green"
-              : "text-custom-text/70 hover:text-custom-text"
-          }`}
-        >
-          Registered Interests ({Object.values(interestCounts).reduce((sum, count) => sum + count, 0)})
-        </button>
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 border-b border-cyber-green/30 scrollbar-hide">
+        <div className="flex gap-2 sm:gap-4 min-w-max">
+          <button
+            onClick={() => setActiveTab("products")}
+            className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+              activeTab === "products"
+                ? "text-cyber-green border-b-2 border-cyber-green"
+                : "text-custom-text/70 hover:text-custom-text"
+            }`}
+          >
+            My Products ({products.length})
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("interests");
+              fetchInterests(); // Fetch interests when tab is clicked
+            }}
+            className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+              activeTab === "interests"
+                ? "text-cyber-green border-b-2 border-cyber-green"
+                : "text-custom-text/70 hover:text-custom-text"
+            }`}
+          >
+            Registered Interests ({Object.values(interestCounts).reduce((sum, count) => sum + count, 0)})
+          </button>
+        </div>
       </div>
 
       {error && (

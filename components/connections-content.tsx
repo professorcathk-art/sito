@@ -164,45 +164,47 @@ export function ConnectionsContent() {
 
   return (
     <div>
-      <h1 className="text-4xl font-bold text-custom-text mb-8">Connections</h1>
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-6 sm:mb-8">Connections</h1>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-6 border-b border-cyber-green/30">
-        <button
-          onClick={() => setActiveTab("received")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "received"
-              ? "text-cyber-green border-b-2 border-cyber-green"
-              : "text-custom-text/70 hover:text-custom-text"
-          }`}
-        >
-          Received Requests
-          {receivedRequests.length > 0 && (
-            <span className="ml-2 bg-cyber-green text-dark-green-950 text-xs px-2 py-0.5 rounded-full">
-              {receivedRequests.length}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("sent")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "sent"
-              ? "text-cyber-green border-b-2 border-cyber-green"
-              : "text-custom-text/70 hover:text-custom-text"
-          }`}
-        >
-          Sent Requests
-        </button>
-        <button
-          onClick={() => setActiveTab("accepted")}
-          className={`px-4 py-2 font-semibold transition-colors ${
-            activeTab === "accepted"
-              ? "text-cyber-green border-b-2 border-cyber-green"
-              : "text-custom-text/70 hover:text-custom-text"
-          }`}
-        >
-          Accepted Connections
-        </button>
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 mb-6 border-b border-cyber-green/30 scrollbar-hide">
+        <div className="flex gap-2 sm:gap-4 min-w-max">
+          <button
+            onClick={() => setActiveTab("received")}
+            className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+              activeTab === "received"
+                ? "text-cyber-green border-b-2 border-cyber-green"
+                : "text-custom-text/70 hover:text-custom-text"
+            }`}
+          >
+            Received Requests
+            {receivedRequests.length > 0 && (
+              <span className="ml-1 sm:ml-2 bg-cyber-green text-dark-green-950 text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
+                {receivedRequests.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("sent")}
+            className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+              activeTab === "sent"
+                ? "text-cyber-green border-b-2 border-cyber-green"
+                : "text-custom-text/70 hover:text-custom-text"
+            }`}
+          >
+            Sent Requests
+          </button>
+          <button
+            onClick={() => setActiveTab("accepted")}
+            className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+              activeTab === "accepted"
+                ? "text-cyber-green border-b-2 border-cyber-green"
+                : "text-custom-text/70 hover:text-custom-text"
+            }`}
+          >
+            Accepted Connections
+          </button>
+        </div>
       </div>
 
       {/* Content */}

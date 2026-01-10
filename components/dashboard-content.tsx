@@ -174,9 +174,9 @@ export function DashboardContent() {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold text-custom-text">Dashboard</h1>
+    <div className="py-4 sm:py-6 md:py-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text">Dashboard</h1>
         {user && (
           <button
             onClick={handleSignOut}
@@ -188,66 +188,66 @@ export function DashboardContent() {
       </div>
 
       {!hasProfile ? (
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-custom-text mb-4">Complete Your Profile</h2>
-          <p className="text-custom-text/80 mb-6">
+        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-custom-text mb-3 sm:mb-4">Complete Your Profile</h2>
+          <p className="text-sm sm:text-base text-custom-text/80 mb-4 sm:mb-6">
             Set up your expert profile to start connecting with others and be discovered on the
             marketplace.
           </p>
           <Link
             href="/profile/setup"
-            className="inline-block bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+            className="inline-block bg-cyber-green text-custom-text px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)] text-sm sm:text-base"
           >
             Set Up Profile
           </Link>
         </div>
       ) : !isExpert ? (
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-custom-text mb-4">Become an Expert</h2>
-          <p className="text-custom-text/80 mb-6">
+        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-custom-text mb-3 sm:mb-4">Become an Expert</h2>
+          <p className="text-sm sm:text-base text-custom-text/80 mb-4 sm:mb-6">
             Complete your expert profile to unlock features like creating products, setting up payments, and more.
           </p>
           <Link
             href="/profile/setup"
-            className="inline-block bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+            className="inline-block bg-cyber-green text-custom-text px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)] text-sm sm:text-base"
           >
             Become an Expert
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6">
-            <h3 className="text-xl font-bold text-custom-text mb-2">Profile Status</h3>
-            <p className="text-custom-text/80 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-4 sm:p-6">
+            <h3 className="text-lg sm:text-xl font-bold text-custom-text mb-2">Profile Status</h3>
+            <p className="text-sm sm:text-base text-custom-text/80 mb-3 sm:mb-4">
               {isListed ? "Your profile is listed on the marketplace" : "Your profile is private"}
             </p>
             <Link
               href="/profile/setup"
-              className="text-cyber-green font-semibold hover:text-cyber-green-light hover:underline"
+              className="text-sm sm:text-base text-cyber-green font-semibold hover:text-cyber-green-light hover:underline"
             >
               Edit Profile →
             </Link>
           </div>
 
-          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6">
+          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-xl font-bold text-custom-text">Messages</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-custom-text">Messages</h3>
               {unreadCount > 0 && (
                 <span className="bg-cyber-green text-dark-green-950 text-xs font-bold px-2 py-1 rounded-full">
                   {unreadCount}
                 </span>
               )}
             </div>
-            <p className="text-custom-text/80 mb-4">View and respond to messages</p>
-            <Link href="/messages" className="text-cyber-green font-semibold hover:text-cyber-green-light hover:underline">
+            <p className="text-sm sm:text-base text-custom-text/80 mb-3 sm:mb-4">View and respond to messages</p>
+            <Link href="/messages" className="text-sm sm:text-base text-cyber-green font-semibold hover:text-cyber-green-light hover:underline">
               Open Messages →
             </Link>
           </div>
 
-          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6">
-            <h3 className="text-xl font-bold text-custom-text mb-2">Connections</h3>
-            <p className="text-custom-text/80 mb-4">Manage your connections</p>
-            <Link href="/connections" className="text-cyber-green font-semibold hover:text-cyber-green-light hover:underline">
+          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-4 sm:p-6">
+            <h3 className="text-lg sm:text-xl font-bold text-custom-text mb-2">Connections</h3>
+            <p className="text-sm sm:text-base text-custom-text/80 mb-3 sm:mb-4">Manage your connections</p>
+            <Link href="/connections" className="text-sm sm:text-base text-cyber-green font-semibold hover:text-cyber-green-light hover:underline">
               View Connections →
             </Link>
           </div>
@@ -256,12 +256,12 @@ export function DashboardContent() {
 
       {/* Recent Messages Section */}
       {hasProfile && (
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-custom-text">Recent Messages</h2>
+        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-custom-text">Recent Messages</h2>
             <Link
               href="/messages"
-              className="text-cyber-green hover:text-cyber-green-light font-semibold hover:underline"
+              className="text-sm sm:text-base text-cyber-green hover:text-cyber-green-light font-semibold hover:underline"
             >
               View All →
             </Link>
@@ -300,38 +300,38 @@ export function DashboardContent() {
         </div>
       )}
 
-      <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-custom-text mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-custom-text mb-4 sm:mb-6">Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Link
             href="/directory"
-            className="p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+            className="p-4 sm:p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
           >
-            <h3 className="text-lg font-semibold text-custom-text mb-2">Browse Experts</h3>
-            <p className="text-custom-text/80">Explore the directory of industry experts</p>
+            <h3 className="text-base sm:text-lg font-semibold text-custom-text mb-2">Browse Experts</h3>
+            <p className="text-sm sm:text-base text-custom-text/80">Explore the directory of industry experts</p>
           </Link>
           <Link
             href="/profile/setup"
-            className="p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+            className="p-4 sm:p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
           >
-            <h3 className="text-lg font-semibold text-custom-text mb-2">Edit Profile</h3>
-            <p className="text-custom-text/80">Update your expert profile information</p>
+            <h3 className="text-base sm:text-lg font-semibold text-custom-text mb-2">Edit Profile</h3>
+            <p className="text-sm sm:text-base text-custom-text/80">Update your expert profile information</p>
           </Link>
           {isExpert && (
             <>
               <Link
                 href="/dashboard/products"
-                className="p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+                className="p-4 sm:p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
               >
-                <h3 className="text-lg font-semibold text-custom-text mb-2">Manage Products</h3>
-                <p className="text-custom-text/80">Create and manage your products and courses</p>
+                <h3 className="text-base sm:text-lg font-semibold text-custom-text mb-2">Manage Products</h3>
+                <p className="text-sm sm:text-base text-custom-text/80">Create and manage your products and courses</p>
               </Link>
               <Link
                 href="/dashboard/stripe-connect"
-                className="p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+                className="p-4 sm:p-6 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
               >
-                <h3 className="text-lg font-semibold text-custom-text mb-2">Payment Setup</h3>
-                <p className="text-custom-text/80">Set up payments to receive money</p>
+                <h3 className="text-base sm:text-lg font-semibold text-custom-text mb-2">Payment Setup</h3>
+                <p className="text-sm sm:text-base text-custom-text/80">Set up payments to receive money</p>
               </Link>
             </>
           )}

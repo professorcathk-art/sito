@@ -365,42 +365,44 @@ export default function ProfilePage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-4 mb-6 border-b border-cyber-green/30">
-            <button
-              onClick={() => setActiveTab("profile")}
-              className={`px-4 py-2 font-semibold transition-colors ${
-                activeTab === "profile"
-                  ? "text-cyber-green border-b-2 border-cyber-green"
-                  : "text-custom-text/70 hover:text-custom-text"
-              }`}
-            >
-              Profile
-            </button>
-            <button
-              onClick={() => setActiveTab("messages")}
-              className={`px-4 py-2 font-semibold transition-colors ${
-                activeTab === "messages"
-                  ? "text-cyber-green border-b-2 border-cyber-green"
-                  : "text-custom-text/70 hover:text-custom-text"
-              }`}
-            >
-              Recent Messages
-              {unreadCount > 0 && (
-                <span className="ml-2 bg-cyber-green text-dark-green-950 text-xs px-2 py-0.5 rounded-full">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab("connections")}
-              className={`px-4 py-2 font-semibold transition-colors ${
-                activeTab === "connections"
-                  ? "text-cyber-green border-b-2 border-cyber-green"
-                  : "text-custom-text/70 hover:text-custom-text"
-              }`}
-            >
-              Connections
-            </button>
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 mb-6 border-b border-cyber-green/30 scrollbar-hide">
+            <div className="flex gap-2 sm:gap-4 min-w-max">
+              <button
+                onClick={() => setActiveTab("profile")}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === "profile"
+                    ? "text-cyber-green border-b-2 border-cyber-green"
+                    : "text-custom-text/70 hover:text-custom-text"
+                }`}
+              >
+                Profile
+              </button>
+              <button
+                onClick={() => setActiveTab("messages")}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === "messages"
+                    ? "text-cyber-green border-b-2 border-cyber-green"
+                    : "text-custom-text/70 hover:text-custom-text"
+                }`}
+              >
+                Recent Messages
+                {unreadCount > 0 && (
+                  <span className="ml-1 sm:ml-2 bg-cyber-green text-dark-green-950 text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab("connections")}
+                className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+                  activeTab === "connections"
+                    ? "text-cyber-green border-b-2 border-cyber-green"
+                    : "text-custom-text/70 hover:text-custom-text"
+                }`}
+              >
+                Connections
+              </button>
+            </div>
           </div>
 
           {/* Tab Content */}
