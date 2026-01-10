@@ -352,35 +352,63 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <article className="flex-1">
-        {/* Header */}
+        {/* Header - Always visible as lead magnet (title, description, expert info) */}
         <header className="mb-8">
-          {/* Like and Save Buttons - Above Content */}
-          <div className="flex items-center gap-3 mb-6">
-            <button
-              onClick={handleLike}
-              disabled={liking}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                liked
-                  ? "bg-red-900/30 text-red-300 border border-red-500/50"
-                  : "bg-dark-green-900/50 text-custom-text border border-cyber-green/30 hover:bg-dark-green-800/50"
-              }`}
-            >
-              <span>{liked ? "❤️" : "🤍"}</span>
-              <span>{likeCount}</span>
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                saved
-                  ? "bg-cyber-green/20 text-cyber-green border border-cyber-green/50"
-                  : "bg-dark-green-900/50 text-custom-text border border-cyber-green/30 hover:bg-dark-green-800/50"
-              }`}
-            >
-              <span>{saved ? "✓" : "○"}</span>
-              <span>{saved ? "Saved" : "Save"}</span>
-            </button>
-          </div>
+          {/* Like and Save Buttons - Only show if user is signed in */}
+          {user && (
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={handleLike}
+                disabled={liking}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                  liked
+                    ? "bg-red-900/30 text-red-300 border border-red-500/50"
+                    : "bg-dark-green-900/50 text-custom-text border border-cyber-green/30 hover:bg-dark-green-800/50"
+                }`}
+              >
+                <span>{liked ? "❤️" : "🤍"}</span>
+                <span>{likeCount}</span>
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                  saved
+                    ? "bg-cyber-green/20 text-cyber-green border border-cyber-green/50"
+                    : "bg-dark-green-900/50 text-custom-text border border-cyber-green/30 hover:bg-dark-green-800/50"
+                }`}
+              >
+                <span>{saved ? "✓" : "○"}</span>
+                <span>{saved ? "Saved" : "Save"}</span>
+              </button>
+            </div>
+          )}
+              <button
+                onClick={handleLike}
+                disabled={liking}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                  liked
+                    ? "bg-red-900/30 text-red-300 border border-red-500/50"
+                    : "bg-dark-green-900/50 text-custom-text border border-cyber-green/30 hover:bg-dark-green-800/50"
+                }`}
+              >
+                <span>{liked ? "❤️" : "🤍"}</span>
+                <span>{likeCount}</span>
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                  saved
+                    ? "bg-cyber-green/20 text-cyber-green border border-cyber-green/50"
+                    : "bg-dark-green-900/50 text-custom-text border border-cyber-green/30 hover:bg-dark-green-800/50"
+                }`}
+              >
+                <span>{saved ? "✓" : "○"}</span>
+                <span>{saved ? "Saved" : "Save"}</span>
+              </button>
+            </div>
+          )}
 
           <h1 className="text-4xl sm:text-5xl font-bold text-custom-text mb-4">
             {blogPost.title}
@@ -417,34 +445,55 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                 </Link>
               </div>
             )}
-            {user && blogPost.profiles && user.id !== blogPost.profiles.id && (
+            {/* Action buttons - Show for signed-in users or as CTA for non-signed-in */}
+            {blogPost.profiles && (
               <div className="flex flex-wrap gap-2 mb-4">
-                <SubscribeButton expertId={blogPost.profiles.id} expertName={blogPost.profiles.name} />
-                <Link
-                  href={`/messages?expert=${blogPost.profiles.id}`}
-                  className="px-4 py-2 bg-dark-green-800/50 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm font-medium"
-                >
-                  Message
-                </Link>
-                <button
-                  onClick={handleConnect}
-                  disabled={connecting || connectionStatus !== "none"}
-                  className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                    connectionStatus === "pending"
-                      ? "border-cyber-green/50 text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
-                      : connectionStatus === "accepted"
-                      ? "border-cyber-green text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
-                      : "border-cyber-green/30 text-custom-text hover:bg-dark-green-800/50 hover:border-cyber-green"
-                  }`}
-                >
-                  {connecting
-                    ? "Connecting..."
-                    : connectionStatus === "pending"
-                    ? "Pending"
-                    : connectionStatus === "accepted"
-                    ? "Connected"
-                    : "Connect"}
-                </button>
+                {user && user.id !== blogPost.profiles.id ? (
+                  <>
+                    <SubscribeButton expertId={blogPost.profiles.id} expertName={blogPost.profiles.name} />
+                    <Link
+                      href={`/messages?expert=${blogPost.profiles.id}`}
+                      className="px-4 py-2 bg-dark-green-800/50 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm font-medium"
+                    >
+                      Message
+                    </Link>
+                    <button
+                      onClick={handleConnect}
+                      disabled={connecting || connectionStatus !== "none"}
+                      className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                        connectionStatus === "pending"
+                          ? "border-cyber-green/50 text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
+                          : connectionStatus === "accepted"
+                          ? "border-cyber-green text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
+                          : "border-cyber-green/30 text-custom-text hover:bg-dark-green-800/50 hover:border-cyber-green"
+                      }`}
+                    >
+                      {connecting
+                        ? "Connecting..."
+                        : connectionStatus === "pending"
+                        ? "Pending"
+                        : connectionStatus === "accepted"
+                        ? "Connected"
+                        : "Connect"}
+                    </button>
+                  </>
+                ) : !user ? (
+                  // Show CTA buttons for non-signed-in users
+                  <>
+                    <Link
+                      href={`/login?redirect=/blog/${blogPost.id}`}
+                      className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                    >
+                      Sign In to View Profile
+                    </Link>
+                    <Link
+                      href={`/expert/${blogPost.profiles.id}`}
+                      className="px-4 py-2 border border-cyber-green/30 text-cyber-green rounded-lg hover:bg-cyber-green/10 transition-colors text-sm font-medium"
+                    >
+                      View Expert Profile
+                    </Link>
+                  </>
+                ) : null}
               </div>
             )}
             <div className="flex items-center gap-4 text-custom-text/70 text-sm">
@@ -473,25 +522,36 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
           )}
         </header>
 
-        {/* Content */}
+        {/* Content Body - Only hide/blur this part for non-signed-in users */}
         {!user ? (
-          // Non-signed-in users: Show partial content with blur and sign-in prompt
-          <div className="relative">
-            <div
-              className="prose prose-invert prose-lg max-w-none blog-content"
-              dangerouslySetInnerHTML={{ __html: truncateHtml(blogPost.content, 50) }}
-            />
-            
-            {/* Blur overlay */}
-            <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-custom-bg via-custom-bg/80 to-transparent pointer-events-none" />
+          // Non-signed-in users: Show header info (lead magnet) but blur content body
+          <div className="relative mt-8">
+            {/* Show blurred content */}
+            <div className="relative overflow-hidden" style={{ maxHeight: '600px' }}>
+              <div
+                className="prose prose-invert prose-lg max-w-none blog-content"
+                style={{ 
+                  filter: 'blur(10px)',
+                  userSelect: 'none',
+                  pointerEvents: 'none',
+                  WebkitUserSelect: 'none',
+                  MozUserSelect: 'none',
+                  msUserSelect: 'none'
+                }}
+                dangerouslySetInnerHTML={{ __html: blogPost.content }}
+              />
+              
+              {/* Gradient overlay for better visual effect */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-custom-bg/30 to-custom-bg pointer-events-none" />
+            </div>
             
             {/* Sign-in prompt overlay */}
-            <div className="relative -mt-32 pt-32 bg-custom-bg border-t-2 border-cyber-green/50 rounded-lg p-8 text-center">
-              <div className="max-w-md mx-auto">
-                <h3 className="text-2xl font-bold text-custom-text mb-3">
+            <div className="relative mt-8 bg-gradient-to-br from-cyber-green/10 to-dark-green-800/50 border-2 border-cyber-green/50 rounded-xl p-8 text-center shadow-xl">
+              <div className="max-w-lg mx-auto">
+                <h3 className="text-2xl sm:text-3xl font-bold text-custom-text mb-3">
                   🔒 Sign in to continue reading
                 </h3>
-                <p className="text-custom-text/80 mb-6">
+                <p className="text-base sm:text-lg text-custom-text/90 mb-6">
                   This article is available to registered members. Sign in to read the full content and unlock access to all expert insights.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
