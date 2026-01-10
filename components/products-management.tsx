@@ -2625,15 +2625,89 @@ export function ProductsManagement() {
                   <div className="mt-4 pt-4 border-t border-cyber-green/30">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-lg font-semibold text-custom-text">Course Members</h4>
-                      <button
-                        onClick={async () => {
-                          console.log("Refresh clicked for courseId:", product.course_id);
-                          await fetchCourseMembers(product.course_id!);
-                        }}
-                        className="text-xs text-cyber-green hover:text-cyber-green-light transition-colors"
-                      >
-                        Refresh
-                      </button>
+                      <div className="flex gap-2">
+                        {product.course_id && courseMembersMap[product.course_id] && courseMembersMap[product.course_id].length > 0 && (
+                          <button
+                            onClick={() => {
+                              const courseId = product.course_id!;
+                              const members = courseMembersMap[courseId];
+                              if (!members || members.length === 0) {
+                                alert("No members to download");
+                                return;
+                              }
+
+                              // Collect all unique form field labels from all members
+                              const formFieldLabels = new Set<string>();
+                              members.forEach((member: any) => {
+                                if (member.questionnaire_responses) {
+                                  Object.keys(member.questionnaire_responses).forEach((label) => {
+                                    formFieldLabels.add(label);
+                                  });
+                                }
+                              });
+
+                              // Create CSV content
+                              const headers = [
+                                "Name",
+                                "Email",
+                                "Enrolled Date",
+                                ...Array.from(formFieldLabels).sort(),
+                              ];
+                              
+                              const rows = members.map((member: any) => {
+                                const baseRow = [
+                                  member.name || "N/A",
+                                  member.email || "N/A",
+                                  new Date(member.enrolled_at).toLocaleDateString(),
+                                ];
+                                
+                                // Add questionnaire responses in the same order as headers
+                                Array.from(formFieldLabels).sort().forEach((label) => {
+                                  const value = member.questionnaire_responses?.[label];
+                                  if (value === null || value === undefined) {
+                                    baseRow.push("");
+                                  } else if (Array.isArray(value)) {
+                                    baseRow.push(value.join("; "));
+                                  } else {
+                                    baseRow.push(String(value));
+                                  }
+                                });
+                                
+                                return baseRow;
+                              });
+
+                              // Combine headers and rows
+                              const csvContent = [
+                                headers.join(","),
+                                ...rows.map((row: any[]) => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+                              ].join("\n");
+
+                              // Create download link
+                              const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                              const link = document.createElement("a");
+                              const url = URL.createObjectURL(blob);
+                              link.setAttribute("href", url);
+                              link.setAttribute("download", `course-members-${product.name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}-${new Date().toISOString().split("T")[0]}.csv`);
+                              link.style.visibility = "hidden";
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                            }}
+                            className="text-xs bg-cyber-green text-dark-green-900 px-3 py-1 rounded font-semibold hover:bg-cyber-green-light transition-colors"
+                          >
+                            Download CSV
+                          </button>
+                        )}
+                        <button
+                          onClick={async () => {
+                            console.log("Refresh clicked for courseId:", product.course_id);
+                            await fetchCourseMembers(product.course_id!);
+                          }}
+                          className="text-xs text-cyber-green hover:text-cyber-green-light transition-colors"
+                        >
+                          Refresh
+                        </button>
+                      </div>
                     </div>
                     {courseMembersMap[product.course_id] && courseMembersMap[product.course_id].length > 0 ? (
                       <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg overflow-hidden">
