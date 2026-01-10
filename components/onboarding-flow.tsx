@@ -288,16 +288,49 @@ export function OnboardingFlow() {
     setError("");
 
     try {
+      // Get country_id from existing profile or fetch default
+      let countryId = null;
+      try {
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("country_id")
+          .eq("id", user.id)
+          .maybeSingle();
+        
+        if (existingProfile?.country_id) {
+          countryId = existingProfile.country_id;
+        } else {
+          // Try to get default country if profile doesn't have it
+          const { data: defaultCountry } = await supabase
+            .from("countries")
+            .select("id")
+            .or("name.eq.Remote,code.eq.HK")
+            .limit(1)
+            .maybeSingle();
+          
+          countryId = defaultCountry?.id || null;
+        }
+      } catch (err) {
+        console.warn("Could not fetch country_id:", err);
+      }
+
+      const updateData: any = {
+        id: user.id,
+        name: displayName,
+        tagline: tagline || null,
+        location: location || null,
+        onboarding_completed: true,
+      };
+
+      // Include country_id if we have it (required by NOT NULL constraint)
+      if (countryId) {
+        updateData.country_id = countryId;
+      }
+
       // Use upsert to handle case where profile might not exist
       const { error } = await supabase
         .from("profiles")
-        .upsert({
-          id: user.id,
-          name: displayName,
-          tagline: tagline || null,
-          location: location || null,
-          onboarding_completed: true,
-        }, { onConflict: "id" });
+        .upsert(updateData, { onConflict: "id" });
 
       if (error) throw error;
 
