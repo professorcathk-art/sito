@@ -38,17 +38,12 @@ export function ProfileSetupForm() {
     countryName: "",
     languagesSupported: [] as string[],
     phoneNumber: "",
-    phoneVerified: false,
     website: "",
     linkedin: "",
     instagramUrl: "",
     listedOnMarketplace: false,
     avatarUrl: "",
   });
-  const [phoneVerificationCode, setPhoneVerificationCode] = useState("");
-  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
-  const [sendingOTP, setSendingOTP] = useState(false);
-  const [verifyingOTP, setVerifyingOTP] = useState(false);
   const [existingProfile, setExistingProfile] = useState<{ category_id?: string; bio?: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -147,7 +142,6 @@ export function ProfileSetupForm() {
               country_id,
               language_supported,
               phone_number,
-              phone_verified,
               avatar_url,
               categories!profiles_category_id_fkey(name),
               countries(name)
@@ -176,7 +170,6 @@ export function ProfileSetupForm() {
             countryName: (profile.countries as any)?.name || "",
             languagesSupported: (profile.language_supported as string[]) || [],
             phoneNumber: (profile as any).phone_number || "",
-            phoneVerified: (profile as any).phone_verified || false,
             website: profile.website || "",
             linkedin: profile.linkedin || "",
             instagramUrl: (profile as any).instagram_url || "",
@@ -380,9 +373,9 @@ export function ProfileSetupForm() {
       return;
     }
 
-    // Validate phone verification (required for expert profile)
-    if (hasCategory && hasBio && !formData.phoneVerified) {
-      setError("Phone number verification is required to complete your expert profile");
+    // Validate phone number (required for expert profile)
+    if (hasCategory && hasBio && !formData.phoneNumber.trim()) {
+      setError("Phone number is required to complete your expert profile");
       setLoading(false);
       return;
     }
@@ -420,7 +413,6 @@ export function ProfileSetupForm() {
           country_id: formData.countryId,
           language_supported: formData.languagesSupported,
           phone_number: formData.phoneNumber || null,
-          phone_verified: formData.phoneVerified,
           bio: formData.bio || existingProfile?.bio || null,
           website: formData.website || null,
           linkedin: formData.linkedin || null,
@@ -710,144 +702,23 @@ export function ProfileSetupForm() {
         <p className="mt-1 text-xs text-custom-text/60">Select at least one language you can communicate in</p>
       </div>
 
-      {/* Phone Number Verification */}
+      {/* Phone Number - Required for Expert Profile */}
       {(formData.categoryId || existingProfile?.category_id) && (
-        <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-4">
+        <div>
           <label className="block text-sm font-medium text-custom-text mb-2">
-            Phone Number Verification *
+            Phone Number *
           </label>
-          {!formData.phoneVerified ? (
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <input
-                  type="tel"
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  placeholder="+1234567890 (E.164 format)"
-                  className="flex-1 px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
-                />
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (!formData.phoneNumber.trim()) {
-                      setError("Please enter a phone number");
-                      return;
-                    }
-                    
-                    // Validate E.164 format (starts with +)
-                    if (!formData.phoneNumber.startsWith("+")) {
-                      setError("Phone number must be in E.164 format (e.g., +1234567890)");
-                      return;
-                    }
-                    
-                    setSendingOTP(true);
-                    setError("");
-                    
-                    try {
-                      // Send OTP via Supabase Auth
-                      const { error: otpError } = await supabase.auth.signInWithOtp({
-                        phone: formData.phoneNumber,
-                      });
-                      
-                      if (otpError) {
-                        throw otpError;
-                      }
-                      
-                      setShowPhoneVerification(true);
-                      alert("Verification code sent! Please check your phone.");
-                    } catch (err: any) {
-                      setError(err.message || "Failed to send verification code. Please ensure SMS provider is configured in Supabase.");
-                      console.error("OTP send error:", err);
-                    } finally {
-                      setSendingOTP(false);
-                    }
-                  }}
-                  disabled={sendingOTP || !formData.phoneNumber.trim()}
-                  className="px-4 py-3 bg-cyber-green/20 border border-cyber-green/30 text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {sendingOTP ? "Sending..." : "Send Code"}
-                </button>
-              </div>
-              {showPhoneVerification && (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={phoneVerificationCode}
-                    onChange={(e) => setPhoneVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    placeholder="Enter 6-digit code"
-                    maxLength={6}
-                    className="flex-1 px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
-                  />
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (!phoneVerificationCode || phoneVerificationCode.length !== 6) {
-                        setError("Please enter the 6-digit verification code");
-                        return;
-                      }
-                      
-                      setVerifyingOTP(true);
-                      setError("");
-                      
-                      try {
-                        // Verify OTP via Supabase Auth
-                        const { error: verifyError } = await supabase.auth.verifyOtp({
-                          phone: formData.phoneNumber,
-                          token: phoneVerificationCode,
-                          type: "sms",
-                        });
-                        
-                        if (verifyError) {
-                          throw verifyError;
-                        }
-                        
-                        // Update form data with verified phone
-                        setFormData({
-                          ...formData,
-                          phoneVerified: true,
-                        });
-                        setShowPhoneVerification(false);
-                        setPhoneVerificationCode("");
-                        alert("Phone number verified successfully!");
-                      } catch (err: any) {
-                        setError(err.message || "Invalid verification code. Please try again.");
-                        console.error("OTP verify error:", err);
-                      } finally {
-                        setVerifyingOTP(false);
-                      }
-                    }}
-                    disabled={verifyingOTP || phoneVerificationCode.length !== 6}
-                    className="px-4 py-3 bg-cyber-green text-dark-green-900 rounded-lg hover:bg-cyber-green-light transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {verifyingOTP ? "Verifying..." : "Verify"}
-                  </button>
-                </div>
-              )}
-              <p className="text-xs text-custom-text/60">
-                Required for expert profile completion. You&apos;ll receive an SMS with a verification code.
-              </p>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-cyber-green">
-              <span>✓</span>
-              <span className="text-sm font-semibold">Phone number verified: {formData.phoneNumber}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setFormData({
-                    ...formData,
-                    phoneNumber: "",
-                    phoneVerified: false,
-                  });
-                  setShowPhoneVerification(false);
-                  setPhoneVerificationCode("");
-                }}
-                className="ml-auto text-xs text-custom-text/60 hover:text-custom-text"
-              >
-                Change
-              </button>
-            </div>
-          )}
+          <input
+            type="tel"
+            value={formData.phoneNumber}
+            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+            placeholder="+1234567890 (e.g., +85212345678)"
+            required
+            className="w-full px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
+          />
+          <p className="mt-1 text-xs text-custom-text/60">
+            Required for expert profile completion. Please include country code (e.g., +852 for Hong Kong).
+          </p>
         </div>
       )}
 
