@@ -36,17 +36,10 @@ export function HeroSection() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start animate-fade-in-up px-2 sm:px-0" style={{ animationDelay: '0.4s' }}>
               <Link
-                href="/directory"
-                className="group bg-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:bg-dark-green-800 hover:text-custom-text transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg relative overflow-hidden text-center border-2 border-dark-green-800"
-                style={{ color: '#18422b' }}
-              >
-                <span className="relative z-10" style={{ color: '#18422b' }}>Browse Experts</span>
-              </Link>
-              <Link
                 href="/register"
-                className="bg-dark-green-800 text-custom-text px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold border-2 border-cyber-green/50 hover:bg-dark-green-700 hover:border-cyber-green transition-all duration-300 transform hover:scale-105 hover:shadow-xl font-bold text-center"
+                className="bg-cyber-green text-dark-green-900 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-bold border-2 border-cyber-green hover:bg-cyber-green-light hover:border-cyber-green transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-[0_0_20px_rgba(0,255,136,0.4)] text-center"
               >
-                Become an Expert
+                Start Now
               </Link>
             </div>
           </div>

@@ -34,12 +34,14 @@ export function ProfileSetupForm() {
     bio: "",
     countryId: "",
     countryName: "",
+    languagesSupported: [] as string[],
     website: "",
     linkedin: "",
     instagramUrl: "",
     listedOnMarketplace: false,
     avatarUrl: "",
   });
+  const [languageInput, setLanguageInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -95,6 +97,7 @@ export function ProfileSetupForm() {
               listed_on_marketplace,
               category_id,
               country_id,
+              language_supported,
               avatar_url,
               categories!profiles_category_id_fkey(name),
               countries(name)
@@ -117,6 +120,7 @@ export function ProfileSetupForm() {
             bio: profile.bio || "",
             countryId: profile.country_id || "",
             countryName: (profile.countries as any)?.name || "",
+            languagesSupported: (profile.language_supported as string[]) || [],
             website: profile.website || "",
             linkedin: profile.linkedin || "",
             instagramUrl: (profile as any).instagram_url || "",
@@ -306,6 +310,20 @@ export function ProfileSetupForm() {
     const hasCategory = formData.categoryId || existingProfile?.category_id;
     const hasBio = (formData.bio && formData.bio.trim().length > 0) || (existingProfile?.bio && existingProfile.bio.trim().length > 0);
 
+    // Validate location (required)
+    if (!formData.countryId) {
+      setError("Location is required");
+      setLoading(false);
+      return;
+    }
+
+    // Validate languages supported (required)
+    if (!formData.languagesSupported || formData.languagesSupported.length === 0) {
+      setError("At least one language must be specified");
+      setLoading(false);
+      return;
+    }
+
     // If user is filling category or bio, they're trying to become an expert
     // Require both category and bio for expert profile
     if (formData.categoryId || formData.bio || existingProfile?.category_id || existingProfile?.bio) {
@@ -336,7 +354,8 @@ export function ProfileSetupForm() {
           name: formData.name,
           tagline: formData.title,
           category_id: formData.categoryId || existingProfile?.category_id || null,
-          country_id: formData.countryId || null,
+          country_id: formData.countryId,
+          language_supported: formData.languagesSupported,
           bio: formData.bio || existingProfile?.bio || null,
           website: formData.website || null,
           linkedin: formData.linkedin || null,
@@ -531,7 +550,7 @@ export function ProfileSetupForm() {
 
       <div className="relative" ref={countryDropdownRef}>
         <label className="block text-sm font-medium text-custom-text mb-2">
-          Location
+          Location *
         </label>
         <input
           type="text"
@@ -542,6 +561,7 @@ export function ProfileSetupForm() {
           }}
           onFocus={() => setShowCountryDropdown(true)}
           placeholder="Search and select a country..."
+          required
           className="w-full px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
         />
         {showCountryDropdown && (
@@ -565,6 +585,71 @@ export function ProfileSetupForm() {
         {formData.countryId && (
           <input type="hidden" name="countryId" value={formData.countryId} />
         )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-custom-text mb-2">
+          Languages Supported *
+        </label>
+        <div className="flex flex-wrap gap-2 mb-2">
+          {formData.languagesSupported.map((lang, index) => (
+            <span
+              key={index}
+              className="inline-flex items-center gap-1 px-3 py-1 bg-cyber-green/20 text-cyber-green rounded-full text-sm border border-cyber-green/30"
+            >
+              {lang}
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({
+                    ...formData,
+                    languagesSupported: formData.languagesSupported.filter((_, i) => i !== index),
+                  });
+                }}
+                className="hover:text-red-400 transition-colors"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={languageInput}
+            onChange={(e) => setLanguageInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && languageInput.trim()) {
+                e.preventDefault();
+                if (!formData.languagesSupported.includes(languageInput.trim())) {
+                  setFormData({
+                    ...formData,
+                    languagesSupported: [...formData.languagesSupported, languageInput.trim()],
+                  });
+                  setLanguageInput("");
+                }
+              }
+            }}
+            placeholder="Enter a language and press Enter (e.g., English, Mandarin, Cantonese)"
+            className="flex-1 px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              if (languageInput.trim() && !formData.languagesSupported.includes(languageInput.trim())) {
+                setFormData({
+                  ...formData,
+                  languagesSupported: [...formData.languagesSupported, languageInput.trim()],
+                });
+                setLanguageInput("");
+              }
+            }}
+            className="px-4 py-3 bg-cyber-green/20 border border-cyber-green/30 text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors font-semibold"
+          >
+            Add
+          </button>
+        </div>
+        <p className="mt-1 text-xs text-custom-text/60">Add at least one language you can communicate in</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -612,18 +697,26 @@ export function ProfileSetupForm() {
         </div>
       </div>
 
-      <div className="flex items-center">
-        <input
-          id="listedOnMarketplace"
-          name="listedOnMarketplace"
-          type="checkbox"
-          checked={formData.listedOnMarketplace}
-          onChange={handleChange}
-          className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-cyber-green/30 rounded bg-dark-green-900/50"
-        />
-        <label htmlFor="listedOnMarketplace" className="ml-3 text-sm text-custom-text">
-          List my profile on the marketplace (visible to all users)
-        </label>
+      <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-4">
+        <div className="flex items-start">
+          <input
+            id="listedOnMarketplace"
+            name="listedOnMarketplace"
+            type="checkbox"
+            checked={formData.listedOnMarketplace}
+            onChange={handleChange}
+            className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-cyber-green/30 rounded bg-dark-green-900/50 mt-1"
+          />
+          <label htmlFor="listedOnMarketplace" className="ml-3 text-sm text-custom-text">
+            <span className="font-semibold">List my profile on the marketplace (visible to all users)</span>
+            <div className="mt-2 text-xs text-custom-text/70 space-y-1">
+              <p>✓ 10x more job opportunities and client connections</p>
+              <p>✓ Increased visibility to potential students and clients</p>
+              <p>✓ Build your professional reputation and network</p>
+              <p>✓ Access to exclusive marketplace features</p>
+            </div>
+          </label>
+        </div>
       </div>
 
       <div className="flex gap-4 pt-4">

@@ -222,7 +222,7 @@ export function ExpertDirectory() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
       <div className="mb-6">
-        <h1 className="text-4xl font-bold text-custom-text mb-2 text-glow">Expert Directory</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2 text-glow">Featured Experts</h1>
         <p className="text-xl text-custom-text/80 mb-6">
           Discover industry experts ready to guide your journey
         </p>
@@ -393,6 +393,22 @@ export function ExpertDirectory() {
           })}
         </div>
       )}
+
+      {/* Signup CTA Section */}
+      <div className="mt-12 mb-8 bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 sm:p-8 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-custom-text mb-3 sm:mb-4">
+          Can&apos;t find an expert here?
+        </h2>
+        <p className="text-custom-text/80 mb-4 sm:mb-6 text-sm sm:text-base max-w-2xl mx-auto">
+          Sign up to tell us what you want to learn. Let us help you find experts from our database with more than 100+ experts.
+        </p>
+        <Link
+          href="/register"
+          className="inline-block bg-cyber-green text-dark-green-900 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold hover:bg-cyber-green-light transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_rgba(0,255,136,0.4)] text-sm sm:text-base"
+        >
+          Sign Up Now
+        </Link>
+      </div>
     </div>
   );
 }

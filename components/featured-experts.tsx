@@ -15,45 +15,19 @@ interface Expert {
   avatarUrl?: string;
 }
 
-interface Category {
-  id: string;
-  name: string;
-}
-
 export function FeaturedExperts() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [experts, setExperts] = useState<Expert[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
-  // Fetch categories from Supabase
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const { data, error } = await supabase
-          .from("categories")
-          .select("id, name")
-          .order("name");
-
-        if (error) {
-          console.error("Error fetching categories:", error);
-        } else if (data) {
-          setCategories(data);
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    }
-    fetchCategories();
-  }, [supabase]);
+  // Categories removed - no longer fetching for landing page filters
 
   // Fetch featured experts from Supabase
   useEffect(() => {
     async function fetchFeaturedExperts() {
       setLoading(true);
       try {
-        let query = supabase
+        const { data, error } = await supabase
           .from("profiles")
           .select(`
             id,
@@ -69,59 +43,36 @@ export function FeaturedExperts() {
             countries(name)
           `)
           .eq("listed_on_marketplace", true)
-          .order("created_at", { ascending: false });
-
-        // Filter by category if selected
-        if (selectedCategory) {
-          query = query.eq("category_id", selectedCategory).limit(3);
-        }
-
-        const { data, error } = await query;
+          .order("created_at", { ascending: false })
+          .limit(6);
 
         if (error) {
           console.error("Error fetching experts:", error);
           setExperts([]);
         } else if (data) {
-          let expertsList: Expert[] = [];
+          // Show 2 experts per category
+          const expertsByCategory: { [key: string]: Expert[] } = {};
+          
+          data.forEach((profile: any) => {
+            const categoryName = (profile.categories as any)?.name || "Uncategorized";
+            if (!expertsByCategory[categoryName]) {
+              expertsByCategory[categoryName] = [];
+            }
+            if (expertsByCategory[categoryName].length < 2) {
+              expertsByCategory[categoryName].push({
+                id: profile.id,
+                name: profile.name || "Anonymous",
+                title: profile.title || "",
+                category: categoryName,
+                bio: profile.bio || "",
+                location: (profile.countries as any)?.name || "",
+                verified: profile.verified || false,
+                avatarUrl: profile.avatar_url || undefined,
+              });
+            }
+          });
 
-          if (selectedCategory) {
-            // Show up to 3 experts for selected category
-            expertsList = data.slice(0, 3).map((profile: any) => ({
-              id: profile.id,
-              name: profile.name || "Anonymous",
-              title: profile.title || "",
-              category: (profile.categories as any)?.name || "",
-              bio: profile.bio || "",
-              location: (profile.countries as any)?.name || "",
-              verified: profile.verified || false,
-              avatarUrl: profile.avatar_url || undefined,
-            }));
-          } else {
-            // Show 2 experts per category
-            const expertsByCategory: { [key: string]: Expert[] } = {};
-            
-            data.forEach((profile: any) => {
-              const categoryName = (profile.categories as any)?.name || "Uncategorized";
-              if (!expertsByCategory[categoryName]) {
-                expertsByCategory[categoryName] = [];
-              }
-              if (expertsByCategory[categoryName].length < 2) {
-                expertsByCategory[categoryName].push({
-                  id: profile.id,
-                  name: profile.name || "Anonymous",
-                  title: profile.title || "",
-                  category: categoryName,
-                  bio: profile.bio || "",
-                  location: (profile.countries as any)?.name || "",
-                  verified: profile.verified || false,
-                  avatarUrl: profile.avatar_url || undefined,
-                });
-              }
-            });
-
-            expertsList = Object.values(expertsByCategory).flat();
-          }
-
+          const expertsList = Object.values(expertsByCategory).flat();
           setExperts(expertsList);
         }
       } catch (error) {
@@ -133,7 +84,7 @@ export function FeaturedExperts() {
     }
 
     fetchFeaturedExperts();
-  }, [selectedCategory, supabase]);
+  }, [supabase]);
 
   return (
     <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
@@ -151,32 +102,6 @@ export function FeaturedExperts() {
           </Link>
         </div>
 
-        {/* Category filter */}
-        <div className="flex flex-wrap gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2 scrollbar-hide">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 whitespace-nowrap ${
-              selectedCategory === null
-                ? "bg-dark-green-800 text-custom-text border border-cyber-green/50 shadow-[0_0_15px_rgba(0,255,136,0.3)]"
-                : "bg-dark-green-800/50 text-custom-text hover:bg-dark-green-800 hover:border-cyber-green/50 border border-cyber-green/20"
-            }`}
-          >
-            All Categories
-          </button>
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 whitespace-nowrap ${
-                selectedCategory === category.id
-                  ? "bg-dark-green-800 text-custom-text border border-cyber-green/50 shadow-[0_0_15px_rgba(0,255,136,0.3)]"
-                  : "bg-dark-green-800/50 text-custom-text hover:bg-dark-green-800 hover:border-cyber-green/50 border border-cyber-green/20"
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
 
         {loading ? (
           <div className="text-center py-12">
@@ -184,7 +109,7 @@ export function FeaturedExperts() {
           </div>
         ) : experts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-custom-text/80">No experts found{selectedCategory ? " in this category" : ""}.</p>
+            <p className="text-custom-text/80">No experts found.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -231,16 +156,14 @@ export function FeaturedExperts() {
           </div>
         )}
 
-        {!selectedCategory && (
-          <div className="text-center mt-6 sm:mt-8">
-            <Link
-              href="/directory"
-              className="inline-block bg-dark-green-800 text-custom-text px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-bold border border-cyber-green/50 hover:bg-dark-green-700 hover:border-cyber-green transition-all duration-300 transform hover:scale-105"
-            >
-              View All Experts
-            </Link>
-          </div>
-        )}
+        <div className="text-center mt-6 sm:mt-8">
+          <Link
+            href="/directory"
+            className="inline-block bg-dark-green-800 text-custom-text px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-bold border border-cyber-green/50 hover:bg-dark-green-700 hover:border-cyber-green transition-all duration-300 transform hover:scale-105"
+          >
+            View All Experts
+          </Link>
+        </div>
       </div>
     </section>
   );

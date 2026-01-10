@@ -34,7 +34,7 @@ export function Navigation() {
               href="/directory"
               className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
             >
-              Find Experts
+              Featured Experts
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
             </Link>
             <Link
@@ -48,7 +48,7 @@ export function Navigation() {
               href="/blog"
               className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
             >
-              Sharing
+              Experts Sharing
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
             </Link>
             {loading ? (
@@ -113,7 +113,7 @@ export function Navigation() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block text-custom-text/90 hover:text-cyber-green transition-colors py-2"
               >
-                Find Experts
+                Featured Experts
               </Link>
               <Link
                 href="/featured-courses"
@@ -127,7 +127,7 @@ export function Navigation() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block text-custom-text/90 hover:text-cyber-green transition-colors py-2"
               >
-                Sharing
+                Experts Sharing
               </Link>
               {loading ? (
                 <div className="text-custom-text/80 animate-pulse py-2">Loading...</div>

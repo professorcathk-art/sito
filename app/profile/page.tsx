@@ -242,13 +242,16 @@ export default function ProfilePage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-4xl font-bold text-custom-text">Profile</h1>
-              <button
-                onClick={() => router.push("/profile/setup")}
-                className="flex items-center gap-2 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-900 hover:border-cyber-green transition-colors"
-              >
-                <span>⚙️</span>
-                <span>Set Up Your Profile</span>
-              </button>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <p className="text-sm text-custom-text/80">Start sharing your knowledge and expertise Now</p>
+                <button
+                  onClick={() => router.push("/profile/setup")}
+                  className="flex items-center gap-2 px-6 py-3 bg-cyber-green text-dark-green-900 font-bold rounded-lg hover:bg-cyber-green-light transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(0,255,136,0.4)] text-base sm:text-lg"
+                >
+                  <span>⚙️</span>
+                  <span>Set up Experts Profile</span>
+                </button>
+              </div>
             </div>
           </div>
 
