@@ -9,6 +9,7 @@ import { Navigation } from "@/components/navigation";
 import { ProtectedRoute } from "@/components/protected-route";
 import { CalendarView } from "@/components/calendar-view";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
+import { stripHtml } from "@/lib/utils/strip-html";
 
 interface AppointmentSlot {
   id: string;
@@ -342,8 +343,8 @@ export default function BookAppointmentPage() {
             unit_amount: priceInCents,
             currency: "usd",
             product_data: {
-              name: `Appointment - ${new Date(slot.start_time).toLocaleDateString()}`,
-              description: `1-on-1 session with ${expert?.name || "Expert"}`,
+              name: stripHtml(`Appointment - ${new Date(slot.start_time).toLocaleDateString()}`),
+              description: stripHtml(`1-on-1 session with ${expert?.name || "Expert"}`),
             },
           },
           quantity: 1,

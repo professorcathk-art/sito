@@ -26,6 +26,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripeClient } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
+import { stripHtml } from "@/lib/utils/strip-html";
 
 export async function POST(request: NextRequest) {
   try {
@@ -102,8 +103,9 @@ export async function POST(request: NextRequest) {
 
     // Only include description if it's not empty
     // Stripe doesn't allow empty strings for description
+    // Strip HTML tags since Stripe checkout displays plain text
     if (description && description.trim().length > 0) {
-      productData.description = description.trim();
+      productData.description = stripHtml(description).trim();
     }
 
     const product = await stripeClient.products.create(productData);
