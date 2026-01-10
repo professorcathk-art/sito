@@ -168,25 +168,25 @@ export function ConnectionsContent() {
 
       {/* Tabs */}
       <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 mb-6 border-b border-cyber-green/30 scrollbar-hide">
-        <div className="flex gap-2 sm:gap-4 min-w-max">
+        <div className="flex gap-3 sm:gap-6 min-w-max pb-1">
           <button
             onClick={() => setActiveTab("received")}
-            className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+            className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base flex items-center gap-1.5 sm:gap-2 ${
               activeTab === "received"
                 ? "text-cyber-green border-b-2 border-cyber-green"
                 : "text-custom-text/70 hover:text-custom-text"
             }`}
           >
-            Received Requests
+            <span>Received Requests</span>
             {receivedRequests.length > 0 && (
-              <span className="ml-1 sm:ml-2 bg-cyber-green text-dark-green-950 text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
+              <span className="bg-cyber-green text-dark-green-950 text-xs font-bold px-2 py-0.5 rounded-full min-w-[1.5rem] text-center">
                 {receivedRequests.length}
               </span>
             )}
           </button>
           <button
             onClick={() => setActiveTab("sent")}
-            className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+            className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
               activeTab === "sent"
                 ? "text-cyber-green border-b-2 border-cyber-green"
                 : "text-custom-text/70 hover:text-custom-text"
@@ -196,7 +196,7 @@ export function ConnectionsContent() {
           </button>
           <button
             onClick={() => setActiveTab("accepted")}
-            className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+            className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
               activeTab === "accepted"
                 ? "text-cyber-green border-b-2 border-cyber-green"
                 : "text-custom-text/70 hover:text-custom-text"

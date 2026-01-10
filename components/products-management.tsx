@@ -1471,10 +1471,10 @@ export function ProductsManagement() {
 
       {/* Tabs */}
       <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 border-b border-cyber-green/30 scrollbar-hide">
-        <div className="flex gap-2 sm:gap-4 min-w-max">
+        <div className="flex gap-3 sm:gap-6 min-w-max pb-1">
           <button
             onClick={() => setActiveTab("products")}
-            className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+            className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
               activeTab === "products"
                 ? "text-cyber-green border-b-2 border-cyber-green"
                 : "text-custom-text/70 hover:text-custom-text"
@@ -1487,7 +1487,7 @@ export function ProductsManagement() {
               setActiveTab("interests");
               fetchInterests(); // Fetch interests when tab is clicked
             }}
-            className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+            className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
               activeTab === "interests"
                 ? "text-cyber-green border-b-2 border-cyber-green"
                 : "text-custom-text/70 hover:text-custom-text"

@@ -240,17 +240,28 @@ export default function ProfilePage() {
         <div className="px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-4xl font-bold text-custom-text">Profile</h1>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <p className="text-sm text-custom-text/80">Start sharing your knowledge and expertise Now</p>
-                <button
-                  onClick={() => router.push("/profile/setup")}
-                  className="flex items-center gap-2 px-6 py-3 bg-cyber-green text-dark-green-900 font-bold rounded-lg hover:bg-cyber-green-light transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(0,255,136,0.4)] text-base sm:text-lg"
-                >
-                  <span>⚙️</span>
-                  <span>Set up Experts Profile</span>
-                </button>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6 mb-6">
+              <h1 className="text-3xl sm:text-4xl font-bold text-custom-text">Profile</h1>
+              {/* Prominent Setup CTA */}
+              <div className="bg-gradient-to-r from-cyber-green/20 to-cyber-green/10 border-2 border-cyber-green/50 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                  <div className="flex-1">
+                    <p className="text-base sm:text-lg font-semibold text-custom-text mb-1">
+                      🚀 Start sharing your knowledge and expertise Now
+                    </p>
+                    <p className="text-sm text-custom-text/80">
+                      Complete your expert profile to unlock all features and connect with learners worldwide
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => router.push("/profile/setup")}
+                    className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-cyber-green text-dark-green-900 font-bold rounded-lg hover:bg-cyber-green-light transition-all transform hover:scale-105 shadow-[0_0_25px_rgba(0,255,136,0.5)] text-base sm:text-lg whitespace-nowrap animate-pulse-glow"
+                  >
+                    <span className="text-xl">⚙️</span>
+                    <span>Set up Experts Profile</span>
+                    <span className="text-lg">→</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -366,10 +377,10 @@ export default function ProfilePage() {
 
           {/* Tabs */}
           <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 mb-6 border-b border-cyber-green/30 scrollbar-hide">
-            <div className="flex gap-2 sm:gap-4 min-w-max">
+            <div className="flex gap-3 sm:gap-6 min-w-max pb-1">
               <button
                 onClick={() => setActiveTab("profile")}
-                className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+                className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
                   activeTab === "profile"
                     ? "text-cyber-green border-b-2 border-cyber-green"
                     : "text-custom-text/70 hover:text-custom-text"
@@ -379,22 +390,22 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={() => setActiveTab("messages")}
-                className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+                className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base flex items-center gap-1.5 sm:gap-2 ${
                   activeTab === "messages"
                     ? "text-cyber-green border-b-2 border-cyber-green"
                     : "text-custom-text/70 hover:text-custom-text"
                 }`}
               >
-                Recent Messages
+                <span>Recent Messages</span>
                 {unreadCount > 0 && (
-                  <span className="ml-1 sm:ml-2 bg-cyber-green text-dark-green-950 text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
+                  <span className="bg-cyber-green text-dark-green-950 text-xs font-bold px-2 py-0.5 rounded-full min-w-[1.5rem] text-center">
                     {unreadCount}
                   </span>
                 )}
               </button>
               <button
                 onClick={() => setActiveTab("connections")}
-                className={`px-3 sm:px-4 py-2 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
+                className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
                   activeTab === "connections"
                     ? "text-cyber-green border-b-2 border-cyber-green"
                     : "text-custom-text/70 hover:text-custom-text"
