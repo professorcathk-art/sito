@@ -89,123 +89,118 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
           </div>
           
 
-          {/* Right side: Desktop nav, dashboard menu dropdown, or mobile menu button */}
+          {/* Right side: Desktop nav (expanded) or mobile menu button */}
           <div className="flex items-center justify-end flex-shrink-0 relative">
-            {/* Desktop Navigation - always visible on desktop */}
+            {/* Desktop Navigation - always expanded on desktop */}
             <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
-              {isDashboardPage ? (
-                // Dashboard pages: Show dropdown menu button
-                <div className="relative">
-                  <button
-                    onClick={() => setDashboardMenuOpen(!dashboardMenuOpen)}
-                    className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base flex items-center gap-1"
-                    aria-label="Toggle navigation menu"
-                  >
-                    <span>Menu</span>
-                    <svg
-                      className={`w-4 h-4 transition-transform ${dashboardMenuOpen ? 'rotate-180' : ''}`}
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path d="M19 9l-7 7-7-7" />
-                    </svg>
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
-                  </button>
-                  
-                  {/* Dropdown Menu */}
-                  {dashboardMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-dark-green-800/95 backdrop-blur-sm border border-cyber-green/30 rounded-lg shadow-lg z-50 py-2">
-                      <Link
-                        href="/directory"
-                        onClick={() => setDashboardMenuOpen(false)}
-                        className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm"
-                      >
-                        Featured Experts
-                      </Link>
-                      <Link
-                        href="/featured-courses"
-                        onClick={() => setDashboardMenuOpen(false)}
-                        className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm"
-                      >
-                        Featured Learnings
-                      </Link>
-                      <Link
-                        href="/blog"
-                        onClick={() => setDashboardMenuOpen(false)}
-                        className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm"
-                      >
-                        Experts Sharing
-                      </Link>
-                      {user && (
-                        <Link
-                          href="/dashboard"
-                          onClick={() => setDashboardMenuOpen(false)}
-                          className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm border-t border-cyber-green/20 mt-1 pt-2"
-                        >
-                          Dashboard
-                        </Link>
-                      )}
-                    </div>
-                  )}
-                </div>
+              <Link
+                href="/directory"
+                className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
+              >
+                Featured Experts
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
+              </Link>
+              <Link
+                href="/featured-courses"
+                className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
+              >
+                Featured Learnings
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
+              </Link>
+              <Link
+                href="/blog"
+                className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
+              >
+                Experts Sharing
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
+              </Link>
+              {loading ? (
+                <div className="text-custom-text/80 animate-pulse text-sm lg:text-base">Loading...</div>
+              ) : user ? (
+                <Link
+                  href="/dashboard"
+                  className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
+                >
+                  Dashboard
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
+                </Link>
               ) : (
-                // Non-dashboard pages: Show full navigation
                 <>
                   <Link
-                    href="/directory"
+                    href="/login"
                     className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
                   >
-                    Featured Experts
+                    Sign In
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
                   </Link>
                   <Link
-                    href="/featured-courses"
-                    className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
+                    href="/register"
+                    className="bg-cyber-green text-custom-text px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-cyber-green-light transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg animate-pulse-glow font-bold text-sm lg:text-base"
                   >
-                    Featured Learnings
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
+                    Get Started
                   </Link>
-                  <Link
-                    href="/blog"
-                    className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
-                  >
-                    Experts Sharing
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
-                  </Link>
-                  {loading ? (
-                    <div className="text-custom-text/80 animate-pulse text-sm lg:text-base">Loading...</div>
-                  ) : user ? (
-                    <Link
-                      href="/dashboard"
-                      className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
-                    >
-                      Dashboard
-                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
-                    </Link>
-                  ) : (
-                    <>
-                      <Link
-                        href="/login"
-                        className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
-                      >
-                        Sign In
-                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
-                      </Link>
-                      <Link
-                        href="/register"
-                        className="bg-cyber-green text-custom-text px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-cyber-green-light transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg animate-pulse-glow font-bold text-sm lg:text-base"
-                      >
-                        Get Started
-                      </Link>
-                    </>
-                  )}
                 </>
               )}
             </div>
+            
+            {/* Mobile: Menu button for dashboard pages (top right) */}
+            {isDashboardPage && user && (
+              <div className="md:hidden relative">
+                <button
+                  onClick={() => setDashboardMenuOpen(!dashboardMenuOpen)}
+                  className="text-custom-text hover:text-cyber-green transition-colors p-2 -mr-2"
+                  aria-label="Toggle navigation menu"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+                
+                {/* Mobile Dropdown Menu */}
+                {dashboardMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-dark-green-800/95 backdrop-blur-sm border border-cyber-green/30 rounded-lg shadow-lg z-50 py-2">
+                    <Link
+                      href="/directory"
+                      onClick={() => setDashboardMenuOpen(false)}
+                      className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm"
+                    >
+                      Featured Experts
+                    </Link>
+                    <Link
+                      href="/featured-courses"
+                      onClick={() => setDashboardMenuOpen(false)}
+                      className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm"
+                    >
+                      Featured Learnings
+                    </Link>
+                    <Link
+                      href="/blog"
+                      onClick={() => setDashboardMenuOpen(false)}
+                      className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm"
+                    >
+                      Experts Sharing
+                    </Link>
+                    {user && (
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setDashboardMenuOpen(false)}
+                        className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm border-t border-cyber-green/20 mt-1 pt-2"
+                      >
+                        Dashboard
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             
             {/* Mobile menu button (non-dashboard pages only) */}
             {!isDashboardPage && (
