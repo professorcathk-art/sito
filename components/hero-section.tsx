@@ -39,7 +39,7 @@ export function HeroSection() {
                 href="/register"
                 className="bg-cyber-green text-dark-green-900 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-bold border-2 border-cyber-green hover:bg-cyber-green-light hover:border-cyber-green transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-[0_0_20px_rgba(0,255,136,0.4)] text-center"
               >
-                Start Now
+                Start Now for Free
               </Link>
             </div>
           </div>

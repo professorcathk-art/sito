@@ -334,6 +334,85 @@ export function OnboardingFlow() {
 
       if (error) throw error;
 
+      // Get user email and category names for email
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", user.id)
+        .single();
+      
+      const learningCategoryName = learningCategoryId 
+        ? categories.find(c => c.id === learningCategoryId)?.name 
+        : null;
+      const expertiseCategoryName = expertiseCategoryId 
+        ? categories.find(c => c.id === expertiseCategoryId)?.name 
+        : null;
+
+      // Send registration email with survey data
+      const surveyData: any = {
+        intention: intention || undefined,
+      };
+
+      // Add learner-specific data
+      if (intention === "learn") {
+        if (learningInterests.length > 0) {
+          surveyData.learningInterests = learningInterests;
+        }
+        if (learningCategoryName) {
+          surveyData.learningCategory = learningCategoryName;
+        }
+        if (learningLocation) {
+          surveyData.learningLocation = learningLocation;
+        }
+        if (experienceLevel) {
+          surveyData.experienceLevel = experienceLevel;
+        }
+        if (age) {
+          surveyData.age = age;
+        }
+      }
+
+      // Add expert-specific data
+      if (intention === "teach") {
+        if (expertiseCategoryName) {
+          surveyData.expertiseCategory = expertiseCategoryName;
+        }
+        if (expertiseLevel) {
+          surveyData.expertiseLevel = expertiseLevel;
+        }
+        if (expertBio) {
+          surveyData.bio = expertBio;
+        }
+        if (teachingInterests.length > 0) {
+          surveyData.teachingInterests = teachingInterests;
+        }
+      }
+
+      // Add profile completion data
+      if (displayName) {
+        surveyData.displayName = displayName;
+      }
+      if (tagline) {
+        surveyData.tagline = tagline;
+      }
+      if (location) {
+        surveyData.location = location;
+      }
+
+      // Send email with survey data (don't wait for it to complete)
+      fetch("/api/send-registration-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userEmail: profile?.email || user.email || "",
+          userName: displayName,
+          surveyData: Object.keys(surveyData).length > 1 ? surveyData : undefined, // Only send if there's survey data
+        }),
+      }).catch((err) => {
+        console.error("Failed to send registration email:", err);
+        // Don't block user flow if email fails
+      });
+
       router.push("/dashboard");
       router.refresh();
     } catch (err: any) {

@@ -93,6 +93,19 @@ export function RegisterForm() {
           // Continue anyway - profile can be created later via trigger
         }
 
+        // Send registration email (don't wait for it to complete)
+        fetch("/api/send-registration-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userEmail: formData.email,
+            userName: formData.name,
+          }),
+        }).catch((err) => {
+          console.error("Failed to send registration email:", err);
+          // Don't block user flow if email fails
+        });
+
         // Redirect to onboarding
         router.push("/onboarding");
         router.refresh();
