@@ -22,7 +22,7 @@ export function HeroSection() {
           {/* Left side - Content */}
           <div className="hero-content text-center lg:text-left max-w-2xl mx-auto lg:mx-0 order-2 lg:order-1">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-custom-text mb-4 sm:mb-6 leading-tight animate-fade-in-up tracking-tight">
-              Connect with Global
+              Connect with 100+ Global
               <span className="block text-cyber-green mt-2">
                 Industry Experts
               </span>
