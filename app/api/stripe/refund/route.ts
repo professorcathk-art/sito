@@ -17,14 +17,16 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getStripeClient } from "@/lib/stripe/server";
-import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
 
 export async function POST(request: NextRequest) {
   try {
     const stripeClient = getStripeClient();
-    const supabase = createServiceRoleClient();
-
+    
+    // Use regular client to get authenticated user session
+    const supabase = await createClient();
+    
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -58,9 +60,12 @@ export async function POST(request: NextRequest) {
     let currentRefundStatus: string | null = null;
     let originalAmount: number | null = null;
 
+    // Use service role client for database queries (bypasses RLS)
+    const supabaseAdmin = createServiceRoleClient();
+    
     // Fetch the enrollment or appointment
     if (type === "course") {
-      const { data: enrollment, error: enrollmentError } = await supabase
+      const { data: enrollment, error: enrollmentError } = await supabaseAdmin
         .from("course_enrollments")
         .select(`
           id,
@@ -101,7 +106,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // type === "appointment"
-      const { data: appointment, error: appointmentError } = await supabase
+      const { data: appointment, error: appointmentError } = await supabaseAdmin
         .from("appointments")
         .select("id, expert_id, payment_intent_id, refund_status, total_amount")
         .eq("id", id)
@@ -162,7 +167,7 @@ export async function POST(request: NextRequest) {
 
     // Update status to "processing"
     if (type === "course") {
-      await supabase
+      await supabaseAdmin
         .from("course_enrollments")
         .update({
           refund_status: "processing",
@@ -170,7 +175,7 @@ export async function POST(request: NextRequest) {
         })
         .eq("id", id);
     } else {
-      await supabase
+      await supabaseAdmin
         .from("appointments")
         .update({
           refund_status: "processing",
@@ -208,7 +213,7 @@ export async function POST(request: NextRequest) {
     const refundAmountDecimal = refundAmount / 100; // Convert from cents to decimal
 
     if (type === "course") {
-      await supabase
+      await supabaseAdmin
         .from("course_enrollments")
         .update({
           refund_status: refund.status === "succeeded" ? "refunded" : "failed",
@@ -218,7 +223,7 @@ export async function POST(request: NextRequest) {
         })
         .eq("id", id);
     } else {
-      await supabase
+      await supabaseAdmin
         .from("appointments")
         .update({
           refund_status: refund.status === "succeeded" ? "refunded" : "failed",
@@ -237,7 +242,7 @@ export async function POST(request: NextRequest) {
         // You can add logic to remove access if needed
       } else {
         // Update appointment status to cancelled
-        await supabase
+        await supabaseAdmin
           .from("appointments")
           .update({ status: "cancelled" })
           .eq("id", id);
@@ -262,17 +267,17 @@ export async function POST(request: NextRequest) {
 
     // Try to update status to failed
     try {
-      const supabase = createServiceRoleClient();
+      const supabaseAdmin = createServiceRoleClient();
       const body = await request.json();
       const { type, id } = body;
 
       if (type === "course") {
-        await supabase
+        await supabaseAdmin
           .from("course_enrollments")
           .update({ refund_status: "failed" })
           .eq("id", id);
       } else {
-        await supabase
+        await supabaseAdmin
           .from("appointments")
           .update({ refund_status: "failed" })
           .eq("id", id);
