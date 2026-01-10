@@ -6,14 +6,14 @@ Copy and paste these into Vercel Dashboard → Settings → Environment Variable
 
 ### Supabase Configuration
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://zyqjurzximonwpojeazp.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_Pw741jqAbshYugXZZcizig_aCZN9vJs
-SUPABASE_SERVICE_ROLE_KEY=sb_secret_Xu8vgXM2Spc8tybODD1nzQ_GG-corr8
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_... (Your Supabase anon key)
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_... (Your Supabase service role key - KEEP SECRET)
 ```
 
 ### Email Service (Resend)
 ```
-RESEND_API_KEY=re_iH4pcquy_PMoPupZh4aYbnMBcSPtjDWoJ
+RESEND_API_KEY=re_... (Your Resend API key - KEEP SECRET)
 ```
 
 ### Site URL

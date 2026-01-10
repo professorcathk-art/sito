@@ -1,6 +1,10 @@
-NEXT_PUBLIC_SUPABASE_URL=https://zyqjurzximonwpojeazp.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_Pw741jqAbshYugXZZcizig_aCZN9vJs
-SUPABASE_SERVICE_ROLE_KEY=sb_secret_Xu8vgXM2Spc8tybODD1nzQ_GG-corr8
-RESEND_API_KEY=re_iH4pcquy_PMoPupZh4aYbnMBcSPtjDWoJ
-NEXT_PUBLIC_SITE_URL=https://sito-smoky.vercel.app
+# ⚠️ SECURITY: This file has been redacted
+# Never commit actual API keys to Git
+# Use placeholders and set actual values in Vercel Dashboard
+
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_... (Your Supabase anon key)
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_... (Your Supabase service role key - KEEP SECRET)
+RESEND_API_KEY=re_... (Your Resend API key - KEEP SECRET)
+NEXT_PUBLIC_SITE_URL=https://your-domain.vercel.app
 
