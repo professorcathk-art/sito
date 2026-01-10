@@ -57,16 +57,25 @@ export function RegisterForm() {
       }
 
       if (authData.user) {
+        // Get default country_id (Remote or Hong Kong)
+        const { data: defaultCountry } = await supabase
+          .from("countries")
+          .select("id")
+          .or("name.eq.Remote,code.eq.HK")
+          .limit(1)
+          .single();
+
         // Create user profile in database
         const { error: profileError } = await supabase.from("profiles").insert({
           id: authData.user.id,
           name: formData.name,
           email: formData.email,
+          country_id: defaultCountry?.id || null, // Include country_id (required by migration 033)
         });
 
         if (profileError) {
           console.error("Profile creation error:", profileError);
-          // Continue anyway - profile can be created later
+          // Continue anyway - profile can be created later via trigger
         }
 
         // Redirect to onboarding
