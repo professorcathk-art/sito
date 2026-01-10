@@ -314,8 +314,8 @@ export function ExpertDirectory() {
                 className="group bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-2 hover:scale-[1.05] flex flex-col overflow-hidden"
               >
                 <Link href={`/expert/${expert.id}`} className="flex-1 flex flex-col">
-                  {/* Poster-style image section */}
-                  <div className="relative aspect-[2/3] w-full overflow-hidden bg-gradient-to-br from-dark-green-800 to-dark-green-900">
+                  {/* Poster-style image section - shorter height */}
+                  <div className="relative aspect-[3/2] w-full overflow-hidden bg-gradient-to-br from-dark-green-800 to-dark-green-900">
                     {expert.avatar_url ? (
                       <Image
                         src={expert.avatar_url}
@@ -325,7 +325,7 @@ export function ExpertDirectory() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-cyber-green/50">
+                        <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-cyber-green/50">
                           {getInitials(expert.name)}
                         </div>
                       </div>
@@ -342,7 +342,7 @@ export function ExpertDirectory() {
                           )}
                         </div>
                         <p className="text-white/90 text-xs truncate mb-2">{expert.title}</p>
-                        <p className="text-white/80 text-xs line-clamp-2">{expert.bio}</p>
+                        <p className="text-white/80 text-xs line-clamp-3">{expert.bio}</p>
                       </div>
                     </div>
                   </div>
@@ -361,7 +361,14 @@ export function ExpertDirectory() {
                       <p className="text-custom-text/80 text-xs truncate mb-2">{expert.title}</p>
                     </div>
                     
-                    <div className="flex flex-wrap gap-2 mb-3">
+                    {/* Bio section - show more text */}
+                    {expert.bio && (
+                      <p className="text-custom-text/70 text-xs sm:text-sm mb-3 line-clamp-4 leading-relaxed">
+                        {expert.bio}
+                      </p>
+                    )}
+                    
+                    <div className="flex flex-wrap gap-2 mt-auto">
                       {expert.category_name && (
                         <span className="text-xs text-cyber-green bg-dark-green-900/50 px-2 py-1 rounded-full border border-cyber-green/30 truncate">
                           {expert.category_name}
