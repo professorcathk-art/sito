@@ -31,15 +31,22 @@ Instead of showing "Sito.Club"
 #### 2.3 Test Users (if in Testing mode)
 - Add test users if your app is in testing mode
 
-### Step 3: Add Authorized Domain
+### Step 3: Update Authorized Domains
 
 **Important:** In the OAuth consent screen:
 
 1. Scroll down to **"Authorized domains"** section
-2. Click **"+ ADD DOMAIN"**
-3. Enter: `sito.club` (just the domain, no https:// or www)
-4. Click **"Add"**
-5. **Save** the changes
+2. **Remove** `zyqjurzximonwpojeazp.supabase.co` if it's listed (you can remove it)
+3. Click **"+ ADD DOMAIN"** 
+4. Enter: `sito.club` (just the domain, no https:// or www)
+5. Click **"Add"**
+6. **Save** the changes
+
+**Note:** 
+- **Authorized domains** (in OAuth consent screen) = Controls what domain name shows to users
+- **Authorized redirect URIs** (in Credentials) = Technical requirement, must keep Supabase callback URL
+- You can remove Supabase domain from "Authorized domains" - it only affects what users see
+- You MUST keep Supabase callback URL in "Authorized redirect URIs" for OAuth to work
 
 ### Step 4: Verify Domain Ownership
 
@@ -73,9 +80,14 @@ If your app is in "Testing" mode and you want to make it public:
 
 ## Why This Happens
 
-- Google shows the **redirect URI domain** in the consent screen by default
-- By adding `sito.club` to **Authorized domains** and setting the **Application home page**, Google will show your domain instead
-- The Supabase callback URL (`zyqjurzximonwpojeazp.supabase.co/auth/v1/callback`) must stay in redirect URIs for OAuth to work, but users won't see it
+- Google shows domains from **"Authorized domains"** in the consent screen
+- By adding `sito.club` to **Authorized domains** and removing `zyqjurzximonwpojeazp.supabase.co`, Google will show your domain
+- The Supabase callback URL (`zyqjurzximonwpojeazp.supabase.co/auth/v1/callback`) must stay in **"Authorized redirect URIs"** (under Credentials) for OAuth to work technically, but users won't see it in the consent screen
+
+## Key Difference
+
+- **Authorized domains** (OAuth consent screen) = What users see → Remove Supabase domain, keep only `sito.club`
+- **Authorized redirect URIs** (Credentials) = Technical requirement → Must keep Supabase callback URL
 
 ## Expected Result
 
