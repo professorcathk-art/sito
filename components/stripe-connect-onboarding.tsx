@@ -212,6 +212,21 @@ export function StripeConnectOnboarding() {
 
       if (!response.ok) {
         const data = await response.json();
+        
+        // Handle case where account doesn't exist (test account with live keys)
+        if (data.accountNotFound && data.cleared) {
+          // Account was cleared, refresh to show create account option
+          setAccountStatus({
+            accountId: null,
+            readyToReceivePayments: false,
+            onboardingComplete: false,
+            requirementsStatus: "no_account",
+          });
+          setError("Previous test account was cleared. Please create a new account for live mode.");
+          setLoading(false);
+          return;
+        }
+        
         throw new Error(data.error || "Failed to fetch account status");
       }
 
@@ -281,6 +296,38 @@ export function StripeConnectOnboarding() {
       setError(err.message || "Failed to create account");
     } finally {
       setCreating(false);
+    }
+  };
+
+  /**
+   * Reset/clear the Stripe Connect account
+   * Useful when switching from test to live mode
+   */
+  const handleResetAccount = async () => {
+    if (!confirm("Are you sure you want to reset your Stripe account? This will clear your current account and allow you to create a new one. This is useful when switching from test mode to live mode.")) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/stripe/connect/reset-account", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to reset account");
+      }
+
+      // Refresh account status (should show no account now)
+      await checkAccountStatus();
+    } catch (err: any) {
+      console.error("Error resetting account:", err);
+      setError(err.message || "Failed to reset account");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -552,14 +599,27 @@ export function StripeConnectOnboarding() {
             </div>
           )}
 
-          {/* Refresh Status Button */}
-          <button
-            onClick={checkAccountStatus}
-            disabled={loading}
-            className="w-full px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors disabled:opacity-50 text-sm"
-          >
-            Refresh Status
-          </button>
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={checkAccountStatus}
+              disabled={loading}
+              className="flex-1 px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors disabled:opacity-50 text-sm"
+            >
+              Refresh Status
+            </button>
+            <button
+              onClick={handleResetAccount}
+              disabled={loading}
+              className="flex-1 px-4 py-2 border border-yellow-500/50 text-yellow-300 rounded-lg hover:bg-yellow-900/30 transition-colors disabled:opacity-50 text-sm"
+            >
+              Reset Account
+            </button>
+          </div>
+          
+          <p className="text-xs text-custom-text/60 text-center mt-2">
+            Reset Account: Clear your current Stripe account to create a new one (useful when switching from test to live mode)
+          </p>
         </div>
       )}
     </div>

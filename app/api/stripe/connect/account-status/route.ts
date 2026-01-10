@@ -75,7 +75,35 @@ export async function GET(request: NextRequest) {
      * - charges_enabled: Whether account can receive payments
      * - details_submitted: Whether onboarding is complete
      */
-    const account = await stripeClient.accounts.retrieve(accountId);
+    let account;
+    try {
+      account = await stripeClient.accounts.retrieve(accountId);
+    } catch (stripeError: any) {
+      // Handle case where account doesn't exist (e.g., test account with live keys)
+      if (stripeError.type === "StripeInvalidRequestError" && 
+          (stripeError.code === "resource_missing" || stripeError.message?.includes("No such account"))) {
+        console.error(`Account ${accountId} not found in Stripe. This might be a test account used with live keys.`);
+        
+        // Clear the invalid account ID from database
+        await supabase
+          .from("profiles")
+          .update({
+            stripe_connect_account_id: null,
+            stripe_connect_onboarding_complete: false,
+          })
+          .eq("stripe_connect_account_id", accountId);
+        
+        return NextResponse.json(
+          { 
+            error: "Account not found. This might be a test account. Please create a new account.",
+            accountNotFound: true,
+            cleared: true
+          },
+          { status: 404 }
+        );
+      }
+      throw stripeError;
+    }
 
     /**
      * Check if account is ready to receive payments
