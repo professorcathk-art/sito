@@ -132,6 +132,34 @@ export function OnboardingFlow() {
     setError("");
 
     try {
+      // Get default country_id if not already set in profile
+      let defaultCountryId = null;
+      try {
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("country_id")
+          .eq("id", user.id)
+          .maybeSingle();
+        
+        // If profile exists and has country_id, use it
+        if (existingProfile?.country_id) {
+          defaultCountryId = existingProfile.country_id;
+        } else {
+          // Try to get default country
+          const { data: defaultCountry } = await supabase
+            .from("countries")
+            .select("id")
+            .or("name.eq.Remote,code.eq.HK")
+            .limit(1)
+            .maybeSingle();
+          
+          defaultCountryId = defaultCountry?.id || null;
+        }
+      } catch (err) {
+        console.warn("Could not fetch country_id:", err);
+        // Continue - will use existing country_id if profile exists
+      }
+
       const updateData: any = {
         id: user.id,
         user_intention: "learn",
@@ -140,6 +168,11 @@ export function OnboardingFlow() {
         experience_level: experienceLevel || null,
         age: age ? parseInt(age) : null,
       };
+
+      // Include country_id if we have it (required by NOT NULL constraint)
+      if (defaultCountryId) {
+        updateData.country_id = defaultCountryId;
+      }
 
       if (learningInterests.length > 0) {
         updateData.learning_interests = learningInterests;
@@ -178,6 +211,34 @@ export function OnboardingFlow() {
     setError("");
 
     try {
+      // Get default country_id if not already set in profile
+      let defaultCountryId = null;
+      try {
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("country_id")
+          .eq("id", user.id)
+          .maybeSingle();
+        
+        // If profile exists and has country_id, use it
+        if (existingProfile?.country_id) {
+          defaultCountryId = existingProfile.country_id;
+        } else {
+          // Try to get default country
+          const { data: defaultCountry } = await supabase
+            .from("countries")
+            .select("id")
+            .or("name.eq.Remote,code.eq.HK")
+            .limit(1)
+            .maybeSingle();
+          
+          defaultCountryId = defaultCountry?.id || null;
+        }
+      } catch (err) {
+        console.warn("Could not fetch country_id:", err);
+        // Continue - will use existing country_id if profile exists
+      }
+
       const updateData: any = {
         id: user.id,
         user_intention: "teach",
@@ -185,6 +246,11 @@ export function OnboardingFlow() {
         expertise_level: expertiseLevel || null,
         bio: expertBio,
       };
+
+      // Include country_id if we have it (required by NOT NULL constraint)
+      if (defaultCountryId) {
+        updateData.country_id = defaultCountryId;
+      }
 
       if (teachingInterests.length > 0) {
         updateData.teaching_interests = teachingInterests;
