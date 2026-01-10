@@ -223,10 +223,23 @@ export function AdminRefundManagement() {
       }
 
       const data = await response.json();
-      setSuccess(`Refund processed successfully: ${data.refund.id}`);
       
-      // Refresh the list
-      await fetchRefundableItems();
+      // Show detailed success message with refund ID and status
+      const refundId = data.refund?.id || "Unknown";
+      const refundStatus = data.refund?.status || "Unknown";
+      setSuccess(
+        `Refund processed successfully!\n` +
+        `Refund ID: ${refundId}\n` +
+        `Status: ${refundStatus}\n` +
+        `Amount: ${data.refund?.currency || "USD"} ${data.refund?.amount?.toFixed(2) || "0.00"}\n\n` +
+        `The refund should appear in Stripe Dashboard immediately. ` +
+        `Check Payments → Find original payment → See refunds section.`
+      );
+      
+      // Refresh the list after a short delay to allow database update
+      setTimeout(async () => {
+        await fetchRefundableItems();
+      }, 1000);
     } catch (err: any) {
       console.error("Error processing refund:", err);
       setError(err.message || "Failed to process refund");
