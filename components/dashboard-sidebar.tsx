@@ -150,7 +150,7 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
   ];
 
   return (
-    <aside className="w-64 bg-dark-green-800/95 md:bg-dark-green-800/30 backdrop-blur-sm border-r border-cyber-green/30 min-h-[calc(100vh-4rem)] pt-8 pb-8 overflow-y-auto">
+    <aside className="w-64 bg-dark-green-800/95 md:bg-dark-green-800/30 backdrop-blur-sm border-r border-cyber-green/30 min-h-[calc(100vh-4rem)] pt-20 md:pt-8 pb-8 overflow-y-auto">
       <nav className="px-4 space-y-2">
         {menuItems.map((item) => {
           const isActive = pathname === item.href || (item.href === "/dashboard" && pathname === "/dashboard");
