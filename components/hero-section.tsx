@@ -53,20 +53,6 @@ export function HeroSection() {
                   Privacy Policy
                 </Link>
               </p>
-              <div className="mt-3 flex flex-wrap gap-3 justify-center lg:justify-start">
-                <Link 
-                  href="/privacy" 
-                  className="text-xs sm:text-sm text-cyber-green hover:text-cyber-green-light underline font-medium"
-                >
-                  View Privacy Policy →
-                </Link>
-                <Link 
-                  href="/terms" 
-                  className="text-xs sm:text-sm text-cyber-green hover:text-cyber-green-light underline font-medium"
-                >
-                  View Terms of Service →
-                </Link>
-              </div>
             </div>
           </div>
 

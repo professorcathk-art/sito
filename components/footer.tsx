@@ -56,43 +56,23 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-cyber-green/20 pt-6 sm:pt-8">
-          {/* Privacy Policy Links - Prominent for Google OAuth compliance */}
-          <div className="mb-4 text-center">
-            <p className="text-custom-text/70 text-sm mb-2">
-              <Link
-                href="/privacy"
-                className="text-cyber-green hover:text-cyber-green-light underline font-medium"
-              >
-                Privacy Policy
-              </Link>
-              {" · "}
-              <Link
-                href="/terms"
-                className="text-cyber-green hover:text-cyber-green-light underline font-medium"
-              >
-                Terms of Service
-              </Link>
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-custom-text/60 text-xs sm:text-sm text-center sm:text-left">
-              © {new Date().getFullYear()} Sito. All rights reserved.
-            </p>
-            <div className="flex gap-4 sm:gap-6">
-              <Link
-                href="/privacy"
-                className="text-custom-text/60 hover:text-cyber-green transition-colors text-xs sm:text-sm"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                href="/terms"
-                className="text-custom-text/60 hover:text-cyber-green transition-colors text-xs sm:text-sm"
-              >
-                Terms of Service
-              </Link>
-            </div>
+        <div className="border-t border-cyber-green/20 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-custom-text/60 text-xs sm:text-sm text-center sm:text-left">
+            © {new Date().getFullYear()} Sito. All rights reserved.
+          </p>
+          <div className="flex gap-4 sm:gap-6">
+            <Link
+              href="/privacy"
+              className="text-custom-text/60 hover:text-cyber-green transition-colors text-xs sm:text-sm"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="/terms"
+              className="text-custom-text/60 hover:text-cyber-green transition-colors text-xs sm:text-sm"
+            >
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>
