@@ -2574,7 +2574,12 @@ export function ProductsManagement() {
                             const courseId = product.course_id;
                             if (courseId) {
                               // Always fetch fresh data when viewing members
+                              console.log("View Members clicked for courseId:", courseId);
                               await fetchCourseMembers(courseId);
+                              // Log the result after a short delay
+                              setTimeout(() => {
+                                console.log("Course members map after fetch:", courseMembersMap[courseId]);
+                              }, 500);
                             }
                           }
                         }}
@@ -2602,13 +2607,16 @@ export function ProductsManagement() {
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-lg font-semibold text-custom-text">Course Members</h4>
                       <button
-                        onClick={() => fetchCourseMembers(product.course_id!)}
+                        onClick={async () => {
+                          console.log("Refresh clicked for courseId:", product.course_id);
+                          await fetchCourseMembers(product.course_id!);
+                        }}
                         className="text-xs text-cyber-green hover:text-cyber-green-light transition-colors"
                       >
                         Refresh
                       </button>
                     </div>
-                    {courseMembersMap[product.course_id]?.length > 0 ? (
+                    {courseMembersMap[product.course_id] && courseMembersMap[product.course_id].length > 0 ? (
                       <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg overflow-hidden">
                         <table className="w-full">
                           <thead className="bg-dark-green-900/50 border-b border-cyber-green/30">
@@ -2649,8 +2657,17 @@ export function ProductsManagement() {
                           </tbody>
                         </table>
                       </div>
+                    ) : courseMembersMap[product.course_id] === undefined ? (
+                      <div className="text-center py-4">
+                        <p className="text-custom-text/60 text-sm">Loading members...</p>
+                      </div>
                     ) : (
-                      <p className="text-custom-text/60 text-sm">No members enrolled yet.</p>
+                      <div className="text-center py-4">
+                        <p className="text-custom-text/60 text-sm">No members enrolled yet.</p>
+                        <p className="text-custom-text/40 text-xs mt-2">
+                          Check console for debugging info (courseId: {product.course_id})
+                        </p>
+                      </div>
                     )}
                   </div>
                 )}
