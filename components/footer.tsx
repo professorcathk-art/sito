@@ -11,7 +11,7 @@ export function Footer() {
               Sito
             </Link>
             <p className="text-custom-text/70 mb-4 max-w-md text-sm sm:text-base">
-              Connecting industry experts with those seeking guidance, knowledge, and professional growth.
+              Your gateway to world-class expertise. Connect with industry leaders, accelerate your career, and unlock your full potential through personalized mentorship and guidance.
             </p>
           </div>
 

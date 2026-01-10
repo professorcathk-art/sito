@@ -400,7 +400,7 @@ export function ExpertDirectory() {
           Can&apos;t find an expert here?
         </h2>
         <p className="text-custom-text/80 mb-4 sm:mb-6 text-sm sm:text-base max-w-2xl mx-auto">
-          Sign up to tell us what you want to learn. Let us help you find experts from our database with more than 100+ experts.
+          Tell us what you want to learn, and we&apos;ll match you with the perfect expert from our network of 100+ industry professionals. Your learning journey starts here.
         </p>
         <Link
           href="/register"
