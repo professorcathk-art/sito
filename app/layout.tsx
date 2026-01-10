@@ -12,6 +12,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Sito - Global Industry Experts Directory",
   description: "Find industry experts to guide your career path, solve problems, and provide professional advice",
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+  },
 };
 
 export default function RootLayout({
