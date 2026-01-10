@@ -72,7 +72,9 @@ export function ProductsManagement() {
     category: "",
     payment_method: "stripe" as "stripe" | "offline",
     contact_email: "",
+    coverImageUrl: "",
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"products" | "interests">("products");
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
@@ -198,6 +200,45 @@ export function ProductsManagement() {
       }
     } catch (err) {
       console.error("Error fetching Stripe account ID:", err);
+    }
+  };
+
+  const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size must be less than 5MB");
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `course-covers/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("blog-resources")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from("blog-resources").getPublicUrl(filePath);
+      setFormData({ ...formData, coverImageUrl: data.publicUrl });
+    } catch (err: any) {
+      console.error("Error uploading image:", err);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -791,6 +832,11 @@ export function ProductsManagement() {
             courseUpdateData.category = formData.category;
           }
           
+          // Update course cover image if provided
+          if (formData.coverImageUrl !== undefined) {
+            courseUpdateData.cover_image_url = formData.coverImageUrl || null;
+          }
+          
           if (Object.keys(courseUpdateData).length > 0) {
             const { error: courseUpdateError } = await supabase
               .from("courses")
@@ -834,6 +880,7 @@ export function ProductsManagement() {
           category: "",
           payment_method: "stripe",
           contact_email: "",
+          coverImageUrl: "",
         });
         setShowAddForm(false);
         setEditingProduct(null);
@@ -855,6 +902,7 @@ export function ProductsManagement() {
               expert_id: user.id,
               title: formData.name,
               description: formData.description,
+              cover_image_url: formData.coverImageUrl || null,
               is_free: coursePrice === 0,
               price: coursePrice,
               category: formData.category,
@@ -1145,6 +1193,7 @@ export function ProductsManagement() {
         category: "",
         payment_method: "stripe",
         contact_email: "",
+        coverImageUrl: "",
       });
       setShowAddForm(false);
       setEditingProduct(null);
@@ -1160,20 +1209,22 @@ export function ProductsManagement() {
   const handleEdit = async (product: Product) => {
     setEditingProduct(product);
     let category = "";
+    let coverImageUrl = "";
     
-    // If it's a course product, fetch the course category
+    // If it's a course product, fetch the course category and cover image
     if (product.product_type === "course" && product.course_id) {
       try {
         const { data: courseData } = await supabase
           .from("courses")
-          .select("category")
+          .select("category, cover_image_url")
           .eq("id", product.course_id)
           .single();
         if (courseData) {
           category = courseData.category || "";
+          coverImageUrl = courseData.cover_image_url || "";
         }
       } catch (err) {
-        console.error("Error fetching course category:", err);
+        console.error("Error fetching course data:", err);
       }
     }
     
@@ -1205,6 +1256,7 @@ export function ProductsManagement() {
       category: category,
       payment_method: product.payment_method || "stripe",
       contact_email: product.contact_email || "",
+      coverImageUrl: coverImageUrl,
     });
     setShowAddForm(true);
   };
@@ -1396,6 +1448,7 @@ export function ProductsManagement() {
                 category: "",
                 payment_method: "stripe",
                 contact_email: "",
+                coverImageUrl: "",
               });
             }}
             className="bg-cyber-green text-custom-text px-4 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
@@ -1486,20 +1539,47 @@ export function ProductsManagement() {
             </div>
 
             {formData.product_type === "course" && (
-              <div>
-                <label className="block text-sm font-medium text-custom-text mb-2">
-                  Category *
-                </label>
-                <input
-                  type="text"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
-                  placeholder="e.g., AI Courses, Business, Design, Marketing"
-                  required
-                />
-                <p className="text-xs text-custom-text/60 mt-1">Choose a category to help users discover your course</p>
-              </div>
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    Category *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                    placeholder="e.g., AI Courses, Business, Design, Marketing"
+                    required
+                  />
+                  <p className="text-xs text-custom-text/60 mt-1">Choose a category to help users discover your course</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    Cover Photo
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverImageUpload}
+                    disabled={uploadingImage}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text focus:ring-2 focus:ring-cyber-green focus:border-cyber-green"
+                  />
+                  {uploadingImage && (
+                    <p className="text-xs text-custom-text/60 mt-1">Uploading image...</p>
+                  )}
+                  {formData.coverImageUrl && (
+                    <div className="mt-4">
+                      <img
+                        src={formData.coverImageUrl}
+                        alt="Cover preview"
+                        className="max-w-md rounded-lg border border-cyber-green/30"
+                      />
+                    </div>
+                  )}
+                  <p className="text-xs text-custom-text/60 mt-1">Upload a cover image for your course (max 5MB)</p>
+                </div>
+              </>
             )}
 
             {/* Price field - hidden for appointments (price set in appointment form) */}
@@ -1636,6 +1716,7 @@ export function ProductsManagement() {
                     category: "",
                     payment_method: "stripe",
                     contact_email: "",
+                    coverImageUrl: "",
                   });
                 }}
                 className="px-6 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
@@ -2280,6 +2361,7 @@ export function ProductsManagement() {
                       category: "",
                       payment_method: "stripe",
                       contact_email: "",
+                      coverImageUrl: "",
                     });
                     fetchProducts();
                     alert("Course published successfully! Your course is now live.");
