@@ -460,8 +460,57 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isReply, setIsReply] = useState(false);
+  const [originalSubject, setOriginalSubject] = useState("");
   const { user } = useAuth();
   const supabase = createClient();
+
+  // Check if this is a reply to an existing conversation
+  useEffect(() => {
+    async function checkExistingConversation() {
+      if (!user || !expertId) return;
+      
+      try {
+        // Check if there are any existing messages between these users
+        // Check messages sent by current user
+        const { data: sentMessages } = await supabase
+          .from("messages")
+          .select("subject")
+          .eq("from_id", user.id)
+          .eq("to_id", expertId)
+          .order("created_at", { ascending: true })
+          .limit(1);
+        
+        // Check messages received from this user
+        const { data: receivedMessages } = await supabase
+          .from("messages")
+          .select("subject")
+          .eq("from_id", expertId)
+          .eq("to_id", user.id)
+          .order("created_at", { ascending: true })
+          .limit(1);
+        
+        // Get the first message (either sent or received)
+        const existingMessages = [...(sentMessages || []), ...(receivedMessages || [])];
+        
+        if (existingMessages && existingMessages.length > 0) {
+          setIsReply(true);
+          const firstSubject = existingMessages[0].subject;
+          setOriginalSubject(firstSubject);
+          // Auto-fill subject with "Re: " prefix if not already present
+          if (firstSubject && !firstSubject.startsWith("Re: ")) {
+            setSubject(`Re: ${firstSubject}`);
+          } else {
+            setSubject(firstSubject || "");
+          }
+        }
+      } catch (error) {
+        console.error("Error checking existing conversation:", error);
+      }
+    }
+    
+    checkExistingConversation();
+  }, [user, expertId, supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -474,13 +523,22 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
       return;
     }
 
+    // For replies, use original subject if subject is empty
+    const finalSubject = isReply && !subject.trim() ? originalSubject : subject;
+
+    if (!finalSubject.trim()) {
+      setError("Subject is required for new conversations");
+      setLoading(false);
+      return;
+    }
+
     try {
       const { error: sendError } = await supabase
         .from("messages")
         .insert({
           from_id: user.id,
           to_id: expertId,
-          subject: subject,
+          subject: finalSubject,
           content: message,
           read: false,
         });
@@ -505,7 +563,7 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
           body: JSON.stringify({
             to_id: expertId,
             from_name: userProfile?.name || "Someone",
-            subject: subject,
+            subject: finalSubject,
           }),
         });
       } catch (emailError) {
@@ -537,17 +595,22 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
       )}
       <div>
         <label htmlFor="subject" className="block text-sm font-medium text-custom-text mb-2">
-          Subject
+          Subject {isReply ? "(optional for replies)" : "*"}
         </label>
         <input
           id="subject"
           type="text"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          required
+          required={!isReply}
           className="w-full px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
-          placeholder="What would you like to discuss?"
+          placeholder={isReply ? "Re: [original subject]" : "What would you like to discuss?"}
         />
+        {isReply && (
+          <p className="mt-1 text-xs text-custom-text/60">
+            Subject will default to the original conversation subject if left empty
+          </p>
+        )}
       </div>
       <div>
         <label htmlFor="message" className="block text-sm font-medium text-custom-text mb-2">
