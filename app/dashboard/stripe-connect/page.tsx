@@ -43,6 +43,16 @@ function StripeConnectContent() {
         </div>
       )}
 
+      <div className="mb-6 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg">
+        <p className="text-yellow-300 font-semibold mb-1">
+          ⚠️ Payment Processing Notice
+        </p>
+        <p className="text-yellow-200 text-sm">
+          Built-in payment processing is currently only supported for Hong Kong users. 
+          If you are located outside Hong Kong, please use offline payment methods for your products.
+        </p>
+      </div>
+
       <StripeConnectOnboarding />
     </div>
   );

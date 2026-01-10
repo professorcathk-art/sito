@@ -53,6 +53,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate country - currently only Hong Kong is supported
+    const normalizedCountry = country.toLowerCase();
+    if (normalizedCountry !== "hk" && normalizedCountry !== "hong kong") {
+      return NextResponse.json(
+        { error: "Currently, built-in payment processing is only supported for Hong Kong users. Please use offline payment methods if you are located outside Hong Kong." },
+        { status: 400 }
+      );
+    }
+
     // Check if user already has a connected account
     const { data: profile } = await supabase
       .from("profiles")
@@ -85,7 +94,7 @@ export async function POST(request: NextRequest) {
      */
     const account = await stripeClient.accounts.create({
       type: "express",
-      country: country,
+      country: "hk", // Force Hong Kong only
       email: contactEmail,
       capabilities: {
         card_payments: { requested: true },

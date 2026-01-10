@@ -70,24 +70,37 @@ export function StripeConnectOnboarding() {
 
   /**
    * Fetch list of countries for selection
+   * Currently limited to Hong Kong only
    */
   const fetchCountries = async () => {
     try {
       const { data, error } = await supabase
         .from("countries")
         .select("id, name, code")
-        .order("name");
+        .eq("code", "HK")
+        .single();
 
       if (error) {
         console.error("Error fetching countries:", error);
+        // Fallback: manually set Hong Kong if database query fails
+        setCountries([{ id: "hk", name: "Hong Kong", code: "HK" }]);
         return;
       }
 
       if (data) {
-        setCountries(data);
+        setCountries([data]);
+        // Auto-select Hong Kong
+        setSelectedCountry("hk");
+      } else {
+        // Fallback: manually set Hong Kong
+        setCountries([{ id: "hk", name: "Hong Kong", code: "HK" }]);
+        setSelectedCountry("hk");
       }
     } catch (err) {
       console.error("Error fetching countries:", err);
+      // Fallback: manually set Hong Kong
+      setCountries([{ id: "hk", name: "Hong Kong", code: "HK" }]);
+      setSelectedCountry("hk");
     }
   };
 
@@ -365,12 +378,11 @@ export function StripeConnectOnboarding() {
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
               className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text focus:border-cyber-green focus:outline-none"
-              disabled={creating}
+              disabled={creating || true}
               required
             >
-              <option value="">-- Select your country --</option>
               {countries.length === 0 ? (
-                <option value="" disabled>Loading countries...</option>
+                <option value="hk">Hong Kong</option>
               ) : (
                 countries.map((country) => (
                   <option key={country.id} value={country.code.toLowerCase()}>
@@ -379,21 +391,9 @@ export function StripeConnectOnboarding() {
                 ))
               )}
             </select>
-            {userCountry && selectedCountry === userCountry && (
-              <p className="text-sm text-green-300 mt-1">
-                ✓ Using your profile country
-              </p>
-            )}
-            {userCountry && !selectedCountry && (
-              <p className="text-sm text-custom-text/60 mt-1">
-                💡 Your profile country: {countries.find(c => c.code.toLowerCase() === userCountry)?.name || userCountry.toUpperCase()}
-              </p>
-            )}
-            {!selectedCountry && (
-              <p className="text-xs text-yellow-300 mt-1">
-                Please select your country to continue
-              </p>
-            )}
+            <p className="text-xs text-custom-text/60 mt-2">
+              Currently, built-in payment processing is only available for Hong Kong users.
+            </p>
           </div>
 
           <button
