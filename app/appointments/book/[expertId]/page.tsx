@@ -7,7 +7,6 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { Navigation } from "@/components/navigation";
 import { ProtectedRoute } from "@/components/protected-route";
-import { CalendarView } from "@/components/calendar-view";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
 
 interface AppointmentSlot {
@@ -464,27 +463,12 @@ export default function BookAppointmentPage() {
                 </Link>
               </div>
             ) : (
-              <>
-                <CalendarView
-                  slots={slots}
-                  onDateSelect={(date) => {
-                    setSelectedDate(date);
-                  }}
-                />
-                
-                {/* Show slots for selected date with booking buttons */}
-                {selectedDate && slots.filter(s => new Date(s.start_time).toISOString().split("T")[0] === selectedDate).length > 0 && (
-              <div className="mt-6 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+              <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
                 <h3 className="text-xl font-bold text-custom-text mb-4">
-                  Available Timeslots for {new Date(selectedDate).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  Available Timeslots
                 </h3>
                 <div className="space-y-3">
                   {slots
-                    .filter(s => new Date(s.start_time).toISOString().split("T")[0] === selectedDate)
                     .map((slot) => {
                       const duration = calculateDuration(slot.start_time, slot.end_time);
                       const total = calculateTotal(slot.rate_per_hour, duration);
@@ -498,10 +482,7 @@ export default function BookAppointmentPage() {
                         >
                           <div>
                             <p className="text-custom-text font-semibold">
-                              {new Date(slot.start_time).toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })} - {new Date(slot.end_time).toLocaleTimeString("en-US", {
+                              {formatDateTime(slot.start_time)} - {new Date(slot.end_time).toLocaleTimeString("en-US", {
                                 hour: "numeric",
                                 minute: "2-digit",
                               })}
@@ -530,9 +511,7 @@ export default function BookAppointmentPage() {
                       );
                     })}
                 </div>
-                </div>
-                )}
-              </>
+              </div>
             )}
           </div>
         </div>
