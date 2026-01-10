@@ -164,6 +164,9 @@ export async function POST(request: NextRequest) {
 
       // Customer email (if user is logged in)
       customer_email: user?.email || undefined,
+
+      // Set locale to English for checkout page and emails
+      locale: "en",
     });
 
     console.log("Checkout session created:", session.id);
