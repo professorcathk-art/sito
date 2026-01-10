@@ -46,8 +46,9 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
     <nav className="fixed top-0 left-0 right-0 z-50 bg-custom-bg/95 backdrop-blur-lg border-b border-cyber-green/30 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16 relative">
-          {/* Left side: Hamburger menu (dashboard pages) or empty space */}
-          <div className="flex items-center w-12 md:w-auto flex-shrink-0">
+          {/* Left side: Logo (desktop) or Hamburger menu (mobile dashboard pages) */}
+          <div className="flex items-center flex-shrink-0">
+            {/* Mobile: Hamburger menu for dashboard pages */}
             {isDashboardPage && user ? (
               <button
                 onClick={handleSidebarToggle}
@@ -69,15 +70,23 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
             ) : (
               <div className="md:hidden w-12"></div>
             )}
+            
+            {/* Desktop: Logo on left */}
+            <Link
+              href="/"
+              className="hidden md:block text-xl sm:text-2xl font-bold text-cyber-green hover:text-cyber-green-light transition-colors duration-300 text-glow"
+            >
+              Sito
+            </Link>
+            
+            {/* Mobile: Logo centered */}
+            <Link
+              href="/"
+              className="md:hidden absolute left-1/2 transform -translate-x-1/2 text-xl sm:text-2xl font-bold text-cyber-green hover:text-cyber-green-light transition-colors duration-300 text-glow"
+            >
+              Sito
+            </Link>
           </div>
-          
-          {/* Center: Logo - always centered */}
-          <Link
-            href="/"
-            className="absolute left-1/2 transform -translate-x-1/2 text-xl sm:text-2xl font-bold text-cyber-green hover:text-cyber-green-light transition-colors duration-300 text-glow"
-          >
-            Sito
-          </Link>
           
 
           {/* Right side: Desktop nav, dashboard menu dropdown, or mobile menu button */}
