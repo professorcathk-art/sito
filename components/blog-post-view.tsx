@@ -47,9 +47,9 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
   useEffect(() => {
     async function checkAccess() {
       // NEW: All blogs require sign-in to view full content (Medium-style paywall)
-      // If user is not signed in, they can only see partial content
+      // Non-signed-in users can see header but content is blurred
       if (!user) {
-        setHasAccess(false);
+        setHasAccess(false); // Will show blurred content with sign-in prompt
         setCheckingAccess(false);
         return;
       }
@@ -312,9 +312,47 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
     );
   }
 
-  if (!hasAccess) {
+  // Only show access restricted message for signed-in users without access (subscriber/paid restrictions)
+  // Non-signed-in users will see header + blurred content with sign-in prompt
+  if (user && !hasAccess && blogPost.access_level !== "public") {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Show header as lead magnet even for restricted access */}
+        <header className="mb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold text-custom-text mb-4">
+            {blogPost.title}
+          </h1>
+          {blogPost.description && (
+            <p className="text-xl text-custom-text/80 mb-6">{blogPost.description}</p>
+          )}
+          {blogPost.profiles && (
+            <div className="flex items-start gap-4 mb-4">
+              <Link
+                href={`/expert/${blogPost.profiles.id}`}
+                className="flex items-center gap-2 hover:text-cyber-green transition-colors"
+              >
+                {blogPost.profiles.avatar_url ? (
+                  <img
+                    src={blogPost.profiles.avatar_url}
+                    alt={blogPost.profiles.name}
+                    className="w-12 h-12 rounded-full"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-dark-green-800 flex items-center justify-center">
+                    {blogPost.profiles.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <div className="font-semibold">{blogPost.profiles.name}</div>
+                  {blogPost.profiles.title && (
+                    <div className="text-sm text-custom-text/70">{blogPost.profiles.title}</div>
+                  )}
+                </div>
+              </Link>
+            </div>
+          )}
+        </header>
+        
         <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-custom-text mb-4">Access Restricted</h2>
           <p className="text-custom-text/80 mb-6">
@@ -322,14 +360,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
               ? "This post is available to subscribers only."
               : "This post is available to paid members only."}
           </p>
-          {!user ? (
-            <Link
-              href={`/login?redirect=/blog/${blogPost.id}`}
-              className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
-            >
-              Sign In
-            </Link>
-          ) : blogPost.access_level === "subscriber" ? (
+          {blogPost.access_level === "subscriber" ? (
             <Link
               href={`/expert/${blogPost.expert_id}`}
               className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
@@ -357,32 +388,6 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
           {/* Like and Save Buttons - Only show if user is signed in */}
           {user && (
             <div className="flex items-center gap-3 mb-6">
-              <button
-                onClick={handleLike}
-                disabled={liking}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  liked
-                    ? "bg-red-900/30 text-red-300 border border-red-500/50"
-                    : "bg-dark-green-900/50 text-custom-text border border-cyber-green/30 hover:bg-dark-green-800/50"
-                }`}
-              >
-                <span>{liked ? "❤️" : "🤍"}</span>
-                <span>{likeCount}</span>
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  saved
-                    ? "bg-cyber-green/20 text-cyber-green border border-cyber-green/50"
-                    : "bg-dark-green-900/50 text-custom-text border border-cyber-green/30 hover:bg-dark-green-800/50"
-                }`}
-              >
-                <span>{saved ? "✓" : "○"}</span>
-                <span>{saved ? "Saved" : "Save"}</span>
-              </button>
-            </div>
-          )}
               <button
                 onClick={handleLike}
                 disabled={liking}
