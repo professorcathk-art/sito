@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export function LoginForm({ redirect }: { redirect?: string }) {
@@ -127,6 +128,17 @@ export function LoginForm({ redirect }: { redirect?: string }) {
         </svg>
         Sign in with Google
       </button>
+      
+      <p className="mt-6 text-xs sm:text-sm text-custom-text/70 text-center">
+        By continuing, you agree to our{" "}
+        <Link href="/terms" className="text-cyber-green hover:text-cyber-green-light underline font-medium">
+          Terms of Service
+        </Link>
+        {" "}and{" "}
+        <Link href="/privacy" className="text-cyber-green hover:text-cyber-green-light underline font-medium">
+          Privacy Policy
+        </Link>
+      </p>
     </form>
   );
 }
