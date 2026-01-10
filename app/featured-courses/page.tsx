@@ -246,7 +246,7 @@ export default function FeaturedCoursesPage() {
       <div className="pt-24 pb-20 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2">Featured Courses</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2">Featured Learnings</h1>
             <p className="text-base sm:text-xl text-custom-text/80 mb-6">
               Discover courses from industry experts
             </p>
@@ -358,8 +358,8 @@ export default function FeaturedCoursesPage() {
                 </div>
               )}
 
-              {/* Trending Courses Section */}
-              {trendingCourses.length > 0 && (
+              {/* Trending Courses Section - Hidden for now */}
+              {false && trendingCourses.length > 0 && (
                 <div>
                   <h2 className="text-2xl font-bold text-custom-text mb-4">Trending Courses</h2>
                   <div className="relative">
