@@ -12,7 +12,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dashboardMenuOpen, setDashboardMenuOpen] = useState(false);
   
-  // Check if we're on a dashboard page
+  // Check if we're on a dashboard page (all pages that use DashboardLayout)
   const isDashboardPage = pathname?.startsWith("/dashboard") || 
                           pathname?.startsWith("/profile") || 
                           pathname?.startsWith("/products") || 
@@ -20,7 +20,13 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                           pathname?.startsWith("/connections") || 
                           pathname?.startsWith("/subscriptions") || 
                           pathname?.startsWith("/courses/manage") || 
+                          pathname?.startsWith("/courses/create") ||
                           pathname?.startsWith("/appointments/manage") ||
+                          pathname?.startsWith("/appointments/book") ||
+                          pathname?.startsWith("/blog/create") ||
+                          pathname?.startsWith("/blog/edit") ||
+                          pathname === "/blog/watch-later" ||
+                          pathname?.startsWith("/questionnaires/manage") ||
                           pathname === "/admin";
 
   const handleSignOut = async () => {
