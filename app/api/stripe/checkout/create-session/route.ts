@@ -11,7 +11,7 @@
  *   priceId: string,           // Stripe Price ID
  *   quantity: number,           // Quantity to purchase (default: 1)
  *   connectedAccountId: string, // Connected account to transfer funds to
- *   applicationFeePercent: number // Platform fee percentage (default: 20)
+ *   applicationFeePercent: number // Platform fee percentage (default: 10, configurable via STRIPE_PLATFORM_FEE_PERCENT)
  * }
  * 
  * Response:
@@ -36,12 +36,16 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
+    
+    // Get platform fee from environment variable or default to 10%
+    const defaultPlatformFee = parseFloat(process.env.STRIPE_PLATFORM_FEE_PERCENT || "10");
+    
     const {
       priceId,
       priceData, // For dynamic pricing (appointments)
       quantity = 1,
       connectedAccountId,
-      applicationFeePercent = 20, // Default 20% platform fee
+      applicationFeePercent = defaultPlatformFee, // Default from env var or 10%
       courseId,
       appointmentId, // Can be camelCase from frontend
       slotStartTime, // Can be camelCase from frontend

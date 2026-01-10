@@ -79,7 +79,7 @@ export default function StorefrontPage() {
           priceId: product.price.id,
           quantity: 1,
           connectedAccountId: product.connectedAccountId,
-          applicationFeePercent: 20, // 20% platform fee
+          // applicationFeePercent omitted - API route will use default from STRIPE_PLATFORM_FEE_PERCENT env var (defaults to 10%)
         }),
       });
 
