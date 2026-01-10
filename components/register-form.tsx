@@ -57,21 +57,36 @@ export function RegisterForm() {
       }
 
       if (authData.user) {
-        // Get default country_id (Remote or Hong Kong)
-        const { data: defaultCountry } = await supabase
-          .from("countries")
-          .select("id")
-          .or("name.eq.Remote,code.eq.HK")
-          .limit(1)
-          .single();
+        // Try to get default country_id (Remote or Hong Kong)
+        // But don't fail if countries table doesn't exist - trigger will handle it
+        let defaultCountryId = null;
+        try {
+          const { data: defaultCountry } = await supabase
+            .from("countries")
+            .select("id")
+            .or("name.eq.Remote,code.eq.HK")
+            .limit(1)
+            .maybeSingle();
+          
+          defaultCountryId = defaultCountry?.id || null;
+        } catch (err) {
+          // Countries table might not exist - that's okay, trigger will handle it
+          console.warn("Could not fetch country_id:", err);
+        }
 
         // Create user profile in database
-        const { error: profileError } = await supabase.from("profiles").insert({
+        // Include country_id if available, otherwise let trigger handle it
+        const profileData: any = {
           id: authData.user.id,
           name: formData.name,
           email: formData.email,
-          country_id: defaultCountry?.id || null, // Include country_id (required by migration 033)
-        });
+        };
+        
+        if (defaultCountryId) {
+          profileData.country_id = defaultCountryId;
+        }
+
+        const { error: profileError } = await supabase.from("profiles").insert(profileData);
 
         if (profileError) {
           console.error("Profile creation error:", profileError);
