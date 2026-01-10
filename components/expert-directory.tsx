@@ -302,7 +302,7 @@ export function ExpertDirectory() {
           <p className="text-custom-text/80 text-lg">No experts found matching your criteria.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
           {experts.map((expert: any) => {
             const connectionStatus = connectionStatuses[expert.id] || "none";
             const isConnecting = connectingIds.has(expert.id);
@@ -311,78 +311,103 @@ export function ExpertDirectory() {
             return (
               <div
                 key={expert.id}
-                className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-6 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] flex flex-col"
+                className="group bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-2 hover:scale-[1.05] flex flex-col overflow-hidden"
               >
-                <Link href={`/expert/${expert.id}`} className="flex-1">
-                  <div className="flex items-start gap-3 mb-3 sm:mb-4">
+                <Link href={`/expert/${expert.id}`} className="flex-1 flex flex-col">
+                  {/* Poster-style image section */}
+                  <div className="relative aspect-[2/3] w-full overflow-hidden bg-gradient-to-br from-dark-green-800 to-dark-green-900">
                     {expert.avatar_url ? (
                       <Image
                         src={expert.avatar_url}
                         alt={`${expert.name}'s avatar`}
-                        width={48}
-                        height={48}
-                        className="rounded-full object-cover w-12 h-12 flex-shrink-0 border-2 border-cyber-green/50"
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-lg font-bold flex-shrink-0 border-2 border-cyber-green/50">
-                        {getInitials(expert.name)}
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-cyber-green/50">
+                          {getInitials(expert.name)}
+                        </div>
                       </div>
                     )}
-                    <div className="flex-1 min-w-0">
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-white font-bold text-sm sm:text-base truncate">{expert.name}</h3>
+                          {expert.verified && (
+                            <span className="text-cyber-green flex-shrink-0" title="Verified Expert">
+                              ✓
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-white/90 text-xs truncate mb-2">{expert.title}</p>
+                        <p className="text-white/80 text-xs line-clamp-2">{expert.bio}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Info section below image */}
+                  <div className="p-3 sm:p-4 flex-1 flex flex-col">
+                    <div className="mb-2">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base sm:text-xl font-bold text-custom-text truncate">{expert.name}</h3>
+                        <h3 className="text-custom-text font-bold text-sm sm:text-base truncate">{expert.name}</h3>
                         {expert.verified && (
-                          <span className="text-cyber-green animate-pulse-glow flex-shrink-0" title="Verified Expert">
+                          <span className="text-cyber-green flex-shrink-0 text-sm" title="Verified Expert">
                             ✓
                           </span>
                         )}
                       </div>
-                      <p className="text-custom-text/80 font-medium text-xs sm:text-sm truncate">{expert.title}</p>
+                      <p className="text-custom-text/80 text-xs truncate mb-2">{expert.title}</p>
                     </div>
-                  </div>
-                  <p className="text-custom-text/70 text-sm mb-3 sm:mb-4 line-clamp-2">{expert.bio}</p>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="text-xs text-cyber-green bg-dark-green-900/50 px-2 py-1 rounded-full border border-cyber-green/30 truncate">
-                      {expert.category_name}
-                    </span>
-                    <span className="text-xs text-custom-text/70 truncate">{expert.country_name}</span>
+                    
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {expert.category_name && (
+                        <span className="text-xs text-cyber-green bg-dark-green-900/50 px-2 py-1 rounded-full border border-cyber-green/30 truncate">
+                          {expert.category_name}
+                        </span>
+                      )}
+                      {expert.country_name && (
+                        <span className="text-xs text-custom-text/70 truncate">{expert.country_name}</span>
+                      )}
+                    </div>
                   </div>
                 </Link>
                 
                 {/* Connect Button */}
                 {!isOwnProfile && user && (
-                  <div className="mt-auto pt-3 border-t border-cyber-green/20">
+                  <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 border-t border-cyber-green/20">
                     {connectionStatus === "none" && (
                       <button
                         onClick={(e) => handleConnect(expert.id, e)}
                         disabled={isConnecting}
-                        className="w-full bg-cyber-green text-custom-text py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(0,255,136,0.3)]"
+                        className="w-full bg-cyber-green text-dark-green-900 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(0,255,136,0.3)]"
                       >
                         {isConnecting ? "Connecting..." : "Connect"}
                       </button>
                     )}
                     {connectionStatus === "pending" && (
-                      <div className="w-full text-center py-2 rounded-lg bg-dark-green-700/50 text-custom-text/80 border border-cyber-green/30 text-sm">
+                      <div className="w-full text-center py-2 rounded-lg bg-dark-green-700/50 text-custom-text/80 border border-cyber-green/30 text-xs sm:text-sm">
                         Connection Pending
                       </div>
                     )}
                     {connectionStatus === "accepted" && (
-                      <div className="w-full text-center py-2 rounded-lg bg-dark-green-700/50 text-custom-text/80 border border-cyber-green/30 text-sm">
+                      <div className="w-full text-center py-2 rounded-lg bg-dark-green-700/50 text-custom-text/80 border border-cyber-green/30 text-xs sm:text-sm">
                         Connected
                       </div>
                     )}
                     {connectionStatus === "rejected" && (
-                      <div className="w-full text-center py-2 rounded-lg bg-dark-green-700/50 text-custom-text/80 border border-red-500/30 text-sm">
+                      <div className="w-full text-center py-2 rounded-lg bg-dark-green-700/50 text-custom-text/80 border border-red-500/30 text-xs sm:text-sm">
                         Connection Rejected
                       </div>
                     )}
                   </div>
                 )}
                 {!user && (
-                  <div className="mt-auto pt-3 border-t border-cyber-green/20">
+                  <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 border-t border-cyber-green/20">
                     <Link
                       href={`/expert/${expert.id}`}
-                      className="block w-full bg-dark-green-800/50 text-custom-text py-2 rounded-lg font-semibold hover:bg-dark-green-800 transition-colors text-sm text-center border border-cyber-green/30"
+                      className="block w-full bg-dark-green-800/50 text-custom-text py-2 rounded-lg font-semibold hover:bg-dark-green-800 transition-colors text-xs sm:text-sm text-center border border-cyber-green/30"
                     >
                       View Profile
                     </Link>
