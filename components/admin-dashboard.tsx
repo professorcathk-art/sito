@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
+import { AdminRefundManagement } from "@/components/admin-refund-management";
 
 interface User {
   id: string;
@@ -298,6 +299,11 @@ export function AdminDashboard() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Refund Management */}
+      <div className="mt-8">
+        <AdminRefundManagement />
       </div>
     </div>
   );

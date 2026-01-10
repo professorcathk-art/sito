@@ -18,6 +18,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripeClient } from "@/lib/stripe/server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { isAdmin } from "@/lib/utils/admin";
 import Stripe from "stripe";
 
 export async function POST(request: NextRequest) {
@@ -97,10 +98,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Check authorization: user must be the expert who created the course
-      if (expertId !== user.id) {
+      // Check authorization: user must be the expert who created the course OR be an admin
+      const userIsAdmin = await isAdmin(user.id);
+      if (expertId !== user.id && !userIsAdmin) {
         return NextResponse.json(
-          { error: "Unauthorized. You can only refund your own courses." },
+          { error: "Unauthorized. You can only refund your own courses, or you must be an admin." },
           { status: 403 }
         );
       }
@@ -132,10 +134,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Check authorization: user must be the expert
-      if (expertId !== user.id) {
+      // Check authorization: user must be the expert OR be an admin
+      const userIsAdmin = await isAdmin(user.id);
+      if (expertId !== user.id && !userIsAdmin) {
         return NextResponse.json(
-          { error: "Unauthorized. You can only refund your own appointments." },
+          { error: "Unauthorized. You can only refund your own appointments, or you must be an admin." },
           { status: 403 }
         );
       }
