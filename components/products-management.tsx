@@ -339,7 +339,12 @@ export function ProductsManagement() {
           user_email,
           enrolled_at,
           questionnaire_response_id,
-          payment_intent_id
+          payment_intent_id,
+          refund_status,
+          refund_id,
+          refunded_at,
+          refund_amount,
+          refund_reason
         `)
         .eq("course_id", courseId)
         .order("enrolled_at", { ascending: false });
@@ -442,6 +447,12 @@ export function ProductsManagement() {
           email: enrollment.user_email || (enrollment.user_id ? profilesMap[enrollment.user_id]?.email : "N/A") || "N/A",
           enrolled_at: enrollment.enrolled_at,
           questionnaire_responses: mappedResponses,
+          payment_intent_id: enrollment.payment_intent_id,
+          refund_status: enrollment.refund_status || "none",
+          refund_id: enrollment.refund_id,
+          refunded_at: enrollment.refunded_at,
+          refund_amount: enrollment.refund_amount,
+          refund_reason: enrollment.refund_reason,
         };
       });
       
@@ -2802,6 +2813,8 @@ export function ProductsManagement() {
                               <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Email</th>
                               <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Enrolled</th>
                               <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Form Data</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Refund Status</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Actions</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -2828,6 +2841,64 @@ export function ProductsManagement() {
                                       </div>
                                     </details>
                                   ) : "-"}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {member.refund_status === "refunded" ? (
+                                    <span className="text-green-300 font-semibold">
+                                      ✓ Refunded
+                                      {member.refund_amount && ` (${member.refund_amount.toFixed(2)})`}
+                                    </span>
+                                  ) : member.refund_status === "processing" ? (
+                                    <span className="text-yellow-300">Processing...</span>
+                                  ) : member.refund_status === "failed" ? (
+                                    <span className="text-red-300">Failed</span>
+                                  ) : member.payment_intent_id ? (
+                                    <span className="text-custom-text/60">Paid</span>
+                                  ) : (
+                                    <span className="text-custom-text/60">Free</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {member.payment_intent_id && member.refund_status !== "refunded" && member.refund_status !== "processing" && (
+                                    <button
+                                      onClick={async () => {
+                                        if (!confirm(`Are you sure you want to refund this enrollment? This action cannot be undone.`)) {
+                                          return;
+                                        }
+                                        
+                                        const reason = prompt("Please provide a reason for the refund (optional):");
+                                        
+                                        try {
+                                          const response = await fetch("/api/stripe/refund", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({
+                                              type: "course",
+                                              id: member.id,
+                                              reason: reason || undefined,
+                                            }),
+                                          });
+
+                                          const data = await response.json();
+
+                                          if (!response.ok) {
+                                            alert(`Refund failed: ${data.error}`);
+                                            return;
+                                          }
+
+                                          alert(`Refund processed successfully! Refund ID: ${data.refund.id}`);
+                                          // Refresh members list
+                                          await fetchCourseMembers(product.course_id!);
+                                        } catch (err) {
+                                          console.error("Error processing refund:", err);
+                                          alert("Failed to process refund. Please try again.");
+                                        }
+                                      }}
+                                      className="px-3 py-1 bg-red-900/30 text-red-200 border border-red-500/50 rounded hover:bg-red-900/50 transition-colors text-xs"
+                                    >
+                                      Refund
+                                    </button>
+                                  )}
                                 </td>
                               </tr>
                             ))}

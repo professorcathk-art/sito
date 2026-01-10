@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
      * 1. account.updated - Account information or status changed
      * 2. account.application.deauthorized - Account disconnected
      * 3. checkout.session.completed - Payment successful, enroll user in course
+     * 4. charge.refunded - Refund processed, update enrollment/appointment status
      */
     const eventType = event.type;
     
@@ -326,7 +327,91 @@ export async function POST(request: NextRequest) {
 
         console.log(`Account ${accountId} deauthorized`);
       }
-    } else {
+    } else if (eventType === "charge.refunded") {
+      /**
+       * Charge refunded - refund processed
+       * 
+       * This happens when:
+       * - A refund is processed for a payment
+       * 
+       * We should:
+       * 1. Extract refund metadata to find enrollment/appointment
+       * 2. Update refund status in database
+       */
+      try {
+        // For charge.refunded event, the object is a Charge, not a Refund
+        const charge = event.data.object as Stripe.Charge;
+        const chargeId = charge.id;
+
+        // Get payment intent from charge
+        const paymentIntentId = typeof charge.payment_intent === "string" 
+          ? charge.payment_intent 
+          : charge.payment_intent?.id;
+
+        if (!paymentIntentId) {
+          console.error("Refund webhook: No payment intent found for charge");
+          return NextResponse.json({ received: true });
+        }
+
+        // Retrieve payment intent to get metadata
+        const paymentIntent = await stripeClient.paymentIntents.retrieve(paymentIntentId);
+        const metadata = paymentIntent.metadata || {};
+
+        const type = metadata.type; // "course" or "appointment"
+        const enrollmentOrAppointmentId = metadata.enrollment_or_appointment_id;
+
+        if (!type || !enrollmentOrAppointmentId) {
+          console.error("Refund webhook: Missing metadata", { type, enrollmentOrAppointmentId });
+          return NextResponse.json({ received: true });
+        }
+
+        // Get the refund details from Stripe
+        // List refunds for this charge to get the latest refund
+        const refunds = await stripeClient.refunds.list({ charge: chargeId, limit: 1 });
+        const latestRefund = refunds.data[0];
+
+        if (!latestRefund) {
+          console.error("Refund webhook: No refund found for charge");
+          return NextResponse.json({ received: true });
+        }
+
+        const supabase = createServiceRoleClient();
+        const refundAmount = latestRefund.amount / 100; // Convert from cents to decimal
+
+        if (type === "course") {
+          await supabase
+            .from("course_enrollments")
+            .update({
+              refund_status: latestRefund.status === "succeeded" ? "refunded" : "failed",
+              refund_id: latestRefund.id,
+              refunded_at: latestRefund.status === "succeeded" ? new Date().toISOString() : null,
+              refund_amount: latestRefund.status === "succeeded" ? refundAmount : null,
+            })
+            .eq("id", enrollmentOrAppointmentId);
+        } else if (type === "appointment") {
+          await supabase
+            .from("appointments")
+            .update({
+              refund_status: latestRefund.status === "succeeded" ? "refunded" : "failed",
+              refund_id: latestRefund.id,
+              refunded_at: latestRefund.status === "succeeded" ? new Date().toISOString() : null,
+              refund_amount: latestRefund.status === "succeeded" ? refundAmount : null,
+              status: latestRefund.status === "succeeded" ? "cancelled" : undefined,
+            })
+            .eq("id", enrollmentOrAppointmentId);
+        }
+
+        console.log(`✅ Refund webhook processed: ${latestRefund.id} for ${type} ${enrollmentOrAppointmentId}`);
+      } catch (err) {
+        console.error("Error processing refund webhook:", err);
+      }
+    }
+
+    // Log unhandled event types (but don't fail)
+    if (eventType !== "checkout.session.completed" && 
+        eventType !== "account.updated" && 
+        eventType !== "account.application.deauthorized" &&
+        eventType !== "charge.refunded") {
       console.log(`Unhandled event type: ${event.type}`);
     }
 
