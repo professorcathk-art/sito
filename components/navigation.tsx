@@ -21,8 +21,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                           pathname?.startsWith("/subscriptions") || 
                           pathname?.startsWith("/courses/manage") || 
                           pathname?.startsWith("/courses/create") ||
-                          pathname?.startsWith("/appointments/manage") ||
-                          pathname?.startsWith("/appointments/book") ||
+                          pathname?.startsWith("/appointments") ||
                           pathname?.startsWith("/blog/create") ||
                           pathname?.startsWith("/blog/edit") ||
                           pathname === "/blog/watch-later" ||
