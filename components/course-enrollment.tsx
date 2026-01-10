@@ -322,6 +322,34 @@ export function CourseEnrollment({
       return;
     }
 
+    // Check if user has already registered interest with questionnaire data
+    try {
+      const { data: product } = await supabase
+        .from("products")
+        .select("id")
+        .eq("course_id", courseId)
+        .maybeSingle();
+      
+      if (product) {
+        const { data: existingInterest } = await supabase
+          .from("product_interests")
+          .select("questionnaire_response_id")
+          .eq("product_id", product.id)
+          .eq("user_id", currentUserId)
+          .maybeSingle();
+        
+        if (existingInterest?.questionnaire_response_id) {
+          // User already filled form when registering interest - skip form and enroll directly
+          console.log("Reusing questionnaire from interest registration");
+          await enroll(); // This will use the existing questionnaire_response_id
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Error checking existing interest:", err);
+      // Continue to show questionnaire form
+    }
+
     // Check for questionnaire - query by product_id (linked to product, not expert)
     try {
       // First, get the product_id for this course
