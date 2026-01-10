@@ -176,7 +176,7 @@ export function DashboardContent() {
   return (
     <div className="py-4 sm:py-6 md:py-8">
       <div className="flex flex-row items-center justify-between gap-4 mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text ml-0 md:ml-0">Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text">Dashboard</h1>
         {user && (
           <button
             onClick={handleSignOut}
