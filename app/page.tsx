@@ -27,8 +27,8 @@ export default function Home() {
       <HeroSection />
       <FeaturedExperts />
       <FeaturedBlogPosts />
-      <FeaturedCourses />
       <FeaturesSection />
+      <FeaturedCourses />
       <TestimonialsSection />
       <Footer />
     </main>

@@ -483,21 +483,13 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                     </button>
                   </>
                 ) : !user ? (
-                  // Show CTA buttons for non-signed-in users
-                  <>
-                    <Link
-                      href={`/login?redirect=/blog/${blogPost.id}`}
-                      className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
-                    >
-                      Sign In to View Profile
-                    </Link>
-                    <Link
-                      href={`/expert/${blogPost.profiles.id}`}
-                      className="px-4 py-2 border border-cyber-green/30 text-cyber-green rounded-lg hover:bg-cyber-green/10 transition-colors text-sm font-medium"
-                    >
-                      View Expert Profile
-                    </Link>
-                  </>
+                  // Show CTA button for non-signed-in users
+                  <Link
+                    href={`/expert/${blogPost.profiles.id}`}
+                    className="px-4 py-2 border border-cyber-green/30 text-cyber-green rounded-lg hover:bg-cyber-green/10 transition-colors text-sm font-medium"
+                  >
+                    View Expert Profile
+                  </Link>
                 ) : null}
               </div>
             )}
