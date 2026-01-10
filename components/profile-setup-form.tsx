@@ -347,6 +347,12 @@ export function ProfileSetupForm() {
       return;
     }
 
+    if (formData.title.length > 100) {
+      setError("Tagline must not exceed 100 characters");
+      setLoading(false);
+      return;
+    }
+
     // If user is trying to become an expert, require category and bio
     // Check if they already have category_id or bio (from onboarding)
     // If not, require them to fill it
@@ -479,14 +485,22 @@ export function ProfileSetupForm() {
           name="title"
           type="text"
           value={formData.title}
-          onChange={handleChange}
+          onChange={(e) => {
+            // Prevent typing beyond 100 characters
+            if (e.target.value.length <= 100) {
+              handleChange(e);
+            }
+          }}
           required
           maxLength={100}
           className="w-full px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
           placeholder="Add a tagline to describe yourself (e.g., Helping startups scale their tech teams)"
         />
-        {formData.title.length >= 90 && (
+        {formData.title.length >= 90 && formData.title.length < 100 && (
           <p className="mt-1 text-xs text-yellow-400">Approaching character limit</p>
+        )}
+        {formData.title.length === 100 && (
+          <p className="mt-1 text-xs text-red-400">Character limit reached (100 characters)</p>
         )}
       </div>
 

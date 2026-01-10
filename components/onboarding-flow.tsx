@@ -213,6 +213,11 @@ export function OnboardingFlow() {
       return;
     }
 
+    if (tagline && tagline.length > 100) {
+      setError("Tagline must not exceed 100 characters");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -636,15 +641,27 @@ export function OnboardingFlow() {
 
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
-                    Tagline (Optional)
+                    Tagline (Optional) <span className="text-xs text-custom-text/60">({tagline.length}/100 characters)</span>
                   </label>
                   <input
                     type="text"
                     value={tagline}
-                    onChange={(e) => setTagline(e.target.value)}
+                    onChange={(e) => {
+                      // Prevent typing beyond 100 characters
+                      if (e.target.value.length <= 100) {
+                        setTagline(e.target.value);
+                      }
+                    }}
+                    maxLength={100}
                     className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
                     placeholder="A short tagline about yourself"
                   />
+                  {tagline.length >= 90 && tagline.length < 100 && (
+                    <p className="mt-1 text-xs text-yellow-400">Approaching character limit</p>
+                  )}
+                  {tagline.length === 100 && (
+                    <p className="mt-1 text-xs text-red-400">Character limit reached (100 characters)</p>
+                  )}
                 </div>
 
                 <div>
@@ -681,7 +698,7 @@ export function OnboardingFlow() {
                   </button>
                   <button
                     onClick={handleProfileCompletion}
-                    disabled={loading || !displayName.trim()}
+                    disabled={loading || !displayName.trim() || (tagline ? tagline.length > 100 : false)}
                     className="flex-1 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light disabled:opacity-50"
                   >
                     {loading ? "Completing..." : "Complete Setup"}
