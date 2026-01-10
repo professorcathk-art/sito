@@ -115,7 +115,7 @@ export function AdminRefundManagement() {
         if (enrollmentsError) {
           console.error("Error fetching enrollments:", enrollmentsError);
         } else {
-          let filtered = enrollmentsData || [];
+          let filtered = (enrollmentsData || []) as any[];
           
           if (filterStatus === "none") {
             filtered = filtered.filter((e: any) => !e.refund_status || e.refund_status === "none");
@@ -125,7 +125,14 @@ export function AdminRefundManagement() {
             filtered = filtered.filter((e: any) => e.refund_status === "refunded");
           }
 
-          setEnrollments(filtered as Enrollment[]);
+          // Transform the data to match our interface
+          const transformed = filtered.map((e: any) => ({
+            ...e,
+            courses: Array.isArray(e.courses) ? e.courses[0] : e.courses,
+            profiles: Array.isArray(e.profiles) ? e.profiles[0] : e.profiles,
+          }));
+
+          setEnrollments(transformed as Enrollment[]);
         }
       } else {
         setEnrollments([]);
@@ -160,7 +167,7 @@ export function AdminRefundManagement() {
         if (appointmentsError) {
           console.error("Error fetching appointments:", appointmentsError);
         } else {
-          let filtered = appointmentsData || [];
+          let filtered = (appointmentsData || []) as any[];
           
           if (filterStatus === "none") {
             filtered = filtered.filter((a: any) => !a.refund_status || a.refund_status === "none");
@@ -170,7 +177,14 @@ export function AdminRefundManagement() {
             filtered = filtered.filter((a: any) => a.refund_status === "refunded");
           }
 
-          setAppointments(filtered as Appointment[]);
+          // Transform the data to match our interface
+          const transformed = filtered.map((a: any) => ({
+            ...a,
+            expert_profile: a.expert_profile || (Array.isArray(a.expert_profile) ? a.expert_profile[0] : null),
+            user_profile: a.user_profile || (Array.isArray(a.user_profile) ? a.user_profile[0] : null),
+          }));
+
+          setAppointments(transformed as Appointment[]);
         }
       } else {
         setAppointments([]);
