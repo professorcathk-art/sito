@@ -315,7 +315,7 @@ export function MessagesContent() {
 
   return (
     <div className="w-full">
-      <h1 className="text-4xl font-bold text-custom-text mb-8">Messages</h1>
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-8 ml-0 md:ml-0">Messages</h1>
       
       {/* Compose Form */}
       {showCompose && composeExpertId && (

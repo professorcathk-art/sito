@@ -241,7 +241,7 @@ export default function ProfilePage() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6 mb-6">
-              <h1 className="text-3xl sm:text-4xl font-bold text-custom-text">Profile</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text ml-0 md:ml-0">Profile</h1>
               {/* Prominent Setup CTA */}
               <div className="bg-gradient-to-r from-cyber-green/20 to-cyber-green/10 border-2 border-cyber-green/50 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">

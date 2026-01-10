@@ -59,7 +59,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
 
             {/* Main content */}
-            <div className="flex-1 w-full md:w-auto px-4 sm:px-6 lg:px-8 md:px-0">
+            <div className="flex-1 w-full md:w-auto px-4 sm:px-6 lg:px-8 md:px-0 md:ml-0 ml-14">
               {children}
             </div>
           </div>
