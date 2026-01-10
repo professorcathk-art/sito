@@ -42,6 +42,18 @@ export function HeroSection() {
                 Start Now
               </Link>
             </div>
+            <div className="mt-4 sm:mt-6 animate-fade-in-up px-2 sm:px-0" style={{ animationDelay: '0.5s' }}>
+              <p className="text-xs sm:text-sm text-custom-text/60 text-center lg:text-left">
+                By continuing, you agree to our{" "}
+                <Link href="/terms" className="text-cyber-green hover:text-cyber-green-light underline">
+                  Terms of Service
+                </Link>
+                {" "}and{" "}
+                <Link href="/privacy" className="text-cyber-green hover:text-cyber-green-light underline">
+                  Privacy Policy
+                </Link>
+              </p>
+            </div>
           </div>
 
           {/* Right side - Rubik's Cube */}
