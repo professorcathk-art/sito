@@ -443,6 +443,7 @@ export function ProductsManagement() {
         
         return {
           id: enrollment.id,
+          user_id: enrollment.user_id || null,
           name: enrollment.user_id ? (profilesMap[enrollment.user_id]?.name || "N/A") : "N/A",
           email: enrollment.user_email || (enrollment.user_id ? profilesMap[enrollment.user_id]?.email : "N/A") || "N/A",
           enrolled_at: enrollment.enrolled_at,
@@ -2859,46 +2860,134 @@ export function ProductsManagement() {
                                   )}
                                 </td>
                                 <td className="px-4 py-3 text-sm">
-                                  {member.payment_intent_id && member.refund_status !== "refunded" && member.refund_status !== "processing" && (
+                                  <div className="flex gap-2 flex-wrap">
+                                    {/* Invite Button - Show for all members */}
                                     <button
                                       onClick={async () => {
-                                        if (!confirm(`Are you sure you want to refund this enrollment? This action cannot be undone.`)) {
+                                        const email = prompt("Enter the email address of the user to invite:");
+                                        if (!email) return;
+
+                                        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                                          alert("Please enter a valid email address");
                                           return;
                                         }
-                                        
-                                        const reason = prompt("Please provide a reason for the refund (optional):");
-                                        
+
                                         try {
-                                          const response = await fetch("/api/stripe/refund", {
+                                          const response = await fetch("/api/courses/manage-enrollment", {
                                             method: "POST",
                                             headers: { "Content-Type": "application/json" },
                                             body: JSON.stringify({
-                                              type: "course",
-                                              id: member.id,
-                                              reason: reason || undefined,
+                                              action: "invite",
+                                              courseId: product.course_id,
+                                              userEmail: email.trim(),
                                             }),
                                           });
 
                                           const data = await response.json();
 
                                           if (!response.ok) {
-                                            alert(`Refund failed: ${data.error}`);
+                                            alert(`Failed to invite user: ${data.error}`);
                                             return;
                                           }
 
-                                          alert(`Refund processed successfully! Refund ID: ${data.refund.id}`);
+                                          alert(`Successfully invited ${email} to the course!`);
                                           // Refresh members list
                                           await fetchCourseMembers(product.course_id!);
                                         } catch (err) {
-                                          console.error("Error processing refund:", err);
-                                          alert("Failed to process refund. Please try again.");
+                                          console.error("Error inviting user:", err);
+                                          alert("Failed to invite user. Please try again.");
                                         }
                                       }}
-                                      className="px-3 py-1 bg-red-900/30 text-red-200 border border-red-500/50 rounded hover:bg-red-900/50 transition-colors text-xs"
+                                      className="px-3 py-1 bg-cyber-green/20 text-cyber-green border border-cyber-green/50 rounded hover:bg-cyber-green/30 transition-colors text-xs"
+                                      title="Invite a user to this course by email"
                                     >
-                                      Refund
+                                      Invite
                                     </button>
-                                  )}
+
+                                    {/* Remove Button - Show for all members */}
+                                    <button
+                                      onClick={async () => {
+                                        if (!confirm(`Are you sure you want to remove ${member.name || member.email} from this course? This action cannot be undone.`)) {
+                                          return;
+                                        }
+
+                                        try {
+                                          const response = await fetch("/api/courses/manage-enrollment", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({
+                                              action: "remove",
+                                              courseId: product.course_id,
+                                              enrollmentId: member.id, // enrollment ID
+                                              userId: member.user_id || undefined, // user ID if available
+                                              userEmail: member.email,
+                                            }),
+                                          });
+
+                                          const data = await response.json();
+
+                                          if (!response.ok) {
+                                            alert(`Failed to remove user: ${data.error}`);
+                                            return;
+                                          }
+
+                                          alert(`Successfully removed ${member.name || member.email} from the course.`);
+                                          // Refresh members list
+                                          await fetchCourseMembers(product.course_id!);
+                                        } catch (err) {
+                                          console.error("Error removing user:", err);
+                                          alert("Failed to remove user. Please try again.");
+                                        }
+                                      }}
+                                      className="px-3 py-1 bg-yellow-900/30 text-yellow-200 border border-yellow-500/50 rounded hover:bg-yellow-900/50 transition-colors text-xs"
+                                      title="Remove this user from the course"
+                                    >
+                                      Remove
+                                    </button>
+
+                                    {/* Refund Button - Only for paid enrollments */}
+                                    {member.payment_intent_id && member.refund_status !== "refunded" && member.refund_status !== "processing" && (
+                                      <button
+                                        onClick={async () => {
+                                          if (!confirm(`Are you sure you want to refund this enrollment? This action cannot be undone.`)) {
+                                            return;
+                                          }
+                                          
+                                          const reason = prompt("Please provide a reason for the refund (optional):");
+                                          
+                                          try {
+                                            const response = await fetch("/api/stripe/refund", {
+                                              method: "POST",
+                                              headers: { "Content-Type": "application/json" },
+                                              body: JSON.stringify({
+                                                type: "course",
+                                                id: member.id,
+                                                reason: reason || undefined,
+                                              }),
+                                            });
+
+                                            const data = await response.json();
+
+                                            if (!response.ok) {
+                                              alert(`Refund failed: ${data.error}`);
+                                              return;
+                                            }
+
+                                            alert(`Refund processed successfully! Refund ID: ${data.refund.id}`);
+                                            // Refresh members list
+                                            await fetchCourseMembers(product.course_id!);
+                                          } catch (err) {
+                                            console.error("Error processing refund:", err);
+                                            alert("Failed to process refund. Please try again.");
+                                          }
+                                        }}
+                                        className="px-3 py-1 bg-red-900/30 text-red-200 border border-red-500/50 rounded hover:bg-red-900/50 transition-colors text-xs"
+                                        title="Refund this paid enrollment"
+                                      >
+                                        Refund
+                                      </button>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             ))}
