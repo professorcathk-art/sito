@@ -41,6 +41,7 @@ interface ProductInterest {
   phone_number?: string;
   questionnaire_responses?: Record<string, any> | null;
   created_at: string;
+  purchased?: boolean; // Whether user has purchased/enrolled
 }
 
 export function ProductsManagement() {
@@ -286,6 +287,8 @@ export function ProductsManagement() {
   const fetchCourseMembers = async (courseId: string) => {
     if (!user || !courseId) return;
     try {
+      console.log("Fetching course members for courseId:", courseId);
+      
       // Fetch ALL enrollments (both paid and free, by user_id and user_email)
       const { data, error } = await supabase
         .from("course_enrollments")
@@ -301,7 +304,12 @@ export function ProductsManagement() {
         .eq("course_id", courseId)
         .order("enrolled_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching course enrollments:", error);
+        throw error;
+      }
+      
+      console.log("Found enrollments:", data?.length || 0, data);
       
       // Fetch questionnaire responses using questionnaire_response_id from enrollments
       const questionnaireResponseIds = (data || []).map((e: any) => e.questionnaire_response_id).filter(Boolean);
@@ -536,6 +544,32 @@ export function ProductsManagement() {
         }
       }
 
+      // Check which products are courses and get their course_ids
+      const courseProductMap: { [productId: string]: string } = {};
+      products.forEach((p) => {
+        if (p.product_type === "course" && p.course_id) {
+          courseProductMap[p.id] = p.course_id;
+        }
+      });
+      
+      // Fetch enrollments for course products to check purchase status
+      const courseIds = Object.values(courseProductMap);
+      let enrollmentsMap: { [key: string]: boolean } = {}; // user_id + course_id -> true
+      
+      if (courseIds.length > 0) {
+        const { data: enrollmentsData } = await supabase
+          .from("course_enrollments")
+          .select("user_id, course_id, user_email")
+          .in("course_id", courseIds);
+        
+        if (enrollmentsData) {
+          enrollmentsData.forEach((enrollment: any) => {
+            const key = `${enrollment.user_id || enrollment.user_email}_${enrollment.course_id}`;
+            enrollmentsMap[key] = true;
+          });
+        }
+      }
+      
       const interestsData = (data || []).map((item: any) => {
         // Extract name and email from questionnaire responses if available
         let formName = item.user_email; // Default to email
@@ -573,6 +607,15 @@ export function ProductsManagement() {
           });
         }
         
+        // Check if user has purchased/enrolled (for course products)
+        let purchased = false;
+        const courseId = courseProductMap[item.product_id];
+        if (courseId) {
+          const enrollmentKey = `${item.user_id}_${courseId}`;
+          const enrollmentKeyByEmail = `${item.user_email}_${courseId}`;
+          purchased = enrollmentsMap[enrollmentKey] || enrollmentsMap[enrollmentKeyByEmail] || false;
+        }
+        
         return {
           id: item.id,
           product_id: item.product_id,
@@ -586,6 +629,7 @@ export function ProductsManagement() {
             ? questionnaireResponsesMap[item.questionnaire_response_id] || null 
             : null),
           created_at: item.created_at,
+          purchased: purchased,
         };
       });
 
@@ -2645,6 +2689,8 @@ export function ProductsManagement() {
                     <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">User Name</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Email</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Phone</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Form Data</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Purchased</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Date</th>
                   </tr>
                 </thead>
@@ -2675,6 +2721,17 @@ export function ProductsManagement() {
                             </div>
                           </details>
                         ) : "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {interest.purchased ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-cyber-green/20 text-cyber-green border border-cyber-green/30">
+                            ✓ Yes
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-yellow-900/20 text-yellow-400 border border-yellow-500/30">
+                            No
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-sm text-custom-text/70">
                         {new Date(interest.created_at).toLocaleDateString()}

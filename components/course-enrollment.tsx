@@ -415,6 +415,32 @@ export function CourseEnrollment({
 
     setProcessing(true);
     try {
+      // Check if user has registered interest with questionnaire data
+      let questionnaireResponseId = questionnaireResponse?.id;
+      
+      if (!questionnaireResponseId) {
+        // Try to get questionnaire_response_id from existing interest
+        const { data: product } = await supabase
+          .from("products")
+          .select("id")
+          .eq("course_id", courseId)
+          .maybeSingle();
+        
+        if (product) {
+          const { data: existingInterest } = await supabase
+            .from("product_interests")
+            .select("questionnaire_response_id")
+            .eq("product_id", product.id)
+            .eq("user_id", currentUserId)
+            .maybeSingle();
+          
+          if (existingInterest?.questionnaire_response_id) {
+            questionnaireResponseId = existingInterest.questionnaire_response_id;
+            console.log("Reusing questionnaire from interest:", questionnaireResponseId);
+          }
+        }
+      }
+      
       if (isFree) {
         // Free course - enroll directly
         const enrollmentData: any = {
@@ -422,8 +448,8 @@ export function CourseEnrollment({
           user_id: currentUserId,
         };
 
-        if (questionnaireResponse) {
-          enrollmentData.questionnaire_response_id = questionnaireResponse.id;
+        if (questionnaireResponseId) {
+          enrollmentData.questionnaire_response_id = questionnaireResponseId;
         }
 
         const { error } = await supabase
@@ -486,6 +512,21 @@ export function CourseEnrollment({
             return;
           }
 
+          // Check if user has registered interest with questionnaire data
+          if (!questionnaireResponseId) {
+            const { data: existingInterest } = await supabase
+              .from("product_interests")
+              .select("questionnaire_response_id")
+              .eq("product_id", product.id)
+              .eq("user_id", currentUserId)
+              .maybeSingle();
+            
+            if (existingInterest?.questionnaire_response_id) {
+              questionnaireResponseId = existingInterest.questionnaire_response_id;
+              console.log("Reusing questionnaire from interest:", questionnaireResponseId);
+            }
+          }
+          
           // Redirect to Stripe checkout
           try {
             const response = await fetch("/api/stripe/checkout/create-session", {
@@ -495,7 +536,7 @@ export function CourseEnrollment({
                 priceId: product.stripe_price_id,
                 connectedAccountId: connectedAccountId,
                 courseId: courseId,
-                questionnaireResponseId: questionnaireResponse?.id || null,
+                questionnaireResponseId: questionnaireResponseId || null,
               }),
             });
 
