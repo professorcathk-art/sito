@@ -23,7 +23,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getStripeClient } from "@/lib/stripe/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,16 +61,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate total amount
+    // Calculate total amount and build line items
     let totalAmount: number;
+    const lineItems: any[] = [];
+    
     if (priceData) {
       // Dynamic pricing (for appointments with variable duration)
       totalAmount = (priceData.unit_amount || 0) * quantity;
+      lineItems.push({
+        price_data: priceData,
+        quantity: quantity,
+      });
     } else {
       // Fixed pricing (for courses)
       const price = await stripeClient.prices.retrieve(priceId);
       const unitAmount = price.unit_amount || 0;
       totalAmount = unitAmount * quantity;
+      
+      // Get product to retrieve product name
+      const productId = typeof price.product === "string" ? price.product : price.product?.id;
+      const product = productId ? await stripeClient.products.retrieve(productId) : null;
+      const productName = product?.name || "Course";
+      
+      // For courses, generate custom description instead of using product description
+      // This avoids showing HTML code in Stripe checkout
+      let customDescription = "Course enrollment";
+      
+      if (courseId) {
+        // Fetch course and expert information to generate custom description
+        const supabaseAdmin = createServiceRoleClient();
+        const { data: courseData } = await supabaseAdmin
+          .from("courses")
+          .select(`
+            title,
+            expert_id,
+            profiles!courses_expert_id_fkey(name)
+          `)
+          .eq("id", courseId)
+          .single();
+        
+        if (courseData) {
+          const expertName = (courseData.profiles as any)?.name || "Expert";
+          customDescription = `Course provided by ${expertName}`;
+        }
+      }
+      
+      // Use price_data to override product description with custom description
+      // This ensures clean text without HTML in Stripe checkout
+      lineItems.push({
+        price_data: {
+          currency: price.currency,
+          unit_amount: unitAmount,
+          product_data: {
+            name: productName, // Use product name from Stripe
+            description: customDescription, // Custom description without HTML
+          },
+        },
+        quantity: quantity,
+      });
     }
 
     // Calculate application fee amount (platform's cut)
@@ -81,37 +129,6 @@ export async function POST(request: NextRequest) {
 
     // Get base URL for success/cancel URLs
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-    /**
-     * Create a Checkout Session with Destination Charge
-     * 
-     * Destination Charge means:
-     * - Customer pays the full amount
-     * - Platform collects application fee
-     * - Remaining amount is transferred to connected account
-     * 
-     * Key points:
-     * - payment_intent_data.transfer_data.destination: Where to send funds
-     * - payment_intent_data.application_fee_amount: Platform's fee
-     * - mode: 'payment' for one-time payments
-     * - success_url: Where to redirect after successful payment
-     * - cancel_url: Where to redirect if user cancels
-     */
-    // Build line items
-    const lineItems: any[] = [];
-    if (priceData) {
-      // Dynamic pricing for appointments
-      lineItems.push({
-        price_data: priceData,
-        quantity: quantity,
-      });
-    } else {
-      // Fixed pricing for courses
-      lineItems.push({
-        price: priceId,
-        quantity: quantity,
-      });
-    }
 
     // Log metadata being sent for debugging
     const sessionMetadata = {
