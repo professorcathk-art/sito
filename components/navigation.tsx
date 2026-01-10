@@ -145,10 +145,10 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
             
             {/* Mobile: Menu button for dashboard pages (top right) */}
             {isDashboardPage && user && (
-              <div className="md:hidden relative">
+              <div className="md:hidden relative z-50">
                 <button
                   onClick={() => setDashboardMenuOpen(!dashboardMenuOpen)}
-                  className="text-custom-text hover:text-cyber-green transition-colors p-2 -mr-2"
+                  className="text-custom-text hover:text-cyber-green transition-colors p-2 -mr-2 bg-dark-green-800/50 rounded-lg border border-cyber-green/30"
                   aria-label="Toggle navigation menu"
                 >
                   <svg
@@ -160,44 +160,46 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path d="M4 6h16M4 12h16M4 18h16" />
+                    <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                   </svg>
                 </button>
                 
                 {/* Mobile Dropdown Menu */}
                 {dashboardMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-dark-green-800/95 backdrop-blur-sm border border-cyber-green/30 rounded-lg shadow-lg z-50 py-2">
-                    <Link
-                      href="/directory"
-                      onClick={() => setDashboardMenuOpen(false)}
-                      className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm"
-                    >
-                      Featured Experts
-                    </Link>
-                    <Link
-                      href="/featured-courses"
-                      onClick={() => setDashboardMenuOpen(false)}
-                      className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm"
-                    >
-                      Featured Learnings
-                    </Link>
-                    <Link
-                      href="/blog"
-                      onClick={() => setDashboardMenuOpen(false)}
-                      className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm"
-                    >
-                      Experts Sharing
-                    </Link>
-                    {user && (
+                  <>
+                    <div className="absolute right-0 mt-2 w-56 bg-dark-green-800/95 backdrop-blur-sm border border-cyber-green/30 rounded-lg shadow-lg z-50 py-2">
                       <Link
-                        href="/dashboard"
+                        href="/directory"
                         onClick={() => setDashboardMenuOpen(false)}
-                        className="block px-4 py-2 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm border-t border-cyber-green/20 mt-1 pt-2"
+                        className="block px-4 py-3 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm font-medium"
                       >
-                        Dashboard
+                        Featured Experts
                       </Link>
-                    )}
-                  </div>
+                      <Link
+                        href="/featured-courses"
+                        onClick={() => setDashboardMenuOpen(false)}
+                        className="block px-4 py-3 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm font-medium"
+                      >
+                        Featured Learnings
+                      </Link>
+                      <Link
+                        href="/blog"
+                        onClick={() => setDashboardMenuOpen(false)}
+                        className="block px-4 py-3 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm font-medium"
+                      >
+                        Experts Sharing
+                      </Link>
+                      {user && (
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setDashboardMenuOpen(false)}
+                          className="block px-4 py-3 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm font-medium border-t border-cyber-green/20 mt-1 pt-3"
+                        >
+                          Dashboard
+                        </Link>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -232,7 +234,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
         {/* Click outside to close dashboard menu */}
         {dashboardMenuOpen && (
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-30"
             onClick={() => setDashboardMenuOpen(false)}
           />
         )}
