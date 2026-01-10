@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { SubscribeButton } from "@/components/subscribe-button";
+import { truncateHtml } from "@/lib/utils/truncate-html";
 
 interface BlogPost {
   id: string;
@@ -45,19 +46,23 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
 
   useEffect(() => {
     async function checkAccess() {
-      if (blogPost.access_level === "public") {
-        setHasAccess(true);
-        setCheckingAccess(false);
-        return;
-      }
-
+      // NEW: All blogs require sign-in to view full content (Medium-style paywall)
+      // If user is not signed in, they can only see partial content
       if (!user) {
         setHasAccess(false);
         setCheckingAccess(false);
         return;
       }
 
+      // If user is the author, they have full access
       if (blogPost.expert_id === user.id) {
+        setHasAccess(true);
+        setCheckingAccess(false);
+        return;
+      }
+
+      // For signed-in users, check access level
+      if (blogPost.access_level === "public") {
         setHasAccess(true);
         setCheckingAccess(false);
         return;
@@ -469,10 +474,75 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
         </header>
 
         {/* Content */}
-        <div
-          className="prose prose-invert prose-lg max-w-none blog-content"
-          dangerouslySetInnerHTML={{ __html: blogPost.content }}
-        />
+        {!user ? (
+          // Non-signed-in users: Show partial content with blur and sign-in prompt
+          <div className="relative">
+            <div
+              className="prose prose-invert prose-lg max-w-none blog-content"
+              dangerouslySetInnerHTML={{ __html: truncateHtml(blogPost.content, 50) }}
+            />
+            
+            {/* Blur overlay */}
+            <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-custom-bg via-custom-bg/80 to-transparent pointer-events-none" />
+            
+            {/* Sign-in prompt overlay */}
+            <div className="relative -mt-32 pt-32 bg-custom-bg border-t-2 border-cyber-green/50 rounded-lg p-8 text-center">
+              <div className="max-w-md mx-auto">
+                <h3 className="text-2xl font-bold text-custom-text mb-3">
+                  🔒 Sign in to continue reading
+                </h3>
+                <p className="text-custom-text/80 mb-6">
+                  This article is available to registered members. Sign in to read the full content and unlock access to all expert insights.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Link
+                    href={`/login?redirect=/blog/${blogPost.id}`}
+                    className="px-6 py-3 bg-cyber-green text-dark-green-900 font-bold rounded-lg hover:bg-cyber-green-light transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(0,255,136,0.4)]"
+                  >
+                    Sign In to Continue
+                  </Link>
+                  <Link
+                    href={`/register?redirect=/blog/${blogPost.id}`}
+                    className="px-6 py-3 border-2 border-cyber-green/50 text-cyber-green font-semibold rounded-lg hover:bg-cyber-green/10 transition-all"
+                  >
+                    Create Account
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : !hasAccess ? (
+          // Signed-in but no access (subscriber/paid content)
+          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 text-center">
+            <h2 className="text-2xl font-bold text-custom-text mb-4">Access Restricted</h2>
+            <p className="text-custom-text/80 mb-6">
+              {blogPost.access_level === "subscriber"
+                ? "This post is available to subscribers only."
+                : "This post is available to paid members only."}
+            </p>
+            {blogPost.access_level === "subscriber" ? (
+              <Link
+                href={`/expert/${blogPost.expert_id}`}
+                className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              >
+                Subscribe to {blogPost.profiles?.name || "Expert"}
+              </Link>
+            ) : (
+              <Link
+                href={`/expert/${blogPost.expert_id}`}
+                className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              >
+                View Courses
+              </Link>
+            )}
+          </div>
+        ) : (
+          // Full access: Show complete content
+          <div
+            className="prose prose-invert prose-lg max-w-none blog-content"
+            dangerouslySetInnerHTML={{ __html: blogPost.content }}
+          />
+        )}
       </article>
     </div>
   );
