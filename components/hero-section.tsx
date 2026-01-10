@@ -43,16 +43,30 @@ export function HeroSection() {
               </Link>
             </div>
             <div className="mt-4 sm:mt-6 animate-fade-in-up px-2 sm:px-0" style={{ animationDelay: '0.5s' }}>
-              <p className="text-xs sm:text-sm text-custom-text/60 text-center lg:text-left">
+              <p className="text-xs sm:text-sm text-custom-text/70 text-center lg:text-left">
                 By continuing, you agree to our{" "}
-                <Link href="/terms" className="text-cyber-green hover:text-cyber-green-light underline">
+                <Link href="/terms" className="text-cyber-green hover:text-cyber-green-light underline font-medium">
                   Terms of Service
                 </Link>
                 {" "}and{" "}
-                <Link href="/privacy" className="text-cyber-green hover:text-cyber-green-light underline">
+                <Link href="/privacy" className="text-cyber-green hover:text-cyber-green-light underline font-medium">
                   Privacy Policy
                 </Link>
               </p>
+              <div className="mt-3 flex flex-wrap gap-3 justify-center lg:justify-start">
+                <Link 
+                  href="/privacy" 
+                  className="text-xs sm:text-sm text-cyber-green hover:text-cyber-green-light underline font-medium"
+                >
+                  View Privacy Policy →
+                </Link>
+                <Link 
+                  href="/terms" 
+                  className="text-xs sm:text-sm text-cyber-green hover:text-cyber-green-light underline font-medium"
+                >
+                  View Terms of Service →
+                </Link>
+              </div>
             </div>
           </div>
 
