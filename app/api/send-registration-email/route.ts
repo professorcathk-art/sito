@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend - handle missing API key gracefully
+const resend = process.env.RESEND_API_KEY 
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 export async function POST(request: NextRequest) {
   try {
@@ -72,6 +75,15 @@ export async function POST(request: NextRequest) {
       if (surveyData.location) {
         surveyContent += `**Location:** ${surveyData.location}\n`;
       }
+    }
+
+    // Check if Resend is configured
+    if (!resend) {
+      console.warn("RESEND_API_KEY not set - registration email will not be sent");
+      return NextResponse.json({ 
+        success: false, 
+        warning: "Email service not configured" 
+      }, { status: 200 }); // Return 200 so it doesn't fail the registration flow
     }
 
     const emailContent = `
