@@ -24,8 +24,10 @@ export function ProfileSetupForm() {
   const [countries, setCountries] = useState<Country[]>([]);
   const [categorySearch, setCategorySearch] = useState("");
   const [countrySearch, setCountrySearch] = useState("");
+  const [languageSearch, setLanguageSearch] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     title: "",
@@ -41,14 +43,25 @@ export function ProfileSetupForm() {
     listedOnMarketplace: false,
     avatarUrl: "",
   });
-  const [languageInput, setLanguageInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState("");
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
+  const languageDropdownRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Major languages list
+  const majorLanguages = [
+    'English', 'Mandarin Chinese', 'Spanish', 'Hindi', 'Arabic', 'Portuguese', 'Bengali', 
+    'Russian', 'Japanese', 'Punjabi', 'German', 'Javanese', 'Wu Chinese', 'Malay', 
+    'Telugu', 'Vietnamese', 'Italian', 'Turkish', 'Tamil', 'Urdu', 'French', 'Korean', 
+    'Marathi', 'Thai', 'Gujarati', 'Persian', 'Polish', 'Ukrainian', 'Kannada', 
+    'Malayalam', 'Oriya', 'Burmese', 'Hausa', 'Cantonese', 'Romanian', 'Dutch', 
+    'Greek', 'Czech', 'Swedish', 'Hungarian', 'Hebrew', 'Finnish', 'Norwegian', 
+    'Danish', 'Swahili', 'Tagalog', 'Indonesian', 'Nepali', 'Khmer', 'Lao'
+  ];
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -65,6 +78,12 @@ export function ProfileSetupForm() {
       ) {
         setShowCountryDropdown(false);
       }
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowLanguageDropdown(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -72,6 +91,28 @@ export function ProfileSetupForm() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const filteredLanguages = majorLanguages.filter((lang) =>
+    lang.toLowerCase().includes(languageSearch.toLowerCase()) &&
+    !formData.languagesSupported.includes(lang)
+  );
+
+  const handleLanguageSelect = (language: string) => {
+    if (!formData.languagesSupported.includes(language)) {
+      setFormData({
+        ...formData,
+        languagesSupported: [...formData.languagesSupported, language],
+      });
+      setLanguageSearch("");
+    }
+  };
+
+  const handleLanguageRemove = (language: string) => {
+    setFormData({
+      ...formData,
+      languagesSupported: formData.languagesSupported.filter((lang) => lang !== language),
+    });
+  };
 
   // Fetch categories, countries, and existing profile
   useEffect(() => {
@@ -587,69 +628,62 @@ export function ProfileSetupForm() {
         )}
       </div>
 
-      <div>
+      <div className="relative" ref={languageDropdownRef}>
         <label className="block text-sm font-medium text-custom-text mb-2">
           Languages Supported *
         </label>
-        <div className="flex flex-wrap gap-2 mb-2">
-          {formData.languagesSupported.map((lang, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center gap-1 px-3 py-1 bg-cyber-green/20 text-cyber-green rounded-full text-sm border border-cyber-green/30"
-            >
-              {lang}
-              <button
-                type="button"
-                onClick={() => {
-                  setFormData({
-                    ...formData,
-                    languagesSupported: formData.languagesSupported.filter((_, i) => i !== index),
-                  });
-                }}
-                className="hover:text-red-400 transition-colors"
+        {formData.languagesSupported.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {formData.languagesSupported.map((lang, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center gap-1 px-3 py-1 bg-cyber-green/20 text-cyber-green rounded-full text-sm border border-cyber-green/30"
               >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={languageInput}
-            onChange={(e) => setLanguageInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && languageInput.trim()) {
-                e.preventDefault();
-                if (!formData.languagesSupported.includes(languageInput.trim())) {
-                  setFormData({
-                    ...formData,
-                    languagesSupported: [...formData.languagesSupported, languageInput.trim()],
-                  });
-                  setLanguageInput("");
-                }
-              }
-            }}
-            placeholder="Enter a language and press Enter (e.g., English, Mandarin, Cantonese)"
-            className="flex-1 px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
-          />
-          <button
-            type="button"
-            onClick={() => {
-              if (languageInput.trim() && !formData.languagesSupported.includes(languageInput.trim())) {
-                setFormData({
-                  ...formData,
-                  languagesSupported: [...formData.languagesSupported, languageInput.trim()],
-                });
-                setLanguageInput("");
-              }
-            }}
-            className="px-4 py-3 bg-cyber-green/20 border border-cyber-green/30 text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors font-semibold"
-          >
-            Add
-          </button>
-        </div>
-        <p className="mt-1 text-xs text-custom-text/60">Add at least one language you can communicate in</p>
+                {lang}
+                <button
+                  type="button"
+                  onClick={() => handleLanguageRemove(lang)}
+                  className="hover:text-red-400 transition-colors font-bold"
+                  aria-label={`Remove ${lang}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        <input
+          type="text"
+          value={languageSearch}
+          onChange={(e) => {
+            setLanguageSearch(e.target.value);
+            setShowLanguageDropdown(true);
+          }}
+          onFocus={() => setShowLanguageDropdown(true)}
+          placeholder="Search and select languages..."
+          className="w-full px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
+        />
+        {showLanguageDropdown && (
+          <div className="absolute z-50 w-full mt-1 bg-dark-green-800 border border-cyber-green/30 rounded-lg shadow-lg max-h-60 overflow-auto">
+            {filteredLanguages.length === 0 ? (
+              <div className="px-4 py-3 text-custom-text/70">
+                {languageSearch.trim() ? "No languages found" : "All languages selected"}
+              </div>
+            ) : (
+              filteredLanguages.map((language) => (
+                <button
+                  key={language}
+                  type="button"
+                  onClick={() => handleLanguageSelect(language)}
+                  className="w-full text-left px-4 py-2 text-custom-text hover:bg-dark-green-700 hover:text-cyber-green transition-colors"
+                >
+                  {language}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+        <p className="mt-1 text-xs text-custom-text/60">Select at least one language you can communicate in</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
