@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { Navigation } from "@/components/navigation";
 import { ProtectedRoute } from "@/components/protected-route";
+import { CalendarView } from "@/components/calendar-view";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
 
 interface AppointmentSlot {
@@ -463,55 +464,76 @@ export default function BookAppointmentPage() {
                 </Link>
               </div>
             ) : (
-              <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
-                <h3 className="text-xl font-bold text-custom-text mb-4">
-                  Available Timeslots
-                </h3>
-                <div className="space-y-3">
-                  {slots
-                    .map((slot) => {
-                      const duration = calculateDuration(slot.start_time, slot.end_time);
-                      const total = calculateTotal(slot.rate_per_hour, duration);
-                      
-                      if (duration <= 0) return null;
+              <>
+                <CalendarView
+                  slots={slots}
+                  onDateSelect={(date) => {
+                    setSelectedDate(date);
+                  }}
+                  hideSlotsDisplay={true}
+                />
+                
+                {/* Show slots for selected date with booking buttons */}
+                {selectedDate && slots.filter(s => new Date(s.start_time).toISOString().split("T")[0] === selectedDate).length > 0 && (
+                  <div className="mt-6 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                    <h3 className="text-xl font-bold text-custom-text mb-4">
+                      Available Timeslots for {new Date(selectedDate).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </h3>
+                    <div className="space-y-3">
+                      {slots
+                        .filter(s => new Date(s.start_time).toISOString().split("T")[0] === selectedDate)
+                        .map((slot) => {
+                          const duration = calculateDuration(slot.start_time, slot.end_time);
+                          const total = calculateTotal(slot.rate_per_hour, duration);
+                          
+                          if (duration <= 0) return null;
 
-                      return (
-                        <div
-                          key={slot.id}
-                          className="flex items-center justify-between p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg"
-                        >
-                          <div>
-                            <p className="text-custom-text font-semibold">
-                              {formatDateTime(slot.start_time)} - {new Date(slot.end_time).toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })}
-                            </p>
-                            <p className="text-sm text-custom-text/70">
-                              ${slot.rate_per_hour}/hour • {duration} min • ${total.toFixed(2)} total
-                            </p>
-                          </div>
-                          {user ? (
-                            <button
-                              onClick={() => handleBookAppointment(slot)}
-                              disabled={booking}
-                              className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+                          return (
+                            <div
+                              key={slot.id}
+                              className="flex items-center justify-between p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg"
                             >
-                              {booking ? "Booking..." : "Book Now"}
-                            </button>
-                          ) : (
-                            <Link
-                              href={`/login?redirect=/appointments/book/${expertId}`}
-                              className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors inline-block text-center"
-                            >
-                              Sign In to Book
-                            </Link>
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
+                              <div>
+                                <p className="text-custom-text font-semibold">
+                                  {new Date(slot.start_time).toLocaleTimeString("en-US", {
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                  })} - {new Date(slot.end_time).toLocaleTimeString("en-US", {
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                  })}
+                                </p>
+                                <p className="text-sm text-custom-text/70">
+                                  ${slot.rate_per_hour}/hour • {duration} min • ${total.toFixed(2)} total
+                                </p>
+                              </div>
+                              {user ? (
+                                <button
+                                  onClick={() => handleBookAppointment(slot)}
+                                  disabled={booking}
+                                  className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+                                >
+                                  {booking ? "Booking..." : "Book Now"}
+                                </button>
+                              ) : (
+                                <Link
+                                  href={`/login?redirect=/appointments/book/${expertId}`}
+                                  className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors inline-block text-center"
+                                >
+                                  Sign In to Book
+                                </Link>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
