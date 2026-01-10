@@ -377,6 +377,156 @@ export default function ManageAppointmentsPage() {
             </button>
           </div>
 
+          {/* Add Appointment Slots Form - Show at top */}
+          {showForm && (
+            <form onSubmit={handleCreateSlots} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-custom-text">Add Appointment Slots</h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForm(false);
+                    setFormData({
+                      date: "",
+                      startTime: "",
+                      endTime: "",
+                      intervalMinutes: "60",
+                      ratePerHour: "100",
+                      productId: "",
+                    });
+                    setSelectedProductId(null);
+                  }}
+                  className="text-custom-text/60 hover:text-custom-text"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-custom-text/70 mb-6 text-sm">
+                Set a time range and interval, and the system will automatically create multiple booking slots for you.
+              </p>
+              
+              {products.length > 0 && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    Product *
+                  </label>
+                  <select
+                    value={formData.productId}
+                    onChange={(e) => {
+                      setFormData({ ...formData, productId: e.target.value });
+                      setSelectedProductId(e.target.value);
+                    }}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    required
+                  >
+                    <option value="">Select a product...</option>
+                    {products.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    Start Time *
+                  </label>
+                  <input
+                    type="time"
+                    value={formData.startTime}
+                    onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    End Time *
+                  </label>
+                  <input
+                    type="time"
+                    value={formData.endTime}
+                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    Session Duration (minutes) *
+                  </label>
+                  <select
+                    value={formData.intervalMinutes}
+                    onChange={(e) => setFormData({ ...formData, intervalMinutes: e.target.value })}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    required
+                  >
+                    <option value="15">15 minutes</option>
+                    <option value="30">30 minutes</option>
+                    <option value="60">1 hour</option>
+                    <option value="90">1.5 hours</option>
+                    <option value="120">2 hours</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-custom-text mb-2">
+                  Rate per Hour (USD) *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.ratePerHour}
+                  onChange={(e) => setFormData({ ...formData, ratePerHour: e.target.value })}
+                  className="w-full max-w-xs px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  required
+                />
+              </div>
+              <div className="flex gap-4">
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                >
+                  Create Slots
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForm(false);
+                    setFormData({
+                      date: "",
+                      startTime: "",
+                      endTime: "",
+                      intervalMinutes: "60",
+                      ratePerHour: "100",
+                      productId: "",
+                    });
+                    setSelectedProductId(null);
+                  }}
+                  className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+
           {/* Tabs */}
           <div className="flex gap-4 border-b border-cyber-green/30 mb-6">
             <button
@@ -816,154 +966,6 @@ export default function ManageAppointmentsPage() {
             </div>
           )}
 
-          {showForm && (
-            <form onSubmit={handleCreateSlots} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-custom-text">Add Appointment Slots</h2>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setFormData({
-                      date: "",
-                      startTime: "",
-                      endTime: "",
-                      intervalMinutes: "60",
-                      ratePerHour: "100",
-                      productId: "",
-                    });
-                    setSelectedProductId(null);
-                  }}
-                  className="text-custom-text/60 hover:text-custom-text"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="text-custom-text/70 mb-6 text-sm">
-                Set a time range and interval, and the system will automatically create multiple booking slots for you.
-              </p>
-              
-              {products.length > 0 && (
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-custom-text mb-2">
-                    Product *
-                  </label>
-                  <select
-                    value={formData.productId}
-                    onChange={(e) => {
-                      setFormData({ ...formData, productId: e.target.value });
-                      setSelectedProductId(e.target.value);
-                    }}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                    required
-                  >
-                    <option value="">Select a product...</option>
-                    {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-custom-text mb-2">
-                    Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-custom-text mb-2">
-                    Start Time *
-                  </label>
-                  <input
-                    type="time"
-                    value={formData.startTime}
-                    onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-custom-text mb-2">
-                    End Time *
-                  </label>
-                  <input
-                    type="time"
-                    value={formData.endTime}
-                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-custom-text mb-2">
-                    Session Duration (minutes) *
-                  </label>
-                  <select
-                    value={formData.intervalMinutes}
-                    onChange={(e) => setFormData({ ...formData, intervalMinutes: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                    required
-                  >
-                    <option value="15">15 minutes</option>
-                    <option value="30">30 minutes</option>
-                    <option value="60">1 hour</option>
-                    <option value="90">1.5 hours</option>
-                    <option value="120">2 hours</option>
-                  </select>
-                </div>
-              </div>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-custom-text mb-2">
-                  Rate per Hour (USD) *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.ratePerHour}
-                  onChange={(e) => setFormData({ ...formData, ratePerHour: e.target.value })}
-                  className="w-full max-w-xs px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
-                  required
-                />
-              </div>
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
-                >
-                  Create Slots
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setFormData({
-                      date: "",
-                      startTime: "",
-                      endTime: "",
-                      intervalMinutes: "60",
-                      ratePerHour: "100",
-                      productId: "",
-                    });
-                    setSelectedProductId(null);
-                  }}
-                  className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          )}
 
         </div>
       </DashboardLayout>

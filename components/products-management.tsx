@@ -298,8 +298,7 @@ export function ProductsManagement() {
           user_email,
           enrolled_at,
           questionnaire_response_id,
-          payment_intent_id,
-          profiles:user_id(name, email)
+          payment_intent_id
         `)
         .eq("course_id", courseId)
         .order("enrolled_at", { ascending: false });
@@ -310,6 +309,26 @@ export function ProductsManagement() {
       }
       
       console.log("Found enrollments:", data?.length || 0, data);
+      
+      // Fetch profiles separately (user_id references auth.users, not profiles directly)
+      const userIds = Array.from(new Set((data || []).map((e: any) => e.user_id).filter(Boolean)));
+      let profilesMap: { [key: string]: { name: string; email: string } } = {};
+      
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, name, email")
+          .in("id", userIds);
+        
+        if (profilesData) {
+          profilesData.forEach((profile: any) => {
+            profilesMap[profile.id] = {
+              name: profile.name || "N/A",
+              email: profile.email || "N/A",
+            };
+          });
+        }
+      }
       
       // Fetch questionnaire responses using questionnaire_response_id from enrollments
       const questionnaireResponseIds = (data || []).map((e: any) => e.questionnaire_response_id).filter(Boolean);
@@ -378,8 +397,8 @@ export function ProductsManagement() {
         
         return {
           id: enrollment.id,
-          name: enrollment.profiles?.name || "N/A",
-          email: enrollment.user_email || enrollment.profiles?.email || "N/A",
+          name: enrollment.user_id ? (profilesMap[enrollment.user_id]?.name || "N/A") : "N/A",
+          email: enrollment.user_email || (enrollment.user_id ? profilesMap[enrollment.user_id]?.email : "N/A") || "N/A",
           enrolled_at: enrollment.enrolled_at,
           questionnaire_responses: mappedResponses,
         };
