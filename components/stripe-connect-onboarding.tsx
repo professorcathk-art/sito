@@ -46,6 +46,7 @@ export function StripeConnectOnboarding() {
   const [onboarding, setOnboarding] = useState(false);
   const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hasAccountIdInDb, setHasAccountIdInDb] = useState<boolean>(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [userCountry, setUserCountry] = useState<string | null>(null);
@@ -195,6 +196,7 @@ export function StripeConnectOnboarding() {
         .single();
 
       if (!profile?.stripe_connect_account_id) {
+        setHasAccountIdInDb(false);
         setAccountStatus({
           accountId: null,
           readyToReceivePayments: false,
@@ -204,6 +206,9 @@ export function StripeConnectOnboarding() {
         setLoading(false);
         return;
       }
+
+      // Track that we have an account ID in database
+      setHasAccountIdInDb(true);
 
       // Fetch account status from Stripe API
       const response = await fetch(
@@ -227,6 +232,14 @@ export function StripeConnectOnboarding() {
           return;
         }
         
+        // If account status fails but we have an account ID in database, 
+        // set accountStatus with the ID so Reset button appears
+        setAccountStatus({
+          accountId: profile.stripe_connect_account_id,
+          readyToReceivePayments: false,
+          onboardingComplete: false,
+          requirementsStatus: "error",
+        });
         throw new Error(data.error || "Failed to fetch account status");
       }
 
@@ -240,6 +253,25 @@ export function StripeConnectOnboarding() {
     } catch (err: any) {
       console.error("Error checking account status:", err);
       setError(err.message || "Failed to check account status");
+      
+      // If we have an account ID in database but status check failed,
+      // ensure hasAccountIdInDb is set so Reset button appears
+      if (hasAccountIdInDb && !accountStatus?.accountId) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("stripe_connect_account_id")
+          .eq("id", user?.id)
+          .single();
+        
+        if (profile?.stripe_connect_account_id) {
+          setAccountStatus({
+            accountId: profile.stripe_connect_account_id,
+            readyToReceivePayments: false,
+            onboardingComplete: false,
+            requirementsStatus: "error",
+          });
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -321,6 +353,8 @@ export function StripeConnectOnboarding() {
         throw new Error(data.error || "Failed to reset account");
       }
 
+      // Clear the account ID flag
+      setHasAccountIdInDb(false);
       // Refresh account status (should show no account now)
       await checkAccountStatus();
     } catch (err: any) {
@@ -402,11 +436,34 @@ export function StripeConnectOnboarding() {
         </div>
       )}
 
-      {!accountStatus?.accountId ? (
+      {!accountStatus?.accountId || (error && (accountStatus?.requirementsStatus === "error" || hasAccountIdInDb)) ? (
         /**
-         * No account exists - show create account option
+         * No account exists OR account status check failed - show create/reset options
          */
         <div className="space-y-4">
+          {error && (
+            <div className="mb-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+              <p className="text-red-300 mb-2 font-semibold">⚠️ {error}</p>
+              {(accountStatus?.accountId || hasAccountIdInDb) && (
+                <div className="mt-3 p-3 bg-yellow-900/30 border border-yellow-500/50 rounded">
+                  <p className="text-yellow-200 text-sm mb-2">
+                    <strong>Problem detected:</strong> You have a Stripe account ID in the database, but Stripe can&apos;t find it.
+                  </p>
+                  <p className="text-yellow-200 text-sm mb-2">
+                    This usually happens when:
+                  </p>
+                  <ul className="text-yellow-200 text-sm list-disc list-inside mb-2 space-y-1">
+                    <li>You created a test account but are now using live mode keys</li>
+                    <li>The account was deleted from Stripe Dashboard</li>
+                    <li>You&apos;re using the wrong Stripe account (test vs live)</li>
+                  </ul>
+                  <p className="text-yellow-300 text-sm font-semibold">
+                    Solution: Click &quot;Reset Account&quot; below to clear the invalid account ID, then create a new account.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
           <p className="text-custom-text/80 mb-4">
             Connect your Stripe account to start receiving payments. You will be able to
             accept payments from customers and receive payouts directly to your bank account.
@@ -443,13 +500,43 @@ export function StripeConnectOnboarding() {
             </p>
           </div>
 
-          <button
-            onClick={handleCreateAccount}
-            disabled={creating || !selectedCountry}
-            className="w-full px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {creating ? "Creating Account..." : "Create Stripe Account"}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            {(accountStatus?.accountId || hasAccountIdInDb) ? (
+              <>
+                <button
+                  onClick={handleResetAccount}
+                  disabled={loading || creating}
+                  className="flex-1 px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition-colors disabled:opacity-50 text-sm"
+                >
+                  {loading ? "Resetting..." : "Reset Account"}
+                </button>
+                <button
+                  onClick={handleCreateAccount}
+                  disabled={creating || !selectedCountry || loading}
+                  className="flex-1 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {creating ? "Creating Account..." : "Create New Account"}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleCreateAccount}
+                disabled={creating || !selectedCountry}
+                className="w-full px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {creating ? "Creating Account..." : "Create Stripe Account"}
+              </button>
+            )}
+          </div>
+          
+          {(accountStatus?.accountId || hasAccountIdInDb) && (
+            <div className="p-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg">
+              <p className="text-xs text-custom-text/70 text-center">
+                <strong>Reset Account:</strong> This will clear the invalid account ID from your database. 
+                After resetting, you can create a new Stripe account for live mode.
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         /**
