@@ -114,6 +114,7 @@ export function ProductsManagement() {
   const [isProfileListed, setIsProfileListed] = useState<boolean | null>(null);
   const [courseMembersMap, setCourseMembersMap] = useState<{ [courseId: string]: any[] }>({});
   const [showMembersForProduct, setShowMembersForProduct] = useState<string | null>(null);
+  const [interestCounts, setInterestCounts] = useState<{ [productId: string]: number }>({});
 
   useEffect(() => {
     if (user) {
@@ -124,6 +125,42 @@ export function ProductsManagement() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Fetch interest counts for all products
+  useEffect(() => {
+    if (user && products.length > 0) {
+      fetchInterestCounts();
+    }
+  }, [user, products]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchInterestCounts = async () => {
+    if (!user || products.length === 0) return;
+    
+    try {
+      const productIds = products.map((p) => p.id);
+      
+      // Fetch count of interests per product
+      const { data, error } = await supabase
+        .from("product_interests")
+        .select("product_id")
+        .in("product_id", productIds);
+      
+      if (error && error.code !== "PGRST116") {
+        console.error("Error fetching interest counts:", error);
+        return;
+      }
+      
+      // Count interests per product
+      const counts: { [productId: string]: number } = {};
+      (data || []).forEach((interest: any) => {
+        counts[interest.product_id] = (counts[interest.product_id] || 0) + 1;
+      });
+      
+      setInterestCounts(counts);
+    } catch (err) {
+      console.error("Error fetching interest counts:", err);
+    }
+  };
 
   const checkProfileListing = async () => {
     if (!user) return;
@@ -249,6 +286,7 @@ export function ProductsManagement() {
   const fetchCourseMembers = async (courseId: string) => {
     if (!user || !courseId) return;
     try {
+      // Fetch ALL enrollments (both paid and free, by user_id and user_email)
       const { data, error } = await supabase
         .from("course_enrollments")
         .select(`
@@ -257,9 +295,11 @@ export function ProductsManagement() {
           user_email,
           enrolled_at,
           questionnaire_response_id,
+          payment_intent_id,
           profiles:user_id(name, email)
         `)
-        .eq("course_id", courseId);
+        .eq("course_id", courseId)
+        .order("enrolled_at", { ascending: false });
 
       if (error) throw error;
       
@@ -411,10 +451,29 @@ export function ProductsManagement() {
           console.warn("Non-fatal error fetching interests, continuing with empty array");
         }
         setInterests([]);
+        // Update counts even if error (set to 0)
+        const counts: { [productId: string]: number } = {};
+        productIds.forEach((id) => {
+          counts[id] = 0;
+        });
+        setInterestCounts(counts);
         return;
       }
 
       console.log("Interests fetched:", data?.length || 0);
+      
+      // Update interest counts
+      const interestCountsMap: { [productId: string]: number } = {};
+      (data || []).forEach((interest: any) => {
+        interestCountsMap[interest.product_id] = (interestCountsMap[interest.product_id] || 0) + 1;
+      });
+      // Initialize counts for products with no interests
+      productIds.forEach((id) => {
+        if (!interestCountsMap[id]) {
+          interestCountsMap[id] = 0;
+        }
+      });
+      setInterestCounts(interestCountsMap);
 
       // Fetch user names separately if we have user IDs
       const userIds = Array.from(new Set((data || []).map((item: any) => item.user_id)));
@@ -531,6 +590,19 @@ export function ProductsManagement() {
       });
 
       setInterests(interestsData);
+      
+      // Update interest counts after fetching interests
+      const updatedCounts: { [productId: string]: number } = {};
+      interestsData.forEach((interest: ProductInterest) => {
+        updatedCounts[interest.product_id] = (updatedCounts[interest.product_id] || 0) + 1;
+      });
+      // Initialize counts for products with no interests
+      products.forEach((p) => {
+        if (!updatedCounts[p.id]) {
+          updatedCounts[p.id] = 0;
+        }
+      });
+      setInterestCounts((prev) => ({ ...prev, ...updatedCounts }));
     } catch (err: any) {
       console.error("Error fetching interests:", err);
       setInterests([]);
@@ -1283,14 +1355,17 @@ export function ProductsManagement() {
           My Products ({products.length})
         </button>
         <button
-          onClick={() => setActiveTab("interests")}
+          onClick={() => {
+            setActiveTab("interests");
+            fetchInterests(); // Fetch interests when tab is clicked
+          }}
           className={`px-4 py-2 font-semibold transition-colors ${
             activeTab === "interests"
               ? "text-cyber-green border-b-2 border-cyber-green"
               : "text-custom-text/70 hover:text-custom-text"
           }`}
         >
-          Registered Interests ({interests.length})
+          Registered Interests ({Object.values(interestCounts).reduce((sum, count) => sum + count, 0)})
         </button>
       </div>
 
@@ -2453,7 +2528,8 @@ export function ProductsManagement() {
                           } else {
                             setShowMembersForProduct(product.id);
                             const courseId = product.course_id;
-                            if (courseId && !courseMembersMap[courseId]) {
+                            if (courseId) {
+                              // Always fetch fresh data when viewing members
                               await fetchCourseMembers(courseId);
                             }
                           }
@@ -2479,7 +2555,15 @@ export function ProductsManagement() {
                 </div>
                 {product.product_type === "course" && product.course_id && showMembersForProduct === product.id && (
                   <div className="mt-4 pt-4 border-t border-cyber-green/30">
-                    <h4 className="text-lg font-semibold text-custom-text mb-3">Course Members</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-semibold text-custom-text">Course Members</h4>
+                      <button
+                        onClick={() => fetchCourseMembers(product.course_id!)}
+                        className="text-xs text-cyber-green hover:text-cyber-green-light transition-colors"
+                      >
+                        Refresh
+                      </button>
+                    </div>
                     {courseMembersMap[product.course_id]?.length > 0 ? (
                       <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg overflow-hidden">
                         <table className="w-full">
