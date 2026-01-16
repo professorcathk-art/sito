@@ -479,8 +479,8 @@ export function ProfileSetupForm() {
         throw profileError;
       }
 
-      // Redirect to dashboard
-      router.push("/dashboard");
+      // Redirect to profile page
+      router.push("/profile");
       router.refresh();
     } catch (err: any) {
       setError(err.message || "Failed to save profile. Please try again.");

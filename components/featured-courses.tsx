@@ -138,31 +138,31 @@ export function FeaturedCourses() {
     switch (subtype) {
       case "online-course":
         return {
-          gradient: `${baseGradient} from-blue-600/80 to-purple-600/80`,
+          gradient: `${baseGradient} from-dark-green-800/90 to-dark-green-900/90`,
           icon: "📹",
           label: "Online Course"
         };
       case "ebook":
         return {
-          gradient: `${baseGradient} from-orange-600/80 to-red-600/80`,
+          gradient: `${baseGradient} from-dark-green-800/90 to-dark-green-900/90`,
           icon: "📚",
           label: "Ebook"
         };
       case "ai-prompt":
         return {
-          gradient: `${baseGradient} from-cyan-600/80 to-teal-600/80`,
+          gradient: `${baseGradient} from-dark-green-800/90 to-dark-green-900/90`,
           icon: "🤖",
           label: "AI Prompt"
         };
       case "other":
         return {
-          gradient: `${baseGradient} from-indigo-600/80 to-blue-600/80`,
+          gradient: `${baseGradient} from-dark-green-800/90 to-dark-green-900/90`,
           icon: "📦",
           label: "Other"
         };
       default:
         return {
-          gradient: `${baseGradient} from-dark-green-800 to-dark-green-900`,
+          gradient: `${baseGradient} from-dark-green-800/90 to-dark-green-900/90`,
           icon: "📖",
           label: "E-Learning"
         };
