@@ -46,7 +46,7 @@ export default function FeaturedCoursesPage() {
             course_id,
             expert_id
           `)
-          .eq("product_type", "course")
+          .eq("product_type", "e-learning")
           .order("created_at", { ascending: false });
 
         if (productsError) {
@@ -181,7 +181,7 @@ export default function FeaturedCoursesPage() {
           .from("products")
           .select("id, price, course_id")
           .in("course_id", courseIds)
-          .eq("product_type", "course");
+          .eq("product_type", "e-learning");
 
         // Fetch expert profiles
         const { data: profilesData } = await supabase
@@ -246,17 +246,17 @@ export default function FeaturedCoursesPage() {
       <div className="pt-24 pb-20 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2">Featured Learnings</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2">Secret Recipe</h1>
             <p className="text-base sm:text-xl text-custom-text/80 mb-6">
-              Discover courses from industry experts
+              Discover e-learning products from industry experts
             </p>
 
             {/* Search */}
             <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-6 rounded-xl mb-6">
-              <label className="block text-sm font-medium text-custom-text mb-2">Search Courses</label>
+              <label className="block text-sm font-medium text-custom-text mb-2">Search e-Learning Products</label>
               <input
                 type="text"
-                placeholder="Search by course name, description, expert, or category..."
+                placeholder="Search by product name, description, expert, or category..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50 text-sm"
@@ -295,7 +295,7 @@ export default function FeaturedCoursesPage() {
 
           {loading ? (
             <div className="text-center py-12">
-              <p className="text-custom-text/80 animate-pulse">Loading courses...</p>
+              <p className="text-custom-text/80 animate-pulse">Loading e-learning products...</p>
             </div>
           ) : courses.length === 0 && (!user || enrolledCourses.length === 0) ? (
             <div className="text-center py-12">

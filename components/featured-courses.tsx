@@ -44,7 +44,7 @@ export function FeaturedCourses() {
             course_id,
             courses!inner(id, published)
           `)
-          .eq("product_type", "course")
+          .eq("product_type", "e-learning")
           .not("course_id", "is", null)
           .eq("courses.published", true)
           .order("created_at", { ascending: false })
@@ -133,8 +133,8 @@ export function FeaturedCourses() {
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-2 text-glow">Featured Learnings</h2>
-            <p className="text-sm sm:text-base text-custom-text/80">Discover courses from industry experts</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-2 text-glow">Secret Recipe</h2>
+            <p className="text-sm sm:text-base text-custom-text/80">Discover e-learning products from industry experts</p>
           </div>
           <div className="text-center py-12">
             <p className="text-custom-text/80 animate-pulse">Loading courses...</p>
@@ -153,14 +153,14 @@ export function FeaturedCourses() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-1 sm:mb-2 text-glow animate-pulse-glow tracking-tight">Featured Learnings</h2>
-            <p className="text-sm sm:text-base text-custom-text/80">Discover courses from industry experts</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-1 sm:mb-2 text-glow animate-pulse-glow tracking-tight">Secret Recipe</h2>
+            <p className="text-sm sm:text-base text-custom-text/80">Discover e-learning products from industry experts</p>
           </div>
           <Link
             href="/featured-courses"
             className="text-custom-text hover:text-cyber-green font-semibold transition-colors text-sm sm:text-base self-start sm:self-auto"
           >
-            View All Learnings →
+            View All Secret Recipes →
           </Link>
         </div>
 

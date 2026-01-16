@@ -13,7 +13,8 @@ interface Product {
   description: string;
   price: number;
   pricing_type: "one-off" | "hourly";
-  product_type?: "service" | "course" | "appointment";
+  product_type?: "service" | "e-learning" | "appointment";
+  e_learning_subtype?: "online-course" | "ebook" | "ai-prompt" | "other" | null;
   course_id?: string;
   appointment_slot_id?: string;
   stripe_product_id?: string | null;
@@ -67,7 +68,8 @@ export function ProductsManagement() {
     description: "",
     price: "",
     pricing_type: "one-off" as "one-off" | "hourly",
-    product_type: "appointment" as "course" | "appointment",
+    product_type: "appointment" as "e-learning" | "appointment",
+    e_learning_subtype: "" as "" | "online-course" | "ebook" | "ai-prompt" | "other",
     course_id: "",
     category: "",
     payment_method: "stripe" as "stripe" | "offline",
@@ -619,7 +621,7 @@ export function ProductsManagement() {
       // Check which products are courses and get their course_ids
       const courseProductMap: { [productId: string]: string } = {};
       products.forEach((p) => {
-        if (p.product_type === "course" && p.course_id) {
+        if (p.product_type === "e-learning" && p.course_id) {
           courseProductMap[p.id] = p.course_id;
         }
       });
@@ -745,7 +747,7 @@ export function ProductsManagement() {
       return;
     }
 
-    if (formData.product_type === "course" && !formData.category) {
+    if (formData.product_type === "e-learning" && !formData.category) {
       setError("Please select a category for your course");
       return;
     }
@@ -820,8 +822,8 @@ export function ProductsManagement() {
           productData.stripe_price_id = null;
         }
 
-        // If updating a course product, also update the course price, description, and category
-        if (editingProduct.product_type === "course" && editingProduct.course_id) {
+        // If updating an e-learning product, also update the course price, description, and category
+        if (editingProduct.product_type === "e-learning" && editingProduct.course_id) {
           const courseUpdateData: any = {};
           
           if (formData.price) {
@@ -903,8 +905,8 @@ export function ProductsManagement() {
         return; // Exit early, don't create new product
       }
 
-      if (formData.product_type === "course") {
-        // For course: Create course and product first, THEN create questionnaire linked to product
+      if (formData.product_type === "e-learning") {
+        // For e-learning: Create course and product first, THEN create questionnaire linked to product
         try {
           // Create course first
           const coursePrice = formData.price ? parseFloat(formData.price) || 0 : 0;
@@ -932,7 +934,8 @@ export function ProductsManagement() {
               expert_id: user.id,
               name: formData.name,
               description: formData.description,
-              product_type: "course",
+              product_type: "e-learning",
+              e_learning_subtype: formData.e_learning_subtype || null,
               course_id: newCourse.id,
               price: coursePrice,
               pricing_type: "one-off",
@@ -1223,8 +1226,8 @@ export function ProductsManagement() {
     let category = "";
     let coverImageUrl = "";
     
-    // If it's a course product, fetch the course category and cover image
-    if (product.product_type === "course" && product.course_id) {
+    // If it's an e-learning product, fetch the course category and cover image
+    if (product.product_type === "e-learning" && product.course_id) {
       try {
         const { data: courseData } = await supabase
           .from("courses")
@@ -1264,6 +1267,7 @@ export function ProductsManagement() {
       price: appointmentRate,
       pricing_type: product.pricing_type,
       product_type: (product.product_type === "service" ? "appointment" : product.product_type) || "appointment",
+      e_learning_subtype: product.e_learning_subtype || "",
       course_id: product.course_id || "",
       category: category,
       payment_method: product.payment_method || "stripe",
@@ -1532,10 +1536,11 @@ export function ProductsManagement() {
               <select
                 value={formData.product_type}
                 onChange={(e) => {
-                  const newType = e.target.value as "course" | "appointment";
+                  const newType = e.target.value as "e-learning" | "appointment";
                   setFormData({
                     ...formData,
                     product_type: newType,
+                    e_learning_subtype: newType === "e-learning" ? "" : "",
                     course_id: "",
                     price: "",
                   });
@@ -1544,15 +1549,38 @@ export function ProductsManagement() {
                 required
               >
                 <option value="appointment">1-on-1 Session</option>
-                <option value="course">Course</option>
+                <option value="e-learning">e-Learning</option>
               </select>
               <p className="text-xs text-custom-text/60 mt-1">
-                {formData.product_type === "course" && "Create a course with lessons. You can add lessons now or skip and add them later."}
+                {formData.product_type === "e-learning" && "Create an e-learning product with lessons. You can add lessons now or skip and add them later."}
                 {formData.product_type === "appointment" && "Create a 1-on-1 session service. After adding description, you'll set up appointment slots and pricing."}
               </p>
             </div>
 
-            {formData.product_type === "course" && (
+            {formData.product_type === "e-learning" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    e-Learning Sub-type *
+                  </label>
+                  <select
+                    value={formData.e_learning_subtype}
+                    onChange={(e) => setFormData({ ...formData, e_learning_subtype: e.target.value as "online-course" | "ebook" | "ai-prompt" | "other" })}
+                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                    required
+                  >
+                    <option value="">Select sub-type</option>
+                    <option value="online-course">Online Course</option>
+                    <option value="ebook">Ebook</option>
+                    <option value="ai-prompt">AI Prompt</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <p className="text-xs text-custom-text/60 mt-1">Categorize your e-learning product</p>
+                </div>
+              </>
+            )}
+
+            {formData.product_type === "e-learning" && (
               <>
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
@@ -1703,7 +1731,7 @@ export function ProductsManagement() {
               >
                 {editingProduct 
                   ? "Update Product" 
-                  : formData.product_type === "course" 
+                  : formData.product_type === "e-learning" 
                     ? "Next: Create Form" 
                     : "Next: Set Up Sessions"}
               </button>
@@ -2679,7 +2707,7 @@ export function ProductsManagement() {
                     >
                       View Form
                     </button>
-                    {product.product_type === "course" && product.course_id && (
+                    {product.product_type === "e-learning" && product.course_id && (
                       <button
                         onClick={async () => {
                           if (showMembersForProduct === product.id) {
@@ -2717,7 +2745,7 @@ export function ProductsManagement() {
                     </button>
                   </div>
                 </div>
-                {product.product_type === "course" && product.course_id && showMembersForProduct === product.id && (
+                {product.product_type === "e-learning" && product.course_id && showMembersForProduct === product.id && (
                   <div className="mt-4 pt-4 border-t border-cyber-green/30">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-lg font-semibold text-custom-text">Course Members</h4>

@@ -30,7 +30,7 @@ interface Product {
   description: string;
   price: number;
   pricing_type: "one-off" | "hourly";
-  product_type?: "course" | "appointment" | "service";
+  product_type?: "e-learning" | "appointment" | "service";
   course_id?: string;
 }
 
@@ -541,11 +541,11 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
               <div className="h-24 bg-dark-green-800/50 rounded-xl"></div>
             </div>
           </div>
-        ) : products.filter(p => p.product_type === "course").length > 0 ? (
+        ) : products.filter(p => p.product_type === "e-learning").length > 0 ? (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-4">Courses</h2>
+            <h2 className="text-xl font-bold text-custom-text mb-4">e-Learning</h2>
             <div className="space-y-4">
-              {products.filter(p => p.product_type === "course").map((product) => {
+              {products.filter(p => p.product_type === "e-learning").map((product) => {
                 const isExpanded = expandedProducts.has(product.id);
                 return (
                   <div
@@ -563,7 +563,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                         )}
                       </div>
                     </div>
-                    {user?.id !== expertId && product.product_type === "course" && product.course_id && (
+                    {user?.id !== expertId && product.product_type === "e-learning" && product.course_id && (
                       <div className="mt-4">
                         <CourseEnrollment
                           courseId={product.course_id}
@@ -581,17 +581,17 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           </div>
         ) : !loadingProducts ? (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-4">Courses</h2>
-            <p className="text-custom-text/70">No courses available yet.</p>
+            <h2 className="text-xl font-bold text-custom-text mb-4">e-Learning</h2>
+            <p className="text-custom-text/70">No e-learning products available yet.</p>
           </div>
         ) : null}
 
         {/* Other Products (Appointments/Services) Section - Hidden as requested */}
-        {false && !loadingProducts && products.filter(p => p.product_type !== "course").length > 0 && (
+        {false && !loadingProducts && products.filter(p => p.product_type !== "e-learning").length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-bold text-custom-text mb-4">Services & Products</h2>
             <div className="space-y-4">
-              {products.filter(p => p.product_type !== "course").map((product) => {
+              {products.filter(p => p.product_type !== "e-learning").map((product) => {
                 const isExpanded = expandedProducts.has(product.id);
                 const hasRegisteredInterest = false; // Could check this if needed
                 return (
