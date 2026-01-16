@@ -415,51 +415,59 @@ export default function FeaturedCoursesPage() {
               {Object.entries(coursesByCategory).map(([category, categoryCourses]) => (
                 <div key={category}>
                   <h2 className="text-2xl font-bold text-custom-text mb-4">{category}</h2>
-                  <div className="relative">
-                    <div className="overflow-x-auto scrollbar-hide pb-4">
-                      <div className="flex gap-4" style={{ width: 'max-content' }}>
-                        {categoryCourses.map((course) => (
-                          <Link
-                            key={course.id}
-                            href={`/courses/${course.id}`}
-                            className="group flex-shrink-0 w-48 sm:w-56 md:w-64 transition-transform hover:scale-105"
-                          >
-                            <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-dark-green-800/30 border border-cyber-green/30 group-hover:border-cyber-green transition-colors">
-                              {course.cover_image_url ? (
-                                <Image
-                                  src={course.cover_image_url}
-                                  alt={course.title}
-                                  fill
-                                  className="object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800 to-dark-green-900 p-4">
-                                  <span className="text-lg sm:text-xl md:text-2xl text-cyber-green font-bold text-center line-clamp-3">
-                                    {course.title}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div className="absolute bottom-0 left-0 right-0 p-4">
-                                  <h3 className="text-white font-bold text-lg mb-1 line-clamp-2">{course.title}</h3>
-                                  <p className="text-white/80 text-sm mb-2">{course.expert_name}</p>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-cyber-green font-semibold">
-                                      {course.price === 0 || !course.price ? "Free" : `$${course.price.toFixed(2)}`}
-                                    </span>
-                                    {course.category && (
-                                      <span className="text-xs text-white/60 bg-white/20 px-2 py-1 rounded">
-                                        {course.category}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    {categoryCourses.map((course) => (
+                      <div
+                        key={course.id}
+                        className="group"
+                      >
+                        <Link
+                          href={`/courses/${course.id}`}
+                          className="block h-full bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-5 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
+                        >
+                          <div className="flex items-center gap-3 mb-3">
+                            {course.expert_avatar_url ? (
+                              <Image
+                                src={course.expert_avatar_url}
+                                alt={`${course.expert_name}'s avatar`}
+                                width={40}
+                                height={40}
+                                className="rounded-full object-cover w-10 h-10 flex-shrink-0 border-2 border-cyber-green/50"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-sm font-bold flex-shrink-0 border-2 border-cyber-green/50">
+                                {course.expert_name.charAt(0).toUpperCase()}
                               </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-custom-text/70 truncate">by {course.expert_name}</p>
                             </div>
-                          </Link>
-                        ))}
+                          </div>
+                          <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
+                            {course.title}
+                          </h3>
+                          <div className="flex items-center justify-between mt-auto">
+                            <span className="text-sm sm:text-base font-bold text-cyber-green">
+                              {course.price === 0 || !course.price ? "Free" : `USD $${course.price.toFixed(2)}`}
+                            </span>
+                            {course.category && (
+                              <span className="text-xs text-custom-text/60 bg-dark-green-900/50 px-2 py-1 rounded border border-cyber-green/30">
+                                {course.category}
+                              </span>
+                            )}
+                          </div>
+                        </Link>
+                        {/* Description appears below tile on hover */}
+                        {course.description && (
+                          <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48">
+                            <div 
+                              className="text-xs sm:text-sm text-custom-text/70 line-clamp-3 product-preview"
+                              dangerouslySetInnerHTML={{ __html: course.description }}
+                            />
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               ))}
