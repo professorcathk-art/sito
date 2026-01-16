@@ -214,10 +214,10 @@ export function FeaturedCourses() {
             >
               <Link
                 href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
-                className="block bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl overflow-hidden hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
+                className="block bg-transparent backdrop-blur-sm border border-cyber-green/20 rounded-xl overflow-hidden hover:bg-cyber-green/5 hover:border-cyber-green/50 hover:shadow-[0_0_20px_rgba(0,255,136,0.2)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
               >
                 {/* Cover Image with 4:3 aspect ratio (shorter for landing page) */}
-                <div className="relative w-full aspect-[4/3] overflow-hidden bg-dark-green-900">
+                <div className="relative w-full aspect-[4/3] overflow-hidden bg-transparent rounded-t-xl">
                   {product.cover_image_url ? (
                     <Image
                       src={product.cover_image_url}
@@ -254,7 +254,7 @@ export function FeaturedCourses() {
                   )}
                 </div>
                 {/* Content below image */}
-                <div className="p-4 sm:p-5 flex flex-col flex-1">
+                <div className="p-4 sm:p-5 flex flex-col flex-1 bg-transparent">
                   <div className="flex items-center gap-3 mb-2">
                     {product.expert_avatar_url ? (
                       <Image
@@ -294,7 +294,7 @@ export function FeaturedCourses() {
               </Link>
               {/* Description appears below tile on hover */}
               {product.description && (
-                <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-10 bg-dark-green-900/95 backdrop-blur-sm border border-cyber-green/30 rounded-b-xl">
+                <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-10 bg-custom-bg/95 backdrop-blur-md border border-cyber-green/30 rounded-b-xl shadow-lg">
                   <div 
                     className="text-xs sm:text-sm text-custom-text/70 line-clamp-3 product-preview py-2"
                     dangerouslySetInnerHTML={{ __html: product.description }}
