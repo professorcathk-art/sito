@@ -25,10 +25,10 @@ export default function Home() {
         </p>
       </div>
       <HeroSection />
+      <FeaturedCourses />
       <FeaturedExperts />
       <FeaturedBlogPosts />
       <FeaturesSection />
-      <FeaturedCourses />
       <TestimonialsSection />
       <Footer />
     </main>

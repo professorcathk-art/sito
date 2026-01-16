@@ -15,6 +15,7 @@ interface Expert {
   id: string;
   name: string;
   title: string;
+  tagline?: string;
   category: string;
   bio: string;
   location: string;
@@ -76,6 +77,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
             id,
             name,
             title,
+            tagline,
             bio,
             avatar_url,
             website,
@@ -103,6 +105,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
             id: data.id,
             name: data.name || "Anonymous",
             title: data.title || "",
+            tagline: data.tagline || undefined,
             category: (data.categories as any)?.name || "",
             bio: data.bio || "",
             location: (data.countries as any)?.name || "",
@@ -476,7 +479,9 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                   </span>
                 )}
               </div>
-            <p className="text-xl text-custom-text/80 mb-2">{expert.title}</p>
+            {(expert.tagline || expert.title) && (
+              <p className="text-xl text-custom-text/80 mb-2">{expert.tagline || expert.title}</p>
+            )}
             <div className="flex items-center gap-4 text-custom-text/70">
               {expert.category && (
                 <span className="text-xs text-cyber-green bg-dark-green-900/50 px-2 py-1 rounded-full border border-cyber-green/30">
