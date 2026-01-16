@@ -77,23 +77,51 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
           Array.isArray(data.language_supported) && 
           data.language_supported.length > 0;
         
+        // Check phone_number - handle null, undefined, or empty string
+        const hasPhoneNumber = data?.phone_number && 
+          typeof data.phone_number === 'string' && 
+          data.phone_number.trim().length > 0;
+        
         const hasAllMandatoryFields = !!(
           data?.name &&
+          data?.name.trim().length > 0 &&
           data?.title &&
+          data?.title.trim().length > 0 &&
           data?.category_id &&
           data?.bio &&
+          data?.bio.trim().length > 0 &&
           data?.country_id &&
           hasLanguages &&
-          data?.phone_number &&
-          data.phone_number.trim().length > 0
+          hasPhoneNumber
         );
+        
+        // Debug logging (remove in production if needed)
+        if (!hasAllMandatoryFields && data) {
+          console.log("Profile completion check:", {
+            name: !!data.name,
+            nameValue: data.name,
+            title: !!data.title,
+            titleValue: data.title,
+            category_id: !!data.category_id,
+            bio: !!data.bio,
+            bioLength: data.bio?.trim().length,
+            country_id: !!data.country_id,
+            hasLanguages,
+            language_supported: data.language_supported,
+            hasPhoneNumber,
+            phone_number: data.phone_number
+          });
+        }
+        
         setProfileComplete(hasAllMandatoryFields);
       } catch (error) {
         console.error("Error checking admin/expert status:", error);
       }
     }
     checkAdminAndExpert();
-  }, [user, supabase]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Also check when pathname changes (e.g., after profile save)
+    // This ensures the sidebar updates when navigating after saving profile
+  }, [user, supabase, pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const menuItems: SidebarItem[] = [
     {
