@@ -1036,6 +1036,7 @@ export function ProductsManagement() {
             placeholder: "",
             required: false,
             options: "",
+            country_code: "+852",
           });
           
           // Store form data temporarily (don't create course yet)
@@ -1178,6 +1179,7 @@ export function ProductsManagement() {
             placeholder: "",
             required: false,
             options: "",
+            country_code: "+852",
           });
           
           // Store form data temporarily
@@ -2003,6 +2005,7 @@ export function ProductsManagement() {
                           placeholder: field.placeholder || "",
                           required: field.required,
                           options: field.options ? (Array.isArray(field.options) ? field.options.join(", ") : "") : "",
+                          country_code: (field as any).country_code || "+852",
                         });
                         setShowFieldForm(true);
                       }}
@@ -2268,6 +2271,7 @@ export function ProductsManagement() {
                       placeholder: "",
                       required: false,
                       options: "",
+                      country_code: "+852",
                     });
                   }}
                   className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
@@ -2818,7 +2822,7 @@ export function ProductsManagement() {
                         href={`/courses/manage`}
                         onClick={async () => {
                           // Store course ID in sessionStorage to auto-select it
-                          if (typeof window !== "undefined") {
+                          if (typeof window !== "undefined" && product.course_id) {
                             sessionStorage.setItem("selectedCourseId", product.course_id);
                           }
                         }}
