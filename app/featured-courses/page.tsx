@@ -20,6 +20,7 @@ interface Course {
   expert_name: string;
   expert_avatar_url?: string;
   course_id: string; // product course_id
+  e_learning_subtype?: "online-course" | "ebook" | "ai-prompt" | "other" | null;
 }
 
 export default function FeaturedCoursesPage() {
@@ -44,7 +45,8 @@ export default function FeaturedCoursesPage() {
             description,
             price,
             course_id,
-            expert_id
+            expert_id,
+            e_learning_subtype
           `)
           .eq("product_type", "e-learning")
           .order("created_at", { ascending: false });
@@ -113,6 +115,7 @@ export default function FeaturedCoursesPage() {
               expert_name: profile.name || "Expert",
               expert_avatar_url: profile.avatar_url || undefined,
               course_id: product.course_id,
+              e_learning_subtype: product.e_learning_subtype || null,
             };
           })
           .filter((item) => item !== null) as Course[];
@@ -442,6 +445,18 @@ export default function FeaturedCoursesPage() {
                                   </h3>
                                   <p className="text-xs text-custom-text/70">by {course.expert_name}</p>
                                 </div>
+                              </div>
+                            )}
+                            {/* E-learning subtype label */}
+                            {course.e_learning_subtype && (
+                              <div className="absolute top-2 right-2 z-10">
+                                <span className="bg-cyber-green/90 text-dark-green-900 text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
+                                  {course.e_learning_subtype === "online-course" ? "Online Course" :
+                                   course.e_learning_subtype === "ebook" ? "Ebook" :
+                                   course.e_learning_subtype === "ai-prompt" ? "AI Prompt" :
+                                   course.e_learning_subtype === "other" ? "Other" :
+                                   course.e_learning_subtype}
+                                </span>
                               </div>
                             )}
                           </div>

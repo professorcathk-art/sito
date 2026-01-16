@@ -16,6 +16,7 @@ interface Product {
   expert_avatar_url?: string;
   course_id?: string;
   cover_image_url?: string | null;
+  e_learning_subtype?: "online-course" | "ebook" | "ai-prompt" | "other" | null;
   created_at: string;
 }
 
@@ -43,6 +44,7 @@ export function FeaturedCourses() {
             created_at,
             product_type,
             course_id,
+            e_learning_subtype,
             courses!inner(id, published, cover_image_url)
           `)
           .eq("product_type", "e-learning")
@@ -107,6 +109,7 @@ export function FeaturedCourses() {
               expert_avatar_url: profile.avatar_url || undefined,
               course_id: product.course_id,
               cover_image_url: product.courses?.cover_image_url || null,
+              e_learning_subtype: product.e_learning_subtype || null,
               created_at: product.created_at,
             };
           })
@@ -194,6 +197,18 @@ export function FeaturedCourses() {
                         </h3>
                         <p className="text-xs text-custom-text/70">by {product.expert_name}</p>
                       </div>
+                    </div>
+                  )}
+                  {/* E-learning subtype label */}
+                  {product.e_learning_subtype && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <span className="bg-cyber-green/90 text-dark-green-900 text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
+                        {product.e_learning_subtype === "online-course" ? "Online Course" :
+                         product.e_learning_subtype === "ebook" ? "Ebook" :
+                         product.e_learning_subtype === "ai-prompt" ? "AI Prompt" :
+                         product.e_learning_subtype === "other" ? "Other" :
+                         product.e_learning_subtype}
+                      </span>
                     </div>
                   )}
                 </div>
