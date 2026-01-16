@@ -72,15 +72,20 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
         // Check if user has completed expert profile (has category_id and bio)
         setIsExpert(!!(data?.category_id && data?.bio && data?.name));
         // Check if profile is complete (all mandatory fields filled)
+        // Handle language_supported as array or null - check if it exists and has items
+        const hasLanguages = data?.language_supported && 
+          Array.isArray(data.language_supported) && 
+          data.language_supported.length > 0;
+        
         const hasAllMandatoryFields = !!(
           data?.name &&
           data?.title &&
           data?.category_id &&
           data?.bio &&
           data?.country_id &&
-          data?.language_supported &&
-          data?.language_supported.length > 0 &&
-          data?.phone_number
+          hasLanguages &&
+          data?.phone_number &&
+          data.phone_number.trim().length > 0
         );
         setProfileComplete(hasAllMandatoryFields);
       } catch (error) {
