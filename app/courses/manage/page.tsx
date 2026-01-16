@@ -58,7 +58,8 @@ export default function ManageCoursePage() {
     published: true, // Courses are always published from product page
     category: "",
   });
-  const [isRichTextMode, setIsRichTextMode] = useState(false);
+  const [isRichTextMode, setIsRichTextMode] = useState(true);
+  const [showDetailsEdit, setShowDetailsEdit] = useState(false);
   const [showAddMemberForm, setShowAddMemberForm] = useState(false);
   const [memberEmail, setMemberEmail] = useState("");
   const [enrollments, setEnrollments] = useState<any[]>([]);
@@ -143,6 +144,21 @@ export default function ManageCoursePage() {
       );
 
       setCourses(uniqueCourses);
+      
+      // Check if we should auto-select a course from sessionStorage after courses are loaded
+      if (typeof window !== "undefined") {
+        const courseId = sessionStorage.getItem("selectedCourseId");
+        if (courseId) {
+          sessionStorage.removeItem("selectedCourseId");
+          const course = uniqueCourses.find((c: Course) => c.id === courseId);
+          if (course) {
+            // Use setTimeout to ensure state is set before selecting
+            setTimeout(() => {
+              handleSelectCourse(course);
+            }, 100);
+          }
+        }
+      }
     } catch (err) {
       console.error("Error fetching courses:", err);
     } finally {
@@ -246,6 +262,7 @@ export default function ManageCoursePage() {
 
   const handleSelectCourse = async (course: Course) => {
     setSelectedCourse(course);
+    setShowDetailsEdit(false);
     setCourseForm({
       title: course.title,
       description: course.description || "",
@@ -521,10 +538,21 @@ export default function ManageCoursePage() {
 
               {/* Course Details - View/Edit based on ownership */}
               <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
-                <h2 className="text-2xl font-bold text-custom-text mb-6">Details</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-custom-text">Details</h2>
+                  {selectedCourse.expert_id === user?.id && !showDetailsEdit && (
+                    <button
+                      onClick={() => setShowDetailsEdit(true)}
+                      className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                    >
+                      Update Course Details
+                    </button>
+                  )}
+                </div>
                 {selectedCourse.expert_id === user?.id ? (
                   // Owner can edit
-                  <div className="space-y-4">
+                  showDetailsEdit ? (
+                    <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-custom-text mb-2">Title</label>
                       <input
@@ -578,11 +606,32 @@ export default function ManageCoursePage() {
                     </div>
                     <div className="flex gap-4">
                       <button
-                        onClick={handleSaveCourse}
+                        onClick={async () => {
+                          await handleSaveCourse();
+                          setShowDetailsEdit(false);
+                        }}
                         disabled={saving}
                         className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
                       >
                         {saving ? "Saving..." : "Save Details"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDetailsEdit(false);
+                          // Reset form to original values
+                          setCourseForm({
+                            title: selectedCourse.title,
+                            description: selectedCourse.description || "",
+                            coverImageUrl: selectedCourse.cover_image_url || "",
+                            price: selectedCourse.price.toString(),
+                            isFree: selectedCourse.is_free,
+                            published: true,
+                            category: selectedCourse.category || "",
+                          });
+                        }}
+                        className="px-6 py-3 border border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                      >
+                        Cancel
                       </button>
                       <button
                         onClick={async () => {
@@ -638,6 +687,46 @@ export default function ManageCoursePage() {
                       </button>
                     </div>
                   </div>
+                  ) : (
+                    // View-only mode for owner
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-custom-text/70 mb-2">Title</label>
+                        <p className="text-custom-text">{selectedCourse.title}</p>
+                      </div>
+                      {selectedCourse.description && (
+                        <div>
+                          <label className="block text-sm font-medium text-custom-text/70 mb-2">Description</label>
+                          <div 
+                            className="prose prose-invert prose-lg max-w-none blog-content text-custom-text/80"
+                            dangerouslySetInnerHTML={{ __html: selectedCourse.description }}
+                          />
+                        </div>
+                      )}
+                      {selectedCourse.cover_image_url && (
+                        <div>
+                          <label className="block text-sm font-medium text-custom-text/70 mb-2">Cover Image</label>
+                          <img
+                            src={selectedCourse.cover_image_url}
+                            alt={selectedCourse.title}
+                            className="w-full max-w-md rounded-lg"
+                          />
+                        </div>
+                      )}
+                      {selectedCourse.category && (
+                        <div>
+                          <label className="block text-sm font-medium text-custom-text/70 mb-2">Category</label>
+                          <p className="text-custom-text">{selectedCourse.category}</p>
+                        </div>
+                      )}
+                      <div>
+                        <label className="block text-sm font-medium text-custom-text/70 mb-2">Price</label>
+                        <p className="text-custom-text">
+                          {selectedCourse.is_free ? "Free" : `$${selectedCourse.price}`}
+                        </p>
+                      </div>
+                    </div>
+                  )
                 ) : (
                   // Non-owner view-only
                   <div className="space-y-4">
@@ -808,6 +897,10 @@ export default function ManageCoursePage() {
                               <RichTextEditor
                                 content={lessonForm.content}
                                 onChange={(newContent) => setLessonForm({ ...lessonForm, content: newContent })}
+                                onFileUpload={(fileUrl, fileName, fileType, fileSize) => {
+                                  console.log("File uploaded:", { fileUrl, fileName, fileType, fileSize });
+                                  // File is already inserted into content by RichTextEditor
+                                }}
                               />
                             ) : (
                               <textarea

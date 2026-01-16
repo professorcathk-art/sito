@@ -340,9 +340,10 @@ export function RichTextEditor({
             type="button"
             onClick={handleFileUpload}
             disabled={uploading || !onFileUpload}
-            className="px-3 py-1.5 rounded text-sm font-medium transition-colors bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800 disabled:opacity-50"
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors bg-cyber-green/20 text-cyber-green border-2 border-cyber-green/50 hover:bg-cyber-green/30 hover:border-cyber-green disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Upload attachment (PDF, DOC, ZIP, etc.)"
           >
-            📎
+            📎 Upload Attachment
           </button>
           <button
             type="button"

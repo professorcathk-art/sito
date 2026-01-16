@@ -43,7 +43,11 @@ export function ProfileSetupForm() {
     instagramUrl: "",
     listedOnMarketplace: false,
     avatarUrl: "",
+    customSlug: "",
   });
+  const [checkingSlug, setCheckingSlug] = useState(false);
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  const [slugError, setSlugError] = useState("");
   const [existingProfile, setExistingProfile] = useState<{ category_id?: string; bio?: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -116,6 +120,42 @@ export function ProfileSetupForm() {
     });
   };
 
+  const checkSlugAvailability = async (slug: string) => {
+    if (!slug || slug.trim().length < 3) {
+      setSlugAvailable(null);
+      setSlugError("");
+      return;
+    }
+
+    setCheckingSlug(true);
+    setSlugError("");
+    try {
+      const response = await fetch("/api/profile/check-slug", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: slug.trim() }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setSlugAvailable(data.available);
+        if (!data.available) {
+          setSlugError(data.message || "This slug is already taken");
+        } else {
+          setSlugError("");
+        }
+      } else {
+        setSlugAvailable(false);
+        setSlugError(data.error || "Error checking slug availability");
+      }
+    } catch (err: any) {
+      setSlugAvailable(false);
+      setSlugError("Failed to check slug availability");
+    } finally {
+      setCheckingSlug(false);
+    }
+  };
+
   // Fetch categories, countries, and existing profile
   useEffect(() => {
     async function fetchData() {
@@ -143,6 +183,7 @@ export function ProfileSetupForm() {
               language_supported,
               phone_number,
               avatar_url,
+              custom_slug,
               categories!profiles_category_id_fkey(name),
               countries(name)
             `)
@@ -175,6 +216,7 @@ export function ProfileSetupForm() {
             instagramUrl: (profile as any).instagram_url || "",
             listedOnMarketplace: profile.listed_on_marketplace || false,
             avatarUrl: profile.avatar_url || "",
+            customSlug: (profile as any).custom_slug || "",
           });
           if (profile.category_id && (profile.categories as any)?.name) {
             setCategorySearch((profile.categories as any).name);
@@ -425,6 +467,7 @@ export function ProfileSetupForm() {
           instagram_url: formData.instagramUrl || null,
           avatar_url: formData.avatarUrl || null,
           listed_on_marketplace: formData.listedOnMarketplace,
+          custom_slug: formData.customSlug.trim() || null,
           updated_at: new Date().toISOString(),
         }, { onConflict: "id" });
 
@@ -802,6 +845,56 @@ export function ProfileSetupForm() {
           </label>
         </div>
       </div>
+
+      {/* Custom Shortlink */}
+      {formData.listedOnMarketplace && (
+        <div>
+          <label htmlFor="customSlug" className="block text-sm font-medium text-custom-text mb-2">
+            Custom Shortlink (Optional)
+          </label>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm text-custom-text/70">sito.club/s/</span>
+                <input
+                  id="customSlug"
+                  name="customSlug"
+                  type="text"
+                  value={formData.customSlug}
+                  onChange={(e) => {
+                    const slug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+                    setFormData({ ...formData, customSlug: slug });
+                    if (slug.length >= 3) {
+                      checkSlugAvailability(slug);
+                    } else {
+                      setSlugAvailable(null);
+                      setSlugError("");
+                    }
+                  }}
+                  className="flex-1 px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
+                  placeholder="your-custom-slug"
+                  maxLength={50}
+                />
+              </div>
+              {checkingSlug && (
+                <p className="text-xs text-custom-text/60 mt-1">Checking availability...</p>
+              )}
+              {slugAvailable === true && formData.customSlug.length >= 3 && (
+                <p className="text-xs text-cyber-green mt-1">✓ Available! Your profile will be accessible at sito.club/s/{formData.customSlug}</p>
+              )}
+              {slugAvailable === false && (
+                <p className="text-xs text-red-400 mt-1">{slugError || "This slug is not available"}</p>
+              )}
+              {formData.customSlug && formData.customSlug.length < 3 && (
+                <p className="text-xs text-yellow-400 mt-1">Slug must be at least 3 characters</p>
+              )}
+              <p className="text-xs text-custom-text/60 mt-1">
+                Create a custom shortlink for your profile (e.g., sito.club/s/john-doe). Only lowercase letters, numbers, and hyphens allowed.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-4 pt-4">
         <button

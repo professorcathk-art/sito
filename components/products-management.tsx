@@ -109,11 +109,12 @@ export function ProductsManagement() {
   const [viewingFormFields, setViewingFormFields] = useState<any[]>([]);
   const [editingField, setEditingField] = useState<any | null>(null);
   const [fieldForm, setFieldForm] = useState({
-    field_type: "text" as "text" | "email" | "textarea" | "select" | "checkbox" | "radio",
+    field_type: "text" as "text" | "email" | "phone" | "select" | "checkbox" | "radio",
     label: "",
     placeholder: "",
     required: false,
     options: "",
+    country_code: "+852", // Default to Hong Kong
   });
   const [stripeAccountId, setStripeAccountId] = useState<string | null>(null);
   const [isProfileListed, setIsProfileListed] = useState<boolean | null>(null);
@@ -1521,7 +1522,7 @@ export function ProductsManagement() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-custom-text mb-2">
-                Title of E-learning Product *
+                Title of your product *
               </label>
               <input
                 type="text"
@@ -2064,19 +2065,46 @@ export function ProductsManagement() {
                   setQuestionnaireFields(questionnaireFields.map(f => f.id === editingField.id ? { ...f, ...fieldForm, options } : f));
                   setEditingField(null);
                 } else {
-                  // Add new field
-                  const newField = {
-                    questionnaire_id: currentQuestionnaireId,
-                    field_type: fieldForm.field_type,
-                    label: fieldForm.label,
-                    placeholder: fieldForm.placeholder || null,
-                    required: fieldForm.required,
-                    options: options && options.length > 0 ? options : null,
-                    order_index: questionnaireFields.length,
-                  };
-                  const { data, error } = await supabase.from("questionnaire_fields").insert(newField).select().single();
-                  if (error) throw error;
-                  setQuestionnaireFields([...questionnaireFields, data]);
+                  // Add new field(s)
+                  if (fieldForm.field_type === "phone") {
+                    // Create two fields: country code (select) and phone number (text)
+                    const countryCodeField = {
+                      questionnaire_id: currentQuestionnaireId,
+                      field_type: "select" as const,
+                      label: `${fieldForm.label} - Country Code`,
+                      placeholder: null,
+                      required: fieldForm.required,
+                      options: ["+852", "+1", "+44", "+86", "+81", "+82", "+65", "+60", "+66", "+61", "+64", "+91", "+49", "+33", "+39", "+34", "+31", "+32", "+41", "+46", "+47", "+45", "+358", "+351", "+353", "+7", "+971", "+966", "+55", "+52", "+27", "+20", "+234", "+62", "+63", "+84", "+886"],
+                      order_index: questionnaireFields.length,
+                    };
+                    const phoneNumberField = {
+                      questionnaire_id: currentQuestionnaireId,
+                      field_type: "text" as const,
+                      label: `${fieldForm.label} - Phone Number`,
+                      placeholder: fieldForm.placeholder || "Enter your phone number",
+                      required: fieldForm.required,
+                      options: null,
+                      order_index: questionnaireFields.length + 1,
+                    };
+                    const { data: data1, error: error1 } = await supabase.from("questionnaire_fields").insert(countryCodeField).select().single();
+                    if (error1) throw error1;
+                    const { data: data2, error: error2 } = await supabase.from("questionnaire_fields").insert(phoneNumberField).select().single();
+                    if (error2) throw error2;
+                    setQuestionnaireFields([...questionnaireFields, data1, data2]);
+                  } else {
+                    const newField = {
+                      questionnaire_id: currentQuestionnaireId,
+                      field_type: fieldForm.field_type,
+                      label: fieldForm.label,
+                      placeholder: fieldForm.placeholder || null,
+                      required: fieldForm.required,
+                      options: options && options.length > 0 ? options : null,
+                      order_index: questionnaireFields.length,
+                    };
+                    const { data, error } = await supabase.from("questionnaire_fields").insert(newField).select().single();
+                    if (error) throw error;
+                    setQuestionnaireFields([...questionnaireFields, data]);
+                  }
                 }
 
                 setFieldForm({
@@ -2085,6 +2113,7 @@ export function ProductsManagement() {
                   placeholder: "",
                   required: false,
                   options: "",
+                  country_code: "+852",
                 });
                 setShowFieldForm(false);
               } catch (err: any) {
@@ -2102,7 +2131,7 @@ export function ProductsManagement() {
                 >
                   <option value="text">Text</option>
                   <option value="email">Email</option>
-                  <option value="textarea">Textarea</option>
+                  <option value="phone">Phone Number</option>
                   <option value="select">Select</option>
                   <option value="radio">Radio</option>
                   <option value="checkbox">Checkbox</option>
@@ -2127,6 +2156,78 @@ export function ProductsManagement() {
                   className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
                 />
               </div>
+              {fieldForm.field_type === "phone" && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-custom-text mb-2">Country Code *</label>
+                    <select
+                      value={fieldForm.country_code || "+852"}
+                      onChange={(e) => setFieldForm({ ...fieldForm, country_code: e.target.value })}
+                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      required
+                    >
+                      <option value="+852">🇭🇰 Hong Kong (+852)</option>
+                      <option value="+1">🇺🇸 United States (+1)</option>
+                      <option value="+44">🇬🇧 United Kingdom (+44)</option>
+                      <option value="+86">🇨🇳 China (+86)</option>
+                      <option value="+81">🇯🇵 Japan (+81)</option>
+                      <option value="+82">🇰🇷 South Korea (+82)</option>
+                      <option value="+65">🇸🇬 Singapore (+65)</option>
+                      <option value="+60">🇲🇾 Malaysia (+60)</option>
+                      <option value="+66">🇹🇭 Thailand (+66)</option>
+                      <option value="+61">🇦🇺 Australia (+61)</option>
+                      <option value="+64">🇳🇿 New Zealand (+64)</option>
+                      <option value="+91">🇮🇳 India (+91)</option>
+                      <option value="+49">🇩🇪 Germany (+49)</option>
+                      <option value="+33">🇫🇷 France (+33)</option>
+                      <option value="+39">🇮🇹 Italy (+39)</option>
+                      <option value="+34">🇪🇸 Spain (+34)</option>
+                      <option value="+31">🇳🇱 Netherlands (+31)</option>
+                      <option value="+32">🇧🇪 Belgium (+32)</option>
+                      <option value="+41">🇨🇭 Switzerland (+41)</option>
+                      <option value="+46">🇸🇪 Sweden (+46)</option>
+                      <option value="+47">🇳🇴 Norway (+47)</option>
+                      <option value="+45">🇩🇰 Denmark (+45)</option>
+                      <option value="+358">🇫🇮 Finland (+358)</option>
+                      <option value="+351">🇵🇹 Portugal (+351)</option>
+                      <option value="+353">🇮🇪 Ireland (+353)</option>
+                      <option value="+7">🇷🇺 Russia (+7)</option>
+                      <option value="+971">🇦🇪 UAE (+971)</option>
+                      <option value="+966">🇸🇦 Saudi Arabia (+966)</option>
+                      <option value="+55">🇧🇷 Brazil (+55)</option>
+                      <option value="+52">🇲🇽 Mexico (+52)</option>
+                      <option value="+27">🇿🇦 South Africa (+27)</option>
+                      <option value="+20">🇪🇬 Egypt (+20)</option>
+                      <option value="+234">🇳🇬 Nigeria (+234)</option>
+                      <option value="+62">🇮🇩 Indonesia (+62)</option>
+                      <option value="+63">🇵🇭 Philippines (+63)</option>
+                      <option value="+84">🇻🇳 Vietnam (+84)</option>
+                      <option value="+886">🇹🇼 Taiwan (+886)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-custom-text mb-2">Phone Number Label *</label>
+                    <input
+                      type="text"
+                      value={fieldForm.label}
+                      onChange={(e) => setFieldForm({ ...fieldForm, label: e.target.value })}
+                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      placeholder="e.g., Phone Number, Mobile Number"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-custom-text mb-2">Placeholder</label>
+                    <input
+                      type="text"
+                      value={fieldForm.placeholder}
+                      onChange={(e) => setFieldForm({ ...fieldForm, placeholder: e.target.value })}
+                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      placeholder="e.g., Enter your phone number"
+                    />
+                  </div>
+                </div>
+              )}
               {(fieldForm.field_type === "select" || fieldForm.field_type === "radio" || fieldForm.field_type === "checkbox") && (
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">Options (comma-separated) *</label>
@@ -2419,7 +2520,7 @@ export function ProductsManagement() {
                 }}
                 className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
               >
-                Publish Course
+                Publish Product
               </button>
             ) : (
               <button
@@ -2637,7 +2738,7 @@ export function ProductsManagement() {
                 }}
                 className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
               >
-                {courseLessons.length === 0 ? "Skip & Publish Course" : "Publish Course"}
+                {courseLessons.length === 0 ? "Skip & Publish Product" : "Publish Product"}
               </button>
             </div>
           )}
@@ -2712,6 +2813,20 @@ export function ProductsManagement() {
                     >
                       View Form
                     </button>
+                    {product.product_type === "e-learning" && product.course_id && (
+                      <Link
+                        href={`/courses/manage`}
+                        onClick={async () => {
+                          // Store course ID in sessionStorage to auto-select it
+                          if (typeof window !== "undefined") {
+                            sessionStorage.setItem("selectedCourseId", product.course_id);
+                          }
+                        }}
+                        className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold border border-cyber-green rounded-lg hover:bg-cyber-green-light transition-colors text-sm inline-block text-center"
+                      >
+                        Set up e-Learnings
+                      </Link>
+                    )}
                     {product.product_type === "e-learning" && product.course_id && (
                       <button
                         onClick={async () => {

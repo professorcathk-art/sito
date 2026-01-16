@@ -2,7 +2,7 @@
 
 ## Your Webhook
 
-**URL:** `https://api.vercel.com/v1/integrations/deploy/prj_E1V9HD5deKyQsy6nSD8ATB3tBNwz/NEaIHTLj2n`
+**URL:** `https://api.vercel.com/v1/integrations/deploy/prj_E1V9HD5deKyQsy6nSD8ATB3tBNwz/QpXCddC4Rj`
 
 **Project ID:** `prj_E1V9HD5deKyQsy6nSD8ATB3tBNwz`
 
@@ -23,7 +23,7 @@ This is a **Deployment Hook** that allows you to trigger deployments via API cal
 **Trigger deployment via API:**
 
 ```bash
-curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_E1V9HD5deKyQsy6nSD8ATB3tBNwz/NEaIHTLj2n
+curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_E1V9HD5deKyQsy6nSD8ATB3tBNwz/QpXCddC4Rj
 ```
 
 **Or with authentication:**
@@ -31,7 +31,7 @@ curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_E1V9HD5deKyQsy6nS
 ```bash
 curl -X POST \
   -H "Authorization: Bearer YOUR_VERCEL_TOKEN" \
-  https://api.vercel.com/v1/integrations/deploy/prj_E1V9HD5deKyQsy6nSD8ATB3tBNwz/NEaIHTLj2n
+  https://api.vercel.com/v1/integrations/deploy/prj_E1V9HD5deKyQsy6nSD8ATB3tBNwz/QpXCddC4Rj
 ```
 
 ### When to Use:
