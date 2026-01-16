@@ -423,38 +423,61 @@ export default function FeaturedCoursesPage() {
                       >
                         <Link
                           href={`/courses/${course.id}`}
-                          className="block h-full bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-5 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
+                          className="block bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl overflow-hidden hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
                         >
-                          <div className="flex items-center gap-3 mb-3">
-                            {course.expert_avatar_url ? (
+                          {/* Cover Image with 4:5 aspect ratio */}
+                          <div className="relative w-full aspect-[4/5] overflow-hidden bg-dark-green-900">
+                            {course.cover_image_url ? (
                               <Image
-                                src={course.expert_avatar_url}
-                                alt={`${course.expert_name}'s avatar`}
-                                width={40}
-                                height={40}
-                                className="rounded-full object-cover w-10 h-10 flex-shrink-0 border-2 border-cyber-green/50"
+                                src={course.cover_image_url}
+                                alt={course.title}
+                                fill
+                                className="object-cover"
                               />
                             ) : (
-                              <div className="w-10 h-10 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-sm font-bold flex-shrink-0 border-2 border-cyber-green/50">
-                                {course.expert_name.charAt(0).toUpperCase()}
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800 to-dark-green-900 p-4">
+                                <div className="text-center">
+                                  <h3 className="text-lg sm:text-xl text-cyber-green font-bold line-clamp-3 mb-2">
+                                    {course.title}
+                                  </h3>
+                                  <p className="text-xs text-custom-text/70">by {course.expert_name}</p>
+                                </div>
                               </div>
                             )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs text-custom-text/70 truncate">by {course.expert_name}</p>
-                            </div>
                           </div>
-                          <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
-                            {course.title}
-                          </h3>
-                          <div className="flex items-center justify-between mt-auto">
-                            <span className="text-sm sm:text-base font-bold text-cyber-green">
-                              {course.price === 0 || !course.price ? "Free" : `USD $${course.price.toFixed(2)}`}
-                            </span>
-                            {course.category && (
-                              <span className="text-xs text-custom-text/60 bg-dark-green-900/50 px-2 py-1 rounded border border-cyber-green/30">
-                                {course.category}
+                          {/* Content below image */}
+                          <div className="p-4 sm:p-5 flex flex-col flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              {course.expert_avatar_url ? (
+                                <Image
+                                  src={course.expert_avatar_url}
+                                  alt={`${course.expert_name}'s avatar`}
+                                  width={32}
+                                  height={32}
+                                  className="rounded-full object-cover w-8 h-8 flex-shrink-0 border-2 border-cyber-green/50"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-xs font-bold flex-shrink-0 border-2 border-cyber-green/50">
+                                  {course.expert_name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-custom-text/70 truncate">by {course.expert_name}</p>
+                              </div>
+                            </div>
+                            <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
+                              {course.title}
+                            </h3>
+                            <div className="flex items-center justify-between mt-auto">
+                              <span className="text-sm sm:text-base font-bold text-cyber-green">
+                                {course.price === 0 || !course.price ? "Free" : `USD $${course.price.toFixed(2)}`}
                               </span>
-                            )}
+                              {course.category && (
+                                <span className="text-xs text-custom-text/60 bg-dark-green-900/50 px-2 py-1 rounded border border-cyber-green/30">
+                                  {course.category}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </Link>
                         {/* Description appears below tile on hover */}

@@ -15,6 +15,7 @@ interface Product {
   expert_name: string;
   expert_avatar_url?: string;
   course_id?: string;
+  cover_image_url?: string | null;
   created_at: string;
 }
 
@@ -42,7 +43,7 @@ export function FeaturedCourses() {
             created_at,
             product_type,
             course_id,
-            courses!inner(id, published)
+            courses!inner(id, published, cover_image_url)
           `)
           .eq("product_type", "e-learning")
           .not("course_id", "is", null)
@@ -105,6 +106,7 @@ export function FeaturedCourses() {
               expert_name: profile.name || "Anonymous Expert",
               expert_avatar_url: profile.avatar_url || undefined,
               course_id: product.course_id,
+              cover_image_url: product.courses?.cover_image_url || null,
               created_at: product.created_at,
             };
           })
@@ -173,42 +175,65 @@ export function FeaturedCourses() {
             >
               <Link
                 href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
-                className="block h-full bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-5 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
+                className="block bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl overflow-hidden hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  {product.expert_avatar_url ? (
+                {/* Cover Image with 4:5 aspect ratio */}
+                <div className="relative w-full aspect-[4/5] overflow-hidden bg-dark-green-900">
+                  {product.cover_image_url ? (
                     <Image
-                      src={product.expert_avatar_url}
-                      alt={`${product.expert_name}'s avatar`}
-                      width={40}
-                      height={40}
-                      className="rounded-full object-cover w-10 h-10 flex-shrink-0 border-2 border-cyber-green/50"
+                      src={product.cover_image_url}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-sm font-bold flex-shrink-0 border-2 border-cyber-green/50">
-                      {getInitials(product.expert_name)}
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800 to-dark-green-900 p-4">
+                      <div className="text-center">
+                        <h3 className="text-lg sm:text-xl text-cyber-green font-bold line-clamp-3 mb-2">
+                          {product.name}
+                        </h3>
+                        <p className="text-xs text-custom-text/70">by {product.expert_name}</p>
+                      </div>
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-custom-text/70 truncate">by {product.expert_name}</p>
-                  </div>
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
-                  {product.name}
-                </h3>
-                <div className="flex items-center justify-between mt-auto">
-                  <span className="text-sm sm:text-base font-bold text-cyber-green">
-                    {product.price === 0 || !product.price ? (
-                      "Free"
+                {/* Content below image */}
+                <div className="p-4 sm:p-5 flex flex-col flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    {product.expert_avatar_url ? (
+                      <Image
+                        src={product.expert_avatar_url}
+                        alt={`${product.expert_name}'s avatar`}
+                        width={32}
+                        height={32}
+                        className="rounded-full object-cover w-8 h-8 flex-shrink-0 border-2 border-cyber-green/50"
+                      />
                     ) : (
-                      `USD $${product.price.toFixed(2)} ${product.pricing_type === "hourly" ? "/hr" : ""}`
+                      <div className="w-8 h-8 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-xs font-bold flex-shrink-0 border-2 border-cyber-green/50">
+                        {getInitials(product.expert_name)}
+                      </div>
                     )}
-                  </span>
-                  {product.price > 0 && (
-                    <span className="text-xs text-custom-text/60">
-                      {product.pricing_type === "hourly" ? "Hourly" : "One-time"}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-custom-text/70 truncate">by {product.expert_name}</p>
+                    </div>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
+                    {product.name}
+                  </h3>
+                  <div className="flex items-center justify-between mt-auto">
+                    <span className="text-sm sm:text-base font-bold text-cyber-green">
+                      {product.price === 0 || !product.price ? (
+                        "Free"
+                      ) : (
+                        `USD $${product.price.toFixed(2)} ${product.pricing_type === "hourly" ? "/hr" : ""}`
+                      )}
                     </span>
-                  )}
+                    {product.price > 0 && (
+                      <span className="text-xs text-custom-text/60">
+                        {product.pricing_type === "hourly" ? "Hourly" : "One-time"}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </Link>
               {/* Description appears below tile on hover */}
