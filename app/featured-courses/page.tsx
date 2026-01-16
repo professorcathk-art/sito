@@ -458,7 +458,7 @@ export default function FeaturedCoursesPage() {
                     {categoryCourses.map((course) => (
                       <div
                         key={course.id}
-                        className="group mb-16 sm:mb-20 relative"
+                        className="group mb-24 sm:mb-20 lg:mb-16 relative"
                       >
                         <Link
                           href={`/courses/${course.id}`}
@@ -538,7 +538,7 @@ export default function FeaturedCoursesPage() {
                         </Link>
                         {/* Description appears below tile on hover */}
                         {course.description && (
-                          <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-10 bg-custom-bg/95 backdrop-blur-md border border-cyber-green/30 rounded-b-xl shadow-lg">
+                          <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-20 bg-custom-bg/95 backdrop-blur-md border border-cyber-green/30 rounded-b-xl shadow-lg">
                             <div 
                               className="text-xs sm:text-sm text-custom-text/70 line-clamp-3 product-preview py-2"
                               dangerouslySetInnerHTML={{ __html: course.description }}
