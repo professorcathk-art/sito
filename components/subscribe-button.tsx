@@ -116,11 +116,11 @@ export function SubscribeButton({ expertId, expertName }: SubscribeButtonProps) 
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <>
       <button
         onClick={handleSubscribe}
         disabled={subscribing || user?.id === expertId}
-        className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+        className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm whitespace-nowrap ${
           isSubscribed
             ? "bg-dark-green-800/50 border border-cyber-green/30 text-cyber-green hover:bg-dark-green-800/70"
             : "bg-cyber-green text-dark-green-900 hover:bg-cyber-green-light"
@@ -132,10 +132,10 @@ export function SubscribeButton({ expertId, expertName }: SubscribeButtonProps) 
           ? "✓ Subscribed"
           : "Subscribe"}
       </button>
-      <span className="text-custom-text/70 text-sm">
+      <span className="text-custom-text/70 text-sm hidden sm:inline">
         {subscriberCount} {subscriberCount === 1 ? "subscriber" : "subscribers"}
       </span>
-    </div>
+    </>
   );
 }
 

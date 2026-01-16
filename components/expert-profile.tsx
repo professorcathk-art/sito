@@ -18,6 +18,7 @@ interface Expert {
   category: string;
   bio: string;
   location: string;
+  avatar_url?: string;
   website?: string;
   linkedin?: string;
   instagram_url?: string;
@@ -61,6 +62,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [questionnaireId, setQuestionnaireId] = useState<string | null>(null);
   const [currentProductForInterest, setCurrentProductForInterest] = useState<string | null>(null);
+  const [hasBlogPosts, setHasBlogPosts] = useState<boolean | null>(null);
   const supabase = createClient();
   const { user } = useAuth();
 
@@ -75,6 +77,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
             name,
             title,
             bio,
+            avatar_url,
             website,
             linkedin,
             instagram_url,
@@ -103,6 +106,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
             category: (data.categories as any)?.name || "",
             bio: data.bio || "",
             location: (data.countries as any)?.name || "",
+            avatar_url: data.avatar_url || undefined,
             website: data.website || undefined,
             linkedin: data.linkedin || undefined,
             instagram_url: data.instagram_url || undefined,
@@ -123,6 +127,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
       fetchExpert();
       fetchProducts();
       fetchAppointmentSlots();
+      checkBlogPosts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expertId, supabase, user]);
@@ -144,6 +149,24 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
       console.error("Error fetching appointment slots:", err);
     } finally {
       setLoadingSlots(false);
+    }
+  };
+
+  const checkBlogPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("id", { count: "exact", head: true })
+        .eq("expert_id", expertId)
+        .eq("access_level", "public")
+        .not("published_at", "is", null)
+        .limit(1);
+
+      if (error) throw error;
+      setHasBlogPosts((data?.length || 0) > 0);
+    } catch (err) {
+      console.error("Error checking blog posts:", err);
+      setHasBlogPosts(false);
     }
   };
 
@@ -436,15 +459,23 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
       <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8">
         <div className="flex items-start justify-between mb-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-custom-text">{expert.name}</h1>
-              {expert.verified && (
-                <span className="text-cyber-green text-xl" title="Verified Expert">
-                  ✓
-                </span>
-              )}
-            </div>
+          <div className="flex items-start gap-4 flex-1">
+            {expert.avatar_url && (
+              <img
+                src={expert.avatar_url}
+                alt={expert.name}
+                className="w-20 h-20 rounded-full object-cover border-2 border-cyber-green/50 flex-shrink-0"
+              />
+            )}
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold text-custom-text">{expert.name}</h1>
+                {expert.verified && (
+                  <span className="text-cyber-green text-xl" title="Verified Expert">
+                    ✓
+                  </span>
+                )}
+              </div>
             <p className="text-xl text-custom-text/80 mb-2">{expert.title}</p>
             <div className="flex items-center gap-4 text-custom-text/70">
               {expert.category && (
@@ -454,6 +485,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
               )}
               {expert.location && <span>{expert.location}</span>}
             </div>
+            </div>
           </div>
         </div>
 
@@ -462,7 +494,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           <p className="text-custom-text/90 leading-relaxed">{expert.bio}</p>
         </div>
 
-        {/* 1-on-1 Timeslots Section - Show View Button Only */}
+        {/* 1-on-1 Timeslots Section - Show View Button Only if slots exist */}
         {appointmentSlots.length > 0 && user && user.id !== expert.id && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
@@ -474,18 +506,6 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                 View Available Timeslots
               </Link>
             </div>
-          </div>
-        )}
-
-        {/* Book Appointment Button - Show when no slots available */}
-        {user && user.id !== expert.id && appointmentSlots.length === 0 && (
-          <div className="mb-6">
-            <Link
-              href={`/appointments/book/${expert.id}`}
-              className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
-            >
-              View Available Timeslots
-            </Link>
           </div>
         )}
 
@@ -527,11 +547,13 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           </div>
         )}
 
-        {/* Blog Posts Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-custom-text mb-4">Blog Posts</h2>
-          <BlogPostsList expertId={expertId} limit={6} />
-        </div>
+        {/* Blog Posts Section - Only show if blog posts exist */}
+        {hasBlogPosts && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-custom-text mb-4">Blog Posts</h2>
+            <BlogPostsList expertId={expertId} limit={6} />
+          </div>
+        )}
 
         {/* Courses Section - Show only course products */}
         {loadingProducts ? (
@@ -543,7 +565,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           </div>
         ) : products.filter(p => p.product_type === "e-learning").length > 0 ? (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-4">e-Learning</h2>
+            <h2 className="text-xl font-bold text-custom-text mb-4">Secret Recipe</h2>
             <div className="space-y-4">
               {products.filter(p => p.product_type === "e-learning").map((product) => {
                 const isExpanded = expandedProducts.has(product.id);
@@ -581,7 +603,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           </div>
         ) : !loadingProducts ? (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-4">e-Learning</h2>
+            <h2 className="text-xl font-bold text-custom-text mb-4">Secret Recipe</h2>
             <p className="text-custom-text/70">No e-learning products available yet.</p>
           </div>
         ) : null}
@@ -683,25 +705,22 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
           </div>
         )}
 
-        {/* Subscribe Button */}
+        {/* Action Buttons - Subscribe, Send Message, Connect */}
         {user && user.id !== expert.id && (
-          <div className="mb-6 pt-6 border-t border-cyber-green/30">
-            <SubscribeButton expertId={expert.id} expertName={expert.name} />
-          </div>
-        )}
-
-        <div className="flex gap-4 pt-6 border-t border-cyber-green/30">
-          <Link
-            href={`/messages?expert=${expert.id}`}
-            className="flex-1 bg-cyber-green text-custom-text py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors text-center"
-          >
-            Send Message
-          </Link>
-          {user && user.id !== expert.id && (
+          <div className="flex items-center gap-3 pt-6 border-t border-cyber-green/30 flex-wrap">
+            <div className="flex items-center gap-2">
+              <SubscribeButton expertId={expert.id} expertName={expert.name} />
+            </div>
+            <Link
+              href={`/messages?expert=${expert.id}`}
+              className="px-4 py-2 bg-cyber-green text-custom-text rounded-lg font-semibold hover:bg-cyber-green-light transition-colors text-sm whitespace-nowrap"
+            >
+              Send Message
+            </Link>
             <button
               onClick={handleConnect}
               disabled={connecting || connectionStatus !== "none"}
-              className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+              className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm whitespace-nowrap ${
                 connectionStatus === "pending"
                   ? "border border-cyber-green/50 text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
                   : connectionStatus === "accepted"
@@ -717,8 +736,8 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                 ? "Connected"
                 : "Connect"}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Questionnaire Form Modal for Appointments */}
