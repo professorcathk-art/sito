@@ -173,7 +173,7 @@ export function FeaturedCourses() {
             >
               <Link
                 href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
-                className="block bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-5 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02]"
+                className="block h-full bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-5 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
               >
                 <div className="flex items-center gap-3 mb-3">
                   {product.expert_avatar_url ? (
@@ -196,7 +196,7 @@ export function FeaturedCourses() {
                 <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
                   {product.name}
                 </h3>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mt-auto">
                   <span className="text-sm sm:text-base font-bold text-cyber-green">
                     {product.price === 0 || !product.price ? (
                       "Free"

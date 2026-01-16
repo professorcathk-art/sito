@@ -21,6 +21,8 @@ interface Product {
   stripe_price_id?: string | null;
   payment_method?: "stripe" | "offline" | null;
   contact_email?: string | null;
+  contact_url?: string | null;
+  contact_type?: "email" | "url" | null;
   created_at: string;
 }
 
@@ -62,6 +64,8 @@ export function ProductsManagement() {
     category: string;
     payment_method: "stripe" | "offline";
     contact_email: string;
+    contact_url?: string;
+    contact_type?: "email" | "url";
   } | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -74,6 +78,8 @@ export function ProductsManagement() {
     category: "",
     payment_method: "stripe" as "stripe" | "offline",
     contact_email: "",
+    contact_url: "",
+    contact_type: "email" as "email" | "url",
     coverImageUrl: "",
   });
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -781,10 +787,11 @@ export function ProductsManagement() {
           productData.price = newPrice;
         }
 
-        // Update payment method and contact email
+        // Update payment method and contact email/URL
         productData.payment_method = formData.payment_method || "stripe";
         if (formData.payment_method === "offline") {
-          productData.contact_email = formData.contact_email || null;
+          // Store email or URL in contact_email field
+          productData.contact_email = formData.contact_type === "url" ? formData.contact_url : formData.contact_email || null;
           // Clear Stripe IDs if switching to offline
           if (editingProduct.stripe_product_id) {
             productData.stripe_product_id = null;
@@ -896,6 +903,8 @@ export function ProductsManagement() {
           category: "",
           payment_method: "stripe",
           contact_email: "",
+          contact_url: "",
+          contact_type: "email",
           coverImageUrl: "",
         });
         setShowAddForm(false);
@@ -942,7 +951,7 @@ export function ProductsManagement() {
               price: coursePrice,
               pricing_type: "one-off",
               payment_method: formData.payment_method || "stripe",
-              contact_email: formData.payment_method === "offline" ? formData.contact_email : null,
+              contact_email: formData.payment_method === "offline" ? (formData.contact_type === "url" ? formData.contact_url : formData.contact_email) : null,
             })
             .select()
             .single();
@@ -1047,7 +1056,7 @@ export function ProductsManagement() {
             price: formData.price,
             category: formData.category || "",
             payment_method: formData.payment_method,
-            contact_email: formData.contact_email || "",
+            contact_email: formData.contact_type === "url" ? formData.contact_url : formData.contact_email || "",
           });
           setShowAddForm(false);
           
@@ -1083,7 +1092,7 @@ export function ProductsManagement() {
               pricing_type: formData.pricing_type || "one-off",
               product_type: "appointment",
               payment_method: formData.payment_method || "stripe",
-              contact_email: formData.contact_email || null,
+              contact_email: formData.payment_method === "offline" ? (formData.contact_type === "url" ? formData.contact_url : formData.contact_email) : null,
             })
             .select()
             .single();
@@ -1190,7 +1199,7 @@ export function ProductsManagement() {
             price: "0", // Price will be set in appointment form
             category: "",
             payment_method: formData.payment_method,
-            contact_email: formData.contact_email || "",
+            contact_email: formData.contact_type === "url" ? formData.contact_url : formData.contact_email || "",
           });
           setShowAddForm(false);
           
@@ -1213,6 +1222,8 @@ export function ProductsManagement() {
         category: "",
         payment_method: "stripe",
         contact_email: "",
+        contact_url: "",
+        contact_type: "email",
         coverImageUrl: "",
       });
       setShowAddForm(false);
@@ -1277,6 +1288,8 @@ export function ProductsManagement() {
       category: category,
       payment_method: product.payment_method || "stripe",
       contact_email: product.contact_email || "",
+      contact_url: product.contact_email?.startsWith("http") ? product.contact_email : "",
+      contact_type: product.contact_email?.startsWith("http") ? "url" as "email" | "url" : "email" as "email" | "url",
       coverImageUrl: coverImageUrl,
     });
     setShowAddForm(true);
@@ -1470,6 +1483,8 @@ export function ProductsManagement() {
                 category: "",
                 payment_method: "stripe",
                 contact_email: "",
+                contact_url: "",
+                contact_type: "email",
                 coverImageUrl: "",
               });
             }}
@@ -1677,7 +1692,9 @@ export function ProductsManagement() {
                       setFormData({
                         ...formData,
                         payment_method: method,
-                        contact_email: method === "offline" && !formData.contact_email ? (user?.email || "") : formData.contact_email,
+                        contact_email: method === "offline" && !formData.contact_email && !formData.contact_url ? (user?.email || "") : formData.contact_email,
+                        contact_url: method === "offline" && formData.contact_type === "url" ? formData.contact_url : "",
+                        contact_type: method === "offline" ? (formData.contact_type || "email") : "email",
                       });
                     }}
                     className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
@@ -1693,19 +1710,53 @@ export function ProductsManagement() {
                 </div>
 
                 {formData.payment_method === "offline" && (
-                  <div>
-                    <label className="block text-sm font-medium text-custom-text mb-2">
-                      Contact Email *
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.contact_email}
-                      onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
-                      placeholder="your@email.com"
-                      required
-                    />
-                    <p className="text-xs text-custom-text/60 mt-1">This email will be shown to users for offline payment transactions</p>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-custom-text mb-2">
+                        Contact Type *
+                      </label>
+                      <select
+                        value={formData.contact_type}
+                        onChange={(e) => setFormData({ ...formData, contact_type: e.target.value as "email" | "url", contact_email: "", contact_url: "" })}
+                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                        required
+                      >
+                        <option value="email">Email</option>
+                        <option value="url">URL</option>
+                      </select>
+                    </div>
+                    {formData.contact_type === "email" && (
+                      <div>
+                        <label className="block text-sm font-medium text-custom-text mb-2">
+                          Contact Email *
+                        </label>
+                        <input
+                          type="email"
+                          value={formData.contact_email}
+                          onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                          className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                          placeholder="your@email.com"
+                          required
+                        />
+                        <p className="text-xs text-custom-text/60 mt-1">This email will be shown to users for offline payment transactions</p>
+                      </div>
+                    )}
+                    {formData.contact_type === "url" && (
+                      <div>
+                        <label className="block text-sm font-medium text-custom-text mb-2">
+                          Contact URL *
+                        </label>
+                        <input
+                          type="url"
+                          value={formData.contact_url}
+                          onChange={(e) => setFormData({ ...formData, contact_url: e.target.value })}
+                          className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                          placeholder="https://example.com/contact"
+                          required
+                        />
+                        <p className="text-xs text-custom-text/60 mt-1">This URL will be shown to users for offline payment transactions</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1765,6 +1816,8 @@ export function ProductsManagement() {
                     category: "",
                     payment_method: "stripe",
                     contact_email: "",
+                    contact_url: "",
+                    contact_type: "email",
                     coverImageUrl: "",
                   });
                 }}
@@ -2513,6 +2566,8 @@ export function ProductsManagement() {
                       category: "",
                       payment_method: "stripe",
                       contact_email: "",
+                      contact_url: "",
+                      contact_type: "email",
                       coverImageUrl: "",
                     });
                     fetchProducts();

@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { RubiksCube } from "@/components/rubiks-cube";
+import { useAuth } from "@/contexts/auth-context";
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const { user } = useAuth();
 
   return (
     <section
@@ -34,14 +36,16 @@ export function HeroSection() {
             <p className="text-sm sm:text-base md:text-lg text-custom-text/70 mb-6 sm:mb-8 lg:mb-10 leading-relaxed animate-fade-in-up px-2 sm:px-0" style={{ animationDelay: '0.25s' }}>
               Discover experts who solve your specific problems
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start animate-fade-in-up px-2 sm:px-0" style={{ animationDelay: '0.4s' }}>
-              <Link
-                href="/register"
-                className="bg-cyber-green text-dark-green-900 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-bold border-2 border-cyber-green hover:bg-cyber-green-light hover:border-cyber-green transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-[0_0_20px_rgba(0,255,136,0.4)] text-center"
-              >
-                Start Now for Free
-              </Link>
-            </div>
+            {!user && (
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start animate-fade-in-up px-2 sm:px-0" style={{ animationDelay: '0.4s' }}>
+                <Link
+                  href="/register"
+                  className="bg-cyber-green text-dark-green-900 px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-bold border-2 border-cyber-green hover:bg-cyber-green-light hover:border-cyber-green transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-[0_0_20px_rgba(0,255,136,0.4)] text-center"
+                >
+                  Start Now for Free
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Right side - Rubik's Cube */}

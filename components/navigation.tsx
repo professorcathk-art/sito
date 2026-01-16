@@ -118,7 +118,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                 <div className="text-custom-text/80 animate-pulse text-sm lg:text-base">Loading...</div>
               ) : user ? (
                 <Link
-                  href="/dashboard"
+                  href="/profile"
                   className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
                 >
                   Dashboard

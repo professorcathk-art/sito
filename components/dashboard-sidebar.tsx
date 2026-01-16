@@ -57,18 +57,32 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
 
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const [profileComplete, setProfileComplete] = useState(false);
+
   useEffect(() => {
     async function checkAdminAndExpert() {
       if (!user) return;
       try {
         const { data } = await supabase
           .from("profiles")
-          .select("is_admin, category_id, bio, name")
+          .select("is_admin, category_id, bio, name, title, country_id, language_supported, phone_number")
           .eq("id", user.id)
           .single();
         setIsAdmin(data?.is_admin === true);
         // Check if user has completed expert profile (has category_id and bio)
         setIsExpert(!!(data?.category_id && data?.bio && data?.name));
+        // Check if profile is complete (all mandatory fields filled)
+        const hasAllMandatoryFields = !!(
+          data?.name &&
+          data?.title &&
+          data?.category_id &&
+          data?.bio &&
+          data?.country_id &&
+          data?.language_supported &&
+          data?.language_supported.length > 0 &&
+          data?.phone_number
+        );
+        setProfileComplete(hasAllMandatoryFields);
       } catch (error) {
         console.error("Error checking admin/expert status:", error);
       }
@@ -82,7 +96,7 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       href: "/profile",
       icon: "👤",
     },
-    ...(isExpert
+    ...(isExpert && profileComplete
       ? [
           {
             name: "Products",
