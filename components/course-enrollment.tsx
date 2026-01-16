@@ -683,7 +683,7 @@ export function CourseEnrollment({
           <div className="bg-dark-green-800/95 border border-cyber-green/50 rounded-lg p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-custom-text">
-                {questionnaireType === "interest" ? "Register Interest" : "Enroll in Course"}
+                {questionnaireType === "interest" ? "Register Interest" : "Get it now"}
               </h3>
               <button
                 onClick={() => setShowQuestionnaire(false)}
@@ -716,7 +716,7 @@ export function CourseEnrollment({
             disabled
             className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg"
           >
-            {isFree ? "Enroll (Free)" : `Enroll ($${coursePrice})`}
+            {isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
           </button>
         </div>
       </>
@@ -776,7 +776,7 @@ export function CourseEnrollment({
           disabled={processing}
           className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
         >
-          {processing ? "Processing..." : isFree ? "Enroll (Free)" : `Enroll ($${coursePrice})`}
+          {processing ? "Processing..." : isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
         </button>
       </div>
     </>

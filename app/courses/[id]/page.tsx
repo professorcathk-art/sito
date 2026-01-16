@@ -47,6 +47,19 @@ export default async function CoursePage({ params }: CoursePageProps) {
       }
     }
 
+    // Fetch product information to get e_learning_subtype and category
+    let productInfo = null;
+    const { data: product, error: productError } = await supabase
+      .from("products")
+      .select("e_learning_subtype, category")
+      .eq("course_id", course.id)
+      .eq("product_type", "e-learning")
+      .maybeSingle();
+    
+    if (!productError && product) {
+      productInfo = product;
+    }
+
     // Get lessons
     const { data: lessons, error: lessonsError } = await supabase
       .from("course_lessons")
@@ -71,25 +84,52 @@ export default async function CoursePage({ params }: CoursePageProps) {
             />
           )}
           
-          <h1 className="text-4xl font-bold text-custom-text mb-4">{course.title}</h1>
-          
-          {expertProfile && (
-            <div className="flex items-center gap-4 mb-6">
-              {expertProfile.avatar_url && (
-                <img
-                  src={expertProfile.avatar_url}
-                  alt={expertProfile.name || "Expert"}
-                  className="w-12 h-12 rounded-full"
-                />
-              )}
-              <div>
-                <p className="text-custom-text font-semibold">{expertProfile.name || "Expert"}</p>
-                {expertProfile.title && (
-                  <p className="text-custom-text/70 text-sm">{expertProfile.title}</p>
+          <div className="mt-8">
+            <h1 className="text-4xl font-bold text-custom-text mb-4">{course.title}</h1>
+            
+            {/* Sub-type and Category */}
+            {(productInfo?.e_learning_subtype || productInfo?.category || course.category) && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {productInfo?.e_learning_subtype && (
+                  <span className="px-3 py-1 bg-cyber-green/20 text-cyber-green rounded-full text-sm font-medium">
+                    {productInfo.e_learning_subtype === 'online-course' ? 'Online Course' :
+                     productInfo.e_learning_subtype === 'ebook' ? 'Ebook' :
+                     productInfo.e_learning_subtype === 'ai-prompt' ? 'AI Prompt' :
+                     productInfo.e_learning_subtype === 'other' ? 'Other' :
+                     productInfo.e_learning_subtype}
+                  </span>
+                )}
+                {(productInfo?.category || course.category) && (
+                  <span className="px-3 py-1 bg-dark-green-800/50 text-custom-text/80 rounded-full text-sm">
+                    {productInfo?.category || course.category}
+                  </span>
                 )}
               </div>
-            </div>
-          )}
+            )}
+            
+            {expertProfile && (
+              <div className="flex items-center gap-4 mb-6">
+                {expertProfile.avatar_url && (
+                  <img
+                    src={expertProfile.avatar_url}
+                    alt={expertProfile.name || "Expert"}
+                    className="w-12 h-12 rounded-full"
+                  />
+                )}
+                <div>
+                  <Link 
+                    href={`/expert/${course.expert_id}`}
+                    className="text-custom-text font-semibold hover:text-cyber-green transition-colors"
+                  >
+                    {expertProfile.name || "Expert"}
+                  </Link>
+                  {expertProfile.title && (
+                    <p className="text-custom-text/70 text-sm">{expertProfile.title}</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
             {course.description && (
