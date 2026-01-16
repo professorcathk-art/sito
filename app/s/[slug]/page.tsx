@@ -15,16 +15,27 @@ export default async function ShortlinkPage({ params }: ShortlinkPageProps) {
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("id")
-      .eq("custom_slug", slug)
+      .eq("custom_slug", slug.toLowerCase().trim())
       .eq("listed_on_marketplace", true)
-      .single();
+      .maybeSingle();
 
-    if (error || !profile) {
+    if (error) {
+      console.error("Error fetching profile by slug:", error);
       notFound();
     }
 
+    if (!profile || !profile.id) {
+      notFound();
+    }
+
+    // Use permanent redirect (308) instead of temporary (307) for better SEO
     redirect(`/expert/${profile.id}`);
-  } catch (error) {
+  } catch (error: any) {
+    // Check if it's a redirect error (which is expected)
+    if (error?.digest?.startsWith("NEXT_REDIRECT")) {
+      // Re-throw redirect errors - they're expected
+      throw error;
+    }
     console.error("Error fetching profile by slug:", error);
     notFound();
   }

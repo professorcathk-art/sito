@@ -218,6 +218,10 @@ export function ProfileSetupForm() {
             avatarUrl: profile.avatar_url || "",
             customSlug: (profile as any).custom_slug || "",
           });
+          // If custom slug exists, mark it as available (user's own slug)
+          if ((profile as any).custom_slug) {
+            setSlugAvailable(true);
+          }
           if (profile.category_id && (profile.categories as any)?.name) {
             setCategorySearch((profile.categories as any).name);
           }
@@ -888,9 +892,9 @@ export function ProfileSetupForm() {
               {formData.customSlug && formData.customSlug.length < 3 && (
                 <p className="text-xs text-yellow-400 mt-1">Slug must be at least 3 characters</p>
               )}
-              {formData.customSlug && formData.customSlug.length >= 3 && slugAvailable === true && (
+              {formData.customSlug && formData.customSlug.length >= 3 && slugAvailable !== false && (
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="flex-1 px-3 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-sm text-custom-text">
+                  <div className="flex-1 px-3 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-sm text-custom-text break-all">
                     {typeof window !== "undefined" ? `${window.location.origin}/s/${formData.customSlug}` : `sito.club/s/${formData.customSlug}`}
                   </div>
                   <button
@@ -913,8 +917,7 @@ export function ProfileSetupForm() {
                         alert("Shortlink copied to clipboard!");
                       }
                     }}
-                    className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
-                    disabled={!formData.customSlug || formData.customSlug.length < 3 || slugAvailable !== true}
+                    className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm whitespace-nowrap"
                   >
                     📋 Copy
                   </button>
