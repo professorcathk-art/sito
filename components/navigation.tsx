@@ -117,13 +117,22 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
               {loading ? (
                 <div className="text-custom-text/80 animate-pulse text-sm lg:text-base">Loading...</div>
               ) : user ? (
-                <Link
-                  href="/profile"
-                  className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
-                >
-                  Dashboard
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
-                </Link>
+                <>
+                  <Link
+                    href="/profile"
+                    className="text-custom-text/90 hover:text-custom-text transition-all duration-300 relative group text-sm lg:text-base"
+                  >
+                    Dashboard
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-cyber-green group-hover:w-full transition-all duration-300 shadow-[0_0_10px_rgba(0,255,136,0.5)]"></span>
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="text-red-400 hover:text-red-300 transition-all duration-300 text-sm lg:text-base font-medium"
+                    title="Sign Out"
+                  >
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <>
                   <Link
@@ -190,13 +199,24 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                         Experts Sharing
                       </Link>
                       {user && (
-                        <Link
-                          href="/dashboard"
-                          onClick={() => setDashboardMenuOpen(false)}
-                          className="block px-4 py-3 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm font-medium border-t border-cyber-green/20 mt-1 pt-3"
-                        >
-                          Dashboard
-                        </Link>
+                        <>
+                          <Link
+                            href="/profile"
+                            onClick={() => setDashboardMenuOpen(false)}
+                            className="block px-4 py-3 text-custom-text/90 hover:text-cyber-green hover:bg-dark-green-900/50 transition-colors text-sm font-medium border-t border-cyber-green/20 mt-1 pt-3"
+                          >
+                            Dashboard
+                          </Link>
+                          <button
+                            onClick={() => {
+                              handleSignOut();
+                              setDashboardMenuOpen(false);
+                            }}
+                            className="block w-full text-left px-4 py-3 text-red-400 hover:text-red-300 hover:bg-dark-green-900/50 transition-colors text-sm font-medium border-t border-cyber-green/20"
+                          >
+                            Sign Out
+                          </button>
+                        </>
                       )}
                     </div>
                   </>
@@ -267,13 +287,24 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
               {loading ? (
                 <div className="text-custom-text/80 animate-pulse py-2">Loading...</div>
               ) : user ? (
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-custom-text/90 hover:text-cyber-green transition-colors py-2"
-                >
-                  Dashboard
-                </Link>
+                <>
+                  <Link
+                    href="/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block text-custom-text/90 hover:text-cyber-green transition-colors py-2"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-red-400 hover:text-red-300 transition-colors py-2 border-t border-cyber-green/20 mt-2 pt-4"
+                  >
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <>
                   <Link
