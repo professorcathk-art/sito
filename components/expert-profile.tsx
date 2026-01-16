@@ -496,7 +496,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
 
         <div className="mb-8">
           <h2 className="text-xl font-bold text-custom-text mb-3">About</h2>
-          <p className="text-custom-text/90 leading-relaxed">{expert.bio}</p>
+          <p className="text-custom-text/90 leading-relaxed whitespace-pre-line">{expert.bio}</p>
         </div>
 
         {/* 1-on-1 Timeslots Section - Show View Button Only if slots exist */}
