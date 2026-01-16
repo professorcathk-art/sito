@@ -166,48 +166,61 @@ export function FeaturedCourses() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {featuredProducts.map((product, index) => (
-            <Link
+            <div
               key={product.id}
-              href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
-              className="group bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-5 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] animate-fade-in-up"
+              className="group animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="flex items-center gap-3 mb-3">
-                {product.expert_avatar_url ? (
-                  <Image
-                    src={product.expert_avatar_url}
-                    alt={`${product.expert_name}'s avatar`}
-                    width={40}
-                    height={40}
-                    className="rounded-full object-cover w-10 h-10 flex-shrink-0 border-2 border-cyber-green/50"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-sm font-bold flex-shrink-0 border-2 border-cyber-green/50">
-                    {getInitials(product.expert_name)}
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-custom-text/70 truncate">by {product.expert_name}</p>
-                </div>
-              </div>
-              <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
-                {product.name}
-              </h3>
-              <div className="flex items-center justify-between">
-                <span className="text-sm sm:text-base font-bold text-cyber-green">
-                  {product.price === 0 || !product.price ? (
-                    "Free"
+              <Link
+                href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
+                className="block bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-5 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02]"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  {product.expert_avatar_url ? (
+                    <Image
+                      src={product.expert_avatar_url}
+                      alt={`${product.expert_name}'s avatar`}
+                      width={40}
+                      height={40}
+                      className="rounded-full object-cover w-10 h-10 flex-shrink-0 border-2 border-cyber-green/50"
+                    />
                   ) : (
-                    `USD $${product.price.toFixed(2)} ${product.pricing_type === "hourly" ? "/hr" : ""}`
+                    <div className="w-10 h-10 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-sm font-bold flex-shrink-0 border-2 border-cyber-green/50">
+                      {getInitials(product.expert_name)}
+                    </div>
                   )}
-                </span>
-                {product.price > 0 && (
-                  <span className="text-xs text-custom-text/60">
-                    {product.pricing_type === "hourly" ? "Hourly" : "One-time"}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-custom-text/70 truncate">by {product.expert_name}</p>
+                  </div>
+                </div>
+                <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
+                  {product.name}
+                </h3>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm sm:text-base font-bold text-cyber-green">
+                    {product.price === 0 || !product.price ? (
+                      "Free"
+                    ) : (
+                      `USD $${product.price.toFixed(2)} ${product.pricing_type === "hourly" ? "/hr" : ""}`
+                    )}
                   </span>
-                )}
-              </div>
-            </Link>
+                  {product.price > 0 && (
+                    <span className="text-xs text-custom-text/60">
+                      {product.pricing_type === "hourly" ? "Hourly" : "One-time"}
+                    </span>
+                  )}
+                </div>
+              </Link>
+              {/* Description appears below tile on hover */}
+              {product.description && (
+                <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48">
+                  <div 
+                    className="text-xs sm:text-sm text-custom-text/70 line-clamp-3 product-preview"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
