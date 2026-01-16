@@ -133,6 +133,42 @@ export function FeaturedCourses() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
+  const getSubtypePlaceholder = (subtype: string | null | undefined) => {
+    const baseGradient = "bg-gradient-to-br";
+    switch (subtype) {
+      case "online-course":
+        return {
+          gradient: `${baseGradient} from-blue-600/80 to-purple-600/80`,
+          icon: "📹",
+          label: "Online Course"
+        };
+      case "ebook":
+        return {
+          gradient: `${baseGradient} from-orange-600/80 to-red-600/80`,
+          icon: "📚",
+          label: "Ebook"
+        };
+      case "ai-prompt":
+        return {
+          gradient: `${baseGradient} from-cyan-600/80 to-teal-600/80`,
+          icon: "🤖",
+          label: "AI Prompt"
+        };
+      case "other":
+        return {
+          gradient: `${baseGradient} from-indigo-600/80 to-blue-600/80`,
+          icon: "📦",
+          label: "Other"
+        };
+      default:
+        return {
+          gradient: `${baseGradient} from-dark-green-800 to-dark-green-900`,
+          icon: "📖",
+          label: "E-Learning"
+        };
+    }
+  };
+
   if (loading) {
     return (
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
@@ -190,14 +226,19 @@ export function FeaturedCourses() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800 to-dark-green-900 p-4">
-                      <div className="text-center">
-                        <h3 className="text-lg sm:text-xl text-cyber-green font-bold line-clamp-3 mb-2">
-                          {product.name}
-                        </h3>
-                        <p className="text-xs text-custom-text/70">by {product.expert_name}</p>
-                      </div>
-                    </div>
+                    (() => {
+                      const placeholder = getSubtypePlaceholder(product.e_learning_subtype);
+                      return (
+                        <div className={`w-full h-full flex items-center justify-center ${placeholder.gradient} p-4`}>
+                          <div className="text-center">
+                            <div className="text-5xl sm:text-6xl mb-3 opacity-90">{placeholder.icon}</div>
+                            <div className="text-xs sm:text-sm text-white/90 font-semibold uppercase tracking-wider">
+                              {placeholder.label}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()
                   )}
                   {/* E-learning subtype label */}
                   {product.e_learning_subtype && (
