@@ -1,16 +1,31 @@
 -- Rename 'course' product_type to 'e-learning' and add e_learning_subtype column
 -- This migration updates the product_type constraint and adds categorization for e-learning products
 
--- First, update existing 'course' records to 'e-learning'
+-- Step 1: Drop ALL existing CHECK constraints on product_type column
+-- The constraint might have a system-generated name from migration 013
+DO $$
+DECLARE
+    constraint_name TEXT;
+BEGIN
+    -- Find and drop any CHECK constraint on product_type
+    FOR constraint_name IN 
+        SELECT conname 
+        FROM pg_constraint 
+        WHERE conrelid = 'products'::regclass 
+        AND contype = 'c'
+        AND pg_get_constraintdef(oid) LIKE '%product_type%'
+    LOOP
+        EXECUTE 'ALTER TABLE products DROP CONSTRAINT IF EXISTS ' || constraint_name;
+        RAISE NOTICE 'Dropped constraint: %', constraint_name;
+    END LOOP;
+END $$;
+
+-- Step 2: Update existing 'course' records to 'e-learning'
 UPDATE products
 SET product_type = 'e-learning'
 WHERE product_type = 'course';
 
--- Drop the old CHECK constraint
-ALTER TABLE products
-DROP CONSTRAINT IF EXISTS products_product_type_check;
-
--- Add new CHECK constraint with 'e-learning' instead of 'course'
+-- Step 3: Add new CHECK constraint with 'e-learning' instead of 'course'
 ALTER TABLE products
 ADD CONSTRAINT products_product_type_check 
 CHECK (product_type IN ('service', 'e-learning', 'appointment'));
