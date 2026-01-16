@@ -888,6 +888,38 @@ export function ProfileSetupForm() {
               {formData.customSlug && formData.customSlug.length < 3 && (
                 <p className="text-xs text-yellow-400 mt-1">Slug must be at least 3 characters</p>
               )}
+              {formData.customSlug && formData.customSlug.length >= 3 && slugAvailable === true && (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="flex-1 px-3 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-sm text-custom-text">
+                    {typeof window !== "undefined" ? `${window.location.origin}/s/${formData.customSlug}` : `sito.club/s/${formData.customSlug}`}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const shortlink = typeof window !== "undefined" 
+                        ? `${window.location.origin}/s/${formData.customSlug}`
+                        : `sito.club/s/${formData.customSlug}`;
+                      try {
+                        await navigator.clipboard.writeText(shortlink);
+                        alert("Shortlink copied to clipboard!");
+                      } catch (err) {
+                        // Fallback for older browsers
+                        const textArea = document.createElement("textarea");
+                        textArea.value = shortlink;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand("copy");
+                        document.body.removeChild(textArea);
+                        alert("Shortlink copied to clipboard!");
+                      }
+                    }}
+                    className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                    disabled={!formData.customSlug || formData.customSlug.length < 3 || slugAvailable !== true}
+                  >
+                    📋 Copy
+                  </button>
+                </div>
+              )}
               <p className="text-xs text-custom-text/60 mt-1">
                 Create a custom shortlink for your profile (e.g., sito.club/s/john-doe). Only lowercase letters, numbers, and hyphens allowed.
               </p>

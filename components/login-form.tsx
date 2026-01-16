@@ -30,7 +30,9 @@ export function LoginForm({ redirect }: { redirect?: string }) {
       }
 
       if (data.user) {
-        router.push(redirect || "/dashboard");
+        // Decode redirect URL if it exists
+        const redirectUrl = redirect ? decodeURIComponent(redirect) : "/dashboard";
+        router.push(redirectUrl);
         router.refresh();
       }
     } catch (err) {

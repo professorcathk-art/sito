@@ -124,7 +124,8 @@ export function CourseEnrollment({
 
   const handleRegisterInterest = async () => {
     if (!user || !currentUserId) {
-      router.push(`/login?redirect=/courses/${courseId}`);
+      const redirectUrl = encodeURIComponent(`/courses/${courseId}`);
+      router.push(`/login?redirect=${redirectUrl}`);
       return;
     }
 
@@ -313,7 +314,8 @@ export function CourseEnrollment({
 
   const handleEnroll = async () => {
     if (!user || !currentUserId) {
-      router.push(`/login?redirect=/courses/${courseId}`);
+      const redirectUrl = encodeURIComponent(`/courses/${courseId}`);
+      router.push(`/login?redirect=${redirectUrl}`);
       return;
     }
 

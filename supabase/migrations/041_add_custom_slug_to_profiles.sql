@@ -6,6 +6,17 @@ ADD COLUMN IF NOT EXISTS custom_slug TEXT UNIQUE;
 CREATE INDEX IF NOT EXISTS idx_profiles_custom_slug ON profiles(custom_slug);
 
 -- Add constraint to ensure slug format (lowercase, alphanumeric + hyphens)
+-- Drop constraint if it exists first to avoid errors
+DO $$ 
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'profiles_custom_slug_format'
+    ) THEN
+        ALTER TABLE profiles DROP CONSTRAINT profiles_custom_slug_format;
+    END IF;
+END $$;
+
 ALTER TABLE profiles
 ADD CONSTRAINT profiles_custom_slug_format CHECK (
   custom_slug IS NULL OR 

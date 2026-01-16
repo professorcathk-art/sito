@@ -130,9 +130,20 @@ export function RichTextEditor({
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file || !editor || !onFileUpload) return;
 
+      // Prompt user to rename the file
+      const originalName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+      const fileExt = file.name.split(".").pop();
+      const newName = prompt(`Rename file (optional):`, originalName) || originalName;
+      
+      // If user cancelled, don't upload
+      if (newName === null) return;
+
+      // Sanitize filename
+      const sanitizedName = newName.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const finalFileName = sanitizedName ? `${sanitizedName}.${fileExt}` : file.name;
+
       setUploading(true);
       try {
-        const fileExt = file.name.split(".").pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
         const filePath = `blog-files/${fileName}`;
 
@@ -147,10 +158,10 @@ export function RichTextEditor({
 
         const { data } = supabase.storage.from("blog-resources").getPublicUrl(filePath);
         
-        // Insert a link to the file in the editor
-        editor.chain().focus().insertContent(`<a href="${data.publicUrl}" target="_blank" rel="noopener noreferrer">📎 ${file.name}</a>`).run();
+        // Insert a link to the file in the editor with the renamed filename
+        editor.chain().focus().insertContent(`<a href="${data.publicUrl}" target="_blank" rel="noopener noreferrer">📎 ${finalFileName}</a>`).run();
         
-        onFileUpload(data.publicUrl, file.name, file.type, file.size);
+        onFileUpload(data.publicUrl, finalFileName, file.type, file.size);
       } catch (err: any) {
         console.error("Error uploading file:", err);
         alert("Failed to upload file. Please try again.");
