@@ -170,7 +170,7 @@ export function FeaturedCourses() {
           {featuredProducts.map((product, index) => (
             <div
               key={product.id}
-              className="group animate-fade-in-up"
+              className="group animate-fade-in-up mb-16 sm:mb-20 relative"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <Link
@@ -238,9 +238,9 @@ export function FeaturedCourses() {
               </Link>
               {/* Description appears below tile on hover */}
               {product.description && (
-                <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48">
+                <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-10 bg-dark-green-900/95 backdrop-blur-sm border border-cyber-green/30 rounded-b-xl">
                   <div 
-                    className="text-xs sm:text-sm text-custom-text/70 line-clamp-3 product-preview"
+                    className="text-xs sm:text-sm text-custom-text/70 line-clamp-3 product-preview py-2"
                     dangerouslySetInnerHTML={{ __html: product.description }}
                   />
                 </div>
