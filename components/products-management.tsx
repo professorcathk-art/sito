@@ -1477,7 +1477,7 @@ export function ProductsManagement() {
                 description: "",
                 price: "",
                 pricing_type: "one-off",
-                product_type: "appointment",
+                product_type: "e-learning",
                 e_learning_subtype: "",
                 course_id: "",
                 category: "",
