@@ -124,7 +124,9 @@ export function CourseEnrollment({
 
   const handleRegisterInterest = async () => {
     if (!user || !currentUserId) {
-      const redirectUrl = encodeURIComponent(`/courses/${courseId}`);
+      // Capture current page URL to redirect back after login
+      const currentUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/courses/${courseId}`;
+      const redirectUrl = encodeURIComponent(currentUrl);
       router.push(`/login?redirect=${redirectUrl}`);
       return;
     }
@@ -314,7 +316,9 @@ export function CourseEnrollment({
 
   const handleEnroll = async () => {
     if (!user || !currentUserId) {
-      const redirectUrl = encodeURIComponent(`/courses/${courseId}`);
+      // Capture current page URL to redirect back after login
+      const currentUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/courses/${courseId}`;
+      const redirectUrl = encodeURIComponent(currentUrl);
       router.push(`/login?redirect=${redirectUrl}`);
       return;
     }
