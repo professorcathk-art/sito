@@ -68,7 +68,7 @@ export function ProductsManagement() {
     description: "",
     price: "",
     pricing_type: "one-off" as "one-off" | "hourly",
-    product_type: "appointment" as "e-learning" | "appointment",
+    product_type: "e-learning" as "e-learning" | "appointment",
     e_learning_subtype: "" as "" | "online-course" | "ebook" | "ai-prompt" | "other",
     course_id: "",
     category: "",
@@ -1521,7 +1521,7 @@ export function ProductsManagement() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-custom-text mb-2">
-                Product Name *
+                Title of E-learning Product *
               </label>
               <input
                 type="text"
@@ -1551,8 +1551,8 @@ export function ProductsManagement() {
                 className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
                 required
               >
-                <option value="appointment">1-on-1 Session</option>
                 <option value="e-learning">e-Learning</option>
+                <option value="appointment">1-on-1 Session</option>
               </select>
               <p className="text-xs text-custom-text/60 mt-1">
                 {formData.product_type === "e-learning" && "Create an e-learning product with lessons. You can add lessons now or skip and add them later."}
@@ -1587,7 +1587,7 @@ export function ProductsManagement() {
               <>
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
-                    Category *
+                    Topic *
                   </label>
                   <input
                     type="text"
@@ -1597,7 +1597,7 @@ export function ProductsManagement() {
                     placeholder="e.g., AI Courses, Business, Design, Marketing"
                     required
                   />
-                  <p className="text-xs text-custom-text/60 mt-1">Choose a category to help users discover your course</p>
+                  <p className="text-xs text-custom-text/60 mt-1">Choose a topic to help users discover your course</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
@@ -1640,7 +1640,7 @@ export function ProductsManagement() {
                     min="0"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="flex-1 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                    className="w-32 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
                     placeholder="0.00"
                     required
                   />
@@ -1720,11 +1720,11 @@ export function ProductsManagement() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-custom-text mb-2">Description *</label>
+              <label className="block text-sm font-medium text-custom-text mb-2">Description of your product *</label>
               <RichTextEditor
                 content={formData.description}
                 onChange={(newContent) => setFormData({ ...formData, description: newContent })}
-                placeholder="Describe your product or service..."
+                placeholder="This e-learning is a full course/ a ebook for download…"
               />
             </div>
             <div className="flex gap-4">

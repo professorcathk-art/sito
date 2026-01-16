@@ -516,12 +516,12 @@ export default function ManageCoursePage() {
                 onClick={() => setSelectedCourse(null)}
                 className="text-cyber-green hover:text-cyber-green-light mb-4"
               >
-                ← Back to Courses
+                ← Back to Classroom
               </button>
 
               {/* Course Details - View/Edit based on ownership */}
               <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
-                <h2 className="text-2xl font-bold text-custom-text mb-6">Course Details</h2>
+                <h2 className="text-2xl font-bold text-custom-text mb-6">Details</h2>
                 {selectedCourse.expert_id === user?.id ? (
                   // Owner can edit
                   <div className="space-y-4">
@@ -582,7 +582,7 @@ export default function ManageCoursePage() {
                         disabled={saving}
                         className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
                       >
-                        {saving ? "Saving..." : "Save Course Details"}
+                        {saving ? "Saving..." : "Save Details"}
                       </button>
                       <button
                         onClick={async () => {
