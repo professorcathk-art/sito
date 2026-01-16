@@ -180,8 +180,8 @@ export function FeaturedCourses() {
                 href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
                 className="block bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl overflow-hidden hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
               >
-                {/* Cover Image with 4:5 aspect ratio */}
-                <div className="relative w-full aspect-[4/5] overflow-hidden bg-dark-green-900">
+                {/* Cover Image with 4:3 aspect ratio (shorter for landing page) */}
+                <div className="relative w-full aspect-[4/3] overflow-hidden bg-dark-green-900">
                   {product.cover_image_url ? (
                     <Image
                       src={product.cover_image_url}
