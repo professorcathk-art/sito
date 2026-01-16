@@ -65,7 +65,7 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       try {
         const { data } = await supabase
           .from("profiles")
-          .select("is_admin, category_id, bio, name, title, country_id, language_supported, phone_number")
+          .select("is_admin, category_id, bio, name, title, tagline, country_id, language_supported, phone_number")
           .eq("id", user.id)
           .single();
         setIsAdmin(data?.is_admin === true);
@@ -82,11 +82,14 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
           typeof data.phone_number === 'string' && 
           data.phone_number.trim().length > 0;
         
+        // Check for title OR tagline (tagline is the actual field name in database)
+        const hasTitle = (data?.title && data.title.trim().length > 0) || 
+                        (data?.tagline && data.tagline.trim().length > 0);
+        
         const hasAllMandatoryFields = !!(
           data?.name &&
           data?.name.trim().length > 0 &&
-          data?.title &&
-          data?.title.trim().length > 0 &&
+          hasTitle &&
           data?.category_id &&
           data?.bio &&
           data?.bio.trim().length > 0 &&
@@ -102,6 +105,9 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
             nameValue: data.name,
             title: !!data.title,
             titleValue: data.title,
+            tagline: !!data.tagline,
+            taglineValue: data.tagline,
+            hasTitle,
             category_id: !!data.category_id,
             bio: !!data.bio,
             bioLength: data.bio?.trim().length,

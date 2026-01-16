@@ -2815,114 +2815,117 @@ export function ProductsManagement() {
             products.map((product) => (
               <div
                 key={product.id}
-                className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6"
+                className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 flex flex-col"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-custom-text mb-2">{product.name}</h3>
-                    <div 
-                      className="product-preview text-custom-text/80 mb-3"
-                      dangerouslySetInnerHTML={{ __html: product.description }}
-                    />
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="text-cyber-green font-semibold">
-                        USD ${product.price} {product.pricing_type === "hourly" ? "/ hour" : ""}
-                      </span>
-                      <span className="text-custom-text/60">
-                        {product.pricing_type === "hourly" ? "Hourly Rate" : "One-off Price"}
-                      </span>
-                      {product.price > 0 && (
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          product.stripe_product_id 
-                            ? "bg-cyber-green/20 text-cyber-green border border-cyber-green/30" 
-                            : "bg-yellow-900/20 text-yellow-400 border border-yellow-500/30"
-                        }`}>
-                          {product.stripe_product_id ? "✓ Stripe Ready" : "⚠ Stripe Not Set"}
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-custom-text mb-2">{product.name}</h3>
+                      <div 
+                        className="product-preview text-custom-text/80 mb-3"
+                        dangerouslySetInnerHTML={{ __html: product.description }}
+                      />
+                      <div className="flex flex-wrap items-center gap-4 text-sm">
+                        <span className="text-cyber-green font-semibold">
+                          USD ${product.price} {product.pricing_type === "hourly" ? "/ hour" : ""}
                         </span>
-                      )}
+                        <span className="text-custom-text/60">
+                          {product.pricing_type === "hourly" ? "Hourly Rate" : "One-off Price"}
+                        </span>
+                        {product.price > 0 && (
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            product.stripe_product_id 
+                              ? "bg-cyber-green/20 text-cyber-green border border-cyber-green/30" 
+                              : "bg-yellow-900/20 text-yellow-400 border border-yellow-500/30"
+                          }`}>
+                            {product.stripe_product_id ? "✓ Stripe Ready" : "⚠ Stripe Not Set"}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-4">
-                    <button
+                </div>
+                {/* Buttons at bottom - stack on mobile, horizontal on desktop */}
+                <div className="flex flex-col sm:flex-row gap-2 mt-4 pt-4 border-t border-cyber-green/20">
+                  <button
+                    onClick={async () => {
+                      if (!user) return;
+                      
+                      // Fetch questionnaire for this product (linked by product_id)
+                      const { data: questionnaire } = await supabase
+                        .from("questionnaires")
+                        .select("id")
+                        .eq("product_id", product.id)
+                        .maybeSingle();
+                      
+                      if (questionnaire?.id) {
+                        // Fetch fields
+                        const { data: fields } = await supabase
+                          .from("questionnaire_fields")
+                          .select("*")
+                          .eq("questionnaire_id", questionnaire.id)
+                          .order("order_index", { ascending: true });
+                        
+                        setViewingFormFields(fields || []);
+                        setViewingFormProductId(product.id);
+                      } else {
+                        alert("No form has been set up for this product yet.");
+                      }
+                    }}
+                    className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm w-full sm:w-auto"
+                  >
+                    View Form
+                  </button>
+                  {product.product_type === "e-learning" && product.course_id && (
+                    <Link
+                      href={`/courses/manage`}
                       onClick={async () => {
-                        if (!user) return;
-                        
-                        // Fetch questionnaire for this product (linked by product_id)
-                        const { data: questionnaire } = await supabase
-                          .from("questionnaires")
-                          .select("id")
-                          .eq("product_id", product.id)
-                          .maybeSingle();
-                        
-                        if (questionnaire?.id) {
-                          // Fetch fields
-                          const { data: fields } = await supabase
-                            .from("questionnaire_fields")
-                            .select("*")
-                            .eq("questionnaire_id", questionnaire.id)
-                            .order("order_index", { ascending: true });
-                          
-                          setViewingFormFields(fields || []);
-                          setViewingFormProductId(product.id);
-                        } else {
-                          alert("No form has been set up for this product yet.");
+                        // Store course ID in sessionStorage to auto-select it
+                        if (typeof window !== "undefined" && product.course_id) {
+                          sessionStorage.setItem("selectedCourseId", product.course_id);
                         }
                       }}
-                      className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm"
+                      className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold border border-cyber-green rounded-lg hover:bg-cyber-green-light transition-colors text-sm inline-block text-center w-full sm:w-auto"
                     >
-                      View Form
-                    </button>
-                    {product.product_type === "e-learning" && product.course_id && (
-                      <Link
-                        href={`/courses/manage`}
-                        onClick={async () => {
-                          // Store course ID in sessionStorage to auto-select it
-                          if (typeof window !== "undefined" && product.course_id) {
-                            sessionStorage.setItem("selectedCourseId", product.course_id);
-                          }
-                        }}
-                        className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold border border-cyber-green rounded-lg hover:bg-cyber-green-light transition-colors text-sm inline-block text-center"
-                      >
-                        Set up e-Learnings
-                      </Link>
-                    )}
-                    {product.product_type === "e-learning" && product.course_id && (
-                      <button
-                        onClick={async () => {
-                          if (showMembersForProduct === product.id) {
-                            setShowMembersForProduct(null);
-                          } else {
-                            setShowMembersForProduct(product.id);
-                            const courseId = product.course_id;
-                            if (courseId) {
-                              // Always fetch fresh data when viewing members
-                              console.log("View Members clicked for courseId:", courseId);
-                              await fetchCourseMembers(courseId);
-                              // Log the result after a short delay
-                              setTimeout(() => {
-                                console.log("Course members map after fetch:", courseMembersMap[courseId]);
-                              }, 500);
-                            }
-                          }
-                        }}
-                        className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm"
-                      >
-                        {showMembersForProduct === product.id ? "Hide Members" : "View Members"}
-                      </button>
-                    )}
+                      Set up e-Learnings
+                    </Link>
+                  )}
+                  {product.product_type === "e-learning" && product.course_id && (
                     <button
-                      onClick={() => handleEdit(product)}
-                      className="px-4 py-2 bg-dark-green-800/50 text-custom-text border border-cyber-green/30 rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm"
+                      onClick={async () => {
+                        if (showMembersForProduct === product.id) {
+                          setShowMembersForProduct(null);
+                        } else {
+                          setShowMembersForProduct(product.id);
+                          const courseId = product.course_id;
+                          if (courseId) {
+                            // Always fetch fresh data when viewing members
+                            console.log("View Members clicked for courseId:", courseId);
+                            await fetchCourseMembers(courseId);
+                            // Log the result after a short delay
+                            setTimeout(() => {
+                              console.log("Course members map after fetch:", courseMembersMap[courseId]);
+                            }, 500);
+                          }
+                        }
+                      }}
+                      className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm w-full sm:w-auto"
                     >
-                      Edit
+                      {showMembersForProduct === product.id ? "Hide Members" : "View Members"}
                     </button>
-                    <button
-                      onClick={() => handleDelete(product.id)}
-                      className="px-4 py-2 bg-red-900/30 text-red-200 border border-red-500/50 rounded-lg hover:bg-red-900/50 transition-colors text-sm"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  )}
+                  <button
+                    onClick={() => handleEdit(product)}
+                    className="px-4 py-2 bg-dark-green-800/50 text-custom-text border border-cyber-green/30 rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm w-full sm:w-auto"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(product.id)}
+                    className="px-4 py-2 bg-red-900/30 text-red-200 border border-red-500/50 rounded-lg hover:bg-red-900/50 transition-colors text-sm w-full sm:w-auto"
+                  >
+                    Delete
+                  </button>
                 </div>
                 {product.product_type === "e-learning" && product.course_id && showMembersForProduct === product.id && (
                   <div className="mt-4 pt-4 border-t border-cyber-green/30">
