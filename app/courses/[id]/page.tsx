@@ -233,7 +233,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
             currentUserId={user?.id}
             coursePrice={course.price}
             isFree={course.is_free}
-            enrollmentOnRequest={productInfo?.enrollment_on_request === true}
+            enrollmentOnRequest={
+              productInfo ? (
+                productInfo.enrollment_on_request === true || 
+                productInfo.enrollment_on_request === "true" ||
+                productInfo.enrollment_on_request === 1
+              ) : false
+            }
             debugProductInfo={productInfo ? {
               id: productInfo.id,
               enrollment_on_request: productInfo.enrollment_on_request,
