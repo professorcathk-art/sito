@@ -10,16 +10,20 @@ interface CourseActionsProps {
   coursePrice: number;
   isFree: boolean;
   enrollmentOnRequest?: boolean;
+  debugProductInfo?: { id: string; enrollment_on_request: any; type: string } | null;
 }
 
-export function CourseActions({ courseId, expertId, currentUserId, coursePrice, isFree, enrollmentOnRequest }: CourseActionsProps) {
+export function CourseActions({ courseId, expertId, currentUserId, coursePrice, isFree, enrollmentOnRequest, debugProductInfo }: CourseActionsProps) {
   // Debug logging
   if (typeof window !== 'undefined') {
     console.log('CourseActions - enrollmentOnRequest:', enrollmentOnRequest, typeof enrollmentOnRequest);
+    console.log('CourseActions - debugProductInfo:', debugProductInfo);
+    console.log('CourseActions - product enrollment_on_request value:', debugProductInfo?.enrollment_on_request);
+    console.log('CourseActions - product enrollment_on_request type:', debugProductInfo?.type);
   }
   
-  // Ensure boolean value
-  const isEnrollmentOnRequest = enrollmentOnRequest === true;
+  // Ensure boolean value - check both the prop and the debug info
+  const isEnrollmentOnRequest = enrollmentOnRequest === true || (debugProductInfo?.enrollment_on_request === true);
   const isExpert = currentUserId === expertId;
 
   if (isExpert) {
