@@ -597,16 +597,17 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                   >
                     {/* Eye-catching Live Webinar Label */}
                     {product.e_learning_subtype === "live-webinar" && (
-                      <div className="absolute top-4 right-4 z-10">
-                        <div className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse flex items-center gap-1.5">
-                          <span>🔴</span>
-                          <span>LIVE WEBINAR</span>
+                      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
+                        <div className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg animate-pulse flex items-center gap-1">
+                          <span className="text-[10px] sm:text-xs">🔴</span>
+                          <span className="hidden sm:inline">LIVE WEBINAR</span>
+                          <span className="sm:hidden">LIVE</span>
                         </div>
                       </div>
                     )}
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold text-custom-text mb-2">{product.name}</h3>
+                      <div className="flex-1 pr-20 sm:pr-0">
+                        <h3 className="text-base sm:text-lg font-bold text-custom-text mb-2">{product.name}</h3>
                         {/* Show webinar date/time for live webinars */}
                         {product.e_learning_subtype === "live-webinar" && product.webinar_date_time && (
                           <div className="mb-3 p-3 bg-cyber-green/10 border border-cyber-green/30 rounded-lg">
