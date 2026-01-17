@@ -142,41 +142,6 @@ export function FeaturedCourses() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
-  const getSubtypePlaceholder = (subtype: string | null | undefined) => {
-    const baseGradient = "bg-gradient-to-br";
-    switch (subtype) {
-      case "online-course":
-        return {
-          gradient: `${baseGradient} from-dark-green-800/90 to-dark-green-900/90`,
-          icon: "📹",
-          label: "Online Course"
-        };
-      case "ebook":
-        return {
-          gradient: `${baseGradient} from-dark-green-800/90 to-dark-green-900/90`,
-          icon: "📚",
-          label: "Ebook"
-        };
-      case "ai-prompt":
-        return {
-          gradient: `${baseGradient} from-dark-green-800/90 to-dark-green-900/90`,
-          icon: "🤖",
-          label: "AI Prompt"
-        };
-      case "other":
-        return {
-          gradient: `${baseGradient} from-dark-green-800/90 to-dark-green-900/90`,
-          icon: "📦",
-          label: "Other"
-        };
-      default:
-        return {
-          gradient: `${baseGradient} from-dark-green-800/90 to-dark-green-900/90`,
-          icon: "📖",
-          label: "E-Learning"
-        };
-    }
-  };
 
   if (loading) {
     return (
@@ -235,19 +200,18 @@ export function FeaturedCourses() {
                       className="object-cover"
                     />
                   ) : (
-                    (() => {
-                      const placeholder = getSubtypePlaceholder(product.e_learning_subtype);
-                      return (
-                        <div className={`w-full h-full flex items-center justify-center ${placeholder.gradient} p-4`}>
-                          <div className="text-center">
-                            <div className="text-5xl sm:text-6xl mb-3 opacity-90">{placeholder.icon}</div>
-                            <div className="text-xs sm:text-sm text-white/90 font-semibold uppercase tracking-wider">
-                              {placeholder.label}
-                            </div>
-                          </div>
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800/90 to-dark-green-900/90 p-4 overflow-y-auto">
+                      {product.description ? (
+                        <div 
+                          className="text-xs sm:text-sm text-custom-text/90 line-clamp-6 product-preview"
+                          dangerouslySetInnerHTML={{ __html: product.description }}
+                        />
+                      ) : (
+                        <div className="text-center text-custom-text/60 text-sm">
+                          No description available
                         </div>
-                      );
-                    })()
+                      )}
+                    </div>
                   )}
                   {/* E-learning subtype label */}
                   {product.e_learning_subtype && (
