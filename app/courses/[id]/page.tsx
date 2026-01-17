@@ -51,7 +51,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
     let productInfo = null;
     const { data: product, error: productError } = await supabase
       .from("products")
-      .select("e_learning_subtype, category, enrollment_on_request, webinar_date_time")
+      .select("id, e_learning_subtype, category, enrollment_on_request, webinar_date_time")
       .eq("course_id", course.id)
       .eq("product_type", "e-learning")
       .maybeSingle();
@@ -62,9 +62,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
     
     if (product) {
       productInfo = product;
-      // Log for debugging
+      // Log for debugging - check the actual value type
       console.log("Product info:", {
+        product_id: product.id,
         enrollment_on_request: product.enrollment_on_request,
+        enrollment_on_request_type: typeof product.enrollment_on_request,
+        enrollment_on_request_value: product.enrollment_on_request,
         course_id: course.id
       });
     } else {
@@ -230,7 +233,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             currentUserId={user?.id}
             coursePrice={course.price}
             isFree={course.is_free}
-            enrollmentOnRequest={productInfo?.enrollment_on_request === true}
+            enrollmentOnRequest={productInfo ? Boolean(productInfo.enrollment_on_request) === true : false}
           />
         </div>
       </div>

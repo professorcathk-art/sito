@@ -25,6 +25,13 @@ export function CourseEnrollment({
   enrollmentOnRequest = false,
   returnUrl,
 }: CourseEnrollmentProps) {
+  // Debug logging
+  if (typeof window !== 'undefined') {
+    console.log('CourseEnrollment - enrollmentOnRequest:', enrollmentOnRequest, typeof enrollmentOnRequest, 'isFree:', isFree);
+  }
+  
+  // Ensure boolean value
+  const isEnrollmentOnRequest = enrollmentOnRequest === true;
   const router = useRouter();
   const supabase = createClient();
   const { user } = useAuth();
@@ -795,7 +802,7 @@ export function CourseEnrollment({
 
       <div className="flex gap-4">
         {/* Enrollment on Request: Show Register Interest button only */}
-        {enrollmentOnRequest ? (
+        {isEnrollmentOnRequest ? (
           !hasRegisteredInterest && (
             <button
               onClick={handleRegisterInterest}

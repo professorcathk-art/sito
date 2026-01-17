@@ -12,7 +12,14 @@ interface CourseActionsProps {
   enrollmentOnRequest?: boolean;
 }
 
-export function CourseActions({ courseId, expertId, currentUserId, coursePrice, isFree, enrollmentOnRequest = false }: CourseActionsProps) {
+export function CourseActions({ courseId, expertId, currentUserId, coursePrice, isFree, enrollmentOnRequest }: CourseActionsProps) {
+  // Debug logging
+  if (typeof window !== 'undefined') {
+    console.log('CourseActions - enrollmentOnRequest:', enrollmentOnRequest, typeof enrollmentOnRequest);
+  }
+  
+  // Ensure boolean value
+  const isEnrollmentOnRequest = enrollmentOnRequest === true;
   const isExpert = currentUserId === expertId;
 
   if (isExpert) {
@@ -36,7 +43,7 @@ export function CourseActions({ courseId, expertId, currentUserId, coursePrice, 
         coursePrice={coursePrice}
         isFree={isFree}
         currentUserId={currentUserId}
-        enrollmentOnRequest={enrollmentOnRequest}
+        enrollmentOnRequest={isEnrollmentOnRequest}
         returnUrl={typeof window !== 'undefined' ? window.location.pathname + window.location.search : undefined}
       />
       <Link
