@@ -56,8 +56,19 @@ export default async function CoursePage({ params }: CoursePageProps) {
       .eq("product_type", "e-learning")
       .maybeSingle();
     
-    if (!productError && product) {
+    if (productError) {
+      console.error("Error fetching product:", productError);
+    }
+    
+    if (product) {
       productInfo = product;
+      // Log for debugging
+      console.log("Product info:", {
+        enrollment_on_request: product.enrollment_on_request,
+        course_id: course.id
+      });
+    } else {
+      console.warn("No product found for course:", course.id);
     }
 
     // Get lessons
@@ -160,7 +171,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             
             {/* Show price - "On Request" if enrollment_on_request, otherwise show price or Free */}
             <div className="flex items-center gap-4">
-              {productInfo?.enrollment_on_request ? (
+              {productInfo?.enrollment_on_request === true ? (
                 <span className="text-2xl font-bold text-cyber-green">On Request</span>
               ) : (
                 <>
@@ -219,7 +230,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             currentUserId={user?.id}
             coursePrice={course.price}
             isFree={course.is_free}
-            enrollmentOnRequest={productInfo?.enrollment_on_request || false}
+            enrollmentOnRequest={productInfo?.enrollment_on_request === true}
           />
         </div>
       </div>
