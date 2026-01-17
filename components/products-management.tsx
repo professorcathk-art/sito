@@ -793,8 +793,8 @@ export function ProductsManagement() {
           productData.price = newPrice;
         }
 
-        // Update enrollment_on_request
-        productData.enrollment_on_request = formData.enrollmentOnRequest || false;
+        // Update enrollment_on_request - explicitly set boolean value
+        productData.enrollment_on_request = formData.enrollmentOnRequest === true;
         
         // Update webinar_expiry_date and webinar_date_time for live webinars
         if (formData.e_learning_subtype === "live-webinar") {
@@ -992,7 +992,7 @@ export function ProductsManagement() {
               pricing_type: "one-off",
               payment_method: formData.enrollmentOnRequest ? null : (formData.payment_method || "stripe"),
               contact_email: formData.enrollmentOnRequest ? null : (formData.payment_method === "offline" ? (formData.contact_type === "url" ? formData.contact_url : formData.contact_email) : null),
-              enrollment_on_request: formData.enrollmentOnRequest || false,
+              enrollment_on_request: formData.enrollmentOnRequest === true,
               webinar_expiry_date: formData.e_learning_subtype === "live-webinar" && formData.webinarExpiryDate 
                 ? new Date(formData.webinarExpiryDate).toISOString() 
                 : null,
@@ -1341,7 +1341,7 @@ export function ProductsManagement() {
       contact_url: product.contact_email?.startsWith("http") ? product.contact_email : "",
       contact_type: product.contact_email?.startsWith("http") ? "url" as "email" | "url" : "email" as "email" | "url",
       coverImageUrl: coverImageUrl,
-      enrollmentOnRequest: product.enrollment_on_request || false,
+      enrollmentOnRequest: product.enrollment_on_request === true,
       webinarExpiryDate: product.webinar_expiry_date 
         ? new Date(product.webinar_expiry_date).toISOString().slice(0, 16) // Format for datetime-local input
         : "",

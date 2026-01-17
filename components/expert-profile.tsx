@@ -607,7 +607,12 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                     )}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 pr-20 sm:pr-0">
-                        <h3 className="text-base sm:text-lg font-bold text-custom-text mb-2">{product.name}</h3>
+                        <Link 
+                          href={product.course_id ? `/courses/${product.course_id}` : '#'}
+                          className="block hover:text-cyber-green transition-colors"
+                        >
+                          <h3 className="text-base sm:text-lg font-bold text-custom-text mb-2">{product.name}</h3>
+                        </Link>
                         {/* Show webinar date/time for live webinars */}
                         {product.e_learning_subtype === "live-webinar" && product.webinar_date_time && (
                           <div className="mb-3 p-3 bg-cyber-green/10 border border-cyber-green/30 rounded-lg">
@@ -642,7 +647,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                           coursePrice={(product as any).courses?.price || product.price || 0}
                           isFree={(product as any).courses?.is_free || product.price === 0}
                           currentUserId={user?.id}
-                          enrollmentOnRequest={product.enrollment_on_request || false}
+                          enrollmentOnRequest={product.enrollment_on_request === true}
                           returnUrl={typeof window !== 'undefined' ? window.location.pathname + window.location.search : undefined}
                         />
                       </div>
