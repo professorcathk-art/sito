@@ -794,20 +794,20 @@ export function CourseEnrollment({
       )}
 
       <div className="flex gap-4">
-        {/* If enrollment is on request: Show Register Interest button only */}
-        {enrollmentOnRequest && !hasRegisteredInterest && (
-          <button
-            onClick={handleRegisterInterest}
-            disabled={processing}
-            className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors disabled:opacity-50"
-          >
-            {processing ? "Processing..." : "Register Interest"}
-          </button>
-        )}
-        {/* If enrollment is NOT on request: Show appropriate buttons */}
-        {!enrollmentOnRequest && (
+        {/* Enrollment on Request: Show Register Interest button only */}
+        {enrollmentOnRequest ? (
+          !hasRegisteredInterest && (
+            <button
+              onClick={handleRegisterInterest}
+              disabled={processing}
+              className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors disabled:opacity-50"
+            >
+              {processing ? "Processing..." : "Register Interest"}
+            </button>
+          )
+        ) : (
           <>
-            {/* Show Register Interest button for paid courses (if not already registered) */}
+            {/* Not on request: Show Register Interest for paid courses */}
             {!hasRegisteredInterest && !isFree && (
               <button
                 onClick={handleRegisterInterest}
@@ -817,7 +817,7 @@ export function CourseEnrollment({
                 {processing ? "Processing..." : "Register Interest"}
               </button>
             )}
-            {/* Show Get it now button for all non-on-request courses */}
+            {/* Show Get it now button */}
             <button
               onClick={handleEnroll}
               disabled={processing}

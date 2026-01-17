@@ -1782,9 +1782,8 @@ export function ProductsManagement() {
                           setFormData({ 
                             ...formData, 
                             enrollmentOnRequest: e.target.checked,
-                            // Don't set price to "0" when checking on request - leave it as is
-                            // But clear it if it was "0" (free) to avoid confusion
-                            price: e.target.checked && formData.price === "0" ? "" : formData.price
+                            // When checking "Enrollment on Request", automatically uncheck "Free" by clearing price
+                            price: e.target.checked ? "" : formData.price
                           });
                         }}
                         className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
