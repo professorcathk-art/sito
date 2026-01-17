@@ -144,7 +144,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <h1 className="text-4xl font-bold text-custom-text mb-4">{course.title}</h1>
             
             {/* Sub-type and Category */}
-            {(productInfo?.e_learning_subtype || productInfo?.category || course.category) && (
+            {(productInfo?.e_learning_subtype || course.category) && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {productInfo?.e_learning_subtype && (
                   <span className="px-3 py-1 bg-cyber-green/20 text-cyber-green rounded-full text-sm font-medium">
@@ -156,9 +156,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
                      productInfo.e_learning_subtype}
                   </span>
                 )}
-                {(productInfo?.category || course.category) && (
+                {course.category && (
                   <span className="px-3 py-1 bg-dark-green-800/50 text-custom-text/80 rounded-full text-sm">
-                    {productInfo?.category || course.category}
+                    {course.category}
                   </span>
                 )}
               </div>
