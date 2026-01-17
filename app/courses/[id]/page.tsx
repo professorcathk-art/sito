@@ -48,13 +48,14 @@ export default async function CoursePage({ params }: CoursePageProps) {
       }
     }
 
-    // Fetch product information to get e_learning_subtype, category, enrollment_on_request, and webinar_date_time
+    // Fetch product information to get e_learning_subtype, enrollment_on_request, and webinar_date_time
+    // Note: category is stored in courses table, not products table
     let productInfo = null;
     
     // First try with product_type filter
     let { data: product, error: productError } = await supabase
       .from("products")
-      .select("id, e_learning_subtype, category, enrollment_on_request, webinar_date_time, product_type, course_id")
+      .select("id, e_learning_subtype, enrollment_on_request, webinar_date_time, product_type, course_id")
       .eq("course_id", course.id)
       .eq("product_type", "e-learning")
       .maybeSingle();
@@ -63,7 +64,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
     if (!product && !productError) {
       const { data: productAlt, error: productAltError } = await supabase
         .from("products")
-        .select("id, e_learning_subtype, category, enrollment_on_request, webinar_date_time, product_type, course_id")
+        .select("id, e_learning_subtype, enrollment_on_request, webinar_date_time, product_type, course_id")
         .eq("course_id", course.id)
         .maybeSingle();
       
@@ -94,9 +95,25 @@ export default async function CoursePage({ params }: CoursePageProps) {
       // Debug: Check all products for this course_id
       const { data: allProducts } = await supabase
         .from("products")
-        .select("id, product_type, course_id, enrollment_on_request")
+        .select("id, product_type, course_id, enrollment_on_request, e_learning_subtype, webinar_date_time")
         .eq("course_id", course.id);
       console.warn("All products for course_id", course.id, ":", allProducts);
+      
+      // If we found products but the detailed query failed, use the first e-learning product
+      if (allProducts && allProducts.length > 0) {
+        const eLearningProduct = allProducts.find(p => p.product_type === "e-learning") || allProducts[0];
+        if (eLearningProduct) {
+          productInfo = {
+            id: eLearningProduct.id,
+            e_learning_subtype: eLearningProduct.e_learning_subtype,
+            enrollment_on_request: eLearningProduct.enrollment_on_request,
+            webinar_date_time: eLearningProduct.webinar_date_time,
+            product_type: eLearningProduct.product_type,
+            course_id: eLearningProduct.course_id
+          };
+          console.log("Using product from allProducts fallback:", productInfo);
+        }
+      }
     }
 
     // Get lessons
