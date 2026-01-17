@@ -12,6 +12,7 @@ interface CourseEnrollmentProps {
   coursePrice: number;
   isFree: boolean;
   currentUserId?: string;
+  enrollmentOnRequest?: boolean;
 }
 
 export function CourseEnrollment({
@@ -20,6 +21,7 @@ export function CourseEnrollment({
   coursePrice,
   isFree,
   currentUserId,
+  enrollmentOnRequest = false,
 }: CourseEnrollmentProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -768,7 +770,8 @@ export function CourseEnrollment({
       )}
 
       <div className="flex gap-4">
-        {!hasRegisteredInterest && (
+        {/* Hide Register Interest button if course is free */}
+        {!hasRegisteredInterest && !isFree && (
           <button
             onClick={handleRegisterInterest}
             disabled={processing}
@@ -777,13 +780,16 @@ export function CourseEnrollment({
             {processing ? "Processing..." : "Register Interest"}
           </button>
         )}
-        <button
-          onClick={handleEnroll}
-          disabled={processing}
-          className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
-        >
-          {processing ? "Processing..." : isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
-        </button>
+        {/* Hide Get it now button if enrollment is on request */}
+        {!enrollmentOnRequest && (
+          <button
+            onClick={handleEnroll}
+            disabled={processing}
+            className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+          >
+            {processing ? "Processing..." : isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
+          </button>
+        )}
       </div>
     </>
   );

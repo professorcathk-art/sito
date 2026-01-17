@@ -9,9 +9,10 @@ interface CourseActionsProps {
   currentUserId?: string;
   coursePrice: number;
   isFree: boolean;
+  enrollmentOnRequest?: boolean;
 }
 
-export function CourseActions({ courseId, expertId, currentUserId, coursePrice, isFree }: CourseActionsProps) {
+export function CourseActions({ courseId, expertId, currentUserId, coursePrice, isFree, enrollmentOnRequest = false }: CourseActionsProps) {
   const isExpert = currentUserId === expertId;
 
   if (isExpert) {
@@ -35,6 +36,7 @@ export function CourseActions({ courseId, expertId, currentUserId, coursePrice, 
         coursePrice={coursePrice}
         isFree={isFree}
         currentUserId={currentUserId}
+        enrollmentOnRequest={enrollmentOnRequest}
       />
       <Link
         href={`/expert/${expertId}`}

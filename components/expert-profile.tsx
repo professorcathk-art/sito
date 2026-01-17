@@ -34,6 +34,7 @@ interface Product {
   pricing_type: "one-off" | "hourly";
   product_type?: "e-learning" | "appointment" | "service";
   course_id?: string;
+  enrollment_on_request?: boolean;
 }
 
 interface AppointmentSlot {
@@ -598,6 +599,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                           coursePrice={(product as any).courses?.price || product.price || 0}
                           isFree={(product as any).courses?.is_free || product.price === 0}
                           currentUserId={user?.id}
+                          enrollmentOnRequest={product.enrollment_on_request || false}
                         />
                       </div>
                     )}

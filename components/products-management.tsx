@@ -14,7 +14,7 @@ interface Product {
   price: number;
   pricing_type: "one-off" | "hourly";
   product_type?: "service" | "e-learning" | "appointment";
-  e_learning_subtype?: "online-course" | "ebook" | "ai-prompt" | "other" | null;
+  e_learning_subtype?: "online-course" | "ebook" | "ai-prompt" | "live-webinar" | "other" | null;
   course_id?: string;
   appointment_slot_id?: string;
   stripe_product_id?: string | null;
@@ -23,6 +23,7 @@ interface Product {
   contact_email?: string | null;
   contact_url?: string | null;
   contact_type?: "email" | "url" | null;
+  enrollment_on_request?: boolean;
   created_at: string;
 }
 
@@ -73,7 +74,7 @@ export function ProductsManagement() {
     price: "",
     pricing_type: "one-off" as "one-off" | "hourly",
     product_type: "e-learning" as "e-learning" | "appointment",
-    e_learning_subtype: "" as "" | "online-course" | "ebook" | "ai-prompt" | "other",
+    e_learning_subtype: "" as "" | "online-course" | "ebook" | "ai-prompt" | "live-webinar" | "other",
     course_id: "",
     category: "",
     payment_method: "stripe" as "stripe" | "offline",
@@ -81,6 +82,7 @@ export function ProductsManagement() {
     contact_url: "",
     contact_type: "email" as "email" | "url",
     coverImageUrl: "",
+    enrollmentOnRequest: false,
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
@@ -787,18 +789,32 @@ export function ProductsManagement() {
           productData.price = newPrice;
         }
 
+        // Update enrollment_on_request
+        productData.enrollment_on_request = formData.enrollmentOnRequest || false;
+        
         // Update payment method and contact email/URL
-        productData.payment_method = formData.payment_method || "stripe";
-        if (formData.payment_method === "offline") {
-          // Store email or URL in contact_email field
-          productData.contact_email = formData.contact_type === "url" ? formData.contact_url : formData.contact_email || null;
-          // Clear Stripe IDs if switching to offline
+        if (formData.enrollmentOnRequest) {
+          // If enrollment on request, clear payment method and contact info
+          productData.payment_method = null;
+          productData.contact_email = null;
+          // Clear Stripe IDs if switching to enrollment on request
           if (editingProduct.stripe_product_id) {
             productData.stripe_product_id = null;
             productData.stripe_price_id = null;
           }
         } else {
-          productData.contact_email = null;
+          productData.payment_method = formData.payment_method || "stripe";
+          if (formData.payment_method === "offline") {
+            // Store email or URL in contact_email field
+            productData.contact_email = formData.contact_type === "url" ? formData.contact_url : formData.contact_email || null;
+            // Clear Stripe IDs if switching to offline
+            if (editingProduct.stripe_product_id) {
+              productData.stripe_product_id = null;
+              productData.stripe_price_id = null;
+            }
+          } else {
+            productData.contact_email = null;
+          }
         }
 
         // Update Stripe product if price changed and product is paid
@@ -906,6 +922,7 @@ export function ProductsManagement() {
           contact_url: "",
           contact_type: "email",
           coverImageUrl: "",
+          enrollmentOnRequest: false,
         });
         setShowAddForm(false);
         setEditingProduct(null);
@@ -950,8 +967,9 @@ export function ProductsManagement() {
               course_id: newCourse.id,
               price: coursePrice,
               pricing_type: "one-off",
-              payment_method: formData.payment_method || "stripe",
-              contact_email: formData.payment_method === "offline" ? (formData.contact_type === "url" ? formData.contact_url : formData.contact_email) : null,
+              payment_method: formData.enrollmentOnRequest ? null : (formData.payment_method || "stripe"),
+              contact_email: formData.enrollmentOnRequest ? null : (formData.payment_method === "offline" ? (formData.contact_type === "url" ? formData.contact_url : formData.contact_email) : null),
+              enrollment_on_request: formData.enrollmentOnRequest || false,
             })
             .select()
             .single();
@@ -1225,6 +1243,7 @@ export function ProductsManagement() {
         contact_url: "",
         contact_type: "email",
         coverImageUrl: "",
+        enrollmentOnRequest: false,
       });
       setShowAddForm(false);
       setEditingProduct(null);
@@ -1291,6 +1310,7 @@ export function ProductsManagement() {
       contact_url: product.contact_email?.startsWith("http") ? product.contact_email : "",
       contact_type: product.contact_email?.startsWith("http") ? "url" as "email" | "url" : "email" as "email" | "url",
       coverImageUrl: coverImageUrl,
+      enrollmentOnRequest: product.enrollment_on_request || false,
     });
     setShowAddForm(true);
   };
@@ -1486,6 +1506,7 @@ export function ProductsManagement() {
                 contact_url: "",
                 contact_type: "email",
                 coverImageUrl: "",
+                enrollmentOnRequest: false,
               });
             }}
             className="bg-cyber-green text-custom-text px-4 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
@@ -1586,7 +1607,7 @@ export function ProductsManagement() {
                   </label>
                   <select
                     value={formData.e_learning_subtype}
-                    onChange={(e) => setFormData({ ...formData, e_learning_subtype: e.target.value as "online-course" | "ebook" | "ai-prompt" | "other" })}
+                    onChange={(e) => setFormData({ ...formData, e_learning_subtype: e.target.value as "online-course" | "ebook" | "ai-prompt" | "live-webinar" | "other" })}
                     className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
                     required
                   >
@@ -1594,6 +1615,7 @@ export function ProductsManagement() {
                     <option value="online-course">Online Course</option>
                     <option value="ebook">Ebook</option>
                     <option value="ai-prompt">AI Prompt</option>
+                    <option value="live-webinar">Live Webinar</option>
                     <option value="other">Other</option>
                   </select>
                   <p className="text-xs text-custom-text/60 mt-1">Categorize your e-learning product</p>
@@ -1651,30 +1673,54 @@ export function ProductsManagement() {
                 <label className="block text-sm font-medium text-custom-text mb-2">
                   Price (USD) *
                 </label>
-                <div className="flex items-center gap-4 mb-2">
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-32 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
-                    placeholder="0.00"
-                    required
-                  />
-                  <label className="flex items-center gap-2 text-custom-text">
+                <div className="flex flex-col gap-3 mb-2">
+                  <div className="flex items-center gap-4">
                     <input
-                      type="checkbox"
-                      checked={formData.price === "0" || formData.price === ""}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setFormData({ ...formData, price: "0" });
-                        }
-                      }}
-                      className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      className="w-32 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                      placeholder="0.00"
+                      required={!formData.enrollmentOnRequest}
+                      disabled={formData.enrollmentOnRequest}
                     />
-                    <span className="text-sm">Free</span>
-                  </label>
+                    <label className="flex items-center gap-2 text-custom-text">
+                      <input
+                        type="checkbox"
+                        checked={formData.price === "0" || formData.price === ""}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({ ...formData, price: "0", enrollmentOnRequest: false });
+                          }
+                        }}
+                        className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                        disabled={formData.enrollmentOnRequest}
+                      />
+                      <span className="text-sm">Free</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-custom-text">
+                      <input
+                        type="checkbox"
+                        checked={formData.enrollmentOnRequest}
+                        onChange={(e) => {
+                          setFormData({ 
+                            ...formData, 
+                            enrollmentOnRequest: e.target.checked,
+                            price: e.target.checked ? "0" : formData.price
+                          });
+                        }}
+                        className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                      />
+                      <span className="text-sm">Enrollment on Request</span>
+                    </label>
+                  </div>
+                  {formData.enrollmentOnRequest && (
+                    <p className="text-xs text-custom-text/60 italic">
+                      Note: This means price will not be displayed. Users will need to contact you directly for enrollment.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -1819,6 +1865,7 @@ export function ProductsManagement() {
                     contact_url: "",
                     contact_type: "email",
                     coverImageUrl: "",
+                    enrollmentOnRequest: false,
                   });
                 }}
                 className="px-6 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
@@ -2569,6 +2616,7 @@ export function ProductsManagement() {
                       contact_url: "",
                       contact_type: "email",
                       coverImageUrl: "",
+                      enrollmentOnRequest: false,
                     });
                     fetchProducts();
                     alert("Course published successfully! Your course is now live.");

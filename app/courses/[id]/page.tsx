@@ -47,11 +47,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
       }
     }
 
-    // Fetch product information to get e_learning_subtype and category
+    // Fetch product information to get e_learning_subtype, category, and enrollment_on_request
     let productInfo = null;
     const { data: product, error: productError } = await supabase
       .from("products")
-      .select("e_learning_subtype, category")
+      .select("e_learning_subtype, category, enrollment_on_request")
       .eq("course_id", course.id)
       .eq("product_type", "e-learning")
       .maybeSingle();
@@ -95,6 +95,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     {productInfo.e_learning_subtype === 'online-course' ? 'Online Course' :
                      productInfo.e_learning_subtype === 'ebook' ? 'Ebook' :
                      productInfo.e_learning_subtype === 'ai-prompt' ? 'AI Prompt' :
+                     productInfo.e_learning_subtype === 'live-webinar' ? 'Live Webinar' :
                      productInfo.e_learning_subtype === 'other' ? 'Other' :
                      productInfo.e_learning_subtype}
                   </span>
@@ -138,14 +139,22 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 dangerouslySetInnerHTML={{ __html: course.description }}
               />
             )}
-            <div className="flex items-center gap-4">
-              <span className="text-2xl font-bold text-cyber-green">
-                {course.is_free ? "Free" : `$${course.price}`}
-              </span>
-              {!course.is_free && (
-                <span className="text-custom-text/60">One-time payment</span>
-              )}
-            </div>
+            {/* Hide price if enrollment is on request */}
+            {!productInfo?.enrollment_on_request && (
+              <div className="flex items-center gap-4">
+                <span className="text-2xl font-bold text-cyber-green">
+                  {course.is_free ? "Free" : `$${course.price}`}
+                </span>
+                {!course.is_free && (
+                  <span className="text-custom-text/60">One-time payment</span>
+                )}
+              </div>
+            )}
+            {productInfo?.enrollment_on_request && (
+              <div className="text-custom-text/80 italic">
+                Enrollment available on request. Please contact the expert for details.
+              </div>
+            )}
           </div>
 
           {lessons && lessons.length > 0 && (
@@ -192,6 +201,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             currentUserId={user?.id}
             coursePrice={course.price}
             isFree={course.is_free}
+            enrollmentOnRequest={productInfo?.enrollment_on_request || false}
           />
         </div>
       </div>

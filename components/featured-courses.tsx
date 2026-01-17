@@ -16,7 +16,7 @@ interface Product {
   expert_avatar_url?: string;
   course_id?: string;
   cover_image_url?: string | null;
-  e_learning_subtype?: "online-course" | "ebook" | "ai-prompt" | "other" | null;
+  e_learning_subtype?: "online-course" | "ebook" | "ai-prompt" | "live-webinar" | "other" | null;
   created_at: string;
 }
 
@@ -247,6 +247,7 @@ export function FeaturedCourses() {
                         {product.e_learning_subtype === "online-course" ? "Online Course" :
                          product.e_learning_subtype === "ebook" ? "Ebook" :
                          product.e_learning_subtype === "ai-prompt" ? "AI Prompt" :
+                         product.e_learning_subtype === "live-webinar" ? "Live Webinar" :
                          product.e_learning_subtype === "other" ? "Other" :
                          product.e_learning_subtype}
                       </span>
