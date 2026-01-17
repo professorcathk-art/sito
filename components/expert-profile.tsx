@@ -595,18 +595,18 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                     key={product.id}
                     className="bg-dark-green-900/30 border border-cyber-green/30 rounded-xl p-6 relative"
                   >
-                    {/* Eye-catching Live Webinar Label */}
+                    {/* Eye-catching Live Webinar Label - Top on mobile, top-right on desktop */}
                     {product.e_learning_subtype === "live-webinar" && (
-                      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-4 sm:right-4 z-10">
                         <div className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg animate-pulse flex items-center gap-1">
                           <span className="text-[10px] sm:text-xs">🔴</span>
                           <span className="hidden sm:inline">LIVE WEBINAR</span>
-                          <span className="sm:hidden">LIVE</span>
+                          <span className="sm:hidden">LIVE WEBINAR</span>
                         </div>
                       </div>
                     )}
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 pr-20 sm:pr-0">
+                      <div className="flex-1 pt-8 sm:pt-0">
                         <Link 
                           href={product.course_id ? `/courses/${product.course_id}` : '#'}
                           className="block hover:text-cyber-green transition-colors"
