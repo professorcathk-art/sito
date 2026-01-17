@@ -25,11 +25,6 @@ export function CourseEnrollment({
   enrollmentOnRequest = false,
   returnUrl,
 }: CourseEnrollmentProps) {
-  // Debug logging
-  if (typeof window !== 'undefined') {
-    console.log('CourseEnrollment - enrollmentOnRequest:', enrollmentOnRequest, typeof enrollmentOnRequest, 'isFree:', isFree);
-  }
-  
   // Ensure boolean value
   const isEnrollmentOnRequest = enrollmentOnRequest === true;
   const router = useRouter();

@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { CourseActions } from "@/components/course-actions";
-import { ProductDebug } from "@/components/product-debug";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
@@ -74,30 +73,14 @@ export default async function CoursePage({ params }: CoursePageProps) {
       }
     }
     
-    if (productError) {
-      console.error("Error fetching product:", productError);
-    }
-    
     if (product) {
       productInfo = product;
-      // Log for debugging - check the actual value type
-      console.log("Product info found:", {
-        product_id: product.id,
-        enrollment_on_request: product.enrollment_on_request,
-        enrollment_on_request_type: typeof product.enrollment_on_request,
-        enrollment_on_request_value: product.enrollment_on_request,
-        product_type: product.product_type,
-        course_id: product.course_id,
-        searched_course_id: course.id
-      });
     } else {
-      console.warn("No product found for course:", course.id, "- Checking all products for this course_id...");
-      // Debug: Check all products for this course_id
+      // Fallback: Check all products for this course_id if detailed query failed
       const { data: allProducts } = await supabase
         .from("products")
         .select("id, product_type, course_id, enrollment_on_request, e_learning_subtype, webinar_date_time")
         .eq("course_id", course.id);
-      console.warn("All products for course_id", course.id, ":", allProducts);
       
       // If we found products but the detailed query failed, use the first e-learning product
       if (allProducts && allProducts.length > 0) {
@@ -111,7 +94,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
             product_type: eLearningProduct.product_type,
             course_id: eLearningProduct.course_id
           };
-          console.log("Using product from allProducts fallback:", productInfo);
         }
       }
     }
@@ -269,9 +251,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
           )}
 
-          {/* Debug component - will show product query results in browser console */}
-          <ProductDebug courseId={course.id} />
-
           <CourseActions 
             courseId={course.id} 
             expertId={course.expert_id} 
@@ -285,11 +264,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 productInfo.enrollment_on_request === 1
               ) : false
             }
-            debugProductInfo={productInfo ? {
-              id: productInfo.id,
-              enrollment_on_request: productInfo.enrollment_on_request,
-              type: typeof productInfo.enrollment_on_request
-            } : null}
           />
         </div>
       </div>
