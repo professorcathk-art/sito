@@ -794,8 +794,8 @@ export function CourseEnrollment({
       )}
 
       <div className="flex gap-4">
-        {/* Show Register Interest button if enrollment is on request, OR if paid (not free) and not already registered */}
-        {!hasRegisteredInterest && (enrollmentOnRequest || (!isFree && !enrollmentOnRequest)) && (
+        {/* If enrollment is on request: Show Register Interest button only */}
+        {enrollmentOnRequest && !hasRegisteredInterest && (
           <button
             onClick={handleRegisterInterest}
             disabled={processing}
@@ -804,15 +804,28 @@ export function CourseEnrollment({
             {processing ? "Processing..." : "Register Interest"}
           </button>
         )}
-        {/* Show Get it now button if enrollment is NOT on request */}
+        {/* If enrollment is NOT on request: Show appropriate buttons */}
         {!enrollmentOnRequest && (
-          <button
-            onClick={handleEnroll}
-            disabled={processing}
-            className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
-          >
-            {processing ? "Processing..." : isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
-          </button>
+          <>
+            {/* Show Register Interest button for paid courses (if not already registered) */}
+            {!hasRegisteredInterest && !isFree && (
+              <button
+                onClick={handleRegisterInterest}
+                disabled={processing}
+                className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors disabled:opacity-50"
+              >
+                {processing ? "Processing..." : "Register Interest"}
+              </button>
+            )}
+            {/* Show Get it now button for all non-on-request courses */}
+            <button
+              onClick={handleEnroll}
+              disabled={processing}
+              className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+            >
+              {processing ? "Processing..." : isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
+            </button>
+          </>
         )}
       </div>
     </>

@@ -37,6 +37,7 @@ export function CourseActions({ courseId, expertId, currentUserId, coursePrice, 
         isFree={isFree}
         currentUserId={currentUserId}
         enrollmentOnRequest={enrollmentOnRequest}
+        returnUrl={typeof window !== 'undefined' ? window.location.pathname + window.location.search : undefined}
       />
       <Link
         href={`/expert/${expertId}`}
