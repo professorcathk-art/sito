@@ -49,12 +49,28 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
     // Fetch product information to get e_learning_subtype, category, enrollment_on_request, and webinar_date_time
     let productInfo = null;
-    const { data: product, error: productError } = await supabase
+    
+    // First try with product_type filter
+    let { data: product, error: productError } = await supabase
       .from("products")
-      .select("id, e_learning_subtype, category, enrollment_on_request, webinar_date_time")
+      .select("id, e_learning_subtype, category, enrollment_on_request, webinar_date_time, product_type, course_id")
       .eq("course_id", course.id)
       .eq("product_type", "e-learning")
       .maybeSingle();
+    
+    // If not found, try without product_type filter (in case it's null or different)
+    if (!product && !productError) {
+      const { data: productAlt, error: productAltError } = await supabase
+        .from("products")
+        .select("id, e_learning_subtype, category, enrollment_on_request, webinar_date_time, product_type, course_id")
+        .eq("course_id", course.id)
+        .maybeSingle();
+      
+      if (productAlt) {
+        product = productAlt;
+        productError = productAltError;
+      }
+    }
     
     if (productError) {
       console.error("Error fetching product:", productError);
@@ -63,15 +79,23 @@ export default async function CoursePage({ params }: CoursePageProps) {
     if (product) {
       productInfo = product;
       // Log for debugging - check the actual value type
-      console.log("Product info:", {
+      console.log("Product info found:", {
         product_id: product.id,
         enrollment_on_request: product.enrollment_on_request,
         enrollment_on_request_type: typeof product.enrollment_on_request,
         enrollment_on_request_value: product.enrollment_on_request,
-        course_id: course.id
+        product_type: product.product_type,
+        course_id: product.course_id,
+        searched_course_id: course.id
       });
     } else {
-      console.warn("No product found for course:", course.id);
+      console.warn("No product found for course:", course.id, "- Checking all products for this course_id...");
+      // Debug: Check all products for this course_id
+      const { data: allProducts } = await supabase
+        .from("products")
+        .select("id, product_type, course_id, enrollment_on_request")
+        .eq("course_id", course.id);
+      console.warn("All products for course_id", course.id, ":", allProducts);
     }
 
     // Get lessons
