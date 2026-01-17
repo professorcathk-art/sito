@@ -38,6 +38,7 @@ export function CourseEnrollment({
   const [productPaymentMethod, setProductPaymentMethod] = useState<"stripe" | "offline" | null>(null);
   const [productContactEmail, setProductContactEmail] = useState<string | null>(null);
   const [showOfflinePaymentInfo, setShowOfflinePaymentInfo] = useState(false);
+  const [thankYouMessage, setThankYouMessage] = useState<string | null>(null);
 
   const fetchProductPaymentInfo = async () => {
     try {
