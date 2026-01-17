@@ -794,8 +794,8 @@ export function CourseEnrollment({
       )}
 
       <div className="flex gap-4">
-        {/* Show Register Interest button if not free and not already registered, OR if enrollment is on request */}
-        {!hasRegisteredInterest && (!isFree || enrollmentOnRequest) && (
+        {/* Show Register Interest button if enrollment is on request, OR if paid (not free) and not already registered */}
+        {!hasRegisteredInterest && (enrollmentOnRequest || (!isFree && !enrollmentOnRequest)) && (
           <button
             onClick={handleRegisterInterest}
             disabled={processing}

@@ -870,7 +870,8 @@ export function ProductsManagement() {
           
           if (formData.price) {
             courseUpdateData.price = parseFloat(formData.price) || 0;
-            courseUpdateData.is_free = parseFloat(formData.price) === 0;
+            // If enrollment_on_request is true, don't set is_free to true (on request ≠ free)
+            courseUpdateData.is_free = parseFloat(formData.price) === 0 && !formData.enrollmentOnRequest;
           }
           
           // Update course title if product name changed
@@ -958,6 +959,8 @@ export function ProductsManagement() {
         try {
           // Create course first
           const coursePrice = formData.price ? parseFloat(formData.price) || 0 : 0;
+          // If enrollment_on_request is true, don't set is_free to true (on request ≠ free)
+          const isFree = coursePrice === 0 && !formData.enrollmentOnRequest;
           const { data: newCourse, error: courseError } = await supabase
             .from("courses")
             .insert({
@@ -965,7 +968,7 @@ export function ProductsManagement() {
               title: formData.name,
               description: formData.description,
               cover_image_url: formData.coverImageUrl || null,
-              is_free: coursePrice === 0,
+              is_free: isFree,
               price: coursePrice,
               category: formData.category,
               published: false, // Will be published after questionnaire is ready
@@ -1757,10 +1760,13 @@ export function ProductsManagement() {
                     <label className="flex items-center gap-2 text-custom-text">
                       <input
                         type="checkbox"
-                        checked={formData.price === "0" || formData.price === ""}
+                        checked={(formData.price === "0" || formData.price === "") && !formData.enrollmentOnRequest}
                         onChange={(e) => {
                           if (e.target.checked) {
                             setFormData({ ...formData, price: "0", enrollmentOnRequest: false });
+                          } else {
+                            // Unchecking free - set price to empty if it was "0"
+                            setFormData({ ...formData, price: formData.price === "0" ? "" : formData.price });
                           }
                         }}
                         className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
@@ -1776,7 +1782,9 @@ export function ProductsManagement() {
                           setFormData({ 
                             ...formData, 
                             enrollmentOnRequest: e.target.checked,
-                            price: e.target.checked ? "0" : formData.price
+                            // Don't set price to "0" when checking on request - leave it as is
+                            // But clear it if it was "0" (free) to avoid confusion
+                            price: e.target.checked && formData.price === "0" ? "" : formData.price
                           });
                         }}
                         className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
