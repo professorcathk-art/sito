@@ -36,6 +36,7 @@ interface Product {
   course_id?: string;
   enrollment_on_request?: boolean;
   webinar_expiry_date?: string | null;
+  webinar_date_time?: string | null;
   e_learning_subtype?: string | null;
 }
 
@@ -606,6 +607,24 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-custom-text mb-2">{product.name}</h3>
+                        {/* Show webinar date/time for live webinars */}
+                        {product.e_learning_subtype === "live-webinar" && product.webinar_date_time && (
+                          <div className="mb-3 p-3 bg-cyber-green/10 border border-cyber-green/30 rounded-lg">
+                            <p className="text-xs text-custom-text/70 mb-1">📅 Webinar Date & Time:</p>
+                            <p className="text-sm font-semibold text-cyber-green">
+                              {new Date(product.webinar_date_time).toLocaleString('en-US', {
+                                timeZone: 'Asia/Hong_Kong',
+                                weekday: 'short',
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true
+                              })} (HKT)
+                            </p>
+                          </div>
+                        )}
                         {isExpanded && (
                           <div 
                             className="text-custom-text/80 mb-3 product-preview"
