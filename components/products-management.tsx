@@ -2687,6 +2687,8 @@ export function ProductsManagement() {
                       contact_type: "email",
                       coverImageUrl: "",
                       enrollmentOnRequest: false,
+                      webinarExpiryDate: "",
+                      webinarDateTime: "",
                     });
                     fetchProducts();
                     alert("Course published successfully! Your course is now live.");
