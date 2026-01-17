@@ -1934,6 +1934,8 @@ export function ProductsManagement() {
                     contact_type: "email",
                     coverImageUrl: "",
                     enrollmentOnRequest: false,
+                    webinarExpiryDate: "",
+                    webinarDateTime: "",
                   });
                 }}
                 className="px-6 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
