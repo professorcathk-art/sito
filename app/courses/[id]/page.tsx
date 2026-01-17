@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { CourseActions } from "@/components/course-actions";
+import { ProductDebug } from "@/components/product-debug";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
@@ -250,6 +251,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </div>
             </div>
           )}
+
+          {/* Debug component - will show product query results in browser console */}
+          <ProductDebug courseId={course.id} />
 
           <CourseActions 
             courseId={course.id} 
