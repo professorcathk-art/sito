@@ -57,8 +57,13 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-cyber-green/20 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-custom-text/60 text-xs sm:text-sm text-center sm:text-left">
+          {/* Hide copyright on mobile for expert profile pages */}
+          <p className="hidden sm:block text-custom-text/60 text-xs sm:text-sm text-center sm:text-left">
             © {new Date().getFullYear()} Sito. All rights reserved.
+          </p>
+          {/* Show shortened version on mobile */}
+          <p className="sm:hidden text-custom-text/60 text-xs text-center">
+            © {new Date().getFullYear()} Sito
           </p>
           <div className="flex gap-4 sm:gap-6">
             <Link

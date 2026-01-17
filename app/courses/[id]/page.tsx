@@ -47,11 +47,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
       }
     }
 
-    // Fetch product information to get e_learning_subtype, category, and enrollment_on_request
+    // Fetch product information to get e_learning_subtype, category, enrollment_on_request, and webinar_date_time
     let productInfo = null;
     const { data: product, error: productError } = await supabase
       .from("products")
-      .select("e_learning_subtype, category, enrollment_on_request")
+      .select("e_learning_subtype, category, enrollment_on_request, webinar_date_time")
       .eq("course_id", course.id)
       .eq("product_type", "e-learning")
       .maybeSingle();
@@ -139,22 +139,40 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 dangerouslySetInnerHTML={{ __html: course.description }}
               />
             )}
-            {/* Hide price if enrollment is on request */}
-            {!productInfo?.enrollment_on_request && (
-              <div className="flex items-center gap-4">
-                <span className="text-2xl font-bold text-cyber-green">
-                  {course.is_free ? "Free" : `$${course.price}`}
-                </span>
-                {!course.is_free && (
-                  <span className="text-custom-text/60">One-time payment</span>
-                )}
+            {/* Show webinar date/time for live webinars */}
+            {productInfo?.e_learning_subtype === "live-webinar" && productInfo?.webinar_date_time && (
+              <div className="mb-4 p-4 bg-cyber-green/10 border border-cyber-green/30 rounded-lg">
+                <p className="text-sm text-custom-text/70 mb-1">Live Webinar Date & Time:</p>
+                <p className="text-lg font-semibold text-cyber-green">
+                  {new Date(productInfo.webinar_date_time).toLocaleString('en-US', {
+                    timeZone: 'Asia/Hong_Kong',
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                  })} (Hong Kong Time)
+                </p>
               </div>
             )}
-            {productInfo?.enrollment_on_request && (
-              <div className="text-custom-text/80 italic">
-                Enrollment available on request. Please contact the expert for details.
-              </div>
-            )}
+            
+            {/* Show price - "On Request" if enrollment_on_request, otherwise show price or Free */}
+            <div className="flex items-center gap-4">
+              {productInfo?.enrollment_on_request ? (
+                <span className="text-2xl font-bold text-cyber-green">On Request</span>
+              ) : (
+                <>
+                  <span className="text-2xl font-bold text-cyber-green">
+                    {course.is_free ? "Free" : `$${course.price}`}
+                  </span>
+                  {!course.is_free && (
+                    <span className="text-custom-text/60">One-time payment</span>
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
           {lessons && lessons.length > 0 && (

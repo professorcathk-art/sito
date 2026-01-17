@@ -13,6 +13,7 @@ interface CourseEnrollmentProps {
   isFree: boolean;
   currentUserId?: string;
   enrollmentOnRequest?: boolean;
+  returnUrl?: string; // URL to redirect back to after enrollment/registration
 }
 
 export function CourseEnrollment({
@@ -22,6 +23,7 @@ export function CourseEnrollment({
   isFree,
   currentUserId,
   enrollmentOnRequest = false,
+  returnUrl,
 }: CourseEnrollmentProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -156,7 +158,7 @@ export function CourseEnrollment({
       // Check if questionnaire exists for this product (linked by product_id)
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
-        .select("id, is_active")
+        .select("id, is_active, thank_you_message")
         .eq("product_id", product.id)
         .eq("is_active", true)  // Only get active questionnaires
         .maybeSingle();
@@ -209,6 +211,13 @@ export function CourseEnrollment({
           console.log("Fields:", allFields.map(f => f.label));
           setQuestionnaireId(questionnaireId);
           setQuestionnaireType("interest");
+          // Get thank you message from questionnaire
+          const { data: qData } = await supabase
+            .from("questionnaires")
+            .select("thank_you_message")
+            .eq("id", questionnaireId)
+            .maybeSingle();
+          setThankYouMessage(qData?.thank_you_message || null);
           setShowQuestionnaire(true);
           return;
         } else {
@@ -307,6 +316,10 @@ export function CourseEnrollment({
 
       alert("Interest registered successfully! The expert will be notified.");
       setHasRegisteredInterest(true);
+      // Redirect back to returnUrl if provided (e.g., expert profile page)
+      if (returnUrl && typeof window !== 'undefined') {
+        router.push(returnUrl);
+      }
     } catch (err: any) {
       console.error("Error registering interest:", err);
       alert(err.message || "Failed to register interest. Please try again.");
@@ -380,7 +393,7 @@ export function CourseEnrollment({
       // Check if questionnaire exists for this product (linked by product_id)
       const { data: questionnaire, error: qError } = await supabase
         .from("questionnaires")
-        .select("id, is_active")
+        .select("id, is_active, thank_you_message")
         .eq("product_id", product.id)
         .eq("is_active", true)  // Only get active questionnaires
         .maybeSingle();
@@ -422,6 +435,7 @@ export function CourseEnrollment({
           console.log("Fields:", allFields.map(f => f.label));
           setQuestionnaireId(questionnaire.id);
           setQuestionnaireType("enroll");
+          setThankYouMessage(questionnaire.thank_you_message || null);
           setShowQuestionnaire(true);
           return;
         } else {
@@ -496,7 +510,12 @@ export function CourseEnrollment({
 
         alert("Successfully enrolled in course!");
         setIsEnrolled(true);
-        router.push("/courses/manage");
+        // Redirect back to returnUrl if provided, otherwise to courses/manage
+        if (returnUrl) {
+          router.push(returnUrl);
+        } else {
+          router.push("/courses/manage");
+        }
       } else {
         // Paid course - get product payment info
         // Get product info and expert's Stripe Connect account for Stripe checkout
@@ -706,7 +725,11 @@ export function CourseEnrollment({
             <QuestionnaireForm
               questionnaireId={questionnaireId}
               onSubmit={handleQuestionnaireSubmit}
-              onCancel={() => setShowQuestionnaire(false)}
+              onCancel={() => {
+                setShowQuestionnaire(false);
+                setThankYouMessage(null);
+              }}
+              thankYouMessage={thankYouMessage}
             />
           </div>
         </div>
@@ -770,8 +793,8 @@ export function CourseEnrollment({
       )}
 
       <div className="flex gap-4">
-        {/* Hide Register Interest button if course is free */}
-        {!hasRegisteredInterest && !isFree && (
+        {/* Show Register Interest button if not free and not already registered, OR if enrollment is on request */}
+        {!hasRegisteredInterest && (!isFree || enrollmentOnRequest) && (
           <button
             onClick={handleRegisterInterest}
             disabled={processing}
@@ -780,7 +803,7 @@ export function CourseEnrollment({
             {processing ? "Processing..." : "Register Interest"}
           </button>
         )}
-        {/* Hide Get it now button if enrollment is on request */}
+        {/* Show Get it now button if enrollment is NOT on request */}
         {!enrollmentOnRequest && (
           <button
             onClick={handleEnroll}

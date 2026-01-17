@@ -24,6 +24,8 @@ interface Product {
   contact_url?: string | null;
   contact_type?: "email" | "url" | null;
   enrollment_on_request?: boolean;
+  webinar_expiry_date?: string | null;
+  webinar_date_time?: string | null;
   created_at: string;
 }
 
@@ -83,6 +85,8 @@ export function ProductsManagement() {
     contact_type: "email" as "email" | "url",
     coverImageUrl: "",
     enrollmentOnRequest: false,
+    webinarExpiryDate: "",
+    webinarDateTime: "",
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
@@ -792,6 +796,20 @@ export function ProductsManagement() {
         // Update enrollment_on_request
         productData.enrollment_on_request = formData.enrollmentOnRequest || false;
         
+        // Update webinar_expiry_date and webinar_date_time for live webinars
+        if (formData.e_learning_subtype === "live-webinar") {
+          if (formData.webinarExpiryDate) {
+            productData.webinar_expiry_date = new Date(formData.webinarExpiryDate).toISOString();
+          }
+          if (formData.webinarDateTime) {
+            productData.webinar_date_time = new Date(formData.webinarDateTime).toISOString();
+          }
+        } else if (editingProduct.e_learning_subtype !== "live-webinar") {
+          // Clear webinar dates if not a live webinar
+          productData.webinar_expiry_date = null;
+          productData.webinar_date_time = null;
+        }
+        
         // Update payment method and contact email/URL
         if (formData.enrollmentOnRequest) {
           // If enrollment on request, clear payment method and contact info
@@ -923,6 +941,8 @@ export function ProductsManagement() {
           contact_type: "email",
           coverImageUrl: "",
           enrollmentOnRequest: false,
+          webinarExpiryDate: "",
+          webinarDateTime: "",
         });
         setShowAddForm(false);
         setEditingProduct(null);
@@ -970,6 +990,12 @@ export function ProductsManagement() {
               payment_method: formData.enrollmentOnRequest ? null : (formData.payment_method || "stripe"),
               contact_email: formData.enrollmentOnRequest ? null : (formData.payment_method === "offline" ? (formData.contact_type === "url" ? formData.contact_url : formData.contact_email) : null),
               enrollment_on_request: formData.enrollmentOnRequest || false,
+              webinar_expiry_date: formData.e_learning_subtype === "live-webinar" && formData.webinarExpiryDate 
+                ? new Date(formData.webinarExpiryDate).toISOString() 
+                : null,
+              webinar_date_time: formData.e_learning_subtype === "live-webinar" && formData.webinarDateTime 
+                ? new Date(formData.webinarDateTime).toISOString() 
+                : null,
             })
             .select()
             .single();
@@ -1244,6 +1270,8 @@ export function ProductsManagement() {
         contact_type: "email",
         coverImageUrl: "",
         enrollmentOnRequest: false,
+        webinarExpiryDate: "",
+        webinarDateTime: "",
       });
       setShowAddForm(false);
       setEditingProduct(null);
@@ -1311,6 +1339,12 @@ export function ProductsManagement() {
       contact_type: product.contact_email?.startsWith("http") ? "url" as "email" | "url" : "email" as "email" | "url",
       coverImageUrl: coverImageUrl,
       enrollmentOnRequest: product.enrollment_on_request || false,
+      webinarExpiryDate: product.webinar_expiry_date 
+        ? new Date(product.webinar_expiry_date).toISOString().slice(0, 16) // Format for datetime-local input
+        : "",
+      webinarDateTime: product.webinar_date_time 
+        ? new Date(product.webinar_date_time).toISOString().slice(0, 16) // Format for datetime-local input
+        : "",
     });
     setShowAddForm(true);
   };
@@ -1507,6 +1541,8 @@ export function ProductsManagement() {
                 contact_type: "email",
                 coverImageUrl: "",
                 enrollmentOnRequest: false,
+                webinarExpiryDate: "",
+                webinarDateTime: "",
               });
             }}
             className="bg-cyber-green text-custom-text px-4 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
@@ -1620,6 +1656,38 @@ export function ProductsManagement() {
                   </select>
                   <p className="text-xs text-custom-text/60 mt-1">Categorize your e-learning product</p>
                 </div>
+                
+                {/* Webinar Date/Time and Expiry Date - only show for live webinar */}
+                {formData.e_learning_subtype === "live-webinar" && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-custom-text mb-2">
+                        Webinar Date & Time (Hong Kong Time) *
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={formData.webinarDateTime}
+                        onChange={(e) => setFormData({ ...formData, webinarDateTime: e.target.value })}
+                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                        required={formData.e_learning_subtype === "live-webinar"}
+                      />
+                      <p className="text-xs text-custom-text/60 mt-1">When the live webinar will take place</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-custom-text mb-2">
+                        Registration Expiry Date (Hong Kong Time) *
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={formData.webinarExpiryDate}
+                        onChange={(e) => setFormData({ ...formData, webinarExpiryDate: e.target.value })}
+                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                        required={formData.e_learning_subtype === "live-webinar"}
+                      />
+                      <p className="text-xs text-custom-text/60 mt-1">Registration will close after this date</p>
+                    </div>
+                  </>
+                )}
               </>
             )}
 

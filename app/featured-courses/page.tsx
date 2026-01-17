@@ -91,9 +91,19 @@ export default function FeaturedCoursesPage() {
           throw profilesError;
         }
 
-        // Filter out products with deleted courses
+        // Filter out products with deleted courses and expired live webinars
         const validCourseIds = coursesData?.map((c: any) => c.id) || [];
-        const validProductsData = productsData.filter((p: any) => validCourseIds.includes(p.course_id));
+        const now = new Date();
+        const validProductsData = productsData.filter((p: any) => {
+          // Must have valid course
+          if (!validCourseIds.includes(p.course_id)) return false;
+          // Filter out expired live webinars
+          if (p.e_learning_subtype === "live-webinar" && p.webinar_expiry_date) {
+            const expiryDate = new Date(p.webinar_expiry_date);
+            return expiryDate > now;
+          }
+          return true;
+        });
         
         // Combine data
         const combinedCourses = validProductsData

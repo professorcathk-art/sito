@@ -35,6 +35,8 @@ interface Product {
   product_type?: "e-learning" | "appointment" | "service";
   course_id?: string;
   enrollment_on_request?: boolean;
+  webinar_expiry_date?: string | null;
+  e_learning_subtype?: string | null;
 }
 
 interface AppointmentSlot {
@@ -188,7 +190,19 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      
+      // Filter out expired live webinars
+      const now = new Date();
+      const filteredProducts = (data || []).filter((product: any) => {
+        // If it's a live webinar with expiry date, check if expired
+        if (product.e_learning_subtype === "live-webinar" && product.webinar_expiry_date) {
+          const expiryDate = new Date(product.webinar_expiry_date);
+          return expiryDate > now;
+        }
+        return true; // Keep all other products
+      });
+      
+      setProducts(filteredProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
       setProducts([]);
@@ -481,7 +495,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                 )}
               </div>
             {(expert.tagline || expert.title) && (
-              <p className="text-xl text-custom-text/80 mb-2">{expert.tagline || expert.title}</p>
+              <p className="text-base sm:text-xl text-custom-text/80 mb-2">{expert.tagline || expert.title}</p>
             )}
             <div className="flex items-center gap-4 text-custom-text/70">
               {expert.category && (
@@ -578,8 +592,17 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                 return (
                   <div
                     key={product.id}
-                    className="bg-dark-green-900/30 border border-cyber-green/30 rounded-xl p-6"
+                    className="bg-dark-green-900/30 border border-cyber-green/30 rounded-xl p-6 relative"
                   >
+                    {/* Eye-catching Live Webinar Label */}
+                    {product.e_learning_subtype === "live-webinar" && (
+                      <div className="absolute top-4 right-4 z-10">
+                        <div className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse flex items-center gap-1.5">
+                          <span>🔴</span>
+                          <span>LIVE WEBINAR</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-custom-text mb-2">{product.name}</h3>
@@ -600,6 +623,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                           isFree={(product as any).courses?.is_free || product.price === 0}
                           currentUserId={user?.id}
                           enrollmentOnRequest={product.enrollment_on_request || false}
+                          returnUrl={typeof window !== 'undefined' ? window.location.pathname + window.location.search : undefined}
                         />
                       </div>
                     )}

@@ -90,8 +90,17 @@ export function FeaturedCourses() {
 
         console.log("FeaturedCourses: Profiles fetched:", profilesData?.length || 0);
 
-        // Combine products with profiles
+        // Filter out expired live webinars and combine products with profiles
+        const now = new Date();
         const productsWithProfiles = productsData
+          .filter((product: any) => {
+            // Filter out expired live webinars
+            if (product.e_learning_subtype === "live-webinar" && product.webinar_expiry_date) {
+              const expiryDate = new Date(product.webinar_expiry_date);
+              return expiryDate > now;
+            }
+            return true; // Keep all other products
+          })
           .map((product: any) => {
             const profile = profilesData?.find((p: any) => p.id === product.expert_id);
             if (!profile) {

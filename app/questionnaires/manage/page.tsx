@@ -5,12 +5,14 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { ProtectedRoute } from "@/components/protected-route";
+import { RichTextEditor } from "@/components/rich-text-editor";
 
 interface Questionnaire {
   id: string;
   type: "appointment" | "course_interest";
   title: string;
   is_active: boolean;
+  thank_you_message?: string | null;
 }
 
 interface QuestionnaireField {
@@ -41,6 +43,8 @@ export default function ManageQuestionnairesPage() {
     required: false,
     options: "",
   });
+  const [thankYouMessage, setThankYouMessage] = useState("");
+  const [savingThankYou, setSavingThankYou] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -54,7 +58,7 @@ export default function ManageQuestionnairesPage() {
     try {
       const { data, error } = await supabase
         .from("questionnaires")
-        .select("*")
+        .select("id, type, title, is_active, thank_you_message")
         .eq("expert_id", user.id)
         .order("type", { ascending: true });
 
@@ -84,6 +88,7 @@ export default function ManageQuestionnairesPage() {
 
   const handleSelectQuestionnaire = async (questionnaire: Questionnaire) => {
     setSelectedQuestionnaire(questionnaire);
+    setThankYouMessage(questionnaire.thank_you_message || "");
     await fetchFields(questionnaire.id);
   };
 
@@ -533,6 +538,51 @@ export default function ManageQuestionnairesPage() {
                     + Add Field
                   </button>
                 )}
+
+                {/* Thank You Message Section */}
+                <div className="mt-8 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-custom-text mb-4">Thank You Message</h3>
+                  <p className="text-sm text-custom-text/70 mb-4">
+                    This message will be shown to users after they submit the form.
+                  </p>
+                  <RichTextEditor
+                    content={thankYouMessage}
+                    onChange={(content) => setThankYouMessage(content)}
+                    placeholder="Enter your thank you message here..."
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!selectedQuestionnaire || !user) return;
+                      setSavingThankYou(true);
+                      try {
+                        const { error } = await supabase
+                          .from("questionnaires")
+                          .update({ thank_you_message: thankYouMessage || null })
+                          .eq("id", selectedQuestionnaire.id)
+                          .eq("expert_id", user.id);
+                        
+                        if (error) throw error;
+                        alert("Thank you message saved successfully!");
+                        await fetchQuestionnaires();
+                        if (selectedQuestionnaire) {
+                          const updated = questionnaires.find(q => q.id === selectedQuestionnaire.id);
+                          if (updated) {
+                            setSelectedQuestionnaire({ ...updated, thank_you_message: thankYouMessage || null });
+                          }
+                        }
+                      } catch (err: any) {
+                        console.error("Error saving thank you message:", err);
+                        alert("Failed to save thank you message.");
+                      } finally {
+                        setSavingThankYou(false);
+                      }
+                    }}
+                    disabled={savingThankYou}
+                    className="mt-4 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+                  >
+                    {savingThankYou ? "Saving..." : "Save Thank You Message"}
+                  </button>
+                </div>
               </div>
             </div>
           )}

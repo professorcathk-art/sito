@@ -29,7 +29,7 @@ export function HeroSection() {
                 Industry Experts
               </span>
             </h1>
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-custom-text/90 mb-3 sm:mb-4 lg:mb-5 leading-relaxed animate-fade-in-up px-2 sm:px-0" style={{ animationDelay: '0.2s' }}>
+            <p className="text-sm sm:text-lg md:text-xl lg:text-2xl text-custom-text/90 mb-3 sm:mb-4 lg:mb-5 leading-relaxed animate-fade-in-up px-2 sm:px-0" style={{ animationDelay: '0.2s' }}>
               Find mentors, guides, and advisors to accelerate your career. Learn from the best minds
               in your industry.
             </p>

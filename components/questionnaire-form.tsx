@@ -19,9 +19,10 @@ interface QuestionnaireFormProps {
   questionnaireId: string;
   onSubmit: (responses: Record<string, any>) => Promise<void>;
   onCancel?: () => void;
+  thankYouMessage?: string | null;
 }
 
-export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel }: QuestionnaireFormProps) {
+export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYouMessage }: QuestionnaireFormProps) {
   const supabase = createClient();
   const { user } = useAuth();
   const [fields, setFields] = useState<QuestionnaireField[]>([]);
@@ -29,6 +30,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel }: Quest
   const [submitting, setSubmitting] = useState(false);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [userProfile, setUserProfile] = useState<{ name?: string; email?: string } | null>(null);
+  const [showThankYou, setShowThankYou] = useState(false);
 
   useEffect(() => {
     fetchFields();
@@ -186,6 +188,10 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel }: Quest
     setSubmitting(true);
     try {
       await onSubmit(responses);
+      // Show thank you message if available
+      if (thankYouMessage) {
+        setShowThankYou(true);
+      }
     } catch (err) {
       console.error("Error submitting questionnaire:", err);
       alert("Failed to submit questionnaire. Please try again.");
@@ -217,6 +223,26 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel }: Quest
             className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50"
           >
             Cancel
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // Show thank you message if form was submitted successfully
+  if (showThankYou && thankYouMessage) {
+    return (
+      <div className="space-y-6">
+        <div 
+          className="prose prose-invert max-w-none text-custom-text"
+          dangerouslySetInnerHTML={{ __html: thankYouMessage }}
+        />
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+          >
+            Close
           </button>
         )}
       </div>
