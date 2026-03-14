@@ -78,22 +78,25 @@ export function StorefrontView({
   const supabase = createClient();
 
   const isFluidAura = designState.themePreset === "fluid-aura";
+  const isPearlSilk = designState.themePreset === "pearl-silk" || designState.themePreset === "soft-gradient";
   const cssVars = useMemo(() => {
-    const card =
-      isFluidAura
-        ? { bg: "rgba(255,255,255,0.4)", border: "rgba(255,255,255,0.5)" }
-        : getCardCssVars(designState.cardStyle as "flat" | "glass" | "brutalist" | "soft-shadow");
+    let card = getCardCssVars(designState.cardStyle as "flat" | "glass" | "brutalist" | "soft-shadow");
+    if (isFluidAura) {
+      card = { bg: "rgba(255,255,255,0.03)", border: "rgba(255,255,255,0.1)" };
+    } else if (isPearlSilk) {
+      card = { bg: "rgba(255,255,255,0.4)", border: "rgba(255,255,255,0.6)" };
+    }
     const btnRadius = designState.buttonRadius === "pill" ? "9999px" : designState.buttonRadius === "sharp" ? "0" : "0.5rem";
     return {
-      "--store-bg": isFluidAura ? "#f8fafc" : designState.backgroundColor,
-      "--store-text": isFluidAura ? "#0f172a" : designState.textColor,
-      "--store-btn-bg": isFluidAura ? "#0f172a" : designState.buttonColor,
+      "--store-bg": isFluidAura ? "#050505" : isPearlSilk ? undefined : designState.backgroundColor,
+      "--store-text": isFluidAura ? "#f1f5f9" : isPearlSilk ? "#1A1A1A" : designState.textColor,
+      "--store-btn-bg": isFluidAura ? "rgba(255,255,255,0.1)" : isPearlSilk ? "#1A1A1A" : designState.buttonColor,
       "--store-btn-text": designState.buttonTextColor,
       "--store-card-bg": card.bg,
       "--store-card-border": card.border,
       "--store-btn-radius": btnRadius,
     } as React.CSSProperties;
-  }, [designState, isFluidAura]);
+  }, [designState, isFluidAura, isPearlSilk]);
 
   const fontClass = FONT_FAMILIES.find((f) => f.id === designState.fontFamily)?.class || "font-store-inter";
   const fontVarMap: Record<string, string> = {
@@ -126,22 +129,32 @@ export function StorefrontView({
   if (blocksToRender.length > 0) {
     const sortedBlocks = [...blocksToRender].sort((a, b) => a.order - b.order);
 
-    const wrapperClass = isFluidAura ? "min-h-screen relative overflow-hidden bg-slate-50" : "min-h-screen relative";
+    const wrapperClass = isFluidAura
+      ? "min-h-screen relative overflow-hidden bg-[#050505]"
+      : "min-h-screen relative";
+    const background =
+      isFluidAura
+        ? undefined
+        : isPearlSilk
+          ? "conic-gradient(at top right, #fdf2f8 0%, #f8fafc 50%, #fffbeb 100%)"
+          : designState.backgroundColor.startsWith("linear")
+            ? designState.backgroundColor
+            : "var(--store-bg)";
     return (
       <div
         className={`${wrapperClass} ${fontClass}`}
         style={{
           ...cssVars,
-          background: isFluidAura ? undefined : (designState.backgroundColor.startsWith("linear") ? designState.backgroundColor : "var(--store-bg)"),
+          ...(background && { background }),
           color: "var(--store-text)",
           fontFamily: fontFamilyStyle,
         }}
       >
         {isFluidAura && (
           <>
-            <div className="absolute top-0 -left-4 w-96 h-96 bg-pink-400 rounded-full blur-[100px] opacity-60 mix-blend-multiply animate-blob -z-10" aria-hidden />
-            <div className="absolute top-40 right-0 w-96 h-96 bg-blue-400 rounded-full blur-[100px] opacity-60 mix-blend-multiply animate-blob -z-10" style={{ animationDelay: "2s" }} aria-hidden />
-            <div className="absolute -bottom-8 left-20 w-96 h-96 bg-purple-400 rounded-full blur-[100px] opacity-60 mix-blend-multiply animate-blob -z-10" style={{ animationDelay: "4s" }} aria-hidden />
+            <div className="absolute top-0 -left-4 w-96 h-96 bg-fuchsia-600 rounded-full mix-blend-screen opacity-40 animate-blob -z-10" style={{ filter: "blur(128px)" }} aria-hidden />
+            <div className="absolute top-0 -right-4 w-96 h-96 bg-cyan-600 rounded-full mix-blend-screen opacity-40 animate-blob -z-10" style={{ filter: "blur(128px)", animationDelay: "2s" }} aria-hidden />
+            <div className="absolute -bottom-8 left-20 w-96 h-96 bg-violet-600 rounded-full mix-blend-screen opacity-40 animate-blob -z-10" style={{ filter: "blur(128px)", animationDelay: "4s" }} aria-hidden />
           </>
         )}
         {!isFluidAura && designState.glowElement && <div className={designState.glowElement} aria-hidden />}
@@ -199,7 +212,7 @@ export function StorefrontView({
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`group flex items-center p-4 bg-[var(--store-card-bg)] border border-[var(--store-card-border)] transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer ${isFluidAura ? "rounded-3xl backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]" : "rounded-2xl"}`}
+                        className={`group flex items-center p-4 bg-[var(--store-card-bg)] border border-[var(--store-card-border)] transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer ${isFluidAura ? "rounded-3xl backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]" : isPearlSilk ? "rounded-3xl backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)]" : "rounded-2xl"}`}
                       >
                         {link.thumbnailUrl ? (
                           <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
@@ -386,8 +399,8 @@ export function StorefrontView({
             {hasAppointments && (
               <Link
                 href={`/appointments/book/${expertId}`}
-                className="w-full py-4 px-6 font-semibold transition-all duration-300 text-center bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] hover:opacity-90"
-                style={{ borderRadius: "var(--store-btn-radius)" }}
+                className={`w-full py-4 px-6 font-semibold transition-all duration-300 text-center bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] ${isFluidAura ? "border border-white/20 hover:bg-white/20 backdrop-blur-md rounded-full" : isPearlSilk ? "hover:bg-[#2A2A2A] rounded-full shadow-lg" : "hover:opacity-90"}`}
+                style={{ borderRadius: isFluidAura || isPearlSilk ? "9999px" : "var(--store-btn-radius)" }}
               >
                 Book 1-on-1 Session
               </Link>

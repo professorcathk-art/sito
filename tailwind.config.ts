@@ -59,14 +59,18 @@ const config: Config = {
         "fade-in-up": "fadeInUp 0.6s ease-out forwards",
         "fade-in": "fadeIn 0.8s ease-out forwards",
         "bounce-slow": "bounce 3s ease-in-out infinite",
-        blob: "blob 7s ease-in-out infinite",
+        blob: "blob 7s infinite",
+      },
+      animationDelay: {
+        "2000": "2000ms",
+        "4000": "4000ms",
       },
       keyframes: {
         blob: {
-          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
-          "25%": { transform: "translate(20px, -50px) scale(1.1)" },
-          "50%": { transform: "translate(-20px, 20px) scale(0.9)" },
-          "75%": { transform: "translate(50px, 50px) scale(1.05)" },
+          "0%": { transform: "translate(0px, 0px) scale(1)" },
+          "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+          "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+          "100%": { transform: "translate(0px, 0px) scale(1)" },
         },
         float: {
           "0%, 100%": { transform: "translateY(0px)" },

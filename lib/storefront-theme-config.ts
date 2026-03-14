@@ -3,7 +3,7 @@
  * Themes act as presets that overwrite granular state.
  */
 
-export type ThemePresetId = "minimal" | "midnight-glass" | "neo-brutalist" | "soft-gradient" | "fluid-aura";
+export type ThemePresetId = "minimal" | "midnight-glass" | "neo-brutalist" | "soft-gradient" | "fluid-aura" | "pearl-silk";
 export type FontFamilyId = "inter" | "roboto" | "playfair" | "space-grotesk" | "dm-sans";
 export type BackgroundType = "solid" | "gradient" | "mesh";
 export type CardStyleId = "flat" | "glass" | "brutalist" | "soft-shadow";
@@ -47,19 +47,27 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
     buttonRadius: "sharp",
   },
   "soft-gradient": {
-    backgroundColor: "linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)",
-    textColor: "#1F2937",
-    buttonColor: "#3B82F6",
+    backgroundColor: "conic-gradient(at top right, var(--tw-gradient-stops))",
+    textColor: "#1A1A1A",
+    buttonColor: "#1A1A1A",
     buttonTextColor: "#FFFFFF",
     cardStyle: "soft-shadow",
     buttonRadius: "pill",
   },
   "fluid-aura": {
-    backgroundColor: "#f8fafc",
-    textColor: "#0f172a",
-    buttonColor: "#0f172a",
+    backgroundColor: "#050505",
+    textColor: "#f1f5f9",
+    buttonColor: "rgba(255,255,255,0.1)",
     buttonTextColor: "#FFFFFF",
     cardStyle: "glass",
+    buttonRadius: "pill",
+  },
+  "pearl-silk": {
+    backgroundColor: "conic-gradient(at top right, var(--tw-gradient-stops))",
+    textColor: "#1A1A1A",
+    buttonColor: "#1A1A1A",
+    buttonTextColor: "#FFFFFF",
+    cardStyle: "soft-shadow",
     buttonRadius: "pill",
   },
 };
@@ -90,17 +98,24 @@ export const THEME_PRESETS: Record<ThemePresetId, { id: ThemePresetId; name: str
   },
   "soft-gradient": {
     id: "soft-gradient",
-    name: "Soft Gradient",
-    wrapper: "bg-gradient-to-br from-rose-100 to-teal-100 text-slate-800",
-    card: "bg-white/60 backdrop-blur-md border border-white/40 shadow-lg rounded-3xl",
-    button: "bg-slate-900 text-white rounded-full",
+    name: "Pearl Silk",
+    wrapper: "bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-rose-50 via-slate-50 to-amber-50 text-[#1A1A1A]",
+    card: "bg-white/40 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl",
+    button: "bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] rounded-full shadow-lg",
   },
   "fluid-aura": {
     id: "fluid-aura",
     name: "Fluid Aura",
-    wrapper: "bg-slate-50 text-slate-900 relative overflow-hidden",
-    card: "bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-3xl",
-    button: "bg-slate-900 text-white rounded-full hover:bg-slate-800",
+    wrapper: "bg-[#050505] text-slate-100 relative overflow-hidden",
+    card: "bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] rounded-3xl",
+    button: "bg-white/10 text-white border border-white/20 hover:bg-white/20 rounded-full backdrop-blur-md",
+  },
+  "pearl-silk": {
+    id: "pearl-silk",
+    name: "Pearl Silk",
+    wrapper: "bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-rose-50 via-slate-50 to-amber-50 text-[#1A1A1A]",
+    card: "bg-white/40 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl",
+    button: "bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] rounded-full shadow-lg",
   },
 };
 
@@ -155,6 +170,7 @@ export function getDesignStateFromProfile(profile: {
     default: "minimal",
     "minimal-light": "minimal",
     "bold-dark": "midnight-glass",
+    "pearl-silk": "pearl-silk",
   };
   const rawTheme = profile.storefront_theme_preset || "default";
   const themePreset = (themeMap[rawTheme] || rawTheme) as keyof typeof THEME_PRESET_VALUES;
