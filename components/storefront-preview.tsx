@@ -236,6 +236,14 @@ export function StorefrontPreview({
   }, [designState]);
 
   const fontClass = FONT_FAMILIES.find((f) => f.id === designState.fontFamily)?.class || "font-store-inter";
+  const fontVarMap: Record<string, string> = {
+    inter: "var(--font-inter)",
+    roboto: "var(--font-roboto)",
+    playfair: "var(--font-playfair)",
+    "space-grotesk": "var(--font-space-grotesk)",
+    "dm-sans": "var(--font-dm-sans)",
+  };
+  const fontFamilyStyle = fontVarMap[designState.fontFamily] || "var(--font-inter)";
 
   return (
     <div className="sticky top-4 flex justify-center min-w-0">
@@ -247,10 +255,11 @@ export function StorefrontPreview({
             ...cssVars,
             background: designState.backgroundColor.startsWith("linear") ? designState.backgroundColor : "var(--store-bg)",
             color: "var(--store-text)",
+            fontFamily: fontFamilyStyle,
           }}
         >
           {designState.glowElement && <div className={designState.glowElement} aria-hidden />}
-          <div className={`p-6 space-y-6 ${fontClass}`}>
+          <div className={`p-6 space-y-6 ${fontClass}`} style={{ fontFamily: fontFamilyStyle }}>
             {storefrontBlocks && storefrontBlocks.length > 0 ? (
               <BlocksPreview
                 blocks={storefrontBlocks}

@@ -900,38 +900,6 @@ function ProfileTab({
           className={INPUT_CLASS}
         />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-200 mb-1">Website</label>
-          <input
-            type="url"
-            value={profileData.website}
-            onChange={(e) => onProfileChange("website", e.target.value)}
-            placeholder="https://..."
-            className={INPUT_CLASS}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-200 mb-1">LinkedIn</label>
-          <input
-            type="url"
-            value={profileData.linkedin}
-            onChange={(e) => onProfileChange("linkedin", e.target.value)}
-            placeholder="https://linkedin.com/in/..."
-            className={INPUT_CLASS}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-200 mb-1">Instagram</label>
-          <input
-            type="url"
-            value={profileData.instagramUrl}
-            onChange={(e) => onProfileChange("instagramUrl", e.target.value)}
-            placeholder="https://instagram.com/..."
-            className={INPUT_CLASS}
-          />
-        </div>
-      </div>
       <label className="flex items-center gap-2 cursor-pointer">
         <input
           type="checkbox"
@@ -1035,41 +1003,25 @@ function DesignTab({
         </select>
       </section>
 
-      {/* Backgrounds Section */}
+      {/* Background Section */}
       <section>
         <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Background</h3>
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            {(["solid", "gradient", "mesh"] as const).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => onDesignChange((s) => ({ ...s, backgroundType: t }))}
-                className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                  designSettings.backgroundType === t ? "border-indigo-500 bg-indigo-500/10 text-slate-50" : "border-slate-700 text-slate-400 hover:border-slate-600"
-                }`}
-              >
-                {t.charAt(0).toUpperCase() + t.slice(1)}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            {designSettings.backgroundColor?.startsWith("#") && (
-              <input
-                type="color"
-                value={designSettings.backgroundColor || "#FAFAFA"}
-                onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value }))}
-                className="w-12 h-12 rounded-lg border border-slate-700 cursor-pointer flex-shrink-0"
-              />
-            )}
+        <div className="flex items-center gap-3">
+          {designSettings.backgroundColor?.startsWith("#") && (
             <input
-              type="text"
-              value={designSettings.backgroundColor || ""}
-              onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value || THEME_PRESET_VALUES.minimal.backgroundColor }))}
-              placeholder="#FAFAFA or linear-gradient(...)"
-              className={`flex-1 ${INPUT_CLASS} py-2`}
+              type="color"
+              value={designSettings.backgroundColor || "#FAFAFA"}
+              onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value }))}
+              className="w-12 h-12 rounded-lg border border-slate-700 cursor-pointer flex-shrink-0"
             />
-          </div>
+          )}
+          <input
+            type="text"
+            value={designSettings.backgroundColor || ""}
+            onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value || THEME_PRESET_VALUES.minimal.backgroundColor }))}
+            placeholder="#FAFAFA or linear-gradient(...)"
+            className={`flex-1 ${INPUT_CLASS} py-2`}
+          />
         </div>
       </section>
 

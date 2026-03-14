@@ -14,8 +14,10 @@ interface CourseEnrollmentProps {
   currentUserId?: string;
   enrollmentOnRequest?: boolean;
   returnUrl?: string; // URL to redirect back to after enrollment/registration
-  /** When used in storefront: ensures button text is dark when brand color is light (avoids white-on-white) */
+  /** When used in storefront: button background color from design */
   customBrandColor?: string;
+  /** When used in storefront: button text color from design */
+  customButtonTextColor?: string;
   themePreset?: string;
 }
 
@@ -38,6 +40,7 @@ export function CourseEnrollment({
   enrollmentOnRequest = false,
   returnUrl,
   customBrandColor,
+  customButtonTextColor,
   themePreset,
 }: CourseEnrollmentProps) {
   // Ensure boolean value
@@ -708,15 +711,15 @@ export function CourseEnrollment({
 
   if (isEnrolled) {
     const useDarkText = customBrandColor && (isLightColor(customBrandColor) || themePreset === "minimal-light");
+    const btnStyle = customBrandColor
+      ? { backgroundColor: customBrandColor, color: customButtonTextColor || (useDarkText ? "#111827" : "#FFFFFF") }
+      : undefined;
     return (
       <div className="flex gap-4">
         <button
           onClick={() => router.push("/courses/manage")}
-          className={`px-6 py-3 font-semibold rounded-md transition-colors ${
-            useDarkText
-              ? "bg-white/90 hover:bg-white text-slate-900 border border-slate-300"
-              : "bg-indigo-600 hover:bg-indigo-500 text-white"
-          }`}
+          className={`px-6 py-3 font-semibold rounded-md transition-colors hover:opacity-90 ${!btnStyle ? (useDarkText ? "bg-white/90 hover:bg-white text-slate-900 border border-slate-300" : "bg-indigo-600 hover:bg-indigo-500 text-white") : ""}`}
+          style={btnStyle}
         >
           Go to Classroom
         </button>
@@ -843,7 +846,12 @@ export function CourseEnrollment({
             <button
               onClick={handleEnroll}
               disabled={processing}
-              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-md transition-colors disabled:opacity-50"
+              className="px-6 py-3 font-semibold rounded-md transition-colors hover:opacity-90 disabled:opacity-50"
+              style={
+                customBrandColor
+                  ? { backgroundColor: customBrandColor, color: customButtonTextColor || "#FFFFFF" }
+                  : { backgroundColor: "#4f46e5", color: "#fff" }
+              }
             >
               {processing ? "Processing..." : isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
             </button>

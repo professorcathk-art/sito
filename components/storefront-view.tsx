@@ -92,6 +92,14 @@ export function StorefrontView({
   }, [designState]);
 
   const fontClass = FONT_FAMILIES.find((f) => f.id === designState.fontFamily)?.class || "font-store-inter";
+  const fontVarMap: Record<string, string> = {
+    inter: "var(--font-inter)",
+    roboto: "var(--font-roboto)",
+    playfair: "var(--font-playfair)",
+    "space-grotesk": "var(--font-space-grotesk)",
+    "dm-sans": "var(--font-dm-sans)",
+  };
+  const fontFamilyStyle = fontVarMap[designState.fontFamily] || "var(--font-inter)";
 
   const allLinks = [
     ...customLinks,
@@ -121,6 +129,7 @@ export function StorefrontView({
           ...cssVars,
           background: designState.backgroundColor.startsWith("linear") ? designState.backgroundColor : "var(--store-bg)",
           color: "var(--store-text)",
+          fontFamily: fontFamilyStyle,
         }}
       >
         {designState.glowElement && <div className={designState.glowElement} aria-hidden />}
@@ -225,6 +234,7 @@ export function StorefrontView({
                             isFree={product.price === 0}
                             currentUserId={user.id}
                             customBrandColor={designState.buttonColor}
+                            customButtonTextColor={designState.buttonTextColor}
                             themePreset={designState.themePreset || "default"}
                           />
                         </div>
@@ -339,6 +349,7 @@ export function StorefrontView({
         ...cssVars,
         background: designState.backgroundColor.startsWith("linear") ? designState.backgroundColor : "var(--store-bg)",
         color: "var(--store-text)",
+        fontFamily: fontFamilyStyle,
       }}
     >
       {designState.glowElement && <div className={designState.glowElement} aria-hidden />}
@@ -421,6 +432,7 @@ export function StorefrontView({
                             isFree={product.price === 0}
                             currentUserId={user.id}
                             customBrandColor={designState.buttonColor}
+                            customButtonTextColor={designState.buttonTextColor}
                             themePreset={designState.themePreset || "default"}
                           />
                         ) : (
