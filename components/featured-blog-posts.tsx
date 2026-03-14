@@ -18,7 +18,7 @@ export function FeaturedBlogPosts() {
           </div>
           <Link
             href="/blog"
-            className="text-custom-text hover:text-cyber-green font-semibold transition-colors text-sm sm:text-base self-start sm:self-auto"
+            className="text-text-primary hover:text-primary font-semibold transition-colors text-sm sm:text-base self-start sm:self-auto"
           >
             View All →
           </Link>

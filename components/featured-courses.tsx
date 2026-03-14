@@ -148,11 +148,11 @@ export function FeaturedCourses() {
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-2 text-glow">Secret Recipe</h2>
-            <p className="text-sm sm:text-base text-custom-text/80">Discover e-learning products from industry experts</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-text-primary mb-2">Secret Recipe</h2>
+            <p className="text-sm sm:text-base text-text-secondary">Discover e-learning products from industry experts</p>
           </div>
           <div className="text-center py-12">
-            <p className="text-custom-text/80 animate-pulse">Loading courses...</p>
+            <p className="text-text-secondary animate-pulse">Loading courses...</p>
           </div>
         </div>
       </section>
@@ -168,12 +168,12 @@ export function FeaturedCourses() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-1 sm:mb-2 text-glow animate-pulse-glow tracking-tight">Secret Recipe</h2>
-            <p className="text-sm sm:text-base text-custom-text/80">Discover e-learning products from industry experts</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-text-primary mb-1 sm:mb-2 tracking-tight">Secret Recipe</h2>
+            <p className="text-sm sm:text-base text-text-secondary">Discover e-learning products from industry experts</p>
           </div>
           <Link
             href="/featured-courses"
-            className="text-custom-text hover:text-cyber-green font-semibold transition-colors text-sm sm:text-base self-start sm:self-auto"
+            className="text-text-primary hover:text-primary font-semibold transition-colors text-sm sm:text-base self-start sm:self-auto"
           >
             View All Secret Recipes →
           </Link>
@@ -188,7 +188,7 @@ export function FeaturedCourses() {
             >
               <Link
                 href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
-                className="block bg-transparent backdrop-blur-sm border border-cyber-green/20 rounded-xl overflow-hidden hover:bg-cyber-green/5 hover:border-cyber-green/50 hover:shadow-[0_0_20px_rgba(0,255,136,0.2)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
+                className="block bg-surface border border-border-default rounded-xl overflow-hidden hover:border-primary transition-all duration-300 shadow-lg shadow-black/20 flex flex-col"
               >
                 {/* Cover Image with 4:3 aspect ratio (shorter for landing page) */}
                 <div className="relative w-full aspect-[4/3] overflow-hidden bg-transparent rounded-t-xl">
@@ -200,7 +200,7 @@ export function FeaturedCourses() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800/90 to-dark-green-900/90 p-4 overflow-y-auto">
+                    <div className="w-full h-full flex items-center justify-center bg-surface p-4 overflow-y-auto">
                       {product.description ? (
                         <div 
                           className="text-xs sm:text-sm text-custom-text/90 line-clamp-6 product-preview"
@@ -216,7 +216,7 @@ export function FeaturedCourses() {
                   {/* E-learning subtype label */}
                   {product.e_learning_subtype && (
                     <div className="absolute top-2 right-2 z-10">
-                      <span className="bg-cyber-green/90 text-dark-green-900 text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
+                      <span className="bg-primary text-white text-xs font-semibold px-2 py-1 rounded-md shadow-lg">
                         {product.e_learning_subtype === "online-course" ? "Online Course" :
                          product.e_learning_subtype === "ebook" ? "Ebook" :
                          product.e_learning_subtype === "ai-prompt" ? "AI Prompt" :
@@ -228,7 +228,7 @@ export function FeaturedCourses() {
                   )}
                 </div>
                 {/* Content below image */}
-                <div className="p-4 sm:p-5 flex flex-col flex-1 bg-transparent">
+                <div className="p-6 flex flex-col flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     {product.expert_avatar_url ? (
                       <Image
@@ -236,22 +236,22 @@ export function FeaturedCourses() {
                         alt={`${product.expert_name}'s avatar`}
                         width={32}
                         height={32}
-                        className="rounded-full object-cover w-8 h-8 flex-shrink-0 border-2 border-cyber-green/50"
+                        className="rounded-full object-cover w-8 h-8 flex-shrink-0 border-2 border-border-default"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-xs font-bold flex-shrink-0 border-2 border-cyber-green/50">
+                      <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center text-text-primary text-xs font-bold flex-shrink-0 border-2 border-border-default">
                         {getInitials(product.expert_name)}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-custom-text/70 truncate">by {product.expert_name}</p>
+                      <p className="text-xs text-text-secondary truncate">by {product.expert_name}</p>
                     </div>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
+                  <h3 className="text-base sm:text-lg font-bold text-text-primary group-hover:text-primary transition-all mb-3 line-clamp-2">
                     {product.name}
                   </h3>
                   <div className="flex items-center justify-between mt-auto">
-                    <span className="text-sm sm:text-base font-bold text-cyber-green">
+                    <span className="text-sm sm:text-base font-bold text-primary">
                       {product.price === 0 || !product.price ? (
                         "Free"
                       ) : (
@@ -259,7 +259,7 @@ export function FeaturedCourses() {
                       )}
                     </span>
                     {product.price > 0 && (
-                      <span className="text-xs text-custom-text/60">
+                      <span className="text-xs text-text-secondary">
                         {product.pricing_type === "hourly" ? "Hourly" : "One-time"}
                       </span>
                     )}
@@ -268,9 +268,9 @@ export function FeaturedCourses() {
               </Link>
               {/* Description appears below tile on hover */}
               {product.description && (
-                <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-20 bg-custom-bg/95 backdrop-blur-md border border-cyber-green/30 rounded-b-xl shadow-lg">
+                <div className="mt-2 px-6 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-20 bg-surface backdrop-blur-md border border-border-default rounded-b-xl shadow-lg shadow-black/20">
                   <div 
-                    className="text-xs sm:text-sm text-custom-text/70 line-clamp-3 product-preview py-2"
+                    className="text-xs sm:text-sm text-text-secondary line-clamp-3 product-preview py-2"
                     dangerouslySetInnerHTML={{ __html: product.description }}
                   />
                 </div>

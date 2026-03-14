@@ -91,12 +91,12 @@ export function FeaturedExperts() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-1 sm:mb-2 tracking-tight">Featured Experts</h2>
-            <p className="text-sm sm:text-base text-custom-text/80">Discover top industry professionals</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-text-primary mb-1 sm:mb-2 tracking-tight">Featured Experts</h2>
+            <p className="text-sm sm:text-base text-text-secondary">Discover top industry professionals</p>
           </div>
           <Link
             href="/directory"
-            className="text-custom-text hover:text-cyber-green font-semibold transition-colors text-sm sm:text-base self-start sm:self-auto"
+            className="text-text-primary hover:text-primary font-semibold transition-colors text-sm sm:text-base self-start sm:self-auto"
           >
             View All →
           </Link>
@@ -105,11 +105,11 @@ export function FeaturedExperts() {
 
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-custom-text/80 animate-pulse">Loading experts...</p>
+            <p className="text-text-secondary animate-pulse">Loading experts...</p>
           </div>
         ) : experts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-custom-text/80">No experts found.</p>
+            <p className="text-text-secondary">No experts found.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -117,39 +117,39 @@ export function FeaturedExperts() {
               <Link
                 key={expert.id}
                 href={`/expert/${expert.id}`}
-                className="group bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-5 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] animate-fade-in-up"
+                className="group bg-surface border border-border-default p-6 rounded-xl hover:border-primary transition-all duration-300 shadow-lg shadow-black/20 animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="flex items-start gap-4 mb-2 sm:mb-3">
+                <div className="flex items-start gap-4 mb-3">
                   {expert.avatarUrl ? (
                     <img
                       src={expert.avatarUrl}
                       alt={expert.name}
-                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-cyber-green/30 flex-shrink-0"
+                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-border-default flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-dark-green-800/50 border-2 border-cyber-green/30 flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg sm:text-2xl text-cyber-green">{expert.name.charAt(0).toUpperCase()}</span>
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-surface border-2 border-border-default flex items-center justify-center flex-shrink-0">
+                      <span className="text-lg sm:text-2xl text-primary">{expert.name.charAt(0).toUpperCase()}</span>
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-cyber-green-light transition-colors truncate">{expert.name}</h3>
+                      <h3 className="text-base sm:text-lg font-bold text-text-primary group-hover:text-primary transition-colors truncate">{expert.name}</h3>
                       {expert.verified && (
-                        <span className="text-cyber-green flex-shrink-0" title="Verified Expert">
+                        <span className="text-primary flex-shrink-0" title="Verified Expert">
                           ✓
                         </span>
                       )}
                     </div>
-                    <p className="text-custom-text/80 font-medium text-xs sm:text-sm">{expert.title}</p>
+                    <p className="text-text-secondary font-medium text-xs sm:text-sm">{expert.title}</p>
                   </div>
                 </div>
-                <p className="text-custom-text/70 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">{expert.bio}</p>
+                <p className="text-text-secondary text-xs sm:text-sm mb-3 line-clamp-2">{expert.bio}</p>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-cyber-green bg-dark-green-900/50 px-2 py-1 rounded-full border border-cyber-green/30 truncate">
+                  <span className="text-xs text-primary bg-transparent px-2 py-1 rounded-full border border-primary truncate">
                     {expert.category}
                   </span>
-                  <span className="text-xs text-custom-text/70 truncate">{expert.location}</span>
+                  <span className="text-xs text-text-secondary truncate">{expert.location}</span>
                 </div>
               </Link>
             ))}
@@ -159,7 +159,7 @@ export function FeaturedExperts() {
         <div className="text-center mt-6 sm:mt-8">
           <Link
             href="/directory"
-            className="inline-block bg-dark-green-800 text-custom-text px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-bold border border-cyber-green/50 hover:bg-dark-green-700 hover:border-cyber-green transition-all duration-300 transform hover:scale-105"
+            className="inline-block bg-primary text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-medium hover:bg-primary-hover transition-all duration-300"
           >
             View All Experts
           </Link>

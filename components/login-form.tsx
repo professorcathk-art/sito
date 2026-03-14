@@ -43,14 +43,14 @@ export function LoginForm({ redirect }: { redirect?: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-8 rounded-2xl shadow-lg">
+    <form onSubmit={handleSubmit} className="bg-surface border border-border-default p-8 rounded-xl shadow-lg shadow-black/20">
       {error && (
         <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 text-red-200 rounded-lg">
           {error}
         </div>
       )}
       <div className="mb-4">
-        <label htmlFor="email" className="block text-sm font-medium text-custom-text mb-2">
+        <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
           Email
         </label>
         <input
@@ -59,12 +59,12 @@ export function LoginForm({ redirect }: { redirect?: string }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary placeholder-text-secondary"
           placeholder="you@example.com"
         />
       </div>
       <div className="mb-6">
-        <label htmlFor="password" className="block text-sm font-medium text-custom-text mb-2">
+        <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-2">
           Password
         </label>
         <input
@@ -73,24 +73,24 @@ export function LoginForm({ redirect }: { redirect?: string }) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary placeholder-text-secondary"
           placeholder="••••••••"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-cyber-green text-custom-text py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(0,255,136,0.3)] mb-4"
+        className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >
         {loading ? "Signing in..." : "Sign In"}
       </button>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-cyber-green/30"></div>
+          <div className="w-full border-t border-border-default"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-dark-green-800/30 text-custom-text/70">Or continue with</span>
+          <span className="px-2 bg-surface text-text-secondary">Or continue with</span>
         </div>
       </div>
 
@@ -108,7 +108,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
             setError(error.message);
           }
         }}
-        className="w-full mt-4 flex items-center justify-center gap-3 bg-cyber-green text-dark-green-950 py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-md"
+        className="w-full mt-4 flex items-center justify-center gap-3 bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-hover transition-colors"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path
@@ -131,13 +131,13 @@ export function LoginForm({ redirect }: { redirect?: string }) {
         Sign in with Google
       </button>
       
-      <p className="mt-6 text-xs sm:text-sm text-custom-text/70 text-center">
+      <p className="mt-6 text-xs sm:text-sm text-text-secondary text-center">
         By continuing, you agree to our{" "}
-        <Link href="/terms" className="text-cyber-green hover:text-cyber-green-light underline font-medium">
+        <Link href="/terms" className="text-primary hover:text-primary-hover underline font-medium">
           Terms of Service
         </Link>
         {" "}and{" "}
-        <Link href="/privacy" className="text-cyber-green hover:text-cyber-green-light underline font-medium">
+        <Link href="/privacy" className="text-primary hover:text-primary-hover underline font-medium">
           Privacy Policy
         </Link>
       </p>
