@@ -158,6 +158,13 @@ export function StorefrontView({
           </>
         )}
         {!isFluidAura && designState.glowElement && <div className={designState.glowElement} aria-hidden />}
+        {!isFluidAura && (
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0" aria-hidden>
+            <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[50%] rounded-full bg-indigo-100/50 blur-[120px] mix-blend-multiply" />
+            <div className="absolute top-[20%] -right-[20%] w-[60%] h-[60%] rounded-full bg-rose-100/50 blur-[120px] mix-blend-multiply" />
+            <div className="absolute -bottom-[10%] left-[10%] w-[80%] h-[50%] rounded-full bg-blue-100/50 blur-[120px] mix-blend-multiply" />
+          </div>
+        )}
         <div className="w-full min-h-screen flex flex-col items-center pb-12 relative z-0">
           <main className="w-full max-w-2xl sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 flex flex-col gap-8">
             {sortedBlocks.map((block) => {
@@ -167,21 +174,24 @@ export function StorefrontView({
                 const tagline = (d.tagline as string) || expertTagline || "";
                 const bio = (d.bio as string) || bioOverride || expertBio || "";
                 const img = (d.avatarUrl as string) || avatarUrl;
+                const avatarRingClass = isFluidAura ? "ring-4 ring-white/20 shadow-xl" : "ring-4 ring-white shadow-xl";
+                const nameClass = isFluidAura ? "text-2xl font-bold text-slate-100 mt-4 text-center tracking-tight" : "text-2xl font-bold text-slate-900 mt-4 text-center tracking-tight";
+                const bioClass = isFluidAura ? "text-slate-400 text-sm text-center mt-2 leading-relaxed px-4 max-w-full" : "text-slate-500 text-sm text-center mt-2 leading-relaxed px-4 max-w-full";
                 return (
                   <section key={block.id} className="flex flex-col items-center text-center">
                     {img ? (
-                      <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-[var(--store-card-border)] flex-shrink-0">
+                      <div className={`relative w-24 h-24 rounded-full overflow-hidden flex-shrink-0 ${avatarRingClass}`}>
                         <Image src={img} alt={name} fill className="object-cover" />
                       </div>
                     ) : (
-                      <div className="w-24 h-24 rounded-full bg-[var(--store-card-bg)] border-2 border-[var(--store-card-border)] flex items-center justify-center flex-shrink-0">
+                      <div className={`w-24 h-24 rounded-full bg-[var(--store-card-bg)] flex items-center justify-center flex-shrink-0 ${avatarRingClass}`}>
                         <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--store-text)" }}>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                       </div>
                     )}
-                    <div className="flex items-center justify-center gap-2 mt-4">
-                      <h1 className="text-2xl font-bold text-[var(--store-text)]">{name}</h1>
+                    <div className="flex items-center justify-center gap-2">
+                      <h1 className={nameClass}>{name}</h1>
                       {verified && (
                         <svg className="w-5 h-5 text-blue-500 inline-block shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-label="Verified">
                           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
@@ -189,7 +199,7 @@ export function StorefrontView({
                       )}
                     </div>
                     {tagline && <p className="text-[var(--store-text)] text-sm mt-1 opacity-80">{tagline}</p>}
-                    {bio && <p className="text-[var(--store-text)] text-sm mt-2 max-w-full opacity-80">{bio}</p>}
+                    {bio && <p className={bioClass}>{bio}</p>}
                     {(website || linkedin || instagramUrl) && (
                       <div className="flex gap-3 mt-4">
                         {website && <a href={website} target="_blank" rel="noopener noreferrer" className="text-[var(--store-text)] opacity-70 hover:opacity-100 transition-colors">🌐</a>}
@@ -204,34 +214,40 @@ export function StorefrontView({
                 const items = (block.data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string }>) || [];
                 const links = items.filter((l) => l.title && l.url).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                 if (links.length === 0) return null;
+                const linkClass = isFluidAura
+                  ? "group relative w-full flex items-center p-3 bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] rounded-2xl hover:scale-[1.02] hover:bg-white/[0.06] transition-all duration-300"
+                  : "group relative w-full flex items-center p-3 bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-2xl hover:scale-[1.02] hover:bg-white transition-all duration-300";
+                const linkTitleClass = isFluidAura ? "font-semibold text-slate-100" : "font-semibold text-slate-800";
+                const linkDescClass = isFluidAura ? "text-xs text-slate-400 line-clamp-1" : "text-xs text-slate-500 line-clamp-1";
+                const linkIconBgClass = isFluidAura ? "w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-400 group-hover:text-slate-200 group-hover:bg-white/20 transition-colors" : "w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-slate-800 group-hover:bg-slate-100 transition-colors";
                 return (
-                  <section key={block.id} className="flex flex-col gap-3">
+                  <section key={block.id} className="flex flex-col gap-3 w-full max-w-2xl">
                     {links.map((link, idx) => (
                       <a
                         key={idx}
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`group flex items-center p-4 bg-[var(--store-card-bg)] border border-[var(--store-card-border)] transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer ${isFluidAura ? "rounded-3xl backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]" : isPearlSilk ? "rounded-3xl backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)]" : "rounded-2xl"}`}
+                        className={linkClass}
                       >
                         {link.thumbnailUrl ? (
-                          <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                          <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
                             <Image src={link.thumbnailUrl} alt="" fill className="object-cover" />
                           </div>
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-[var(--store-card-border)]/30 flex items-center justify-center flex-shrink-0">
-                            <svg className="w-5 h-5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--store-text)" }}>
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0 flex items-center justify-center shadow-inner">
+                            <span className="text-white font-bold text-lg">{link.title.charAt(0).toUpperCase()}</span>
                           </div>
                         )}
-                        <div className="flex-1 min-w-0 text-left ml-4">
-                          <span className="font-semibold block text-[var(--store-text)]">{link.title}</span>
-                          {link.description && <span className="text-sm opacity-70 block mt-0.5 line-clamp-2 text-[var(--store-text)]">{link.description}</span>}
+                        <div className="flex flex-col ml-4 flex-grow min-w-0">
+                          <span className={linkTitleClass}>{link.title}</span>
+                          {link.description && <span className={`mt-0.5 ${linkDescClass}`}>{link.description}</span>}
                         </div>
-                        <svg className="w-5 h-5 opacity-40 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--store-text)" }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                        <div className={linkIconBgClass}>
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
                       </a>
                     ))}
                   </section>
@@ -247,53 +263,72 @@ export function StorefrontView({
                       ? products
                       : [];
                 if (displayedProducts.length === 0) return null;
-                const cardClass = "flex flex-row items-center bg-[var(--store-card-bg)] border border-[var(--store-card-border)] rounded-2xl p-4 gap-4 hover:opacity-90 transition-all min-w-0";
+                const productCardClass = isFluidAura
+                  ? "w-full bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] rounded-2xl p-4 flex flex-col gap-3"
+                  : "w-full bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-2xl p-4 flex flex-col gap-3";
+                const productTitleClass = isFluidAura ? "font-bold text-slate-100 truncate" : "font-bold text-slate-800 truncate";
+                const productPriceClass = isFluidAura
+                  ? "text-sm font-medium text-indigo-400 bg-indigo-500/20 px-2 py-0.5 rounded-md w-fit"
+                  : "text-sm font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md w-fit";
+                const productBtnClass = "w-full bg-slate-900 text-white text-sm font-semibold py-2 rounded-xl hover:bg-slate-800 shadow-md transition-all";
                 return (
-                  <section key={block.id} className="flex flex-col gap-4">
+                  <section key={block.id} className="flex flex-col gap-4 w-full max-w-2xl">
                     {displayedProducts.map((product) =>
                       product.course_id && user ? (
-                        <div key={product.id} className={cardClass}>
-                          {product.cover_image_url && (
-                            <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                              <Image src={product.cover_image_url} alt={product.name} fill className="object-cover" />
+                        <div key={product.id} className={productCardClass}>
+                          <div className="flex items-start gap-4">
+                            {product.cover_image_url ? (
+                              <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+                                <Image src={product.cover_image_url} alt={product.name} fill className="object-cover" />
+                              </div>
+                            ) : (
+                              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0 flex items-center justify-center shadow-inner">
+                                <span className="text-white font-bold text-xl">{product.name.charAt(0).toUpperCase()}</span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className={productTitleClass}>{product.name}</h3>
+                              <span className={`mt-1.5 inline-block ${productPriceClass}`}>
+                                {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
+                              </span>
                             </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-[var(--store-text)] truncate">{product.name}</h3>
-                            <p className="text-[var(--store-text)] text-sm mt-0.5 opacity-80">
-                              {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
-                            </p>
                           </div>
-                          <CourseEnrollment
-                            courseId={product.course_id}
-                            expertId={expertId}
-                            coursePrice={product.price}
-                            isFree={product.price === 0}
-                            currentUserId={user.id}
-                            customBrandColor={designState.buttonColor}
-                            customButtonTextColor={designState.buttonTextColor}
-                            themePreset={designState.themePreset || "default"}
-                          />
+                          <div>
+                            <CourseEnrollment
+                              courseId={product.course_id}
+                              expertId={expertId}
+                              coursePrice={product.price}
+                              isFree={product.price === 0}
+                              currentUserId={user.id}
+                              customBrandColor="#1e293b"
+                              customButtonTextColor="#ffffff"
+                              themePreset={designState.themePreset || "default"}
+                            />
+                          </div>
                         </div>
                       ) : (
-                        <Link
-                          key={product.id}
-                          href={product.course_id ? `/courses/${product.course_id}` : `/expert/${expertId}`}
-                          className={cardClass}
-                        >
-                          {product.cover_image_url && (
-                            <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                              <Image src={product.cover_image_url} alt={product.name} fill className="object-cover" />
+                        <div key={product.id} className={productCardClass}>
+                          <div className="flex items-start gap-4">
+                            {product.cover_image_url ? (
+                              <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+                                <Image src={product.cover_image_url} alt={product.name} fill className="object-cover" />
+                              </div>
+                            ) : (
+                              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0 flex items-center justify-center shadow-inner">
+                                <span className="text-white font-bold text-xl">{product.name.charAt(0).toUpperCase()}</span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className={productTitleClass}>{product.name}</h3>
+                              <span className={`mt-1.5 inline-block ${productPriceClass}`}>
+                                {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
+                              </span>
                             </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-[var(--store-text)] truncate">{product.name}</h3>
-                            <p className="text-[var(--store-text)] text-sm mt-0.5 opacity-80">
-                              {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
-                            </p>
                           </div>
-                          <span className="text-sm font-medium shrink-0" style={{ color: "var(--store-btn-bg)" }}>View →</span>
-                        </Link>
+                          <Link href={product.course_id ? `/courses/${product.course_id}` : `/expert/${expertId}`} className={productBtnClass + " block text-center"}>
+                            Get it now
+                          </Link>
+                        </div>
                       )
                     )}
                   </section>
@@ -356,10 +391,15 @@ export function StorefrontView({
                 const content = (block.data.content as string) || "";
                 if (!content.trim()) return null;
                 const isDark = designState.textColor.toLowerCase().startsWith("#f") || designState.textColor.toLowerCase().includes("fff");
-                const proseClass = isDark ? "prose prose-sm sm:prose-base prose-invert w-full" : "prose prose-sm sm:prose-base w-full";
+                const proseClass = isDark ? "prose prose-sm sm:prose-base prose-invert w-full max-w-none" : "prose prose-sm sm:prose-base w-full max-w-none";
+                const cardClass = isFluidAura
+                  ? "w-full bg-white/[0.06] backdrop-blur-md rounded-2xl p-6 border border-white/10 shadow-sm text-slate-300"
+                  : "w-full bg-white/40 backdrop-blur-md rounded-2xl p-6 border border-white/60 shadow-sm text-slate-700";
                 return (
-                  <section key={block.id} className="w-full">
-                    <div className={`${proseClass} text-[var(--store-text)]`} dangerouslySetInnerHTML={{ __html: content }} />
+                  <section key={block.id} className="w-full max-w-2xl">
+                    <div className={cardClass}>
+                      <div className={`${proseClass} text-[var(--store-text)]`} dangerouslySetInnerHTML={{ __html: content }} />
+                    </div>
                   </section>
                 );
               }
@@ -376,20 +416,25 @@ export function StorefrontView({
                 const items = (block.data.items as string[]) || [];
                 if (items.length === 0) return null;
                 const brandColor = designState.buttonColor;
+                const listCardClass = isFluidAura
+                  ? "w-full bg-white/[0.06] backdrop-blur-md rounded-2xl p-6 border border-white/10 shadow-sm text-slate-300 prose prose-sm"
+                  : "w-full bg-white/40 backdrop-blur-md rounded-2xl p-6 border border-white/60 shadow-sm text-slate-700 prose prose-sm";
                 return (
-                  <section key={block.id} className="w-full">
-                    <ul className="space-y-2 list-none">
-                      {items.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-3 text-[var(--store-text)]">
-                          <span className="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: `${brandColor}30`, color: brandColor }}>
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </span>
-                          <span className="text-sm opacity-90">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <section key={block.id} className="w-full max-w-2xl">
+                    <div className={listCardClass}>
+                      <ul className="space-y-2 list-none">
+                        {items.map((item, idx) => (
+                          <li key={idx} className="flex items-start gap-3 text-[var(--store-text)]">
+                            <span className="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: `${brandColor}30`, color: brandColor }}>
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </span>
+                            <span className="text-sm opacity-90">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </section>
                 );
               }
