@@ -34,11 +34,11 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-[#121212] border border-white/10 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl">
         <div className="text-center mb-6">
           <div className="text-4xl mb-4">⭐</div>
-          <h2 className="text-2xl font-bold text-white mb-2">Upgrade to Pro</h2>
-          <p className="text-gray-500">
+          <h2 className="text-2xl font-bold text-slate-50 mb-2">Upgrade to Pro</h2>
+          <p className="text-slate-400">
             Unlock premium themes, advanced customization, and more features to make your storefront stand out.
           </p>
         </div>
@@ -70,14 +70,14 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-3 bg-transparent border border-white/10 text-white rounded-md font-medium hover:bg-white/5 transition-colors"
+            className="flex-1 px-4 py-3 bg-transparent border border-slate-700 text-slate-50 rounded-lg font-medium hover:bg-slate-800 transition-colors"
           >
             Maybe Later
           </button>
           <button
             onClick={handleUpgrade}
             disabled={loading}
-            className="flex-1 px-4 py-3 bg-white text-black rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Loading..." : "Upgrade Now"}
           </button>

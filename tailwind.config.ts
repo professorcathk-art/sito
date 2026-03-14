@@ -11,12 +11,12 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        // Apple Dark Mode - Surface Hierarchy
-        "custom-bg": "#000000", // App background
-        "custom-text": "#FFFFFF", // Primary text
-        surface: "#1C1C1E", // Primary surface (cards, modals)
-        "surface-secondary": "#2C2C2E", // Secondary (inputs, hover)
-        "border-default": "rgba(255, 255, 255, 0.05)",
+        // Dark Slate & Indigo Theme
+        "custom-bg": "#020617", // slate-950
+        "custom-text": "#f8fafc", // slate-50
+        surface: "#0f172a", // slate-900
+        "surface-secondary": "#1e293b", // slate-800
+        "border-default": "#334155",
         // Legacy mappings for backward compatibility
         "text-primary": "#FFFFFF", // Pure white
         "text-secondary": "#6B7280", // Gray-500 for secondary text

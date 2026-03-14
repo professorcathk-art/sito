@@ -2,12 +2,12 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-[#1C1C1E]/80 backdrop-blur-sm">
+    <footer className="border-t border-slate-800 bg-slate-900/80 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
           {/* Brand */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-2">
-            <Link href="/" className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 inline-block hover:text-white/80 transition-colors">
+            <Link href="/" className="text-xl sm:text-2xl font-bold text-slate-50 mb-3 sm:mb-4 inline-block hover:text-indigo-400 transition-colors">
               Sito
             </Link>
             <p className="text-text-secondary mb-4 max-w-md text-sm sm:text-base">

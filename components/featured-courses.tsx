@@ -188,7 +188,7 @@ export function FeaturedCourses() {
             >
               <Link
                 href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
-                className="block bg-[#1C1C1E] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-2xl flex flex-col"
+                className="block bg-slate-900 border border-slate-800 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-2xl flex flex-col"
               >
                 {/* Cover Image with 4:3 aspect ratio (shorter for landing page) */}
                 <div className="relative w-full aspect-[4/3] overflow-hidden bg-transparent rounded-t-xl">
@@ -200,7 +200,7 @@ export function FeaturedCourses() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-surface p-4 overflow-y-auto">
+                    <div className="w-full h-full flex items-center justify-center bg-slate-800 p-4 overflow-y-auto">
                       {product.description ? (
                         <div 
                           className="text-xs sm:text-sm text-text-primary line-clamp-6 product-preview"
@@ -216,7 +216,7 @@ export function FeaturedCourses() {
                   {/* E-learning subtype label */}
                   {product.e_learning_subtype && (
                     <div className="absolute top-2 right-2 z-10">
-                      <span className="badge-glass font-semibold px-2 py-1">
+                      <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-1 rounded-full text-xs font-medium">
                         {product.e_learning_subtype === "online-course" ? "Online Course" :
                          product.e_learning_subtype === "ebook" ? "Ebook" :
                          product.e_learning_subtype === "ai-prompt" ? "AI Prompt" :
@@ -239,7 +239,7 @@ export function FeaturedCourses() {
                         className="rounded-full object-cover w-8 h-8 flex-shrink-0 border-2 border-border-default"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-surface flex items-center justify-center text-text-primary text-xs font-bold flex-shrink-0 border-2 border-border-default">
+                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-50 text-xs font-bold flex-shrink-0 border-2 border-slate-700">
                         {getInitials(product.expert_name)}
                       </div>
                     )}

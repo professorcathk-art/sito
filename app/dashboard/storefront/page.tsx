@@ -176,8 +176,8 @@ export default function StorefrontEditorPage() {
       <DashboardLayout>
         <div className="p-8">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-[#121212] rounded w-1/3"></div>
-            <div className="h-64 bg-[#121212] rounded"></div>
+            <div className="h-8 bg-slate-800 rounded w-1/3"></div>
+            <div className="h-64 bg-slate-800 rounded"></div>
           </div>
         </div>
       </DashboardLayout>
@@ -189,10 +189,10 @@ export default function StorefrontEditorPage() {
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-white mb-2">Storefront Editor</h1>
-            <p className="text-gray-500">
+            <h1 className="text-3xl font-bold text-slate-50 mb-2">Storefront Editor</h1>
+            <p className="text-slate-400">
               Customize your Link-in-Bio storefront. {expertData?.custom_slug && (
-                <span>Preview at: <a href={`/s/${expertData.custom_slug}`} target="_blank" className="text-white underline">sito.club/s/{expertData.custom_slug}</a></span>
+                <span>Preview at: <a href={`/s/${expertData.custom_slug}`} target="_blank" className="text-indigo-400 hover:text-indigo-300 underline">sito.club/s/{expertData.custom_slug}</a></span>
               )}
             </p>
           </div>
@@ -201,8 +201,8 @@ export default function StorefrontEditorPage() {
             {/* Left Side - Editor Controls */}
             <div className="space-y-6">
               {/* Theme Selector */}
-              <div className="bg-[#121212] border border-white/5 rounded-xl p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Theme</h2>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                <h2 className="text-xl font-semibold text-slate-50 mb-4">Theme</h2>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { id: "default", name: "Default", pro: false },
@@ -213,15 +213,15 @@ export default function StorefrontEditorPage() {
                     <button
                       key={theme.id}
                       onClick={() => handleThemeSelect(theme.id)}
-                      className={`p-4 rounded-md border-2 transition-all ${
+                      className={`p-4 rounded-lg border-2 transition-all ${
                         settings.themePreset === theme.id
-                          ? "border-white bg-white/5"
-                          : "border-white/5 hover:border-white/10"
+                          ? "border-indigo-500 bg-indigo-500/10"
+                          : "border-slate-700 hover:border-slate-600"
                       } ${theme.pro && !isPro ? "opacity-60" : ""}`}
                     >
-                      <div className="text-white font-medium">{theme.name}</div>
+                      <div className="text-slate-50 font-medium">{theme.name}</div>
                       {theme.pro && (
-                        <div className="text-xs text-gray-500 mt-1">⭐ PRO</div>
+                        <div className="text-xs text-slate-400 mt-1">⭐ PRO</div>
                       )}
                     </button>
                   ))}
@@ -229,85 +229,85 @@ export default function StorefrontEditorPage() {
               </div>
 
               {/* Brand Color */}
-              <div className="bg-[#121212] border border-white/5 rounded-xl p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Brand Color</h2>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                <h2 className="text-xl font-semibold text-slate-50 mb-4">Brand Color</h2>
                 <div className="flex items-center gap-4">
                   <input
                     type="color"
-                    value={settings.customBrandColor || "#FFFFFF"}
+                    value={settings.customBrandColor || "#6366f1"}
                     onChange={(e) => setSettings({ ...settings, customBrandColor: e.target.value })}
-                    className="w-16 h-16 rounded-md border border-white/10 cursor-pointer"
+                    className="w-16 h-16 rounded-lg border border-slate-700 cursor-pointer"
                   />
                   <input
                     type="text"
                     value={settings.customBrandColor || ""}
                     onChange={(e) => setSettings({ ...settings, customBrandColor: e.target.value })}
-                    placeholder="#FFFFFF"
-                    className="flex-1 px-4 py-2 bg-[#0A0A0A] border border-white/5 rounded-md text-white placeholder-gray-500 focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none"
+                    placeholder="#6366f1"
+                    className="flex-1 px-4 py-2 bg-slate-950 border border-slate-700 text-slate-100 rounded-lg placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
                   />
                 </div>
               </div>
 
               {/* Button Style */}
-              <div className="bg-[#121212] border border-white/5 rounded-xl p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Button Style</h2>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                <h2 className="text-xl font-semibold text-slate-50 mb-4">Button Style</h2>
                 <div className="grid grid-cols-2 gap-3">
                   {["rounded-full", "rounded-md", "hard-edge", "outline"].map((style) => (
                     <button
                       key={style}
                       onClick={() => setSettings({ ...settings, buttonStyle: style })}
-                      className={`p-3 rounded-md border-2 transition-all ${
+                      className={`p-3 rounded-lg border-2 transition-all ${
                         settings.buttonStyle === style
-                          ? "border-white bg-white/5"
-                          : "border-white/5 hover:border-white/10"
+                          ? "border-indigo-500 bg-indigo-500/10"
+                          : "border-slate-700 hover:border-slate-600"
                       }`}
                     >
-                      <div className="text-white text-sm capitalize">{style.replace("-", " ")}</div>
+                      <div className="text-slate-50 text-sm capitalize">{style.replace("-", " ")}</div>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Bio Override */}
-              <div className="bg-[#121212] border border-white/5 rounded-xl p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Storefront Bio</h2>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                <h2 className="text-xl font-semibold text-slate-50 mb-4">Storefront Bio</h2>
                 <textarea
                   value={settings.bioOverride || ""}
                   onChange={(e) => setSettings({ ...settings, bioOverride: e.target.value })}
                   placeholder="Custom bio for storefront (optional)"
                   rows={4}
-                  className="w-full px-4 py-2 bg-[#0A0A0A] border border-white/5 rounded-md text-white placeholder-gray-500 focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none resize-none"
+                  className="w-full px-4 py-2 bg-slate-950 border border-slate-700 text-slate-100 rounded-lg placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none resize-none"
                 />
               </div>
 
               {/* Custom Links */}
-              <div className="bg-[#121212] border border-white/5 rounded-xl p-6">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-white">Custom Links</h2>
+                  <h2 className="text-xl font-semibold text-slate-50">Custom Links</h2>
                   <button
                     onClick={handleAddLink}
-                    className="px-4 py-2 bg-white text-black rounded-md font-semibold hover:bg-gray-200 transition-colors text-sm"
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-semibold transition-colors text-sm"
                   >
                     + Add Link
                   </button>
                 </div>
                 <div className="space-y-3">
                   {settings.customLinks.map((link, index) => (
-                    <div key={index} className="p-4 bg-[#0A0A0A] border border-white/5 rounded-md space-y-2">
+                    <div key={index} className="p-4 bg-slate-950 border border-slate-700 rounded-lg space-y-2">
                       <div className="grid grid-cols-2 gap-2">
                         <input
                           type="text"
                           value={link.title}
                           onChange={(e) => handleUpdateLink(index, "title", e.target.value)}
                           placeholder="Link title"
-                          className="px-3 py-2 bg-[#121212] border border-white/5 rounded-md text-white placeholder-gray-500 text-sm focus:border-white/20 outline-none"
+                          className="px-3 py-2 bg-slate-950 border border-slate-700 text-slate-100 rounded-lg placeholder-slate-500 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
                         />
                         <input
                           type="text"
                           value={link.url}
                           onChange={(e) => handleUpdateLink(index, "url", e.target.value)}
                           placeholder="https://..."
-                          className="px-3 py-2 bg-[#121212] border border-white/5 rounded-md text-white placeholder-gray-500 text-sm focus:border-white/20 outline-none"
+                          className="px-3 py-2 bg-slate-950 border border-slate-700 text-slate-100 rounded-lg placeholder-slate-500 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -316,11 +316,11 @@ export default function StorefrontEditorPage() {
                           value={link.icon || ""}
                           onChange={(e) => handleUpdateLink(index, "icon", e.target.value)}
                           placeholder="Icon emoji"
-                          className="px-3 py-2 bg-[#121212] border border-white/5 rounded-md text-white placeholder-gray-500 text-sm w-20 focus:border-white/20 outline-none"
+                          className="px-3 py-2 bg-slate-950 border border-slate-700 text-slate-100 rounded-lg placeholder-slate-500 text-sm w-20 focus:border-indigo-500 outline-none"
                         />
                         <button
                           onClick={() => handleRemoveLink(index)}
-                          className="px-3 py-2 bg-red-900/30 border border-red-500/50 text-red-200 rounded-md text-sm hover:bg-red-900/50 transition-colors"
+                          className="px-3 py-2 bg-red-900/30 border border-red-500/50 text-red-200 rounded-lg text-sm hover:bg-red-900/50 transition-colors"
                         >
                           Remove
                         </button>
@@ -331,8 +331,8 @@ export default function StorefrontEditorPage() {
               </div>
 
               {/* Toggles */}
-              <div className="bg-[#121212] border border-white/5 rounded-xl p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Display Options</h2>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                <h2 className="text-xl font-semibold text-slate-50 mb-4">Display Options</h2>
                 <div className="space-y-3">
                   {[
                     { key: "showProducts", label: "Show Products" },
@@ -340,18 +340,18 @@ export default function StorefrontEditorPage() {
                     { key: "showBlog", label: "Show Blog Posts" },
                   ].map((option) => (
                     <label key={option.key} className="flex items-center justify-between cursor-pointer">
-                      <span className="text-white">{option.label}</span>
+                      <span className="text-slate-50">{option.label}</span>
                       <input
                         type="checkbox"
                         checked={settings[option.key as keyof StorefrontSettings] as boolean}
                         onChange={(e) =>
                           setSettings({ ...settings, [option.key]: e.target.checked })
                         }
-                        className="w-12 h-6 bg-[#0A0A0A] border border-white/10 rounded-full appearance-none relative cursor-pointer checked:bg-white transition-colors"
+                        className="w-12 h-6 bg-slate-950 border border-slate-700 rounded-full appearance-none relative cursor-pointer checked:bg-indigo-600 transition-colors"
                         style={{
                           background: (settings[option.key as keyof StorefrontSettings] as boolean)
-                            ? settings.customBrandColor || "#FFFFFF"
-                            : "#0A0A0A",
+                            ? settings.customBrandColor || undefined
+                            : undefined,
                         }}
                       />
                     </label>
@@ -363,7 +363,7 @@ export default function StorefrontEditorPage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full bg-white text-black py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving ? "Saving..." : "Save Changes"}
               </button>

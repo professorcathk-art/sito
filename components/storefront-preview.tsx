@@ -65,22 +65,22 @@ export function StorefrontPreview({
   const getThemeClasses = () => {
     switch (themePreset) {
       case "midnight-glass":
-        return "bg-[#0A0A0A] text-white";
+        return "bg-slate-950 text-slate-50";
       case "minimal-light":
-        return "bg-white text-black";
+        return "bg-white text-slate-900";
       case "bold-dark":
-        return "bg-black text-white";
+        return "bg-slate-950 text-slate-50";
       default:
-        return "bg-[#0A0A0A] text-white";
+        return "bg-slate-950 text-slate-50";
     }
   };
 
   return (
     <div className="sticky top-4 flex justify-center">
       {/* Mobile Phone Frame */}
-      <div className="relative w-[375px] h-[812px] bg-[#1A1A1A] rounded-[2.5rem] p-2 shadow-2xl">
+      <div className="relative w-[375px] h-[812px] bg-slate-800 rounded-[2.5rem] p-2 shadow-2xl">
         {/* Phone Notch */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-[#1A1A1A] rounded-b-2xl z-10"></div>
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-b-2xl z-10"></div>
         
         {/* Screen Content */}
         <div 
@@ -92,7 +92,7 @@ export function StorefrontPreview({
             {/* Avatar Section */}
             <div className="flex flex-col items-center space-y-4">
               {expertAvatar ? (
-                <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-white/10">
+                <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-slate-700">
                   <Image
                     src={expertAvatar}
                     alt={expertName}
@@ -101,7 +101,7 @@ export function StorefrontPreview({
                   />
                 </div>
               ) : (
-                <div className="w-24 h-24 rounded-full mesh-gradient border-2 border-white/5 flex items-center justify-center">
+                <div className="w-24 h-24 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center">
                   <svg className="w-12 h-12 text-gray-700 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -132,7 +132,7 @@ export function StorefrontPreview({
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
+                      className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center hover:bg-slate-700 transition-colors"
                     >
                       {link.icon ? (
                         <span className="text-lg">{link.icon}</span>
@@ -179,7 +179,7 @@ export function StorefrontPreview({
                 {products.slice(0, 3).map((product) => (
                   <div
                     key={product.id}
-                    className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all"
+                    className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-700 transition-all"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -217,9 +217,9 @@ export function StorefrontPreview({
             {showBlog && (
               <div className="space-y-3">
                 <h2 className="text-lg font-semibold mb-3">Latest Posts</h2>
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <div className="h-4 bg-white/10 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-white/10 rounded w-1/2"></div>
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                  <div className="h-4 bg-slate-700 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-slate-700 rounded w-1/2"></div>
                 </div>
               </div>
             )}

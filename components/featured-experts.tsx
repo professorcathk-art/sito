@@ -117,7 +117,7 @@ export function FeaturedExperts() {
               <Link
                 key={expert.id}
                 href={`/expert/${expert.id}`}
-                className="group bg-[#1C1C1E] border border-white/5 card-hover p-6 rounded-2xl animate-fade-in-up"
+                className="group bg-slate-900 border border-slate-800 p-6 rounded-xl animate-fade-in-up transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="flex items-start gap-4 mb-3">
@@ -148,7 +148,7 @@ export function FeaturedExperts() {
                 </div>
                 <p className="text-gray-500 text-xs sm:text-sm mb-3 line-clamp-2">{expert.bio}</p>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="badge-glass truncate">
+                  <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 rounded-full text-xs font-medium truncate">
                     {expert.category}
                   </span>
                   <span className="text-xs text-gray-500 truncate">{expert.location}</span>
@@ -161,7 +161,7 @@ export function FeaturedExperts() {
         <div className="text-center mt-6 sm:mt-8">
           <Link
             href="/directory"
-            className="inline-block bg-white text-black px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-semibold hover:bg-gray-200 transition-all duration-300"
+            className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all duration-300"
           >
             View All Experts
           </Link>

@@ -315,7 +315,7 @@ export function ExpertDirectory() {
               >
                 <Link href={`/expert/${expert.id}`} className="flex-1 flex flex-col">
                   {/* Poster-style image section - shorter height */}
-                  <div className="relative aspect-[3/2] w-full overflow-hidden bg-gradient-to-br from-dark-green-800 to-dark-green-900">
+                  <div className="relative aspect-[3/2] w-full overflow-hidden bg-slate-800">
                     {expert.avatar_url ? (
                       <Image
                         src={expert.avatar_url}
@@ -370,7 +370,7 @@ export function ExpertDirectory() {
                     
                     <div className="flex flex-wrap gap-2 mt-auto">
                       {expert.category_name && (
-                        <span className="text-xs text-primary bg-transparent px-2 py-1 rounded-full border border-primary truncate">
+                        <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 rounded-full text-xs font-medium truncate">
                           {expert.category_name}
                         </span>
                       )}
@@ -388,7 +388,7 @@ export function ExpertDirectory() {
                       <button
                         onClick={(e) => handleConnect(expert.id, e)}
                         disabled={isConnecting}
-                        className="w-full bg-primary text-white py-2 rounded-md font-medium hover:bg-gray-200 transition-colors text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg font-medium transition-colors text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isConnecting ? "Connecting..." : "Connect"}
                       </button>
@@ -436,7 +436,7 @@ export function ExpertDirectory() {
         </p>
         <Link
           href="/register"
-          className="inline-block bg-primary text-white px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium hover:bg-gray-200 transition-all duration-300 text-sm sm:text-base"
+          className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-medium transition-all duration-300 text-sm sm:text-base"
         >
           Sign Up Now
         </Link>
