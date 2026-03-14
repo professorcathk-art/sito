@@ -154,7 +154,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-cyber-green text-custom-text py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
+        className="w-full bg-cyber-green text-slate-900 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
       >
         {loading ? "Sending..." : "Send Message"}
       </button>

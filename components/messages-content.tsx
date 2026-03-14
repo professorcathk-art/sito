@@ -438,7 +438,7 @@ export function MessagesContent() {
                     setComposeExpertId(selectedMessage.fromId);
                     setComposeExpertName(selectedMessage.from);
                   }}
-                  className="bg-cyber-green text-custom-text px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
+                  className="bg-cyber-green text-slate-900 px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
                 >
                   Reply
                 </button>
@@ -630,7 +630,7 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
         <button
           type="submit"
           disabled={loading}
-          className="bg-cyber-green text-custom-text px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
+          className="bg-cyber-green text-slate-900 px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
         >
           {loading ? "Sending..." : "Send Message"}
         </button>

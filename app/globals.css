@@ -271,6 +271,14 @@ body {
   color: #FFFFFF;
 }
 
+/* White/light accent buttons: ensure dark text for visibility */
+button.bg-cyber-green,
+a.bg-cyber-green,
+button.bg-primary,
+a.bg-primary {
+  color: #0f172a;
+}
+
 /* Primary buttons - Indigo accent */
 .btn-primary {
   background-color: #4f46e5;

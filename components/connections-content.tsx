@@ -228,7 +228,7 @@ export function ConnectionsContent() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleAccept(connection.id)}
-                      className="px-4 py-2 bg-cyber-green text-custom-text rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
                     >
                       Accept
                     </button>
@@ -301,7 +301,7 @@ export function ConnectionsContent() {
                     </Link>
                     <Link
                       href={`/messages?expert=${connection.expert_id === user?.id ? connection.user_id : connection.expert_id}`}
-                      className="px-4 py-2 bg-cyber-green text-custom-text rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
                     >
                       Message
                     </Link>
