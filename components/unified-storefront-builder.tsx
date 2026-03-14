@@ -42,6 +42,9 @@ const BLOCK_TYPES: { id: StorefrontBlock["type"]; name: string }[] = [
   { id: "image_text", name: "Image + Text" },
   { id: "faq", name: "FAQ" },
   { id: "testimonials", name: "Testimonials" },
+  { id: "rich_text", name: "Rich Text" },
+  { id: "image_banner", name: "Image Banner" },
+  { id: "bullet_list", name: "Bullet List" },
 ];
 
 const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown>> = {
@@ -51,6 +54,9 @@ const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown
   image_text: { imageUrl: "", title: "", text: "", alignment: "left" },
   faq: { items: [{ question: "", answer: "" }] },
   testimonials: { items: [{ name: "", quote: "", avatarUrl: "" }] },
+  rich_text: { content: "" },
+  image_banner: { imageUrl: "" },
+  bullet_list: { items: [""] },
 };
 
 const DEFAULT_BLOCKS: StorefrontBlock[] = [
@@ -1529,6 +1535,92 @@ function BlockEditForm({
           className="text-indigo-400 text-sm"
         >
           + Add testimonial
+        </button>
+      </div>
+    );
+  }
+  if (block.type === "rich_text") {
+    return (
+      <div className="mt-4">
+        <label className="block text-slate-400 text-sm mb-1">Content (HTML supported)</label>
+        <textarea
+          value={(data.content as string) || ""}
+          onChange={(e) => onUpdate({ ...data, content: e.target.value })}
+          placeholder="Enter paragraphs, quotes, or HTML..."
+          rows={5}
+          className={`${INPUT_CLASS} resize-none`}
+        />
+      </div>
+    );
+  }
+  if (block.type === "image_banner") {
+    return (
+      <div className="mt-4 space-y-2">
+        <label className="block text-slate-400 text-sm mb-1">Banner Image</label>
+        {(data.imageUrl as string) && (
+          <div className="relative w-full h-24 rounded-lg overflow-hidden mb-2">
+            <Image src={data.imageUrl as string} alt="" fill className="object-cover" />
+          </div>
+        )}
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          id="image-banner-upload"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            setImageTextUploading(true);
+            setUploadError("");
+            try {
+              const url = await onImageUpload(file, "storefront/banners");
+              onUpdate({ ...data, imageUrl: url });
+            } catch (err) {
+              setUploadError(err instanceof Error ? err.message : "Upload failed");
+            } finally {
+              setImageTextUploading(false);
+              e.target.value = "";
+            }
+          }}
+        />
+        <label
+          htmlFor="image-banner-upload"
+          className="inline-block px-3 py-2 bg-slate-800 border border-slate-700 rounded text-slate-200 text-sm cursor-pointer hover:bg-slate-700 disabled:opacity-50"
+        >
+          {imageTextUploading ? "Uploading..." : (data.imageUrl as string) ? "Change image" : "Upload image"}
+        </label>
+        {uploadError && <p className="text-red-400 text-xs mt-1">{uploadError}</p>}
+      </div>
+    );
+  }
+  if (block.type === "bullet_list") {
+    const items = Array.isArray(data.items) ? (data.items as string[]) : [""];
+    return (
+      <div className="mt-4 space-y-2">
+        {items.map((item, i) => (
+          <div key={i} className="flex gap-2">
+            <input
+              type="text"
+              value={item}
+              onChange={(e) => {
+                const next = [...items];
+                next[i] = e.target.value;
+                onUpdate({ ...data, items: next });
+              }}
+              placeholder={`Item ${i + 1}`}
+              className={INPUT_CLASS}
+            />
+            <button type="button" onClick={() => onUpdate({ ...data, items: items.filter((_, j) => j !== i) })} className="text-red-400 text-sm shrink-0">
+              Remove
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onUpdate({ ...data, items: [...items, ""] })}
+          className="text-indigo-400 text-sm"
+        >
+          + Add item
         </button>
       </div>
     );

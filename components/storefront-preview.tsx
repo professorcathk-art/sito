@@ -66,7 +66,11 @@ function BlocksPreview({
               <div className={`text-center ${fontClass}`}>
                 <div className="flex items-center justify-center gap-2">
                   <h1 className="text-2xl font-bold text-[var(--store-text)]">{headerName}</h1>
-                  {verified && <span title="Verified" className="text-[var(--store-text)]">✓</span>}
+                  {verified && (
+                  <svg className="w-5 h-5 text-blue-500 inline-block shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-label="Verified">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                  </svg>
+                )}
                 </div>
                 {headerTagline && <p className="text-sm mt-1 opacity-80 text-[var(--store-text)]">{headerTagline}</p>}
                 <p className="text-sm mt-2 opacity-80 line-clamp-3 text-[var(--store-text)]">{headerBio || "Expert bio"}</p>
@@ -87,18 +91,26 @@ function BlocksPreview({
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 bg-[var(--store-card-bg)] border border-[var(--store-card-border)] rounded-xl p-3 hover:opacity-90 transition-all min-w-0"
+                    className="group flex items-center p-3 bg-[var(--store-card-bg)] border border-[var(--store-card-border)] rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer"
                   >
-                    {link.thumbnailUrl && (
+                    {link.thumbnailUrl ? (
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
                         <Image src={link.thumbnailUrl} alt="" fill className="object-cover" />
                       </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-[var(--store-card-border)]/30 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--store-text)" }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                      </div>
                     )}
-                    <div className="flex-1 min-w-0 text-left">
+                    <div className="flex-1 min-w-0 text-left ml-3">
                       <span className="font-semibold block text-sm text-[var(--store-text)]">{link.title}</span>
-                      {link.description && <span className="text-xs opacity-80 block mt-0.5 line-clamp-1 text-[var(--store-text)]">{link.description}</span>}
+                      {link.description && <span className="text-xs opacity-70 block mt-0.5 line-clamp-1 text-[var(--store-text)]">{link.description}</span>}
                     </div>
-                    <span className="text-xs shrink-0 text-[var(--store-text)]">→</span>
+                    <svg className="w-5 h-5 opacity-40 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--store-text)" }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </a>
                 ))}
             </div>
@@ -173,6 +185,44 @@ function BlocksPreview({
                   {item.name && <p className="text-sm font-medium mt-2 text-[var(--store-text)]">— {item.name}</p>}
                 </div>
               ))}
+            </div>
+          );
+        }
+        if (block.type === "rich_text") {
+          const content = (block.data.content as string) || "";
+          if (!content.trim()) return null;
+          return (
+            <div key={block.id} className="w-full">
+              <div className="prose prose-sm max-w-none text-[var(--store-text)]" dangerouslySetInnerHTML={{ __html: content }} />
+            </div>
+          );
+        }
+        if (block.type === "image_banner") {
+          const imageUrl = block.data.imageUrl as string;
+          if (!imageUrl) return null;
+          return (
+            <div key={block.id} className="w-full">
+              <img src={imageUrl} alt="Banner" className="w-full h-auto rounded-2xl object-cover shadow-sm" />
+            </div>
+          );
+        }
+        if (block.type === "bullet_list") {
+          const items = (block.data.items as string[]) || [];
+          if (items.length === 0) return null;
+          return (
+            <div key={block.id} className="w-full">
+              <ul className="space-y-2 list-none">
+                {items.filter(Boolean).map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-3 text-[var(--store-text)]">
+                    <span className="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center bg-[var(--store-btn-bg)]/30" style={{ color: "var(--store-btn-bg)" }}>
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                    <span className="text-sm opacity-90">{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           );
         }
@@ -288,7 +338,11 @@ export function StorefrontPreview({
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-2">
                       <h1 className="text-2xl font-bold text-[var(--store-text)]">{expertName}</h1>
-                      {verified && <span className="text-[var(--store-text)]" title="Verified">✓</span>}
+                      {verified && (
+                      <svg className="w-5 h-5 text-blue-500 inline-block shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-label="Verified">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                      </svg>
+                    )}
                     </div>
                     <p className="text-sm mt-2 opacity-80 line-clamp-3 text-[var(--store-text)]">{bioOverride || expertBio || "Expert bio goes here"}</p>
                   </div>

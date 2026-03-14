@@ -3,7 +3,7 @@
  * Themes act as presets that overwrite granular state.
  */
 
-export type ThemePresetId = "minimal" | "midnight-glass" | "neo-brutalist" | "soft-gradient";
+export type ThemePresetId = "minimal" | "midnight-glass" | "neo-brutalist" | "soft-gradient" | "fluid-aura";
 export type FontFamilyId = "inter" | "roboto" | "playfair" | "space-grotesk" | "dm-sans";
 export type BackgroundType = "solid" | "gradient" | "mesh";
 export type CardStyleId = "flat" | "glass" | "brutalist" | "soft-shadow";
@@ -54,6 +54,14 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
     cardStyle: "soft-shadow",
     buttonRadius: "pill",
   },
+  "fluid-aura": {
+    backgroundColor: "#f8fafc",
+    textColor: "#0f172a",
+    buttonColor: "#0f172a",
+    buttonTextColor: "#FFFFFF",
+    cardStyle: "glass",
+    buttonRadius: "pill",
+  },
 };
 
 /** Legacy wrapper classes for theme preview cards in Design tab */
@@ -86,6 +94,13 @@ export const THEME_PRESETS: Record<ThemePresetId, { id: ThemePresetId; name: str
     wrapper: "bg-gradient-to-br from-rose-100 to-teal-100 text-slate-800",
     card: "bg-white/60 backdrop-blur-md border border-white/40 shadow-lg rounded-3xl",
     button: "bg-slate-900 text-white rounded-full",
+  },
+  "fluid-aura": {
+    id: "fluid-aura",
+    name: "Fluid Aura",
+    wrapper: "bg-slate-50 text-slate-900 relative overflow-hidden",
+    card: "bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-3xl",
+    button: "bg-slate-900 text-white rounded-full hover:bg-slate-800",
   },
 };
 

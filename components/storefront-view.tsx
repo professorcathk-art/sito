@@ -77,19 +77,23 @@ export function StorefrontView({
   const { user } = useAuth();
   const supabase = createClient();
 
+  const isFluidAura = designState.themePreset === "fluid-aura";
   const cssVars = useMemo(() => {
-    const card = getCardCssVars(designState.cardStyle as "flat" | "glass" | "brutalist" | "soft-shadow");
+    const card =
+      isFluidAura
+        ? { bg: "rgba(255,255,255,0.4)", border: "rgba(255,255,255,0.5)" }
+        : getCardCssVars(designState.cardStyle as "flat" | "glass" | "brutalist" | "soft-shadow");
     const btnRadius = designState.buttonRadius === "pill" ? "9999px" : designState.buttonRadius === "sharp" ? "0" : "0.5rem";
     return {
-      "--store-bg": designState.backgroundColor,
-      "--store-text": designState.textColor,
-      "--store-btn-bg": designState.buttonColor,
+      "--store-bg": isFluidAura ? "#f8fafc" : designState.backgroundColor,
+      "--store-text": isFluidAura ? "#0f172a" : designState.textColor,
+      "--store-btn-bg": isFluidAura ? "#0f172a" : designState.buttonColor,
       "--store-btn-text": designState.buttonTextColor,
       "--store-card-bg": card.bg,
       "--store-card-border": card.border,
       "--store-btn-radius": btnRadius,
     } as React.CSSProperties;
-  }, [designState]);
+  }, [designState, isFluidAura]);
 
   const fontClass = FONT_FAMILIES.find((f) => f.id === designState.fontFamily)?.class || "font-store-inter";
   const fontVarMap: Record<string, string> = {
@@ -122,18 +126,26 @@ export function StorefrontView({
   if (blocksToRender.length > 0) {
     const sortedBlocks = [...blocksToRender].sort((a, b) => a.order - b.order);
 
+    const wrapperClass = isFluidAura ? "min-h-screen relative overflow-hidden bg-slate-50" : "min-h-screen relative";
     return (
       <div
-        className={`min-h-screen relative ${fontClass}`}
+        className={`${wrapperClass} ${fontClass}`}
         style={{
           ...cssVars,
-          background: designState.backgroundColor.startsWith("linear") ? designState.backgroundColor : "var(--store-bg)",
+          background: isFluidAura ? undefined : (designState.backgroundColor.startsWith("linear") ? designState.backgroundColor : "var(--store-bg)"),
           color: "var(--store-text)",
           fontFamily: fontFamilyStyle,
         }}
       >
-        {designState.glowElement && <div className={designState.glowElement} aria-hidden />}
-        <div className="w-full min-h-screen flex flex-col items-center pb-12">
+        {isFluidAura && (
+          <>
+            <div className="absolute top-0 -left-4 w-96 h-96 bg-pink-400 rounded-full blur-[100px] opacity-60 mix-blend-multiply animate-blob -z-10" aria-hidden />
+            <div className="absolute top-40 right-0 w-96 h-96 bg-blue-400 rounded-full blur-[100px] opacity-60 mix-blend-multiply animate-blob -z-10" style={{ animationDelay: "2s" }} aria-hidden />
+            <div className="absolute -bottom-8 left-20 w-96 h-96 bg-purple-400 rounded-full blur-[100px] opacity-60 mix-blend-multiply animate-blob -z-10" style={{ animationDelay: "4s" }} aria-hidden />
+          </>
+        )}
+        {!isFluidAura && designState.glowElement && <div className={designState.glowElement} aria-hidden />}
+        <div className="w-full min-h-screen flex flex-col items-center pb-12 relative z-0">
           <main className="w-full max-w-2xl sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 flex flex-col gap-8">
             {sortedBlocks.map((block) => {
               if (block.type === "header") {
@@ -157,7 +169,11 @@ export function StorefrontView({
                     )}
                     <div className="flex items-center justify-center gap-2 mt-4">
                       <h1 className="text-2xl font-bold text-[var(--store-text)]">{name}</h1>
-                      {verified && <span className="text-[var(--store-text)] shrink-0" title="Verified">✓</span>}
+                      {verified && (
+                        <svg className="w-5 h-5 text-blue-500 inline-block shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-label="Verified">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </svg>
+                      )}
                     </div>
                     {tagline && <p className="text-[var(--store-text)] text-sm mt-1 opacity-80">{tagline}</p>}
                     {bio && <p className="text-[var(--store-text)] text-sm mt-2 max-w-full opacity-80">{bio}</p>}
@@ -183,18 +199,26 @@ export function StorefrontView({
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-4 bg-[var(--store-card-bg)] border border-[var(--store-card-border)] rounded-xl p-4 hover:opacity-90 transition-all"
+                        className={`group flex items-center p-4 bg-[var(--store-card-bg)] border border-[var(--store-card-border)] transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer ${isFluidAura ? "rounded-3xl backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]" : "rounded-2xl"}`}
                       >
-                        {link.thumbnailUrl && (
-                          <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0">
+                        {link.thumbnailUrl ? (
+                          <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
                             <Image src={link.thumbnailUrl} alt="" fill className="object-cover" />
                           </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-[var(--store-card-border)]/30 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-5 h-5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--store-text)" }}>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                          </div>
                         )}
-                        <div className="flex-1 min-w-0 text-left">
+                        <div className="flex-1 min-w-0 text-left ml-4">
                           <span className="font-semibold block text-[var(--store-text)]">{link.title}</span>
-                          {link.description && <span className="text-sm opacity-90 block mt-0.5 line-clamp-2 text-[var(--store-text)]">{link.description}</span>}
+                          {link.description && <span className="text-sm opacity-70 block mt-0.5 line-clamp-2 text-[var(--store-text)]">{link.description}</span>}
                         </div>
-                        <span className="text-sm shrink-0 text-[var(--store-text)]">→</span>
+                        <svg className="w-5 h-5 opacity-40 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--store-text)" }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </a>
                     ))}
                   </section>
@@ -315,6 +339,47 @@ export function StorefrontView({
                   </section>
                 );
               }
+              if (block.type === "rich_text") {
+                const content = (block.data.content as string) || "";
+                if (!content.trim()) return null;
+                const isDark = designState.textColor.toLowerCase().startsWith("#f") || designState.textColor.toLowerCase().includes("fff");
+                const proseClass = isDark ? "prose prose-sm sm:prose-base prose-invert w-full" : "prose prose-sm sm:prose-base w-full";
+                return (
+                  <section key={block.id} className="w-full">
+                    <div className={`${proseClass} text-[var(--store-text)]`} dangerouslySetInnerHTML={{ __html: content }} />
+                  </section>
+                );
+              }
+              if (block.type === "image_banner") {
+                const imageUrl = block.data.imageUrl as string;
+                if (!imageUrl) return null;
+                return (
+                  <section key={block.id} className="w-full">
+                    <img src={imageUrl} alt="Banner" className="w-full h-auto rounded-2xl object-cover shadow-sm" />
+                  </section>
+                );
+              }
+              if (block.type === "bullet_list") {
+                const items = (block.data.items as string[]) || [];
+                if (items.length === 0) return null;
+                const brandColor = designState.buttonColor;
+                return (
+                  <section key={block.id} className="w-full">
+                    <ul className="space-y-2 list-none">
+                      {items.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-[var(--store-text)]">
+                          <span className="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: `${brandColor}30`, color: brandColor }}>
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </span>
+                          <span className="text-sm opacity-90">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                );
+              }
               return null;
             })}
 
@@ -341,6 +406,7 @@ export function StorefrontView({
       </div>
     );
   }
+
 
   return (
     <div
@@ -371,7 +437,11 @@ export function StorefrontView({
               <div className="mt-6 text-center md:text-left w-full">
                 <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
                   <h1 className="text-2xl md:text-3xl font-bold text-[var(--store-text)] tracking-tight">{expertName}</h1>
-                  {verified && <span className="text-[var(--store-text)]" title="Verified Expert">✓</span>}
+                  {verified && (
+                    <svg className="w-5 h-5 text-blue-500 inline-block shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-label="Verified Expert">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                  )}
                 </div>
                 <p className="text-[var(--store-text)] text-sm md:text-base leading-relaxed opacity-80">{bioOverride || expertBio || "Welcome to my storefront"}</p>
               </div>
