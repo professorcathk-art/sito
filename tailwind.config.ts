@@ -11,6 +11,11 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         serif: ["var(--font-playfair)", "Georgia", "serif"],
+        "store-inter": ["var(--font-inter)", "sans-serif"],
+        "store-roboto": ["var(--font-roboto)", "sans-serif"],
+        "store-playfair": ["var(--font-playfair)", "serif"],
+        "store-space-grotesk": ["var(--font-space-grotesk)", "sans-serif"],
+        "store-dm-sans": ["var(--font-dm-sans)", "sans-serif"],
       },
       colors: {
         background: "var(--background)",

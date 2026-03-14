@@ -11,13 +11,14 @@ import { UpgradeModal } from "@/components/upgrade-modal";
 import type { StorefrontBlock } from "@/types/storefront";
 import {
   THEME_PRESETS,
+  THEME_PRESET_VALUES,
   FONT_FAMILIES,
   CARD_STYLES,
-  BUTTON_STYLES,
+  BUTTON_RADIUS_OPTIONS,
   type ThemePresetId,
   type FontFamilyId,
   type CardStyleId,
-  type ButtonStyleId,
+  type ButtonRadiusId,
 } from "@/lib/storefront-theme-config";
 
 const INPUT_CLASS =
@@ -111,18 +112,17 @@ export function UnifiedStorefrontBuilder() {
     themePreset: ThemePresetId;
     fontFamily: FontFamilyId;
     backgroundType: "solid" | "gradient" | "mesh";
-    backgroundColor?: string;
+    backgroundColor: string;
+    textColor: string;
+    buttonColor: string;
+    buttonTextColor: string;
     cardStyle: CardStyleId;
-    buttonStyle: ButtonStyleId;
-    customBrandColor?: string;
+    buttonRadius: ButtonRadiusId;
   }>({
     themePreset: "minimal",
-    fontFamily: "font-sans",
+    fontFamily: "inter",
     backgroundType: "solid",
-    backgroundColor: undefined,
-    cardStyle: "flat",
-    buttonStyle: "rounded-md",
-    customBrandColor: undefined,
+    ...THEME_PRESET_VALUES.minimal,
   });
 
   // Storefront blocks (initialized with defaults so page is never blank)
@@ -163,9 +163,9 @@ export function UnifiedStorefrontBuilder() {
             .select(`
               name, tagline, bio, website, linkedin, instagram_url, listed_on_marketplace,
               category_id, country_id, language_supported, phone_number, avatar_url, custom_slug,
-              is_pro_store, storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
+              is_pro_store,               storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
               storefront_font_family, storefront_background_type, storefront_background_color, storefront_card_style,
-              storefront_blocks,
+              storefront_text_color, storefront_button_text_color, storefront_blocks,
               categories!profiles_category_id_fkey(name),
               countries(name)
             `)
@@ -211,14 +211,36 @@ export function UnifiedStorefrontBuilder() {
             "bold-dark": "midnight-glass",
           };
           const rawTheme = (p.storefront_theme_preset as string) || "default";
+          const themePreset = (THEME_PRESETS[rawTheme as ThemePresetId] ? rawTheme : themeMap[rawTheme] || "minimal") as ThemePresetId;
+          const presetVals = THEME_PRESET_VALUES[themePreset] ?? THEME_PRESET_VALUES.minimal;
+          const fontMap: Record<string, FontFamilyId> = {
+            "font-sans": "inter",
+            "font-serif": "playfair",
+            "font-mono": "inter",
+            inter: "inter",
+            roboto: "roboto",
+            playfair: "playfair",
+            "space-grotesk": "space-grotesk",
+            "dm-sans": "dm-sans",
+          };
+          const btnStyleToRadius: Record<string, ButtonRadiusId> = {
+            "rounded-full": "pill",
+            "rounded-md": "rounded",
+            "hard-edge": "sharp",
+            sharp: "sharp",
+          };
+          const storedFont = (p.storefront_font_family as string) || "font-sans";
+          const storedBtn = (p.storefront_button_style as string) || "rounded-md";
           setDesignSettings({
-            themePreset: (THEME_PRESETS[rawTheme as ThemePresetId] ? rawTheme : themeMap[rawTheme] || "minimal") as ThemePresetId,
-            fontFamily: ((p.storefront_font_family as string) || "font-sans") as FontFamilyId,
+            themePreset,
+            fontFamily: (fontMap[storedFont] || "inter") as FontFamilyId,
             backgroundType: ((p.storefront_background_type as string) || "solid") as "solid" | "gradient" | "mesh",
-            backgroundColor: (p.storefront_background_color as string) || undefined,
-            cardStyle: ((p.storefront_card_style as string) || "flat") as CardStyleId,
-            buttonStyle: ((p.storefront_button_style as string) === "hard-edge" ? "sharp" : ((p.storefront_button_style as string) || "rounded-md")) as ButtonStyleId,
-            customBrandColor: (p.storefront_custom_brand_color as string) || undefined,
+            backgroundColor: (p.storefront_background_color as string) || presetVals.backgroundColor,
+            textColor: (p.storefront_text_color as string) || presetVals.textColor,
+            buttonColor: (p.storefront_custom_brand_color as string) || presetVals.buttonColor,
+            buttonTextColor: (p.storefront_button_text_color as string) || presetVals.buttonTextColor,
+            cardStyle: ((p.storefront_card_style as string) || presetVals.cardStyle) as CardStyleId,
+            buttonRadius: (btnStyleToRadius[storedBtn] || "rounded") as ButtonRadiusId,
           });
           const dbBlocks = (p.storefront_blocks as StorefrontBlock[]) || [];
           setStorefrontBlocks(
@@ -363,7 +385,17 @@ export function UnifiedStorefrontBuilder() {
       setShowUpgradeModal(true);
       return;
     }
-    setDesignSettings({ ...designSettings, themePreset: theme });
+    const preset = THEME_PRESET_VALUES[theme] ?? THEME_PRESET_VALUES.minimal;
+    setDesignSettings((prev) => ({
+      ...prev,
+      themePreset: theme,
+      backgroundColor: preset.backgroundColor,
+      textColor: preset.textColor,
+      buttonColor: preset.buttonColor,
+      buttonTextColor: preset.buttonTextColor,
+      cardStyle: preset.cardStyle,
+      buttonRadius: preset.buttonRadius,
+    }));
   };
 
   const handleAddBlock = (type: StorefrontBlock["type"]) => {
@@ -426,12 +458,14 @@ export function UnifiedStorefrontBuilder() {
           listed_on_marketplace: profileData.listedOnMarketplace,
           custom_slug: profileData.customSlug.trim() || null,
           storefront_theme_preset: designSettings.themePreset,
-          storefront_custom_brand_color: designSettings.customBrandColor || null,
-          storefront_button_style: designSettings.buttonStyle,
+          storefront_custom_brand_color: designSettings.buttonColor || null,
+          storefront_button_style: designSettings.buttonRadius === "pill" ? "rounded-full" : designSettings.buttonRadius === "sharp" ? "sharp" : "rounded-md",
           storefront_font_family: designSettings.fontFamily,
           storefront_background_type: designSettings.backgroundType,
           storefront_background_color: designSettings.backgroundColor || null,
           storefront_card_style: designSettings.cardStyle,
+          storefront_text_color: designSettings.textColor || null,
+          storefront_button_text_color: designSettings.buttonTextColor || null,
           storefront_blocks: storefrontBlocks,
           updated_at: new Date().toISOString(),
         }, { onConflict: "id" });
@@ -482,8 +516,8 @@ export function UnifiedStorefrontBuilder() {
       <div
         className="p-4 sm:p-6 lg:p-8"
         style={
-          designSettings.customBrandColor
-            ? { ["--brand" as string]: designSettings.customBrandColor, ["--brand-color" as string]: designSettings.customBrandColor }
+          designSettings.buttonColor
+            ? { "--brand": designSettings.buttonColor, "--brand-color": designSettings.buttonColor } as React.CSSProperties
             : undefined
         }
       >
@@ -598,15 +632,18 @@ export function UnifiedStorefrontBuilder() {
 
             {/* Right - Sticky Mobile Preview */}
             <div className="lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)]">
-              <div style={designSettings.customBrandColor ? { ["--brand-color" as string]: designSettings.customBrandColor } : undefined}>
-                <StorefrontPreview
-                  themePreset={designSettings.themePreset}
-                  fontFamily={designSettings.fontFamily}
-                  backgroundType={designSettings.backgroundType}
-                  backgroundColor={designSettings.backgroundColor}
-                  cardStyle={designSettings.cardStyle}
-                  buttonStyle={designSettings.buttonStyle}
-                  customBrandColor={designSettings.customBrandColor}
+              <StorefrontPreview
+                  designState={{
+                    backgroundColor: designSettings.backgroundColor,
+                    textColor: designSettings.textColor,
+                    buttonColor: designSettings.buttonColor,
+                    buttonTextColor: designSettings.buttonTextColor,
+                    fontFamily: designSettings.fontFamily,
+                    cardStyle: designSettings.cardStyle,
+                    buttonRadius: designSettings.buttonRadius,
+                    themePreset: designSettings.themePreset,
+                    glowElement: THEME_PRESET_VALUES[designSettings.themePreset]?.glowElement,
+                  }}
                   customLinks={customLinks}
                   showProducts={showProducts}
                   showAppointments={true}
@@ -624,7 +661,6 @@ export function UnifiedStorefrontBuilder() {
             </div>
           </div>
         </div>
-      </div>
 
       {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
 
@@ -942,10 +978,12 @@ function DesignTab({
     themePreset: ThemePresetId;
     fontFamily: FontFamilyId;
     backgroundType: "solid" | "gradient" | "mesh";
-    backgroundColor?: string;
+    backgroundColor: string;
+    textColor: string;
+    buttonColor: string;
+    buttonTextColor: string;
     cardStyle: CardStyleId;
-    buttonStyle: ButtonStyleId;
-    customBrandColor?: string;
+    buttonRadius: ButtonRadiusId;
   };
   isPro: boolean;
   onThemeSelect: (theme: ThemePresetId) => void;
@@ -1016,17 +1054,19 @@ function DesignTab({
             ))}
           </div>
           <div className="flex items-center gap-3">
-            <input
-              type="color"
-              value={designSettings.backgroundColor || "#0A0A0A"}
-              onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value }))}
-              className="w-12 h-12 rounded-lg border border-slate-700 cursor-pointer flex-shrink-0"
-            />
+            {designSettings.backgroundColor?.startsWith("#") && (
+              <input
+                type="color"
+                value={designSettings.backgroundColor || "#FAFAFA"}
+                onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value }))}
+                className="w-12 h-12 rounded-lg border border-slate-700 cursor-pointer flex-shrink-0"
+              />
+            )}
             <input
               type="text"
               value={designSettings.backgroundColor || ""}
-              onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value || undefined }))}
-              placeholder="Override hex (e.g. #0A0A0A)"
+              onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value || THEME_PRESET_VALUES.minimal.backgroundColor }))}
+              placeholder="#FAFAFA or linear-gradient(...)"
               className={`flex-1 ${INPUT_CLASS} py-2`}
             />
           </div>
@@ -1057,13 +1097,13 @@ function DesignTab({
           <div>
             <label className="block text-sm text-slate-400 mb-2">Button Radius</label>
             <div className="flex flex-wrap gap-2">
-              {BUTTON_STYLES.map((b) => (
+              {BUTTON_RADIUS_OPTIONS.map((b) => (
                 <button
                   key={b.id}
                   type="button"
-                  onClick={() => onDesignChange((s) => ({ ...s, buttonStyle: b.id }))}
+                  onClick={() => onDesignChange((s) => ({ ...s, buttonRadius: b.id }))}
                   className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                    designSettings.buttonStyle === b.id ? "border-indigo-500 bg-indigo-500/10 text-slate-50" : "border-slate-700 text-slate-400 hover:border-slate-600"
+                    designSettings.buttonRadius === b.id ? "border-indigo-500 bg-indigo-500/10 text-slate-50" : "border-slate-700 text-slate-400 hover:border-slate-600"
                   }`}
                 >
                   {b.name}
@@ -1074,23 +1114,64 @@ function DesignTab({
         </div>
       </section>
 
-      {/* Brand Color */}
+      {/* Colors */}
       <section>
-        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Brand Color</h3>
-        <div className="flex items-center gap-4">
-          <input
-            type="color"
-            value={designSettings.customBrandColor || "#6366f1"}
-            onChange={(e) => onDesignChange((s) => ({ ...s, customBrandColor: e.target.value }))}
-            className="w-14 h-14 rounded-lg border border-slate-700 cursor-pointer"
-          />
-          <input
-            type="text"
-            value={designSettings.customBrandColor || ""}
-            onChange={(e) => onDesignChange((s) => ({ ...s, customBrandColor: e.target.value }))}
-            placeholder="#6366f1"
-            className={`flex-1 ${INPUT_CLASS} py-2`}
-          />
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Colors</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Text Color</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={designSettings.textColor || "#111827"}
+                onChange={(e) => onDesignChange((s) => ({ ...s, textColor: e.target.value }))}
+                className="w-10 h-10 rounded border border-slate-700 cursor-pointer flex-shrink-0"
+              />
+              <input
+                type="text"
+                value={designSettings.textColor || ""}
+                onChange={(e) => onDesignChange((s) => ({ ...s, textColor: e.target.value }))}
+                placeholder="#111827"
+                className={`flex-1 ${INPUT_CLASS} py-2`}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Button Color</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={designSettings.buttonColor || "#6366f1"}
+                onChange={(e) => onDesignChange((s) => ({ ...s, buttonColor: e.target.value }))}
+                className="w-10 h-10 rounded border border-slate-700 cursor-pointer flex-shrink-0"
+              />
+              <input
+                type="text"
+                value={designSettings.buttonColor || ""}
+                onChange={(e) => onDesignChange((s) => ({ ...s, buttonColor: e.target.value }))}
+                placeholder="#6366f1"
+                className={`flex-1 ${INPUT_CLASS} py-2`}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Button Text Color</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={designSettings.buttonTextColor || "#FFFFFF"}
+                onChange={(e) => onDesignChange((s) => ({ ...s, buttonTextColor: e.target.value }))}
+                className="w-10 h-10 rounded border border-slate-700 cursor-pointer flex-shrink-0"
+              />
+              <input
+                type="text"
+                value={designSettings.buttonTextColor || ""}
+                onChange={(e) => onDesignChange((s) => ({ ...s, buttonTextColor: e.target.value }))}
+                placeholder="#FFFFFF"
+                className={`flex-1 ${INPUT_CLASS} py-2`}
+              />
+            </div>
+          </div>
         </div>
       </section>
     </div>

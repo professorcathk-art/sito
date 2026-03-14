@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { StorefrontView } from "@/components/storefront-view";
+import { getDesignStateFromProfile, THEME_PRESET_VALUES } from "@/lib/storefront-theme-config";
 
 interface StorefrontPageProps {
   params: Promise<{
@@ -26,6 +27,11 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         storefront_theme_preset,
         storefront_custom_brand_color,
         storefront_button_style,
+        storefront_font_family,
+        storefront_background_color,
+        storefront_card_style,
+        storefront_text_color,
+        storefront_button_text_color,
         storefront_custom_links,
         storefront_show_products,
         storefront_show_appointments,
@@ -111,6 +117,10 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
     }
 
     const storefrontBlocks = (profile.storefront_blocks as any[]) || [];
+    const designState = getDesignStateFromProfile(profile);
+    const rawTheme = profile.storefront_theme_preset || "default";
+    const themeKey = rawTheme === "minimal-light" ? "minimal" : rawTheme === "bold-dark" ? "midnight-glass" : rawTheme;
+    const glowElement = THEME_PRESET_VALUES[themeKey as keyof typeof THEME_PRESET_VALUES]?.glowElement;
 
     return (
       <StorefrontView
@@ -121,9 +131,7 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         bioOverride={profile.storefront_bio_override}
         avatarUrl={profile.avatar_url}
         verified={profile.verified || false}
-        themePreset={profile.storefront_theme_preset || "default"}
-        customBrandColor={profile.storefront_custom_brand_color || undefined}
-        buttonStyle={profile.storefront_button_style || "rounded-md"}
+        designState={{ ...designState, glowElement }}
         customLinks={(profile.storefront_custom_links as any) || []}
         website={profile.website}
         linkedin={profile.linkedin}
