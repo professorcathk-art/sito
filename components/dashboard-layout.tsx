@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useState } from "react";
+import Link from "next/link";
 import { Navigation } from "@/components/navigation";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { ProtectedRoute } from "@/components/protected-route";
@@ -16,7 +17,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <ProtectedRoute>
       <div className="min-h-screen bg-custom-bg">
         <Navigation onSidebarToggle={() => setSidebarOpen(!sidebarOpen)} />
-        <div className="pt-16 pb-12">
+        <div className="pt-16">
           <div className="flex relative">
             {/* Mobile overlay */}
             {sidebarOpen && (
@@ -35,9 +36,27 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <DashboardSidebar onClose={() => setSidebarOpen(false)} />
             </div>
 
-            {/* Main content - full width on mobile */}
-            <div className="flex-1 w-full md:w-auto px-4 sm:px-6 lg:px-8 md:px-0">
-              {children}
+            {/* Main content - flex column to push footer to bottom */}
+            <div className="flex-1 flex flex-col min-h-[calc(100vh-4rem)] overflow-y-auto bg-[#0B0F19]">
+              <main className="flex-1 p-6 lg:p-8">{children}</main>
+              <footer className="w-full border-t border-slate-800/60 py-6 px-6 lg:px-8 mt-auto shrink-0">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="text-sm text-slate-500">
+                    &copy; {new Date().getFullYear()} Sito. All rights reserved.
+                  </div>
+                  <div className="flex items-center gap-6 text-sm font-medium">
+                    <Link href="/support" className="text-slate-500 hover:text-slate-300 transition-colors duration-200">
+                      Support
+                    </Link>
+                    <Link href="/terms" className="text-slate-500 hover:text-slate-300 transition-colors duration-200">
+                      Terms
+                    </Link>
+                    <Link href="/privacy" className="text-slate-500 hover:text-slate-300 transition-colors duration-200">
+                      Privacy
+                    </Link>
+                  </div>
+                </div>
+              </footer>
             </div>
           </div>
         </div>
