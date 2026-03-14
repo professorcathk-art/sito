@@ -127,9 +127,21 @@ export function StorefrontView({
     ...(instagramUrl ? [{ title: "Instagram", url: instagramUrl, icon: "📷", order: 1002 }] : []),
   ].sort((a, b) => a.order - b.order);
 
-  // Link-in-Bio modular layout when storefront_blocks present
-  if (storefrontBlocks.length > 0) {
-    const sortedBlocks = [...storefrontBlocks].sort((a, b) => a.order - b.order);
+  // Build default blocks when none configured (header, links, products)
+  const blocksToRender: StorefrontBlock[] =
+    storefrontBlocks.length > 0
+      ? storefrontBlocks
+      : [
+          { id: "default-header", type: "header", order: 0, data: { name: expertName, tagline: expertTagline, bio: bioOverride || expertBio, avatarUrl } },
+          ...(allLinks.length > 0
+            ? [{ id: "default-links", type: "links" as const, order: 1, data: { items: allLinks.map((l, i) => ({ title: l.title, url: l.url, icon: l.icon, order: i })) } }]
+            : []),
+          ...(products.length > 0 ? [{ id: "default-products", type: "products" as const, order: 2, data: { showProducts: true } }] : []),
+        ];
+
+  // Always use Link-in-Bio layout (centered, single column)
+  if (blocksToRender.length > 0) {
+    const sortedBlocks = [...blocksToRender].sort((a, b) => a.order - b.order);
     const brandColor = customBrandColor || "#6366f1";
 
     return (
@@ -339,7 +351,7 @@ export function StorefrontView({
     );
   }
 
-  // Legacy 2-column layout when no blocks
+  // Fallback: minimal single-column layout (should not reach here with default blocks)
   return (
     <div className={`${getThemeClasses()} relative`} style={cssVars}>
       {themePreset === "midnight-glass" && (
@@ -432,7 +444,7 @@ export function StorefrontView({
                       <div className="p-5">
                         <h3 className="text-lg font-semibold text-slate-50 tracking-tight mb-2">{product.name}</h3>
                         {product.description && (
-                          <p className="text-slate-400 text-sm leading-relaxed line-clamp-2 mb-3" dangerouslySetInnerHTML={{ __html: product.description }} />
+                          <div className="text-slate-400 text-sm leading-relaxed line-clamp-2 mb-3 product-preview" dangerouslySetInnerHTML={{ __html: product.description }} />
                         )}
                         <div className="flex items-center gap-2 mb-4">
                           <span className="text-lg font-bold text-slate-50">

@@ -44,6 +44,20 @@ body {
   max-width: 100%;
 }
 
+/* Force dark theme on product descriptions - overrides inline styles from rich text (e.g. white bg) */
+.product-preview div,
+.product-preview p,
+.product-preview span,
+.product-preview td,
+.product-preview th,
+.product-preview li {
+  background-color: transparent !important;
+  color: rgba(248, 250, 252, 0.9) !important;
+}
+.product-preview table {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+}
+
 .product-preview * {
   max-width: 100%;
   box-sizing: border-box;
