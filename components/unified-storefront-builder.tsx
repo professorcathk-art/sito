@@ -42,6 +42,12 @@ const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown
   testimonials: { items: [{ name: "", quote: "", avatarUrl: "" }] },
 };
 
+const DEFAULT_BLOCKS: StorefrontBlock[] = [
+  { id: "default-header", type: "header", order: 0, data: { ...DEFAULT_BLOCK_DATA.header } },
+  { id: "default-links", type: "links", order: 1, data: { ...DEFAULT_BLOCK_DATA.links } },
+  { id: "default-products", type: "products", order: 2, data: { ...DEFAULT_BLOCK_DATA.products } },
+];
+
 export function UnifiedStorefrontBuilder() {
   const router = useRouter();
   const { user } = useAuth();
@@ -100,8 +106,8 @@ export function UnifiedStorefrontBuilder() {
     buttonStyle: "rounded-md",
   });
 
-  // Storefront blocks
-  const [storefrontBlocks, setStorefrontBlocks] = useState<StorefrontBlock[]>([]);
+  // Storefront blocks (initialized with defaults so page is never blank)
+  const [storefrontBlocks, setStorefrontBlocks] = useState<StorefrontBlock[]>(() => [...DEFAULT_BLOCKS]);
   const [showAddBlockModal, setShowAddBlockModal] = useState(false);
   const [editingBlock, setEditingBlock] = useState<StorefrontBlock | null>(null);
 
@@ -184,7 +190,12 @@ export function UnifiedStorefrontBuilder() {
             customBrandColor: (p.storefront_custom_brand_color as string) || undefined,
             buttonStyle: (p.storefront_button_style as string) || "rounded-md",
           });
-          setStorefrontBlocks(((p.storefront_blocks as StorefrontBlock[]) || []).sort((a, b) => a.order - b.order));
+          const dbBlocks = (p.storefront_blocks as StorefrontBlock[]) || [];
+          setStorefrontBlocks(
+            dbBlocks.length > 0
+              ? [...dbBlocks].sort((a, b) => a.order - b.order)
+              : DEFAULT_BLOCKS
+          );
         }
 
         if (categoriesRes.data) setCategories(categoriesRes.data);
@@ -334,6 +345,8 @@ export function UnifiedStorefrontBuilder() {
   };
 
   const handleRemoveBlock = (id: string) => {
+    const block = storefrontBlocks.find((b) => b.id === id);
+    if (block?.type === "header") return; // Lock header - expert identity must stay
     setStorefrontBlocks((prev) => prev.filter((b) => b.id !== id).map((b, i) => ({ ...b, order: i })));
     if (editingBlock?.id === id) setEditingBlock(null);
   };
@@ -542,7 +555,7 @@ export function UnifiedStorefrontBuilder() {
                   expertAvatar={profileData.avatarUrl}
                   verified={false}
                   products={products}
-                  storefrontBlocks={storefrontBlocks.length > 0 ? storefrontBlocks : undefined}
+                  storefrontBlocks={storefrontBlocks.length > 0 ? [...storefrontBlocks].sort((a, b) => a.order - b.order) : undefined}
                   profileData={profileData}
                 />
               </div>
@@ -963,7 +976,11 @@ function BlocksTab({
         </button>
       </div>
       <div className="space-y-2">
-        {blocks.map((block, idx) => (
+        {(() => {
+          const sortedBlocks = [...blocks].sort((a, b) => a.order - b.order);
+          return sortedBlocks.map((block, idx) => {
+            const isHeader = block.type === "header";
+          return (
           <div key={block.id} className="p-4 bg-slate-950 border border-slate-700 rounded-lg">
             <div className="flex items-center justify-between">
               <span className="text-slate-200 font-medium capitalize">{block.type.replace("_", " ")}</span>
@@ -980,7 +997,7 @@ function BlocksTab({
                 <button
                   type="button"
                   onClick={() => onMoveBlock(block.id, "down")}
-                  disabled={idx === blocks.length - 1}
+                  disabled={idx === sortedBlocks.length - 1}
                   className="p-1 text-slate-400 hover:text-slate-200 disabled:opacity-30"
                   aria-label="Move down"
                 >
@@ -989,7 +1006,13 @@ function BlocksTab({
                 <button type="button" onClick={() => onEditBlock(editingBlock?.id === block.id ? null : block)} className="px-2 py-1 text-indigo-400 text-sm">
                   Edit
                 </button>
-                <button type="button" onClick={() => onRemoveBlock(block.id)} className="px-2 py-1 text-red-400 text-sm">
+                <button
+                  type="button"
+                  onClick={() => onRemoveBlock(block.id)}
+                  disabled={isHeader}
+                  className="px-2 py-1 text-red-400 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  title={isHeader ? "Header cannot be removed" : undefined}
+                >
                   Remove
                 </button>
               </div>
@@ -998,7 +1021,9 @@ function BlocksTab({
               <BlockEditForm block={block} onUpdate={(d) => onUpdateBlock(block.id, d)} onClose={() => onEditBlock(null)} products={products} />
             )}
           </div>
-        ))}
+          );
+          });
+        })()}
       </div>
     </div>
   );
