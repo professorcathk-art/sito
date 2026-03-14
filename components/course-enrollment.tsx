@@ -14,6 +14,19 @@ interface CourseEnrollmentProps {
   currentUserId?: string;
   enrollmentOnRequest?: boolean;
   returnUrl?: string; // URL to redirect back to after enrollment/registration
+  /** When used in storefront: ensures button text is dark when brand color is light (avoids white-on-white) */
+  customBrandColor?: string;
+  themePreset?: string;
+}
+
+function isLightColor(hex: string): boolean {
+  const c = hex.replace(/^#/, "");
+  if (c.length !== 6) return false;
+  const r = parseInt(c.slice(0, 2), 16);
+  const g = parseInt(c.slice(2, 4), 16);
+  const b = parseInt(c.slice(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6;
 }
 
 export function CourseEnrollment({
@@ -24,6 +37,8 @@ export function CourseEnrollment({
   currentUserId,
   enrollmentOnRequest = false,
   returnUrl,
+  customBrandColor,
+  themePreset,
 }: CourseEnrollmentProps) {
   // Ensure boolean value
   const isEnrollmentOnRequest = enrollmentOnRequest === true;
@@ -692,11 +707,16 @@ export function CourseEnrollment({
   }
 
   if (isEnrolled) {
+    const useDarkText = customBrandColor && (isLightColor(customBrandColor) || themePreset === "minimal-light");
     return (
       <div className="flex gap-4">
         <button
           onClick={() => router.push("/courses/manage")}
-          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+          className={`px-6 py-3 font-semibold rounded-md transition-colors ${
+            useDarkText
+              ? "bg-white/90 hover:bg-white text-slate-900 border border-slate-300"
+              : "bg-indigo-600 hover:bg-indigo-500 text-white"
+          }`}
         >
           Go to Classroom
         </button>
@@ -748,7 +768,7 @@ export function CourseEnrollment({
           )}
           <button
             disabled
-            className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md"
+            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-md"
           >
             {isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
           </button>
@@ -786,7 +806,7 @@ export function CourseEnrollment({
               </button>
               <a
                 href={`mailto:${productContactEmail}?subject=Course Enrollment - ${courseId}`}
-                className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-center"
+                className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-md transition-colors text-center"
               >
                 Send Email
               </a>
@@ -823,7 +843,7 @@ export function CourseEnrollment({
             <button
               onClick={handleEnroll}
               disabled={processing}
-              className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-md transition-colors disabled:opacity-50"
             >
               {processing ? "Processing..." : isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
             </button>

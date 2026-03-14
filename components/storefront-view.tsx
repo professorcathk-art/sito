@@ -107,14 +107,25 @@ export function StorefrontView({
     }
   };
 
+  const isLightColor = (hex: string): boolean => {
+    const c = hex.replace(/^#/, "");
+    if (c.length !== 6) return false;
+    const r = parseInt(c.slice(0, 2), 16);
+    const g = parseInt(c.slice(2, 4), 16);
+    const b = parseInt(c.slice(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6;
+  };
+
   const getButtonStyle = () => {
     if (!customBrandColor) return {};
+    const useDarkText = isLightColor(customBrandColor) || themePreset === "minimal-light";
     if (buttonStyle === "outline") {
       return { borderColor: customBrandColor, color: customBrandColor };
     }
     return {
       backgroundColor: customBrandColor,
-      color: themePreset === "minimal-light" ? "#000000" : "#FFFFFF",
+      color: useDarkText ? "#111827" : "#FFFFFF",
     };
   };
 
@@ -150,7 +161,7 @@ export function StorefrontView({
         style={{ ...cssVars, "--brand": brandColor } as React.CSSProperties}
       >
         <div className="w-full min-h-screen flex flex-col items-center pb-12">
-          <main className="w-full max-w-2xl mx-auto px-4 sm:px-6 pt-12 flex flex-col gap-8">
+          <main className="w-full max-w-2xl sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 flex flex-col gap-8">
             {sortedBlocks.map((block) => {
               if (block.type === "header") {
                 const d = block.data;
@@ -171,8 +182,10 @@ export function StorefrontView({
                         </svg>
                       </div>
                     )}
-                    <h1 className="text-2xl font-bold text-slate-50 mt-4">{name}</h1>
-                    {verified && <span className="text-indigo-400 ml-1" title="Verified">✓</span>}
+                    <div className="flex items-center justify-center gap-2 mt-4">
+                      <h1 className="text-2xl font-bold text-slate-50">{name}</h1>
+                      {verified && <span className="text-indigo-400 shrink-0" title="Verified">✓</span>}
+                    </div>
                     {tagline && <p className="text-slate-400 text-sm mt-1">{tagline}</p>}
                     {bio && <p className="text-slate-400 text-sm mt-2 max-w-md">{bio}</p>}
                     {(website || linkedin || instagramUrl) && (
@@ -226,8 +239,10 @@ export function StorefrontView({
                               <Image src={product.cover_image_url} alt={product.name} fill className="object-cover" />
                             </div>
                           ) : (
-                            <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center border border-white/5 flex-shrink-0">
-                              <span className="text-2xl font-bold text-white/50">{product.name.charAt(0)}</span>
+                            <div className="w-24 h-24 rounded-lg bg-slate-800 border border-slate-700 flex-shrink-0 flex items-center justify-center">
+                              <svg className="w-10 h-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -242,6 +257,8 @@ export function StorefrontView({
                             coursePrice={product.price}
                             isFree={product.price === 0}
                             currentUserId={user.id}
+                            customBrandColor={customBrandColor}
+                            themePreset={themePreset}
                           />
                         </div>
                       ) : (
@@ -255,8 +272,10 @@ export function StorefrontView({
                               <Image src={product.cover_image_url} alt={product.name} fill className="object-cover" />
                             </div>
                           ) : (
-                            <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center border border-white/5 flex-shrink-0">
-                              <span className="text-2xl font-bold text-white/50">{product.name.charAt(0)}</span>
+                            <div className="w-24 h-24 rounded-lg bg-slate-800 border border-slate-700 flex-shrink-0 flex items-center justify-center">
+                              <svg className="w-10 h-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -361,7 +380,7 @@ export function StorefrontView({
         </div>
       )}
 
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 md:gap-12">
           <aside className="md:col-span-4 md:sticky md:top-24 h-fit">
             <div className="flex flex-col items-center md:items-start">
@@ -432,15 +451,11 @@ export function StorefrontView({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {products.map((product) => (
                     <div key={product.id} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
-                      <div className="relative w-full aspect-video bg-slate-800">
-                        {product.cover_image_url ? (
+                      {product.cover_image_url && (
+                        <div className="relative w-full aspect-video bg-slate-800">
                           <Image src={product.cover_image_url} alt={product.name} fill className="object-cover rounded-t-xl" />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/5">
-                            <span className="text-4xl font-bold text-white/50">{product.name.charAt(0)}</span>
-                          </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       <div className="p-5">
                         <h3 className="text-lg font-semibold text-slate-50 tracking-tight mb-2">{product.name}</h3>
                         {product.description && (
@@ -457,9 +472,28 @@ export function StorefrontView({
                           )}
                         </div>
                         {product.course_id && user ? (
-                          <CourseEnrollment courseId={product.course_id} expertId={expertId} coursePrice={product.price} isFree={product.price === 0} currentUserId={user.id} />
+                          <CourseEnrollment
+                            courseId={product.course_id}
+                            expertId={expertId}
+                            coursePrice={product.price}
+                            isFree={product.price === 0}
+                            currentUserId={user.id}
+                            customBrandColor={customBrandColor}
+                            themePreset={themePreset}
+                          />
                         ) : (
-                          <Link href={`/expert/${expertId}`} className={primaryActionClasses} style={!customBrandColor ? {} : { backgroundColor: customBrandColor, color: themePreset === "minimal-light" ? "#000" : "#fff" }}>
+                          <Link
+                            href={`/expert/${expertId}`}
+                            className={primaryActionClasses}
+                            style={
+                              !customBrandColor
+                                ? {}
+                                : {
+                                    backgroundColor: customBrandColor,
+                                    color: isLightColor(customBrandColor) || themePreset === "minimal-light" ? "#111827" : "#FFFFFF",
+                                  }
+                            }
+                          >
                             Learn More
                           </Link>
                         )}
