@@ -266,7 +266,7 @@ export default function BlogFeedPage() {
           {loading ? (
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-32 bg-surface rounded-lg animate-pulse"></div>
+                <div key={i} className="h-32 bg-surface rounded-md animate-pulse"></div>
               ))}
             </div>
           ) : posts.length === 0 ? (
@@ -278,7 +278,7 @@ export default function BlogFeedPage() {
               {posts.map((post) => (
                 <div
                   key={post.id}
-                  className="bg-surface border border-border-default rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
+                  className="bg-surface border border-border-default rounded-md overflow-hidden hover:border-cyber-green transition-colors"
                   style={{ minHeight: "120px" }} // Flexible height
                 >
                   {post.has_access ? (
@@ -295,7 +295,7 @@ export default function BlogFeedPage() {
                               {post.expert_name}
                             </span>
                             {post.is_subscribed && (
-                              <span className="text-xs text-cyber-green bg-primary/20 px-2 py-0.5 rounded">
+                              <span className="text-xs text-cyber-green bg-white/5 px-2 py-0.5 rounded">
                                 Subscribed
                               </span>
                             )}
@@ -352,7 +352,7 @@ export default function BlogFeedPage() {
                               disabled={savingPost === post.id}
                               className={`p-1.5 rounded transition-colors ${
                                 post.is_saved
-                                  ? "text-cyber-green hover:bg-primary/20"
+                                  ? "text-cyber-green hover:bg-white/5"
                                   : "text-text-secondary hover:bg-surface"
                               }`}
                             >
@@ -392,7 +392,7 @@ export default function BlogFeedPage() {
                               {post.description || "This content is available to subscribers only. Subscribe to unlock this post and access exclusive content from this expert."}
                             </p>
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="bg-dark-green-900/80 backdrop-blur-sm border border-border-default rounded-lg p-3 flex items-center gap-2">
+                              <div className="bg-dark-green-900/80 backdrop-blur-sm border border-border-default rounded-md p-3 flex items-center gap-2">
                                 <span className="text-2xl">🔒</span>
                                 <span className="text-sm text-custom-text font-semibold">
                                   {!user ? "Sign in to view" : "Subscribe to view"}

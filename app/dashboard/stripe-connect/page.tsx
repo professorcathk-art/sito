@@ -36,14 +36,14 @@ function StripeConnectContent() {
       </h1>
 
       {refresh && (
-        <div className="mb-6 p-4 bg-primary/20 border border-border-default rounded-lg">
+        <div className="mb-6 p-4 bg-white/5 border border-border-default rounded-md">
           <p className="text-custom-text">
             Please refresh the page to see your updated account status.
           </p>
         </div>
       )}
 
-      <div className="mb-6 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg">
+      <div className="mb-6 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-md">
         <p className="text-yellow-300 font-semibold mb-1">
           ⚠️ Payment Processing Notice
         </p>

@@ -266,14 +266,14 @@ export default function FeaturedCoursesPage() {
             </p>
 
             {/* Search */}
-            <div className="bg-surface backdrop-blur-sm border border-border-default p-4 sm:p-6 rounded-xl mb-6">
+            <div className="bg-surface backdrop-blur-sm border border-border-default p-4 sm:p-6 rounded-xl card-hover mb-6">
               <label className="block text-sm font-medium text-custom-text mb-2">Search e-Learning Products</label>
               <input
                 type="text"
                 placeholder="Search by product name, description, expert, or category..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50 text-sm"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50 text-sm"
               />
             </div>
 
@@ -282,7 +282,7 @@ export default function FeaturedCoursesPage() {
               <div className="flex flex-wrap gap-2 mb-6">
                 <button
                   onClick={() => setSelectedCategory(null)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     selectedCategory === null
                       ? "bg-cyber-green text-white"
                       : "bg-surface text-custom-text border border-border-default hover:border-cyber-green"
@@ -294,7 +294,7 @@ export default function FeaturedCoursesPage() {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       selectedCategory === cat
                         ? "bg-cyber-green text-white"
                         : "bg-surface text-custom-text border border-border-default hover:border-cyber-green"
@@ -332,7 +332,7 @@ export default function FeaturedCoursesPage() {
                             href={`/courses/${course.id}`}
                             className="group flex-shrink-0 w-48 sm:w-56 md:w-64 transition-transform hover:scale-105"
                           >
-                            <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-surface border border-border-default group-hover:border-cyber-green transition-colors">
+                            <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-surface border border-border-default group-hover:border-cyber-green transition-colors">
                               {course.cover_image_url ? (
                                 <Image
                                   src={course.cover_image_url}
@@ -385,7 +385,7 @@ export default function FeaturedCoursesPage() {
                             href={`/courses/${course.id}`}
                             className="group flex-shrink-0 w-48 sm:w-56 md:w-64 transition-transform hover:scale-105"
                           >
-                            <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-surface border border-border-default group-hover:border-cyber-green transition-colors">
+                            <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-surface border border-border-default group-hover:border-cyber-green transition-colors">
                               {course.cover_image_url ? (
                                 <Image
                                   src={course.cover_image_url}
@@ -437,7 +437,7 @@ export default function FeaturedCoursesPage() {
                       >
                         <Link
                           href={`/courses/${course.id}`}
-                          className="block bg-transparent backdrop-blur-sm border border-border-default rounded-xl overflow-hidden hover:bg-cyber-green/5 hover:border-border-default hover:shadow-[0_0_20px_rgba(0,255,136,0.2)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
+                          className="block bg-transparent backdrop-blur-sm border border-border-default rounded-xl card-hover overflow-hidden hover:bg-cyber-green/5 hover:border-border-default hover:shadow-[0_0_20px_rgba(0,255,136,0.2)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
                         >
                           {/* Cover Image with 4:5 aspect ratio */}
                           <div className="relative w-full aspect-[4/5] overflow-hidden bg-transparent rounded-t-xl">

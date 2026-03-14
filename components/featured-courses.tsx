@@ -188,7 +188,7 @@ export function FeaturedCourses() {
             >
               <Link
                 href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
-                className="block bg-surface border border-border-default rounded-xl overflow-hidden hover:border-primary transition-all duration-300 shadow-lg shadow-black/20 flex flex-col"
+                className="block bg-surface border border-border-default rounded-xl card-hover overflow-hidden hover:border-primary transition-all duration-300 shadow-2xl flex flex-col"
               >
                 {/* Cover Image with 4:3 aspect ratio (shorter for landing page) */}
                 <div className="relative w-full aspect-[4/3] overflow-hidden bg-transparent rounded-t-xl">
@@ -268,7 +268,7 @@ export function FeaturedCourses() {
               </Link>
               {/* Description appears below tile on hover */}
               {product.description && (
-                <div className="mt-2 px-6 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-20 bg-surface backdrop-blur-md border border-border-default rounded-b-xl shadow-lg shadow-black/20">
+                <div className="mt-2 px-6 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-20 bg-surface backdrop-blur-md border border-border-default rounded-b-xl shadow-2xl">
                   <div 
                     className="text-xs sm:text-sm text-text-secondary line-clamp-3 product-preview py-2"
                     dangerouslySetInnerHTML={{ __html: product.description }}

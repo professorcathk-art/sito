@@ -112,15 +112,15 @@ export default function SubscriptionsPage() {
           {loading ? (
             <div className="animate-pulse space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-20 bg-surface rounded-lg"></div>
+                <div key={i} className="h-20 bg-surface rounded-md"></div>
               ))}
             </div>
           ) : subscriptions.length === 0 ? (
-            <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+            <div className="bg-surface border border-border-default rounded-md p-8 text-center">
               <p className="text-text-secondary mb-4">You haven&apos;t subscribed to any experts yet.</p>
               <Link
                 href="/directory"
-                className="inline-block bg-cyber-green text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors"
+                className="inline-block bg-cyber-green text-white px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors"
               >
                 Browse Experts
               </Link>
@@ -130,7 +130,7 @@ export default function SubscriptionsPage() {
               {subscriptions.map((subscription) => (
                 <div
                   key={subscription.id}
-                  className="bg-surface border border-border-default rounded-lg p-6"
+                  className="bg-surface border border-border-default rounded-md p-6"
                 >
                   <div className="flex items-start gap-4 mb-4">
                     {subscription.expert.avatar_url ? (
@@ -171,7 +171,7 @@ export default function SubscriptionsPage() {
                     </span>
                     <button
                       onClick={() => handleUnsubscribe(subscription.expert.id)}
-                      className="px-4 py-2 bg-red-900/50 text-red-300 rounded-lg text-sm hover:bg-red-900/70 transition-colors"
+                      className="px-4 py-2 bg-red-900/50 text-red-300 rounded-md text-sm hover:bg-red-900/70 transition-colors"
                     >
                       Unsubscribe
                     </button>

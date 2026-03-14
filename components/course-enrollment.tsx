@@ -696,7 +696,7 @@ export function CourseEnrollment({
       <div className="flex gap-4">
         <button
           onClick={() => router.push("/courses/manage")}
-          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
         >
           Go to Classroom
         </button>
@@ -710,7 +710,7 @@ export function CourseEnrollment({
       <>
         {/* Modal Overlay */}
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-dark-green-800/95 border border-border-default rounded-lg p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-dark-green-800/95 border border-border-default rounded-md p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-custom-text">
                 {questionnaireType === "interest" ? "Register Interest" : "Get it now"}
@@ -741,14 +741,14 @@ export function CourseEnrollment({
           {!hasRegisteredInterest && (
             <button
               disabled
-              className="px-6 py-3 border border-border-default text-custom-text rounded-lg"
+              className="px-6 py-3 border border-border-default text-custom-text rounded-md"
             >
               Register Interest
             </button>
           )}
           <button
             disabled
-            className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg"
+            className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md"
           >
             {isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
           </button>
@@ -762,12 +762,12 @@ export function CourseEnrollment({
       {/* Offline Payment Info Modal */}
       {showOfflinePaymentInfo && productContactEmail && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-dark-green-800/95 border border-border-default rounded-lg p-6 md:p-8 w-full max-w-md">
+          <div className="bg-dark-green-800/95 border border-border-default rounded-md p-6 md:p-8 w-full max-w-md">
             <h3 className="text-2xl font-bold text-custom-text mb-4">Offline Payment</h3>
             <p className="text-text-secondary mb-4">
               This course uses offline payment. Please contact the expert directly to complete your enrollment.
             </p>
-            <div className="bg-custom-bg border border-border-default rounded-lg p-4 mb-4">
+            <div className="bg-custom-bg border border-border-default rounded-md p-4 mb-4">
               <p className="text-sm text-text-secondary mb-2">Contact Email:</p>
               <p className="text-lg font-semibold text-cyber-green">{productContactEmail}</p>
             </div>
@@ -780,13 +780,13 @@ export function CourseEnrollment({
                   setShowOfflinePaymentInfo(false);
                   setProcessing(false);
                 }}
-                className="flex-1 px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
+                className="flex-1 px-6 py-3 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
               >
                 Close
               </button>
               <a
                 href={`mailto:${productContactEmail}?subject=Course Enrollment - ${courseId}`}
-                className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-center"
+                className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-center"
               >
                 Send Email
               </a>
@@ -802,7 +802,7 @@ export function CourseEnrollment({
             <button
               onClick={handleRegisterInterest}
               disabled={processing}
-              className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors disabled:opacity-50"
+              className="px-6 py-3 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors disabled:opacity-50"
             >
               {processing ? "Processing..." : "Register Interest"}
             </button>
@@ -814,7 +814,7 @@ export function CourseEnrollment({
               <button
                 onClick={handleRegisterInterest}
                 disabled={processing}
-                className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors disabled:opacity-50"
+                className="px-6 py-3 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors disabled:opacity-50"
               >
                 {processing ? "Processing..." : "Register Interest"}
               </button>
@@ -823,7 +823,7 @@ export function CourseEnrollment({
             <button
               onClick={handleEnroll}
               disabled={processing}
-              className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+              className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
             >
               {processing ? "Processing..." : isFree ? "Get it now (Free)" : `Get it now ($${coursePrice})`}
             </button>

@@ -220,7 +220,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
         {onCancel && (
           <button
             onClick={onCancel}
-            className="px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface"
+            className="px-4 py-2 border border-border-default text-custom-text rounded-md hover:bg-surface"
           >
             Cancel
           </button>
@@ -240,7 +240,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
         {onCancel && (
           <button
             onClick={onCancel}
-            className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+            className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
           >
             Close
           </button>
@@ -267,7 +267,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
               onChange={(e) => handleChange(field.id, e.target.value)}
               placeholder={field.placeholder || ""}
               required={field.required}
-              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-white/20"
             />
           )}
 
@@ -278,7 +278,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
               onChange={(e) => handleChange(field.id, e.target.value)}
               placeholder={field.placeholder || ""}
               required={field.required}
-              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-white/20"
             />
           )}
 
@@ -289,7 +289,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
               placeholder={field.placeholder || ""}
               required={field.required}
               rows={4}
-              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-white/20"
             />
           )}
 
@@ -298,7 +298,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
               value={responses[field.id] || ""}
               onChange={(e) => handleChange(field.id, e.target.value)}
               required={field.required}
-              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text focus:outline-none focus:border-primary"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text focus:outline-none focus:border-white/20"
             >
               <option value="">Select an option...</option>
               {field.options.map((option, idx) => (
@@ -320,7 +320,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
                     checked={responses[field.id] === option}
                     onChange={(e) => handleChange(field.id, e.target.value)}
                     required={field.required}
-                    className="w-4 h-4 text-cyber-green focus:ring-primary"
+                    className="w-4 h-4 text-cyber-green focus:ring-white/20"
                   />
                   <span>{option}</span>
                 </label>
@@ -336,7 +336,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
                     type="checkbox"
                     checked={(responses[field.id] || []).includes(option)}
                     onChange={(e) => handleCheckboxChange(field.id, option, e.target.checked)}
-                    className="w-4 h-4 text-cyber-green focus:ring-primary rounded"
+                    className="w-4 h-4 text-cyber-green focus:ring-white/20 rounded"
                   />
                   <span>{option}</span>
                 </label>
@@ -350,7 +350,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
         <button
           type="submit"
           disabled={submitting}
-          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
         >
           {submitting ? "Submitting..." : "Submit"}
         </button>
@@ -358,7 +358,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-lg hover:bg-surface transition-colors"
+            className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-md hover:bg-surface transition-colors"
           >
             Cancel
           </button>

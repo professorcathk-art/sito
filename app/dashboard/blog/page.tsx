@@ -91,7 +91,7 @@ export default function DashboardBlogPage() {
             <h1 className="text-4xl font-bold text-custom-text">My Blog Posts</h1>
             <button
               onClick={() => router.push("/blog/create")}
-              className="flex items-center gap-2 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+              className="flex items-center gap-2 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
             >
               <span className="text-xl">+</span>
               <span>Create Blog Post</span>
@@ -101,15 +101,15 @@ export default function DashboardBlogPage() {
           {loading ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-32 bg-surface rounded-lg animate-pulse"></div>
+                <div key={i} className="h-32 bg-surface rounded-md animate-pulse"></div>
               ))}
             </div>
           ) : posts.length === 0 ? (
-            <div className="text-center py-12 bg-surface border border-border-default rounded-lg">
+            <div className="text-center py-12 bg-surface border border-border-default rounded-md">
               <p className="text-text-secondary text-lg mb-4">You haven&apos;t created any blog posts yet.</p>
               <button
                 onClick={() => router.push("/blog/create")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 <span className="text-xl">+</span>
                 <span>Create Your First Blog Post</span>
@@ -120,7 +120,7 @@ export default function DashboardBlogPage() {
               {posts.map((post) => (
                 <div
                   key={post.id}
-                  className="bg-surface border border-border-default rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
+                  className="bg-surface border border-border-default rounded-md overflow-hidden hover:border-cyber-green transition-colors"
                 >
                   <div className="flex">
                     {/* Featured Image */}
@@ -179,19 +179,19 @@ export default function DashboardBlogPage() {
                       <div className="flex items-center gap-3 mt-4">
                         <Link
                           href={`/blog/${post.id}`}
-                          className="px-4 py-2 bg-custom-bg border border-border-default text-custom-text rounded-lg hover:bg-dark-green-900 hover:border-cyber-green transition-colors text-sm"
+                          className="px-4 py-2 bg-custom-bg border border-border-default text-custom-text rounded-md hover:bg-dark-green-900 hover:border-cyber-green transition-colors text-sm"
                         >
                           View
                         </Link>
                         <Link
                           href={`/blog/edit/${post.id}`}
-                          className="px-4 py-2 bg-custom-bg border border-border-default text-custom-text rounded-lg hover:bg-dark-green-900 hover:border-cyber-green transition-colors text-sm"
+                          className="px-4 py-2 bg-custom-bg border border-border-default text-custom-text rounded-md hover:bg-dark-green-900 hover:border-cyber-green transition-colors text-sm"
                         >
                           Edit
                         </Link>
                         <button
                           onClick={() => handleDelete(post.id)}
-                          className="px-4 py-2 bg-red-900/50 border border-red-500/30 text-red-300 rounded-lg hover:bg-red-900 hover:border-red-500 transition-colors text-sm"
+                          className="px-4 py-2 bg-red-900/50 border border-red-500/30 text-red-300 rounded-md hover:bg-red-900 hover:border-red-500 transition-colors text-sm"
                         >
                           Delete
                         </button>

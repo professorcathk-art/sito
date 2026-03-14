@@ -81,12 +81,12 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
   return (
     <aside className="w-80 flex-shrink-0 ml-8">
       {/* Related Posts */}
-      <div className="bg-surface border border-border-default rounded-lg p-4">
+      <div className="bg-surface border border-border-default rounded-md p-4">
         <h3 className="text-lg font-bold text-custom-text mb-4">Other Posts</h3>
         {loading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-20 bg-custom-bg rounded-lg animate-pulse"></div>
+              <div key={i} className="h-20 bg-custom-bg rounded-md animate-pulse"></div>
             ))}
           </div>
         ) : relatedPosts.length > 0 ? (
@@ -95,7 +95,7 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
               <Link
                 key={post.id}
                 href={`/blog/${post.id}`}
-                className="block p-3 bg-custom-bg border border-border-default rounded-lg hover:border-border-default transition-colors"
+                className="block p-3 bg-custom-bg border border-border-default rounded-md hover:border-border-default transition-colors"
               >
                 <h4 className="text-sm font-semibold text-custom-text mb-1 line-clamp-2">
                   {post.title}

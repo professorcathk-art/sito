@@ -301,7 +301,7 @@ export default function ManageQuestionnairesPage() {
               <h1 className="text-4xl font-bold text-custom-text mb-8">Manage Questionnaires</h1>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-surface border border-border-default rounded-lg p-6">
+                <div className="bg-surface border border-border-default rounded-md p-6">
                   <h2 className="text-xl font-bold text-custom-text mb-2">Appointment Questionnaire</h2>
                   <p className="text-text-secondary mb-4 text-sm">
                     Set up a form for users to fill out before booking appointments with you.
@@ -309,7 +309,7 @@ export default function ManageQuestionnairesPage() {
                   {questionnaires.find(q => q.type === "appointment") ? (
                     <button
                       onClick={() => handleSelectQuestionnaire(questionnaires.find(q => q.type === "appointment")!)}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
                     >
                       Edit Questionnaire
                     </button>
@@ -317,14 +317,14 @@ export default function ManageQuestionnairesPage() {
                     <button
                       onClick={() => handleCreateQuestionnaire("appointment")}
                       disabled={saving}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                     >
                       {saving ? "Creating..." : "Create Questionnaire"}
                     </button>
                   )}
                 </div>
 
-                <div className="bg-surface border border-border-default rounded-lg p-6">
+                <div className="bg-surface border border-border-default rounded-md p-6">
                   <h2 className="text-xl font-bold text-custom-text mb-2">Course Interest Questionnaire</h2>
                   <p className="text-text-secondary mb-4 text-sm">
                     Set up a form for users to fill out when registering interest in your courses.
@@ -332,7 +332,7 @@ export default function ManageQuestionnairesPage() {
                   {questionnaires.find(q => q.type === "course_interest") ? (
                     <button
                       onClick={() => handleSelectQuestionnaire(questionnaires.find(q => q.type === "course_interest")!)}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
                     >
                       Edit Questionnaire
                     </button>
@@ -340,7 +340,7 @@ export default function ManageQuestionnairesPage() {
                     <button
                       onClick={() => handleCreateQuestionnaire("course_interest")}
                       disabled={saving}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                     >
                       {saving ? "Creating..." : "Create Questionnaire"}
                     </button>
@@ -357,12 +357,12 @@ export default function ManageQuestionnairesPage() {
                   setShowFieldForm(false);
                   setEditingField(null);
                 }}
-                className="text-cyber-green hover:text-primary-hover mb-4"
+                className="text-cyber-green hover:text-white mb-4"
               >
                 ← Back to Questionnaires
               </button>
 
-              <div className="bg-surface border border-border-default rounded-lg p-6">
+              <div className="bg-surface border border-border-default rounded-md p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-custom-text mb-2">
@@ -375,7 +375,7 @@ export default function ManageQuestionnairesPage() {
                       type="checkbox"
                       checked={selectedQuestionnaire.is_active}
                       onChange={() => handleToggleActive(selectedQuestionnaire)}
-                      className="w-4 h-4 text-cyber-green focus:ring-primary rounded"
+                      className="w-4 h-4 text-cyber-green focus:ring-white/20 rounded"
                     />
                     <span className="text-sm text-custom-text">Active</span>
                   </label>
@@ -385,7 +385,7 @@ export default function ManageQuestionnairesPage() {
                   {fields.map((field, index) => (
                     <div
                       key={field.id}
-                      className="bg-custom-bg border border-border-default rounded-lg p-4 flex items-center justify-between"
+                      className="bg-custom-bg border border-border-default rounded-md p-4 flex items-center justify-between"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -420,13 +420,13 @@ export default function ManageQuestionnairesPage() {
                         </button>
                         <button
                           onClick={() => handleEditField(field)}
-                          className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg hover:bg-blue-900/70 transition-colors text-sm"
+                          className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-md hover:bg-blue-900/70 transition-colors text-sm"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDeleteField(field.id)}
-                          className="px-3 py-1 bg-red-900/50 text-red-300 rounded-lg hover:bg-red-900/70 transition-colors text-sm"
+                          className="px-3 py-1 bg-red-900/50 text-red-300 rounded-md hover:bg-red-900/70 transition-colors text-sm"
                         >
                           Delete
                         </button>
@@ -436,7 +436,7 @@ export default function ManageQuestionnairesPage() {
                 </div>
 
                 {showFieldForm ? (
-                  <div className="bg-custom-bg border border-border-default rounded-lg p-6">
+                  <div className="bg-custom-bg border border-border-default rounded-md p-6">
                     <h3 className="text-xl font-bold text-custom-text mb-4">
                       {editingField ? "Edit Field" : "Add New Field"}
                     </h3>
@@ -446,7 +446,7 @@ export default function ManageQuestionnairesPage() {
                         <select
                           value={fieldForm.field_type}
                           onChange={(e) => setFieldForm({ ...fieldForm, field_type: e.target.value as QuestionnaireField["field_type"] })}
-                          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+                          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
                           required
                         >
                           <option value="text">Text</option>
@@ -463,7 +463,7 @@ export default function ManageQuestionnairesPage() {
                           type="text"
                           value={fieldForm.label}
                           onChange={(e) => setFieldForm({ ...fieldForm, label: e.target.value })}
-                          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+                          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
                           required
                         />
                       </div>
@@ -473,7 +473,7 @@ export default function ManageQuestionnairesPage() {
                           type="text"
                           value={fieldForm.placeholder}
                           onChange={(e) => setFieldForm({ ...fieldForm, placeholder: e.target.value })}
-                          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+                          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
                         />
                       </div>
                       {(fieldForm.field_type === "select" || fieldForm.field_type === "radio" || fieldForm.field_type === "checkbox") && (
@@ -486,7 +486,7 @@ export default function ManageQuestionnairesPage() {
                             value={fieldForm.options}
                             onChange={(e) => setFieldForm({ ...fieldForm, options: e.target.value })}
                             placeholder="Option 1, Option 2, Option 3"
-                            className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+                            className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
                             required
                           />
                         </div>
@@ -497,7 +497,7 @@ export default function ManageQuestionnairesPage() {
                           id="required"
                           checked={fieldForm.required}
                           onChange={(e) => setFieldForm({ ...fieldForm, required: e.target.checked })}
-                          className="w-4 h-4 text-cyber-green focus:ring-primary rounded"
+                          className="w-4 h-4 text-cyber-green focus:ring-white/20 rounded"
                         />
                         <label htmlFor="required" className="ml-2 block text-sm text-custom-text">
                           Required Field
@@ -506,7 +506,7 @@ export default function ManageQuestionnairesPage() {
                       <div className="flex gap-4">
                         <button
                           type="submit"
-                          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
                         >
                           {editingField ? "Update Field" : "Add Field"}
                         </button>
@@ -523,7 +523,7 @@ export default function ManageQuestionnairesPage() {
                               options: "",
                             });
                           }}
-                          className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-lg hover:bg-surface transition-colors"
+                          className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-md hover:bg-surface transition-colors"
                         >
                           Cancel
                         </button>
@@ -533,14 +533,14 @@ export default function ManageQuestionnairesPage() {
                 ) : (
                   <button
                     onClick={() => setShowFieldForm(true)}
-                    className="w-full px-6 py-4 bg-surface border-2 border-dashed border-border-default text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
+                    className="w-full px-6 py-4 bg-surface border-2 border-dashed border-border-default text-custom-text font-semibold rounded-md hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
                   >
                     + Add Field
                   </button>
                 )}
 
                 {/* Thank You Message Section */}
-                <div className="mt-8 bg-custom-bg border border-border-default rounded-lg p-6">
+                <div className="mt-8 bg-custom-bg border border-border-default rounded-md p-6">
                   <h3 className="text-xl font-bold text-custom-text mb-4">Thank You Message</h3>
                   <p className="text-sm text-text-secondary mb-4">
                     This message will be shown to users after they submit the form.
@@ -578,7 +578,7 @@ export default function ManageQuestionnairesPage() {
                       }
                     }}
                     disabled={savingThankYou}
-                    className="mt-4 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+                    className="mt-4 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                   >
                     {savingThankYou ? "Saving..." : "Save Thank You Message"}
                   </button>

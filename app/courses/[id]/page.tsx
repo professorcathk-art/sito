@@ -118,7 +118,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <img
               src={course.cover_image_url}
               alt={course.title}
-              className="w-full h-64 object-cover rounded-lg mb-8"
+              className="w-full h-64 object-cover rounded-md mb-8"
             />
           )}
           
@@ -129,7 +129,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             {(productInfo?.e_learning_subtype || course.category) && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {productInfo?.e_learning_subtype && (
-                  <span className="px-3 py-1 bg-primary/20 text-cyber-green rounded-full text-sm font-medium">
+                  <span className="px-3 py-1 bg-white/5 text-cyber-green rounded-full text-sm font-medium">
                     {productInfo.e_learning_subtype === 'online-course' ? 'Online Course' :
                      productInfo.e_learning_subtype === 'ebook' ? 'Ebook' :
                      productInfo.e_learning_subtype === 'ai-prompt' ? 'AI Prompt' :
@@ -170,7 +170,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             )}
           </div>
 
-          <div className="bg-surface border border-border-default rounded-lg p-6 mb-8">
+          <div className="bg-surface border border-border-default rounded-md p-6 mb-8">
             {course.description && (
               <div 
                 className="prose prose-invert prose-lg max-w-none blog-content text-text-secondary mb-4"
@@ -179,7 +179,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             )}
             {/* Show webinar date/time for live webinars */}
             {productInfo?.e_learning_subtype === "live-webinar" && productInfo?.webinar_date_time && (
-              <div className="mb-4 p-4 bg-primary/10 border border-border-default rounded-lg">
+              <div className="mb-4 p-4 bg-white/5 border border-border-default rounded-md">
                 <p className="text-sm text-text-secondary mb-1">Live Webinar Date & Time:</p>
                 <p className="text-lg font-semibold text-cyber-green">
                   {new Date(productInfo.webinar_date_time).toLocaleString('en-US', {
@@ -220,7 +220,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 {lessons.map((lesson, index) => (
                   <div
                     key={lesson.id}
-                    className="bg-surface border border-border-default rounded-lg p-4"
+                    className="bg-surface border border-border-default rounded-md p-4"
                   >
                     <div className="flex items-start gap-4">
                       <span className="flex-shrink-0 w-8 h-8 bg-cyber-green text-white rounded-full flex items-center justify-center font-bold">
@@ -238,7 +238,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                             href={lesson.video_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-cyber-green hover:text-primary-hover text-sm"
+                            className="text-cyber-green hover:text-white text-sm"
                           >
                             Watch Video →
                           </a>

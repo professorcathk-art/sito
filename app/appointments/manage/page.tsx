@@ -371,7 +371,7 @@ export default function ManageAppointmentsPage() {
                   setSelectedProductId(products[0].id);
                 }
               }}
-              className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+              className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
             >
               Add Timeslots
             </button>
@@ -379,7 +379,7 @@ export default function ManageAppointmentsPage() {
 
           {/* Add Appointment Slots Form - Show at top */}
           {showForm && (
-            <form onSubmit={handleCreateSlots} className="bg-surface border border-border-default rounded-lg p-6 mb-8">
+            <form onSubmit={handleCreateSlots} className="bg-surface border border-border-default rounded-md p-6 mb-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-custom-text">Add Appointment Slots</h2>
                 <button
@@ -416,7 +416,7 @@ export default function ManageAppointmentsPage() {
                       setFormData({ ...formData, productId: e.target.value });
                       setSelectedProductId(e.target.value);
                     }}
-                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
                     required
                   >
                     <option value="">Select a product...</option>
@@ -438,7 +438,7 @@ export default function ManageAppointmentsPage() {
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
                     required
                   />
                 </div>
@@ -450,7 +450,7 @@ export default function ManageAppointmentsPage() {
                     type="time"
                     value={formData.startTime}
                     onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
                     required
                   />
                 </div>
@@ -462,7 +462,7 @@ export default function ManageAppointmentsPage() {
                     type="time"
                     value={formData.endTime}
                     onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
                     required
                   />
                 </div>
@@ -473,7 +473,7 @@ export default function ManageAppointmentsPage() {
                   <select
                     value={formData.intervalMinutes}
                     onChange={(e) => setFormData({ ...formData, intervalMinutes: e.target.value })}
-                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
                     required
                   >
                     <option value="15">15 minutes</option>
@@ -494,14 +494,14 @@ export default function ManageAppointmentsPage() {
                   min="0"
                   value={formData.ratePerHour}
                   onChange={(e) => setFormData({ ...formData, ratePerHour: e.target.value })}
-                  className="w-full max-w-xs px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+                  className="w-full max-w-xs px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
                   required
                 />
               </div>
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
                 >
                   Create Slots
                 </button>
@@ -519,7 +519,7 @@ export default function ManageAppointmentsPage() {
                     });
                     setSelectedProductId(null);
                   }}
-                  className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
+                  className="px-6 py-3 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
                 >
                   Cancel
                 </button>
@@ -570,11 +570,11 @@ export default function ManageAppointmentsPage() {
               {loadingMyBookings ? (
                 <div className="animate-pulse space-y-4">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-20 bg-surface rounded-lg"></div>
+                    <div key={i} className="h-20 bg-surface rounded-md"></div>
                   ))}
                 </div>
               ) : myBookings.length === 0 ? (
-                <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+                <div className="bg-surface border border-border-default rounded-md p-8 text-center">
                   <p className="text-text-secondary mb-4">You haven&apos;t booked any appointments yet.</p>
                   <p className="text-text-secondary text-sm">
                     Browse experts and book appointments to see them here.
@@ -585,7 +585,7 @@ export default function ManageAppointmentsPage() {
                   {myBookings.map((appointment) => (
                     <div
                       key={appointment.id}
-                      className="bg-surface border border-border-default rounded-lg p-6"
+                      className="bg-surface border border-border-default rounded-md p-6"
                     >
                       <div className="flex items-center justify-between">
                         <div>
@@ -614,11 +614,11 @@ export default function ManageAppointmentsPage() {
             {loadingBookings ? (
               <div className="animate-pulse space-y-4">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-20 bg-surface rounded-lg"></div>
+                  <div key={i} className="h-20 bg-surface rounded-md"></div>
                 ))}
               </div>
             ) : bookedAppointments.length === 0 ? (
-              <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+              <div className="bg-surface border border-border-default rounded-md p-8 text-center">
                 <p className="text-text-secondary mb-4">No appointments booked yet.</p>
                 <p className="text-text-secondary text-sm">
                   Users will see your available slots and book them here.
@@ -629,7 +629,7 @@ export default function ManageAppointmentsPage() {
                 {bookedAppointments.map((appointment) => (
                   <div
                     key={appointment.id}
-                    className="bg-surface border border-border-default rounded-lg p-6"
+                    className="bg-surface border border-border-default rounded-md p-6"
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -658,11 +658,11 @@ export default function ManageAppointmentsPage() {
               {loading ? (
                 <div className="animate-pulse space-y-4">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-20 bg-surface rounded-lg"></div>
+                    <div key={i} className="h-20 bg-surface rounded-md"></div>
                   ))}
                 </div>
               ) : slots.length === 0 ? (
-                <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+                <div className="bg-surface border border-border-default rounded-md p-8 text-center">
                   <p className="text-text-secondary mb-4">No appointment slots created yet.</p>
                   <p className="text-text-secondary text-sm mb-4">
                     Create time slots to allow users to book 1-on-1 sessions with you.
@@ -672,7 +672,7 @@ export default function ManageAppointmentsPage() {
                       fetchSlots();
                       fetchProducts();
                     }}
-                    className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm"
+                    className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
                   >
                     Refresh
                   </button>
@@ -681,7 +681,7 @@ export default function ManageAppointmentsPage() {
                 <>
                   {/* Debug info - remove in production */}
                   {process.env.NODE_ENV === 'development' && (
-                    <div className="mb-4 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg text-xs text-yellow-200">
+                    <div className="mb-4 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-md text-xs text-yellow-200">
                       <p>Debug: Found {slots.length} total slots</p>
                       <p>Products: {products.length}</p>
                       <p>Slots with product_id: {slots.filter(s => s.product_id).length}</p>
@@ -697,7 +697,7 @@ export default function ManageAppointmentsPage() {
                       if (productSlots.length === 0) return null;
                       
                       return (
-                        <div key={product.id} className="bg-surface border border-border-default rounded-lg p-6">
+                        <div key={product.id} className="bg-surface border border-border-default rounded-md p-6">
                           <h3 className="text-xl font-bold text-custom-text mb-4">{product.name}</h3>
                           <CalendarView
                             slots={productSlots}
@@ -729,7 +729,7 @@ export default function ManageAppointmentsPage() {
                                 setFormData({ ...formData, productId: product.id });
                                 setSelectedProductId(product.id);
                               }}
-                              className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm"
+                              className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-md hover:bg-blue-900/50 transition-colors text-sm"
                             >
                               + Add Timeslots for {product.name}
                             </button>
@@ -759,7 +759,7 @@ export default function ManageAppointmentsPage() {
                       return Object.entries(groupedByProduct).map(([productId, productSlots]) => {
                         const productName = productSlots[0]?.products?.name || "Unknown Product";
                         return (
-                          <div key={productId} className="bg-surface border border-border-default rounded-lg p-6">
+                          <div key={productId} className="bg-surface border border-border-default rounded-md p-6">
                             <h3 className="text-xl font-bold text-custom-text mb-4">{productName}</h3>
                             <CalendarView
                               slots={productSlots}
@@ -791,7 +791,7 @@ export default function ManageAppointmentsPage() {
                                   setFormData({ ...formData, productId: productId });
                                   setSelectedProductId(productId);
                                 }}
-                                className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-lg hover:bg-blue-900/50 transition-colors text-sm"
+                                className="px-4 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-md hover:bg-blue-900/50 transition-colors text-sm"
                               >
                                 + Add Timeslots for {productName}
                               </button>
@@ -803,7 +803,7 @@ export default function ManageAppointmentsPage() {
                     
                     {/* Show unlinked slots */}
                     {slots.filter(s => !s.product_id).length > 0 && (
-                      <div className="bg-surface border border-border-default rounded-lg p-6">
+                      <div className="bg-surface border border-border-default rounded-md p-6">
                         <h3 className="text-xl font-bold text-custom-text mb-4">Unlinked Timeslots</h3>
                         <CalendarView
                           slots={slots.filter(s => !s.product_id)}
@@ -844,7 +844,7 @@ export default function ManageAppointmentsPage() {
                       
                       console.warn(`⚠️ Found ${undisplayedSlots.length} slots that were not displayed!`);
                       return (
-                        <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-6">
+                        <div className="bg-red-900/30 border border-red-500/50 rounded-md p-6">
                           <h3 className="text-xl font-bold text-custom-text mb-4">All Timeslots (Fallback Display)</h3>
                           <p className="text-sm text-red-200 mb-4">
                             Showing {undisplayedSlots.length} slot(s) that were not grouped properly
@@ -883,7 +883,7 @@ export default function ManageAppointmentsPage() {
                     const dateStr = `${slotDate.getFullYear()}-${String(slotDate.getMonth() + 1).padStart(2, '0')}-${String(slotDate.getDate()).padStart(2, '0')}`;
                     return dateStr === selectedDate && (selectedProductId ? s.product_id === selectedProductId : true);
                   }).length > 0 && (
-                    <div className="mt-6 bg-surface border border-border-default rounded-lg p-6">
+                    <div className="mt-6 bg-surface border border-border-default rounded-md p-6">
                       <h3 className="text-xl font-bold text-custom-text mb-4">
                         Timeslots for {(() => {
                           const [year, month, day] = selectedDate.split('-').map(Number);
@@ -921,7 +921,7 @@ export default function ManageAppointmentsPage() {
                             return (
                               <div
                                 key={slot.id}
-                                className="flex items-center justify-between p-4 bg-custom-bg border border-border-default rounded-lg"
+                                className="flex items-center justify-between p-4 bg-custom-bg border border-border-default rounded-md"
                               >
                                 <div>
                                   <p className="text-custom-text font-semibold">
@@ -953,7 +953,7 @@ export default function ManageAppointmentsPage() {
                                         .eq("expert_id", user?.id)
                                         .then(() => fetchSlots());
                                     }}
-                                    className="w-5 h-5 text-cyber-green focus:ring-primary border-gray-300 rounded"
+                                    className="w-5 h-5 text-cyber-green focus:ring-white/20 border-gray-300 rounded"
                                   />
                                   <span className="text-sm text-custom-text">Available</span>
                                 </label>

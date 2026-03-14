@@ -407,7 +407,7 @@ export function StripeConnectOnboarding() {
 
   if (!user) {
     return (
-      <div className="bg-surface border border-border-default rounded-lg p-6">
+      <div className="bg-surface border border-border-default rounded-md p-6">
         <p className="text-text-secondary">Please sign in to set up payments.</p>
       </div>
     );
@@ -415,7 +415,7 @@ export function StripeConnectOnboarding() {
 
   if (loading) {
     return (
-      <div className="bg-surface border border-border-default rounded-lg p-6">
+      <div className="bg-surface border border-border-default rounded-md p-6">
         <div className="animate-pulse">
           <div className="h-4 bg-custom-bg rounded w-3/4 mb-4"></div>
           <div className="h-4 bg-custom-bg rounded w-1/2"></div>
@@ -425,13 +425,13 @@ export function StripeConnectOnboarding() {
   }
 
   return (
-    <div className="bg-surface border border-border-default rounded-lg p-6">
+    <div className="bg-surface border border-border-default rounded-md p-6">
       <h2 className="text-2xl font-bold text-custom-text mb-4">
         Stripe Connect Setup
       </h2>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+        <div className="mb-4 p-4 bg-red-900/30 border border-red-500/50 rounded-md">
           <p className="text-red-300">{error}</p>
         </div>
       )}
@@ -442,7 +442,7 @@ export function StripeConnectOnboarding() {
          */
         <div className="space-y-4">
           {error && (
-            <div className="mb-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+            <div className="mb-4 p-4 bg-red-900/30 border border-red-500/50 rounded-md">
               <p className="text-red-300 mb-2 font-semibold">⚠️ {error}</p>
               {(accountStatus?.accountId || hasAccountIdInDb) && (
                 <div className="mt-3 p-3 bg-yellow-900/30 border border-yellow-500/50 rounded">
@@ -481,7 +481,7 @@ export function StripeConnectOnboarding() {
             <select
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
-              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text focus:border-primary focus:outline-none"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text focus:border-white/20 focus:outline-none"
               disabled={creating || true}
               required
             >
@@ -506,14 +506,14 @@ export function StripeConnectOnboarding() {
                 <button
                   onClick={handleResetAccount}
                   disabled={loading || creating}
-                  className="flex-1 px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition-colors disabled:opacity-50 text-sm"
+                  className="flex-1 px-6 py-3 bg-yellow-600 text-white font-semibold rounded-md hover:bg-yellow-700 transition-colors disabled:opacity-50 text-sm"
                 >
                   {loading ? "Resetting..." : "Reset Account"}
                 </button>
                 <button
                   onClick={handleCreateAccount}
                   disabled={creating || !selectedCountry || loading}
-                  className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {creating ? "Creating Account..." : "Create New Account"}
                 </button>
@@ -522,7 +522,7 @@ export function StripeConnectOnboarding() {
               <button
                 onClick={handleCreateAccount}
                 disabled={creating || !selectedCountry}
-                className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {creating ? "Creating Account..." : "Create Stripe Account"}
               </button>
@@ -530,7 +530,7 @@ export function StripeConnectOnboarding() {
           </div>
           
           {(accountStatus?.accountId || hasAccountIdInDb) && (
-            <div className="p-3 bg-custom-bg border border-border-default rounded-lg">
+            <div className="p-3 bg-custom-bg border border-border-default rounded-md">
               <p className="text-xs text-text-secondary text-center">
                 <strong>Reset Account:</strong> This will clear the invalid account ID from your database. 
                 After resetting, you can create a new Stripe account for live mode.
@@ -579,7 +579,7 @@ export function StripeConnectOnboarding() {
 
             {accountStatus.requirementsStatus &&
               accountStatus.requirementsStatus !== "complete" && (
-                <div className="mt-2 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg">
+                <div className="mt-2 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-md">
                   <p className="text-yellow-300 font-semibold mb-2">
                     ⚠️ Action Required
                   </p>
@@ -604,7 +604,7 @@ export function StripeConnectOnboarding() {
               <button
                 onClick={handleStartOnboarding}
                 disabled={onboarding}
-                className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+                className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
               >
                 {onboarding
                   ? "Redirecting to Stripe..."
@@ -621,7 +621,7 @@ export function StripeConnectOnboarding() {
 
           {accountStatus.readyToReceivePayments && (
             <div className="space-y-4">
-              <div className="p-4 bg-green-900/30 border border-green-500/50 rounded-lg">
+              <div className="p-4 bg-green-900/30 border border-green-500/50 rounded-md">
                 <p className="text-green-300 font-semibold mb-1">
                   ✓ Account Ready!
                 </p>
@@ -632,7 +632,7 @@ export function StripeConnectOnboarding() {
               </div>
 
               {/* Total Earnings Display */}
-              <div className="p-4 bg-custom-bg border border-border-default rounded-lg">
+              <div className="p-4 bg-custom-bg border border-border-default rounded-md">
                 <h3 className="text-lg font-bold text-custom-text mb-3">
                   Total Earnings
                 </h3>
@@ -671,7 +671,7 @@ export function StripeConnectOnboarding() {
                         href={`https://dashboard.stripe.com/connect/accounts/overview/${accountStatus.accountId}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-block mt-3 px-4 py-2 bg-primary/20 border border-border-default text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors text-sm font-medium"
+                        className="inline-block mt-3 px-4 py-2 bg-white/5 border border-border-default text-cyber-green rounded-md hover:bg-cyber-green/30 transition-colors text-sm font-medium"
                       >
                         View Stripe Dashboard →
                       </a>
@@ -691,14 +691,14 @@ export function StripeConnectOnboarding() {
             <button
               onClick={checkAccountStatus}
               disabled={loading}
-              className="flex-1 px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors disabled:opacity-50 text-sm"
+              className="flex-1 px-4 py-2 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors disabled:opacity-50 text-sm"
             >
               Refresh Status
             </button>
             <button
               onClick={handleResetAccount}
               disabled={loading}
-              className="flex-1 px-4 py-2 border border-yellow-500/50 text-yellow-300 rounded-lg hover:bg-yellow-900/30 transition-colors disabled:opacity-50 text-sm"
+              className="flex-1 px-4 py-2 border border-yellow-500/50 text-yellow-300 rounded-md hover:bg-yellow-900/30 transition-colors disabled:opacity-50 text-sm"
             >
               Reset Account
             </button>

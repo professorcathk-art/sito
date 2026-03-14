@@ -94,14 +94,14 @@ function SuccessContent() {
               </div>
             </div>
           ) : error ? (
-            <div className="bg-red-900/30 border border-red-500/50 rounded-lg p-6">
+            <div className="bg-red-900/30 border border-red-500/50 rounded-md p-6">
               <h1 className="text-2xl font-bold text-red-300 mb-4">
                 Error
               </h1>
               <p className="text-red-300">{error}</p>
             </div>
           ) : (
-            <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+            <div className="bg-surface border border-border-default rounded-md p-8 text-center">
               <div className="text-6xl mb-4">✓</div>
               <h1 className="text-3xl font-bold text-custom-text mb-4">
                 Payment Successful!
@@ -128,21 +128,21 @@ function SuccessContent() {
                 {appointmentId ? (
                   <Link
                     href="/appointments/manage"
-                    className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                    className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
                   >
                     Go to Manage Appointments
                   </Link>
                 ) : (
                   <Link
                     href="/courses/manage"
-                    className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                    className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
                   >
                     Go to Classroom
                   </Link>
                 )}
                 <Link
                   href="/dashboard"
-                  className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
+                  className="px-6 py-3 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
                 >
                   Go to Dashboard
                 </Link>

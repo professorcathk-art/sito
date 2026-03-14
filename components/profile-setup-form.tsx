@@ -502,7 +502,7 @@ export function ProfileSetupForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-900/30 border border-red-500/50 text-red-200 rounded-lg">
+        <div className="p-4 bg-red-900/30 border border-red-500/50 text-red-200 rounded-md">
           {error}
         </div>
       )}
@@ -518,7 +518,7 @@ export function ProfileSetupForm() {
           value={formData.name}
           onChange={handleChange}
           required
-          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
           placeholder="Your display name"
         />
       </div>
@@ -540,7 +540,7 @@ export function ProfileSetupForm() {
           }}
           required
           maxLength={100}
-          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
           placeholder="Add a tagline to describe yourself (e.g., Helping startups scale their tech teams)"
         />
         {formData.title.length >= 90 && formData.title.length < 100 && (
@@ -576,7 +576,7 @@ export function ProfileSetupForm() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingAvatar}
-              className="px-4 py-2 bg-surface border border-border-default rounded-lg text-custom-text hover:bg-dark-green-800 hover:border-cyber-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="px-4 py-2 bg-surface border border-border-default rounded-md text-custom-text hover:bg-dark-green-800 hover:border-cyber-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               {uploadingAvatar ? "Uploading..." : formData.avatarUrl ? "Change Picture" : "Upload Picture"}
             </button>
@@ -599,10 +599,10 @@ export function ProfileSetupForm() {
           onFocus={() => setShowCategoryDropdown(true)}
           placeholder="Search and select a category..."
           required={!formData.categoryId}
-          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
         />
         {showCategoryDropdown && (
-          <div className="absolute z-50 w-full mt-1 bg-dark-green-800 border border-border-default rounded-lg shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-50 w-full mt-1 bg-dark-green-800 border border-border-default rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredCategories.length === 0 ? (
               <div className="px-4 py-3">
                 <div className="text-text-secondary mb-2">No categories found</div>
@@ -611,7 +611,7 @@ export function ProfileSetupForm() {
                     type="button"
                     onClick={handleCreateNewCategory}
                     disabled={loading}
-                    className="w-full px-4 py-2 bg-primary/20 border border-border-default rounded-lg text-cyber-green hover:bg-cyber-green/30 transition-colors disabled:opacity-50 text-sm font-semibold"
+                    className="w-full px-4 py-2 bg-white/5 border border-border-default rounded-md text-cyber-green hover:bg-cyber-green/30 transition-colors disabled:opacity-50 text-sm font-semibold"
                   >
                     {loading ? "Creating..." : `Create "${categorySearch.trim()}"`}
                   </button>
@@ -661,7 +661,7 @@ export function ProfileSetupForm() {
           onChange={handleChange}
           required
           rows={5}
-          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
           placeholder="Tell us about your expertise and experience..."
         />
       </div>
@@ -680,10 +680,10 @@ export function ProfileSetupForm() {
           onFocus={() => setShowCountryDropdown(true)}
           placeholder="Search and select a country..."
           required
-          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
         />
         {showCountryDropdown && (
-          <div className="absolute z-50 w-full mt-1 bg-dark-green-800 border border-border-default rounded-lg shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-50 w-full mt-1 bg-dark-green-800 border border-border-default rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredCountries.length === 0 ? (
               <div className="px-4 py-3 text-text-secondary">No countries found</div>
             ) : (
@@ -714,7 +714,7 @@ export function ProfileSetupForm() {
             {formData.languagesSupported.map((lang, index) => (
               <span
                 key={index}
-                className="inline-flex items-center gap-1 px-3 py-1 bg-primary/20 text-cyber-green rounded-full text-sm border border-border-default"
+                className="inline-flex items-center gap-1 px-3 py-1 bg-white/5 text-cyber-green rounded-full text-sm border border-border-default"
               >
                 {lang}
                 <button
@@ -738,10 +738,10 @@ export function ProfileSetupForm() {
           }}
           onFocus={() => setShowLanguageDropdown(true)}
           placeholder="Search and select languages..."
-          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
         />
         {showLanguageDropdown && (
-          <div className="absolute z-50 w-full mt-1 bg-dark-green-800 border border-border-default rounded-lg shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-50 w-full mt-1 bg-dark-green-800 border border-border-default rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredLanguages.length === 0 ? (
               <div className="px-4 py-3 text-text-secondary">
                 {languageSearch.trim() ? "No languages found" : "All languages selected"}
@@ -775,7 +775,7 @@ export function ProfileSetupForm() {
             onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
             placeholder="+1234567890 (e.g., +85212345678)"
             required
-            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
           />
           <p className="mt-1 text-xs text-text-secondary">
             Required for expert profile completion. Please include country code (e.g., +852 for Hong Kong).
@@ -794,7 +794,7 @@ export function ProfileSetupForm() {
             type="url"
             value={formData.website}
             onChange={handleChange}
-            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
             placeholder="https://yourwebsite.com"
           />
         </div>
@@ -808,7 +808,7 @@ export function ProfileSetupForm() {
             type="url"
             value={formData.linkedin}
             onChange={handleChange}
-            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
             placeholder="https://linkedin.com/in/yourprofile"
           />
         </div>
@@ -822,13 +822,13 @@ export function ProfileSetupForm() {
             type="url"
             value={formData.instagramUrl}
             onChange={handleChange}
-            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
             placeholder="https://instagram.com/yourprofile"
           />
         </div>
       </div>
 
-      <div className="bg-surface border border-border-default rounded-lg p-4">
+      <div className="bg-surface border border-border-default rounded-md p-4">
         <div className="flex items-start">
           <input
             id="listedOnMarketplace"
@@ -836,7 +836,7 @@ export function ProfileSetupForm() {
             type="checkbox"
             checked={formData.listedOnMarketplace}
             onChange={handleChange}
-            className="h-4 w-4 text-cyber-green focus:ring-primary border-border-default rounded bg-custom-bg mt-1"
+            className="h-4 w-4 text-cyber-green focus:ring-white/20 border-border-default rounded bg-custom-bg mt-1"
           />
           <label htmlFor="listedOnMarketplace" className="ml-3 text-sm text-custom-text">
             <span className="font-semibold">List my profile on the marketplace (visible to all users)</span>
@@ -875,7 +875,7 @@ export function ProfileSetupForm() {
                       setSlugError("");
                     }
                   }}
-                  className="flex-1 px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+                  className="flex-1 px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
                   placeholder="your-custom-slug"
                   maxLength={50}
                 />
@@ -894,7 +894,7 @@ export function ProfileSetupForm() {
               )}
               {formData.customSlug && formData.customSlug.length >= 3 && slugAvailable !== false && (
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="flex-1 px-3 py-2 bg-custom-bg border border-border-default rounded-lg text-sm text-custom-text break-all">
+                  <div className="flex-1 px-3 py-2 bg-custom-bg border border-border-default rounded-md text-sm text-custom-text break-all">
                     {typeof window !== "undefined" ? `${window.location.origin}/s/${formData.customSlug}` : `sito.club/s/${formData.customSlug}`}
                   </div>
                   <button
@@ -917,7 +917,7 @@ export function ProfileSetupForm() {
                         alert("Shortlink copied to clipboard!");
                       }
                     }}
-                    className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm whitespace-nowrap"
+                    className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm whitespace-nowrap"
                   >
                     📋 Copy
                   </button>
@@ -935,14 +935,14 @@ export function ProfileSetupForm() {
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 bg-cyber-green text-custom-text py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-black/20"
+          className="flex-1 bg-cyber-green text-custom-text py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
         >
           {loading ? "Saving..." : "Save Profile"}
         </button>
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
-          className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
+          className="px-6 py-3 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
         >
           Skip for Now
         </button>

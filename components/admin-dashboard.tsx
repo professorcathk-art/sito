@@ -176,7 +176,7 @@ export function AdminDashboard() {
   if (!isAdmin) {
     return (
       <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-surface border border-red-500/30 rounded-lg p-8 text-center">
+        <div className="bg-surface border border-red-500/30 rounded-md p-8 text-center">
           <h2 className="text-2xl font-bold text-red-400 mb-4">Access Denied</h2>
           <p className="text-text-secondary">You do not have admin privileges.</p>
         </div>
@@ -190,26 +190,26 @@ export function AdminDashboard() {
 
       {/* Platform Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-surface border border-border-default rounded-lg p-6">
+        <div className="bg-surface border border-border-default rounded-md p-6">
           <h3 className="text-sm text-text-secondary mb-2">Total Users</h3>
           <p className="text-3xl font-bold text-custom-text">{stats.totalUsers}</p>
         </div>
-        <div className="bg-surface border border-border-default rounded-lg p-6">
+        <div className="bg-surface border border-border-default rounded-md p-6">
           <h3 className="text-sm text-text-secondary mb-2">Total Experts</h3>
           <p className="text-3xl font-bold text-custom-text">{stats.totalExperts}</p>
         </div>
-        <div className="bg-surface border border-border-default rounded-lg p-6">
+        <div className="bg-surface border border-border-default rounded-md p-6">
           <h3 className="text-sm text-text-secondary mb-2">Total Courses</h3>
           <p className="text-3xl font-bold text-custom-text">{stats.totalCourses}</p>
         </div>
-        <div className="bg-surface border border-border-default rounded-lg p-6">
+        <div className="bg-surface border border-border-default rounded-md p-6">
           <h3 className="text-sm text-text-secondary mb-2">Total Blog Posts</h3>
           <p className="text-3xl font-bold text-custom-text">{stats.totalBlogPosts}</p>
         </div>
       </div>
 
       {/* User Management */}
-      <div className="bg-surface border border-border-default rounded-lg p-6">
+      <div className="bg-surface border border-border-default rounded-md p-6">
         <h2 className="text-2xl font-bold text-custom-text mb-6">User Management</h2>
 
         {/* Filters */}
@@ -219,7 +219,7 @@ export function AdminDashboard() {
             placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50"
+            className="flex-1 px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text placeholder-custom-text/50"
           />
           <select
             value={filterVerified === null ? "all" : filterVerified ? "verified" : "unverified"}
@@ -227,7 +227,7 @@ export function AdminDashboard() {
               const value = e.target.value;
               setFilterVerified(value === "all" ? null : value === "verified");
             }}
-            className="px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+            className="px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
           >
             <option value="all">All Users</option>
             <option value="verified">Verified Only</option>
@@ -268,7 +268,7 @@ export function AdminDashboard() {
                       onClick={() => handleVerifyToggle(user.id, user.verified)}
                       className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                         user.verified
-                          ? "bg-primary/20 text-cyber-green border border-border-default"
+                          ? "bg-white/5 text-cyber-green border border-border-default"
                           : "bg-custom-bg text-text-secondary border border-border-default"
                       }`}
                     >

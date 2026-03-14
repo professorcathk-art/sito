@@ -64,14 +64,14 @@ export function CategorySection() {
             <Link
               key={category.name}
               href={`/directory?category=${encodeURIComponent(category.name)}`}
-              className="group relative overflow-hidden rounded-xl bg-surface backdrop-blur-sm border border-border-default p-5 sm:p-6 hover:bg-surface hover:border-cyber-green hover:shadow-lg shadow-black/20 transition-all duration-500 transform hover:-translate-y-1 sm:hover:-translate-y-2 hover:scale-[1.01] sm:hover:scale-[1.02] animate-fade-in-up"
+              className="group relative overflow-hidden rounded-xl card-hover bg-surface backdrop-blur-sm border border-border-default p-5 sm:p-6 hover:bg-surface hover:border-cyber-green hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 sm:hover:-translate-y-2 hover:scale-[1.01] sm:hover:scale-[1.02] animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Cyber glow effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyber-green/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               
               {/* Border glow */}
-              <div className="absolute inset-0 rounded-xl border-2 border-cyber-green/0 group-hover:border-border-default transition-all duration-500"></div>
+              <div className="absolute inset-0 rounded-xl card-hover border-2 border-cyber-green/0 group-hover:border-border-default transition-all duration-500"></div>
               
               <div className="relative z-10">
                 <div className="text-3xl sm:text-4xl mb-2 sm:mb-3 transform group-hover:scale-110 transition-transform duration-300 animate-float" style={{ animationDelay: `${index * 0.2}s` }}>

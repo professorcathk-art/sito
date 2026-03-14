@@ -76,12 +76,12 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 mt-8">
       {error && (
-        <div className="p-4 bg-red-900/30 border border-red-500/50 text-red-200 rounded-lg">
+        <div className="p-4 bg-red-900/30 border border-red-500/50 text-red-200 rounded-md">
           {error}
         </div>
       )}
       {success && (
-        <div className="p-4 bg-primary/20 border border-border-default text-cyber-green rounded-lg">
+        <div className="p-4 bg-white/5 border border-border-default text-cyber-green rounded-md">
           Thank you for your message! We&apos;ll get back to you soon.
         </div>
       )}
@@ -98,7 +98,7 @@ export function ContactForm() {
             value={formData.name}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
             placeholder="Your name"
           />
         </div>
@@ -113,7 +113,7 @@ export function ContactForm() {
             value={formData.email}
             onChange={handleChange}
             required
-            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+            className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
             placeholder="your@email.com"
           />
         </div>
@@ -130,7 +130,7 @@ export function ContactForm() {
           value={formData.subject}
           onChange={handleChange}
           required
-          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
           placeholder="What is this regarding?"
         />
       </div>
@@ -146,7 +146,7 @@ export function ContactForm() {
           onChange={handleChange}
           required
           rows={6}
-          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
           placeholder="Your message..."
         />
       </div>
@@ -154,7 +154,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-cyber-green text-custom-text py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-black/20"
+        className="w-full bg-cyber-green text-custom-text py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
       >
         {loading ? "Sending..." : "Send Message"}
       </button>

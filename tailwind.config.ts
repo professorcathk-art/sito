@@ -11,52 +11,62 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        // Premium Professional Dark Mode Color Palette
-        "custom-bg": "#0B0E14", // Deep sophisticated slate dark (global background)
-        "custom-text": "#F3F4F6", // Soft white (primary text)
-        surface: "#151923", // Elevated surface/card background
-        "border-default": "#232836", // Subtle borders
+        // Midnight Monochromatic & Ambient Glass Design System
+        "custom-bg": "#0A0A0A", // Near pitch-black app background
+        "custom-text": "#FFFFFF", // Pure white primary text
+        surface: "#121212", // Card/surface background
+        "border-default": "rgba(255, 255, 255, 0.05)", // Hyper-subtle borders
+        // Legacy mappings for backward compatibility
+        "text-primary": "#FFFFFF", // Pure white
+        "text-secondary": "#6B7280", // Gray-500 for secondary text
         primary: {
-          DEFAULT: "#3B82F6", // Trustworthy modern blue (Tailwind blue-500)
-          hover: "#2563EB", // Slightly darker for hover states (blue-600)
-          light: "#60A5FA", // Lighter shade (blue-400)
+          DEFAULT: "#FFFFFF", // White for primary buttons
+          hover: "#E5E7EB", // Gray-200 for hover
         },
-        // Alternative: Premium soft emerald option
-        emerald: {
-          DEFAULT: "#10B981", // Premium soft emerald (Tailwind emerald-500)
-          hover: "#059669", // Slightly darker for hover (emerald-600)
-        },
-        // Text colors
-        "text-primary": "#F3F4F6", // Soft white (gray-100)
-        "text-secondary": "#9CA3AF", // Muted gray for descriptions (gray-400)
-        // Legacy support - map old colors to new ones
+        // Legacy support - map to midnight system
         "dark-green": {
-          50: "#0a1a12",
-          100: "#0d2217",
-          200: "#0f2a1c",
-          300: "#123221",
-          400: "#153a26",
-          500: "#18422b",
-          600: "#1b4a30",
-          700: "#1e5235",
-          800: "#215a3a",
-          900: "#0a0f0c",
-          950: "#050807",
+          DEFAULT: "#121212",
+          50: "#121212",
+          100: "#121212",
+          200: "#121212",
+          300: "#121212",
+          400: "#121212",
+          500: "#121212",
+          600: "#121212",
+          700: "#121212",
+          800: "#121212",
+          900: "#0A0A0A",
+          950: "#0A0A0A",
         },
         "cyber-green": {
-          DEFAULT: "#3B82F6", // Map to new primary blue
-          light: "#60A5FA", // Map to primary light
-          dark: "#2563EB", // Map to primary hover
-          "50": "#EFF6FF",
-          "100": "#DBEAFE",
-          "200": "#BFDBFE",
-          "300": "#93C5FD",
-          "400": "#60A5FA",
-          "500": "#3B82F6",
-          "600": "#2563EB",
-          "700": "#1D4ED8",
-          "800": "#1E40AF",
-          "900": "#1E3A8A",
+          DEFAULT: "#FFFFFF", // Map to white
+          light: "#E5E7EB", // Map to gray-200
+          dark: "#FFFFFF",
+        },
+      },
+      animation: {
+        float: "float 4s ease-in-out infinite",
+        "fade-in-up": "fadeInUp 0.6s ease-out forwards",
+        "fade-in": "fadeIn 0.8s ease-out forwards",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        fadeInUp: {
+          from: {
+            opacity: "0",
+            transform: "translateY(30px)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        fadeIn: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
         },
       },
     },

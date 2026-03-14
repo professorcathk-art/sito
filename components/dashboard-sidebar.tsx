@@ -212,10 +212,10 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
               key={item.href}
               href={item.href}
               onClick={() => onClose?.()}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm md:text-base ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-md transition-all text-sm md:text-base ${
                 isActive
-                  ? "bg-primary/20 border border-primary/50 text-primary font-semibold"
-                  : "text-text-primary/80 hover:bg-surface/50 hover:text-text-primary border border-transparent"
+                  ? "bg-white/5 border border-white/10 text-primary font-semibold"
+                  : "text-white/80 hover:bg-surface/50 hover:text-text-primary border border-transparent"
               }`}
             >
               <span className="text-xl flex-shrink-0">{item.icon}</span>

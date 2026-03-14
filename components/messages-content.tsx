@@ -406,9 +406,9 @@ export function MessagesContent() {
                       className={`flex ${msg.is_sent ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-[80%] rounded-lg p-4 ${
+                        className={`max-w-[80%] rounded-md p-4 ${
                           msg.is_sent
-                            ? "bg-primary/20 border border-border-default"
+                            ? "bg-white/5 border border-border-default"
                             : "bg-surface border border-border-default"
                         }`}
                       >
@@ -438,7 +438,7 @@ export function MessagesContent() {
                     setComposeExpertId(selectedMessage.fromId);
                     setComposeExpertName(selectedMessage.from);
                   }}
-                  className="bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20"
+                  className="bg-cyber-green text-custom-text px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
                 >
                   Reply
                 </button>
@@ -589,7 +589,7 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-900/30 border border-red-500/50 text-red-200 rounded-lg">
+        <div className="p-4 bg-red-900/30 border border-red-500/50 text-red-200 rounded-md">
           {error}
         </div>
       )}
@@ -603,7 +603,7 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           required={!isReply}
-          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
           placeholder={isReply ? "Re: [original subject]" : "What would you like to discuss?"}
         />
         {isReply && (
@@ -622,7 +622,7 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
           onChange={(e) => setMessage(e.target.value)}
           required
           rows={10}
-          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
           placeholder="Write your message here..."
         />
       </div>
@@ -630,13 +630,13 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
         <button
           type="submit"
           disabled={loading}
-          className="bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-black/20"
+          className="bg-cyber-green text-custom-text px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
         >
           {loading ? "Sending..." : "Send Message"}
         </button>
         <a
           href="/messages"
-          className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
+          className="px-6 py-3 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
         >
           Cancel
         </a>

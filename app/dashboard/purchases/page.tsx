@@ -219,11 +219,11 @@ export default function PurchasesPage() {
               <div className="animate-pulse text-text-secondary">Loading purchases...</div>
             </div>
           ) : purchases.length === 0 ? (
-            <div className="text-center py-12 bg-surface border border-border-default rounded-lg">
+            <div className="text-center py-12 bg-surface border border-border-default rounded-md">
               <p className="text-text-secondary mb-4">No purchases found</p>
               <Link
                 href="/courses"
-                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 Browse Courses
               </Link>
@@ -233,14 +233,14 @@ export default function PurchasesPage() {
               {purchases.map((purchase) => (
                 <div
                   key={purchase.id}
-                  className="bg-surface border border-border-default rounded-lg p-6 hover:bg-surface transition-colors"
+                  className="bg-surface border border-border-default rounded-md p-6 hover:bg-surface transition-colors"
                 >
                   <div className="flex gap-6">
                     {purchase.course_cover_image && (
                       <img
                         src={purchase.course_cover_image}
                         alt={purchase.course_title || purchase.appointment_title}
-                        className="w-32 h-32 object-cover rounded-lg"
+                        className="w-32 h-32 object-cover rounded-md"
                       />
                     )}
                     <div className="flex-1">
@@ -284,7 +284,7 @@ export default function PurchasesPage() {
                               href={`/api/stripe/invoice/${purchase.payment_intent_id}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-cyber-green hover:text-primary-hover text-sm underline"
+                              className="text-cyber-green hover:text-white text-sm underline"
                             >
                               View Receipt
                             </a>
@@ -296,13 +296,13 @@ export default function PurchasesPage() {
                           <>
                             <Link
                               href={`/courses/${purchase.course_id}`}
-                              className="inline-block px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm"
+                              className="inline-block px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
                             >
                               View Course
                             </Link>
                             <Link
                               href="/courses/manage"
-                              className="inline-block ml-3 px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors text-sm"
+                              className="inline-block ml-3 px-4 py-2 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors text-sm"
                             >
                               Go to Classroom
                             </Link>
@@ -310,7 +310,7 @@ export default function PurchasesPage() {
                         ) : (
                           <Link
                             href="/appointments/manage?tab=my-bookings"
-                            className="inline-block px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm"
+                            className="inline-block px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
                           >
                             View Appointment
                           </Link>

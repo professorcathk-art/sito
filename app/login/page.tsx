@@ -22,7 +22,7 @@ function LoginPageContent() {
         <LoginForm redirect={redirect || undefined} />
         <p className="text-center mt-6 text-text-secondary">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-cyber-green font-semibold hover:text-primary-hover hover:underline">
+          <Link href="/register" className="text-cyber-green font-semibold hover:text-white hover:underline">
             Sign up
           </Link>
         </p>

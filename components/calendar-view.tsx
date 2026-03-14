@@ -72,7 +72,7 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
   return (
     <div className="space-y-6">
       {/* Calendar */}
-      <div className="bg-surface border border-border-default rounded-lg p-6">
+      <div className="bg-surface border border-border-default rounded-md p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-custom-text">Calendar</h3>
           <div className="flex gap-2">
@@ -118,7 +118,7 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
                 key={dateStr}
                 onClick={() => !isPast && handleDateClickInternal(date)}
                 disabled={isPast}
-                className={`aspect-square rounded-lg border transition-colors ${
+                className={`aspect-square rounded-md border transition-colors ${
                   isSelected
                     ? "bg-cyber-green/30 border-cyber-green"
                     : hasSlots
@@ -146,7 +146,7 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
 
       {/* Selected Date Slots - Only show if hideSlotsDisplay is false */}
       {!hideSlotsDisplay && selectedDate && (
-        <div className="bg-surface border border-border-default rounded-lg p-6">
+        <div className="bg-surface border border-border-default rounded-md p-6">
           <h3 className="text-xl font-bold text-custom-text mb-4">
             Timeslots for {(() => {
               // Parse YYYY-MM-DD format to local date
@@ -174,7 +174,7 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
                 return (
                   <div
                     key={slot.id}
-                    className="flex items-center justify-between p-4 bg-custom-bg border border-border-default rounded-lg"
+                    className="flex items-center justify-between p-4 bg-custom-bg border border-border-default rounded-md"
                   >
                     <div>
                       <p className="text-custom-text font-semibold">
@@ -195,7 +195,7 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
                           type="checkbox"
                           checked={slot.is_available}
                           onChange={(e) => onSlotToggle(slot.id, e.target.checked)}
-                          className="w-5 h-5 text-cyber-green focus:ring-primary border-gray-300 rounded"
+                          className="w-5 h-5 text-cyber-green focus:ring-white/20 border-gray-300 rounded"
                         />
                         <span className="text-sm text-custom-text">Available</span>
                       </label>

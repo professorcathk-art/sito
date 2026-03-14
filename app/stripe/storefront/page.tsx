@@ -109,7 +109,7 @@ export default function StorefrontPage() {
           <h1 className="text-4xl font-bold text-custom-text mb-8">Storefront</h1>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+            <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-md">
               <p className="text-red-300">{error}</p>
             </div>
           )}
@@ -119,7 +119,7 @@ export default function StorefrontPage() {
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className="bg-surface border border-border-default rounded-lg p-6 animate-pulse"
+                  className="bg-surface border border-border-default rounded-md p-6 animate-pulse"
                 >
                   <div className="h-6 bg-custom-bg rounded w-3/4 mb-4"></div>
                   <div className="h-4 bg-custom-bg rounded w-full mb-2"></div>
@@ -128,13 +128,13 @@ export default function StorefrontPage() {
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+            <div className="bg-surface border border-border-default rounded-md p-8 text-center">
               <p className="text-text-secondary text-lg mb-4">
                 No products available yet.
               </p>
               <p className="text-text-secondary">
                 Check back soon or{" "}
-                <Link href="/dashboard" className="text-cyber-green hover:text-primary-hover">
+                <Link href="/dashboard" className="text-cyber-green hover:text-white">
                   create your own products
                 </Link>
                 .
@@ -145,7 +145,7 @@ export default function StorefrontPage() {
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="bg-surface border border-border-default rounded-lg p-6 hover:border-border-default transition-colors"
+                  className="bg-surface border border-border-default rounded-md p-6 hover:border-border-default transition-colors"
                 >
                   <h3 className="text-xl font-bold text-custom-text mb-2">
                     {product.name}
@@ -163,7 +163,7 @@ export default function StorefrontPage() {
                       <button
                         onClick={() => handlePurchase(product)}
                         disabled={purchasing === product.id}
-                        className="px-6 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+                        className="px-6 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                       >
                         {purchasing === product.id ? "Processing..." : "Buy Now"}
                       </button>

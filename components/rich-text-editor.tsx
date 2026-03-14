@@ -206,7 +206,7 @@ export function RichTextEditor({
   }
 
   return (
-    <div className="border border-border-default rounded-lg bg-surface">
+    <div className="border border-border-default rounded-md bg-surface">
       {/* Toolbar */}
       <div className="flex flex-wrap gap-2 p-3 border-b border-border-default bg-surface">
         {/* Text formatting */}
@@ -351,7 +351,7 @@ export function RichTextEditor({
             type="button"
             onClick={handleFileUpload}
             disabled={uploading || !onFileUpload}
-            className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors bg-primary/20 text-cyber-green border-2 border-border-default hover:bg-cyber-green/30 hover:border-cyber-green disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-md text-sm font-semibold transition-colors bg-white/5 text-cyber-green border-2 border-border-default hover:bg-cyber-green/30 hover:border-cyber-green disabled:opacity-50 disabled:cursor-not-allowed"
             title="Upload attachment (PDF, DOC, ZIP, etc.)"
           >
             📎 Upload Attachment

@@ -363,14 +363,14 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
           {blogPost.access_level === "subscriber" ? (
             <Link
               href={`/expert/${blogPost.expert_id}`}
-              className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+              className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
             >
               Subscribe to {blogPost.profiles?.name || "Expert"}
             </Link>
           ) : (
             <Link
               href={`/expert/${blogPost.expert_id}`}
-              className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+              className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
             >
               View Courses
             </Link>
@@ -391,7 +391,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
               <button
                 onClick={handleLike}
                 disabled={liking}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors ${
                   liked
                     ? "bg-red-900/30 text-red-300 border border-red-500/50"
                     : "bg-custom-bg text-custom-text border border-border-default hover:bg-surface"
@@ -403,9 +403,9 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors ${
                   saved
-                    ? "bg-primary/20 text-cyber-green border border-border-default"
+                    ? "bg-white/5 text-cyber-green border border-border-default"
                     : "bg-custom-bg text-custom-text border border-border-default hover:bg-surface"
                 }`}
               >
@@ -458,14 +458,14 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                     <SubscribeButton expertId={blogPost.profiles.id} expertName={blogPost.profiles.name} />
                     <Link
                       href={`/messages?expert=${blogPost.profiles.id}`}
-                      className="px-4 py-2 bg-surface border border-border-default text-custom-text rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm font-medium"
+                      className="px-4 py-2 bg-surface border border-border-default text-custom-text rounded-md hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm font-medium"
                     >
                       Message
                     </Link>
                     <button
                       onClick={handleConnect}
                       disabled={connecting || connectionStatus !== "none"}
-                      className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                      className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
                         connectionStatus === "pending"
                           ? "border-border-default text-cyber-green bg-surface cursor-not-allowed"
                           : connectionStatus === "accepted"
@@ -486,7 +486,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                   // Show CTA button for non-signed-in users
                   <Link
                     href={`/expert/${blogPost.profiles.id}`}
-                    className="px-4 py-2 border border-border-default text-cyber-green rounded-lg hover:bg-primary/10 transition-colors text-sm font-medium"
+                    className="px-4 py-2 border border-border-default text-cyber-green rounded-md hover:bg-white/5 transition-colors text-sm font-medium"
                   >
                     View Expert Profile
                   </Link>
@@ -514,7 +514,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
             <img
               src={blogPost.featured_image_url}
               alt={blogPost.title}
-              className="w-full rounded-lg mb-8"
+              className="w-full rounded-md mb-8"
             />
           )}
         </header>
@@ -543,7 +543,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
             </div>
             
             {/* Sign-in prompt overlay */}
-            <div className="relative mt-8 bg-gradient-to-br from-cyber-green/10 to-dark-green-800/50 border-2 border-border-default rounded-xl p-8 text-center shadow-xl">
+            <div className="relative mt-8 bg-gradient-to-br from-cyber-green/10 to-dark-green-800/50 border-2 border-border-default rounded-xl card-hover p-8 text-center shadow-xl">
               <div className="max-w-lg mx-auto">
                 <h3 className="text-2xl sm:text-3xl font-bold text-custom-text mb-3">
                   🔒 Sign in to continue reading
@@ -554,13 +554,13 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link
                     href={`/login?redirect=/blog/${blogPost.id}`}
-                    className="px-6 py-3 bg-cyber-green text-white font-bold rounded-lg hover:bg-primary-hover transition-all transform hover:scale-105 shadow-lg shadow-black/20"
+                    className="px-6 py-3 bg-cyber-green text-white font-bold rounded-md hover:bg-gray-200 transition-all transform hover:scale-105 shadow-2xl"
                   >
                     Sign In to Continue
                   </Link>
                   <Link
                     href={`/register?redirect=/blog/${blogPost.id}`}
-                    className="px-6 py-3 border-2 border-border-default text-cyber-green font-semibold rounded-lg hover:bg-primary/10 transition-all"
+                    className="px-6 py-3 border-2 border-border-default text-cyber-green font-semibold rounded-md hover:bg-white/5 transition-all"
                   >
                     Create Account
                   </Link>
@@ -580,14 +580,14 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
             {blogPost.access_level === "subscriber" ? (
               <Link
                 href={`/expert/${blogPost.expert_id}`}
-                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 Subscribe to {blogPost.profiles?.name || "Expert"}
               </Link>
             ) : (
               <Link
                 href={`/expert/${blogPost.expert_id}`}
-                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 View Courses
               </Link>

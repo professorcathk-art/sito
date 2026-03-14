@@ -139,7 +139,7 @@ export default function WatchLaterPage() {
           {loading ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-32 bg-surface rounded-lg animate-pulse"></div>
+                <div key={i} className="h-32 bg-surface rounded-md animate-pulse"></div>
               ))}
             </div>
           ) : posts.length === 0 ? (
@@ -147,7 +147,7 @@ export default function WatchLaterPage() {
               <p className="text-text-secondary text-lg mb-4">Your watchlist is empty.</p>
               <Link
                 href="/blog"
-                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 Browse Blogs
               </Link>
@@ -157,7 +157,7 @@ export default function WatchLaterPage() {
               {posts.map((post) => (
                 <div
                   key={post.id}
-                  className="bg-surface border border-border-default rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
+                  className="bg-surface border border-border-default rounded-md overflow-hidden hover:border-cyber-green transition-colors"
                   style={{ height: "160px" }}
                 >
                   <Link

@@ -156,7 +156,7 @@ export function ConnectionsContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-pulse">
           <div className="h-10 bg-surface rounded w-1/4 mb-8"></div>
-          <div className="bg-surface border border-border-default rounded-xl p-6 h-64"></div>
+          <div className="bg-surface border border-border-default rounded-xl card-hover p-6 h-64"></div>
         </div>
       </div>
     );
@@ -209,7 +209,7 @@ export function ConnectionsContent() {
 
       {/* Content */}
       {activeTab === "received" && (
-        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover p-6">
           {receivedRequests.length === 0 ? (
             <p className="text-text-secondary text-center py-8">No pending connection requests</p>
           ) : (
@@ -217,7 +217,7 @@ export function ConnectionsContent() {
               {receivedRequests.map((connection) => (
                 <div
                   key={connection.id}
-                  className="bg-surface border border-border-default rounded-lg p-4 flex items-center justify-between"
+                  className="bg-surface border border-border-default rounded-md p-4 flex items-center justify-between"
                 >
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-custom-text mb-1">
@@ -228,13 +228,13 @@ export function ConnectionsContent() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleAccept(connection.id)}
-                      className="px-4 py-2 bg-cyber-green text-custom-text rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20"
+                      className="px-4 py-2 bg-cyber-green text-custom-text rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
                     >
                       Accept
                     </button>
                     <button
                       onClick={() => handleReject(connection.id)}
-                      className="px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
+                      className="px-4 py-2 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
                     >
                       Reject
                     </button>
@@ -247,7 +247,7 @@ export function ConnectionsContent() {
       )}
 
       {activeTab === "sent" && (
-        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover p-6">
           {sentRequests.length === 0 ? (
             <p className="text-text-secondary text-center py-8">No pending sent requests</p>
           ) : (
@@ -255,7 +255,7 @@ export function ConnectionsContent() {
               {sentRequests.map((connection) => (
                 <div
                   key={connection.id}
-                  className="bg-surface border border-border-default rounded-lg p-4 flex items-center justify-between"
+                  className="bg-surface border border-border-default rounded-md p-4 flex items-center justify-between"
                 >
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-custom-text mb-1">
@@ -263,7 +263,7 @@ export function ConnectionsContent() {
                     </h3>
                     <p className="text-sm text-text-secondary">Sent {formatDate(connection.created_at)}</p>
                   </div>
-                  <span className="px-4 py-2 border border-border-default text-cyber-green rounded-lg">
+                  <span className="px-4 py-2 border border-border-default text-cyber-green rounded-md">
                     Pending
                   </span>
                 </div>
@@ -274,7 +274,7 @@ export function ConnectionsContent() {
       )}
 
       {activeTab === "accepted" && (
-        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover p-6">
           {acceptedConnections.length === 0 ? (
             <p className="text-text-secondary text-center py-8">No accepted connections yet</p>
           ) : (
@@ -282,7 +282,7 @@ export function ConnectionsContent() {
               {acceptedConnections.map((connection) => (
                 <div
                   key={connection.id}
-                  className="bg-surface border border-border-default rounded-lg p-4 flex items-center justify-between"
+                  className="bg-surface border border-border-default rounded-md p-4 flex items-center justify-between"
                 >
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-custom-text mb-1">
@@ -295,13 +295,13 @@ export function ConnectionsContent() {
                   <div className="flex gap-3">
                     <Link
                       href={`/expert/${connection.expert_id === user?.id ? connection.user_id : connection.expert_id}`}
-                      className="px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
+                      className="px-4 py-2 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
                     >
                       View Profile
                     </Link>
                     <Link
                       href={`/messages?expert=${connection.expert_id === user?.id ? connection.user_id : connection.expert_id}`}
-                      className="px-4 py-2 bg-cyber-green text-custom-text rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20"
+                      className="px-4 py-2 bg-cyber-green text-custom-text rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
                     >
                       Message
                     </Link>

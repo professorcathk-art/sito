@@ -266,7 +266,7 @@ export function AdminRefundManagement() {
 
   if (loading) {
     return (
-      <div className="bg-surface border border-border-default rounded-lg p-6">
+      <div className="bg-surface border border-border-default rounded-md p-6">
         <div className="animate-pulse">
           <div className="h-6 bg-custom-bg rounded w-1/4 mb-4"></div>
           <div className="h-4 bg-custom-bg rounded w-3/4 mb-2"></div>
@@ -277,25 +277,25 @@ export function AdminRefundManagement() {
   }
 
   return (
-    <div className="bg-surface border border-border-default rounded-lg p-6">
+    <div className="bg-surface border border-border-default rounded-md p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
         <h2 className="text-2xl font-bold text-custom-text">Refund Management</h2>
         <button
           onClick={fetchRefundableItems}
-          className="px-4 py-2 bg-primary/20 border border-border-default text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors text-sm font-medium"
+          className="px-4 py-2 bg-white/5 border border-border-default text-cyber-green rounded-md hover:bg-cyber-green/30 transition-colors text-sm font-medium"
         >
           Refresh
         </button>
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+        <div className="mb-4 p-4 bg-red-900/30 border border-red-500/50 rounded-md">
           <p className="text-red-300">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-4 bg-green-900/30 border border-green-500/50 rounded-lg">
+        <div className="mb-4 p-4 bg-green-900/30 border border-green-500/50 rounded-md">
           <p className="text-green-300">{success}</p>
         </div>
       )}
@@ -307,7 +307,7 @@ export function AdminRefundManagement() {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as any)}
-            className="px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text focus:border-primary focus:outline-none"
+            className="px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text focus:border-white/20 focus:outline-none"
           >
             <option value="all">All</option>
             <option value="course">Courses</option>
@@ -319,7 +319,7 @@ export function AdminRefundManagement() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text focus:border-primary focus:outline-none"
+            className="px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text focus:border-white/20 focus:outline-none"
           >
             <option value="all">All</option>
             <option value="none">Not Refunded</option>
@@ -464,7 +464,7 @@ export function AdminRefundManagement() {
         </div>
       )}
 
-      <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
+      <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-md">
         <p className="text-yellow-200 text-sm">
           <strong>Admin Refund Policy:</strong> Use this tool to process refunds when merchants (experts) fail to deliver their products or services to customers. 
           All refunds are processed through Stripe and will be reflected in the customer&apos;s account.

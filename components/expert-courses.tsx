@@ -50,7 +50,7 @@ export function ExpertCourses({ expertId }: ExpertCoursesProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-48 bg-surface rounded-lg mb-4"></div>
+            <div className="h-48 bg-surface rounded-md mb-4"></div>
             <div className="h-6 bg-surface rounded w-3/4 mb-2"></div>
             <div className="h-4 bg-surface rounded w-1/2"></div>
           </div>
@@ -73,7 +73,7 @@ export function ExpertCourses({ expertId }: ExpertCoursesProps) {
         <Link
           key={course.id}
           href={`/courses/${course.id}`}
-          className="group bg-surface border border-border-default rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
+          className="group bg-surface border border-border-default rounded-md overflow-hidden hover:border-cyber-green transition-colors"
         >
           {course.cover_image_url && (
             <div className="relative w-full h-48 overflow-hidden">

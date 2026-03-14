@@ -118,9 +118,9 @@ export function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-surface border border-border-default p-8 rounded-xl shadow-lg shadow-black/20">
+    <form onSubmit={handleSubmit} className="bg-surface border border-border-default p-8 rounded-xl card-hover shadow-2xl">
       {error && (
-        <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 text-red-200 rounded-lg">
+        <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 text-red-200 rounded-md">
           {error}
         </div>
       )}
@@ -135,7 +135,7 @@ export function RegisterForm() {
           value={formData.name}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary placeholder-text-secondary"
+          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-text-primary placeholder-text-secondary"
           placeholder="John Doe"
         />
       </div>
@@ -150,7 +150,7 @@ export function RegisterForm() {
           value={formData.email}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary placeholder-text-secondary"
+          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-text-primary placeholder-text-secondary"
           placeholder="you@example.com"
         />
       </div>
@@ -165,7 +165,7 @@ export function RegisterForm() {
           value={formData.password}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary placeholder-text-secondary"
+          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-text-primary placeholder-text-secondary"
           placeholder="••••••••"
         />
       </div>
@@ -180,14 +180,14 @@ export function RegisterForm() {
           value={formData.confirmPassword}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary placeholder-text-secondary"
+          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-text-primary placeholder-text-secondary"
           placeholder="••••••••"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+        className="w-full bg-primary text-white py-3 rounded-md font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >
         {loading ? "Creating account..." : "Create Account"}
       </button>
@@ -214,7 +214,7 @@ export function RegisterForm() {
             setError(error.message);
           }
         }}
-        className="w-full mt-4 flex items-center justify-center gap-3 bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary-hover transition-colors"
+        className="w-full mt-4 flex items-center justify-center gap-3 bg-primary text-white py-3 rounded-md font-medium hover:bg-gray-200 transition-colors"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path

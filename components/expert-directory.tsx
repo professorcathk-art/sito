@@ -228,7 +228,7 @@ export function ExpertDirectory() {
         </p>
         
         {/* Filters */}
-        <div className="bg-surface border border-border-default p-6 rounded-xl mb-6 shadow-lg shadow-black/20">
+        <div className="bg-surface border border-border-default p-6 rounded-xl card-hover mb-6 shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Search */}
             <div>
@@ -238,7 +238,7 @@ export function ExpertDirectory() {
                 placeholder="Search by name, title..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary placeholder-text-secondary"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-text-primary placeholder-text-secondary"
               />
             </div>
             
@@ -248,7 +248,7 @@ export function ExpertDirectory() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-text-primary"
               >
                 <option value="">All Categories</option>
                 {categories.map((cat) => (
@@ -265,7 +265,7 @@ export function ExpertDirectory() {
               <select
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-text-primary"
               >
                 <option value="">All Locations</option>
                 {countries.map((country) => (
@@ -285,7 +285,7 @@ export function ExpertDirectory() {
                 setSelectedLocation("");
                 setSearchQuery("");
               }}
-              className="mt-4 px-4 py-2 bg-surface text-text-primary border border-border-default rounded-lg hover:border-primary transition-colors text-sm"
+              className="mt-4 px-4 py-2 bg-surface text-text-primary border border-border-default rounded-md hover:border-primary transition-colors text-sm"
             >
               Clear All Filters
             </button>
@@ -311,7 +311,7 @@ export function ExpertDirectory() {
             return (
               <div
                 key={expert.id}
-                className="group bg-surface border border-border-default rounded-xl hover:border-primary transition-all duration-300 shadow-lg shadow-black/20 flex flex-col overflow-hidden"
+                className="group bg-surface border border-border-default rounded-xl card-hover hover:border-primary transition-all duration-300 shadow-2xl flex flex-col overflow-hidden"
               >
                 <Link href={`/expert/${expert.id}`} className="flex-1 flex flex-col">
                   {/* Poster-style image section - shorter height */}
@@ -388,23 +388,23 @@ export function ExpertDirectory() {
                       <button
                         onClick={(e) => handleConnect(expert.id, e)}
                         disabled={isConnecting}
-                        className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary-hover transition-colors text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-primary text-white py-2 rounded-md font-medium hover:bg-gray-200 transition-colors text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isConnecting ? "Connecting..." : "Connect"}
                       </button>
                     )}
                     {connectionStatus === "pending" && (
-                      <div className="w-full text-center py-2 rounded-lg bg-surface text-text-secondary border border-border-default text-xs sm:text-sm">
+                      <div className="w-full text-center py-2 rounded-md bg-surface text-text-secondary border border-border-default text-xs sm:text-sm">
                         Connection Pending
                       </div>
                     )}
                     {connectionStatus === "accepted" && (
-                      <div className="w-full text-center py-2 rounded-lg bg-surface text-text-secondary border border-primary text-xs sm:text-sm">
+                      <div className="w-full text-center py-2 rounded-md bg-surface text-text-secondary border border-primary text-xs sm:text-sm">
                         Connected
                       </div>
                     )}
                     {connectionStatus === "rejected" && (
-                      <div className="w-full text-center py-2 rounded-lg bg-surface text-text-secondary border border-red-500/30 text-xs sm:text-sm">
+                      <div className="w-full text-center py-2 rounded-md bg-surface text-text-secondary border border-red-500/30 text-xs sm:text-sm">
                         Connection Rejected
                       </div>
                     )}
@@ -414,7 +414,7 @@ export function ExpertDirectory() {
                   <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 border-t border-border-default">
                     <Link
                       href={`/expert/${expert.id}`}
-                      className="block w-full bg-surface text-text-primary py-2 rounded-lg font-medium hover:bg-surface/80 transition-colors text-xs sm:text-sm text-center border border-border-default"
+                      className="block w-full bg-surface text-text-primary py-2 rounded-md font-medium hover:bg-surface/80 transition-colors text-xs sm:text-sm text-center border border-border-default"
                     >
                       View Profile
                     </Link>
@@ -427,7 +427,7 @@ export function ExpertDirectory() {
       )}
 
       {/* Signup CTA Section */}
-      <div className="mt-12 mb-8 bg-surface border border-border-default rounded-xl p-6 sm:p-8 text-center shadow-lg shadow-black/20">
+      <div className="mt-12 mb-8 bg-surface border border-border-default rounded-xl card-hover p-6 sm:p-8 text-center shadow-2xl">
         <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-3 sm:mb-4">
           Can&apos;t find an expert here?
         </h2>
@@ -436,7 +436,7 @@ export function ExpertDirectory() {
         </p>
         <Link
           href="/register"
-          className="inline-block bg-primary text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-medium hover:bg-primary-hover transition-all duration-300 text-sm sm:text-base"
+          className="inline-block bg-primary text-white px-6 sm:px-8 py-3 sm:py-4 rounded-md font-medium hover:bg-gray-200 transition-all duration-300 text-sm sm:text-base"
         >
           Sign Up Now
         </Link>

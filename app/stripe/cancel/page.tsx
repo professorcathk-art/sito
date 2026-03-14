@@ -15,7 +15,7 @@ export default function CheckoutCancelPage() {
       <Navigation />
       <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-surface border border-yellow-500/30 rounded-lg p-8 text-center">
+          <div className="bg-surface border border-yellow-500/30 rounded-md p-8 text-center">
             <div className="text-6xl mb-4">⚠️</div>
             <h1 className="text-3xl font-bold text-custom-text mb-4">
               Payment Cancelled
@@ -26,7 +26,7 @@ export default function CheckoutCancelPage() {
             <div className="flex gap-4 justify-center">
               <Link
                 href="/stripe/storefront"
-                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 Return to Storefront
               </Link>

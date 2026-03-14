@@ -153,7 +153,7 @@ export function DashboardContent() {
           <div className="h-10 bg-surface rounded w-1/4 mb-8"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-surface border border-border-default rounded-xl p-6 h-32"></div>
+              <div key={i} className="bg-surface border border-border-default rounded-xl card-hover p-6 h-32"></div>
             ))}
           </div>
         </div>
@@ -180,7 +180,7 @@ export function DashboardContent() {
         {user && (
           <button
             onClick={handleSignOut}
-            className="px-4 py-2 bg-red-900/50 text-red-300 font-semibold rounded-lg hover:bg-red-900/70 transition-colors text-sm ml-auto"
+            className="px-4 py-2 bg-red-900/50 text-red-300 font-semibold rounded-md hover:bg-red-900/70 transition-colors text-sm ml-auto"
           >
             Sign Out
           </button>
@@ -188,7 +188,7 @@ export function DashboardContent() {
       </div>
 
       {!hasProfile ? (
-        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl font-bold text-custom-text mb-3 sm:mb-4">Complete Your Profile</h2>
           <p className="text-sm sm:text-base text-text-secondary mb-4 sm:mb-6">
             Set up your expert profile to start connecting with others and be discovered on the
@@ -196,40 +196,40 @@ export function DashboardContent() {
           </p>
           <Link
             href="/profile/setup"
-            className="inline-block bg-cyber-green text-custom-text px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20 text-sm sm:text-base"
+            className="inline-block bg-cyber-green text-custom-text px-4 sm:px-6 py-2 sm:py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl text-sm sm:text-base"
           >
             Set Up Profile
           </Link>
         </div>
       ) : !isExpert ? (
-        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl font-bold text-custom-text mb-3 sm:mb-4">Become an Expert</h2>
           <p className="text-sm sm:text-base text-text-secondary mb-4 sm:mb-6">
             Complete your expert profile to unlock features like creating products, setting up payments, and more.
           </p>
           <Link
             href="/profile/setup"
-            className="inline-block bg-cyber-green text-custom-text px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20 text-sm sm:text-base"
+            className="inline-block bg-cyber-green text-custom-text px-4 sm:px-6 py-2 sm:py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl text-sm sm:text-base"
           >
             Become an Expert
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-4 sm:p-6">
+          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover p-4 sm:p-6">
             <h3 className="text-lg sm:text-xl font-bold text-custom-text mb-2">Profile Status</h3>
             <p className="text-sm sm:text-base text-text-secondary mb-3 sm:mb-4">
               {isListed ? "Your profile is listed on the marketplace" : "Your profile is private"}
             </p>
             <Link
               href="/profile/setup"
-              className="text-sm sm:text-base text-cyber-green font-semibold hover:text-primary-hover hover:underline"
+              className="text-sm sm:text-base text-cyber-green font-semibold hover:text-white hover:underline"
             >
               Edit Profile →
             </Link>
           </div>
 
-          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-4 sm:p-6">
+          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover p-4 sm:p-6">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg sm:text-xl font-bold text-custom-text">Messages</h3>
               {unreadCount > 0 && (
@@ -239,15 +239,15 @@ export function DashboardContent() {
               )}
             </div>
             <p className="text-sm sm:text-base text-text-secondary mb-3 sm:mb-4">View and respond to messages</p>
-            <Link href="/messages" className="text-sm sm:text-base text-cyber-green font-semibold hover:text-primary-hover hover:underline">
+            <Link href="/messages" className="text-sm sm:text-base text-cyber-green font-semibold hover:text-white hover:underline">
               Open Messages →
             </Link>
           </div>
 
-          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-4 sm:p-6">
+          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover p-4 sm:p-6">
             <h3 className="text-lg sm:text-xl font-bold text-custom-text mb-2">Connections</h3>
             <p className="text-sm sm:text-base text-text-secondary mb-3 sm:mb-4">Manage your connections</p>
-            <Link href="/connections" className="text-sm sm:text-base text-cyber-green font-semibold hover:text-primary-hover hover:underline">
+            <Link href="/connections" className="text-sm sm:text-base text-cyber-green font-semibold hover:text-white hover:underline">
               View Connections →
             </Link>
           </div>
@@ -256,12 +256,12 @@ export function DashboardContent() {
 
       {/* Recent Messages Section */}
       {hasProfile && (
-        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-custom-text">Recent Messages</h2>
             <Link
               href="/messages"
-              className="text-sm sm:text-base text-cyber-green hover:text-primary-hover font-semibold hover:underline"
+              className="text-sm sm:text-base text-cyber-green hover:text-white font-semibold hover:underline"
             >
               View All →
             </Link>
@@ -272,7 +272,7 @@ export function DashboardContent() {
                 <Link
                   key={message.id}
                   href={`/messages`}
-                  className="block bg-surface border border-border-default rounded-lg p-4 hover:bg-custom-bg hover:border-cyber-green/40 transition-all"
+                  className="block bg-surface border border-border-default rounded-md p-4 hover:bg-custom-bg hover:border-cyber-green/40 transition-all"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -300,19 +300,19 @@ export function DashboardContent() {
         </div>
       )}
 
-      <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8">
+      <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover sm:rounded-2xl shadow-lg p-4 sm:p-6 md:p-8">
         <h2 className="text-xl sm:text-2xl font-bold text-custom-text mb-4 sm:mb-6">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Link
             href="/directory"
-            className="p-4 sm:p-6 border-2 border-border-default rounded-lg hover:border-cyber-green hover:bg-surface transition-all"
+            className="p-4 sm:p-6 border-2 border-border-default rounded-md hover:border-cyber-green hover:bg-surface transition-all"
           >
             <h3 className="text-base sm:text-lg font-semibold text-custom-text mb-2">Browse Experts</h3>
             <p className="text-sm sm:text-base text-text-secondary">Explore the directory of industry experts</p>
           </Link>
           <Link
             href="/profile/setup"
-            className="p-4 sm:p-6 border-2 border-border-default rounded-lg hover:border-cyber-green hover:bg-surface transition-all"
+            className="p-4 sm:p-6 border-2 border-border-default rounded-md hover:border-cyber-green hover:bg-surface transition-all"
           >
             <h3 className="text-base sm:text-lg font-semibold text-custom-text mb-2">Edit Profile</h3>
             <p className="text-sm sm:text-base text-text-secondary">Update your expert profile information</p>
@@ -321,14 +321,14 @@ export function DashboardContent() {
             <>
               <Link
                 href="/products"
-                className="p-4 sm:p-6 border-2 border-border-default rounded-lg hover:border-cyber-green hover:bg-surface transition-all"
+                className="p-4 sm:p-6 border-2 border-border-default rounded-md hover:border-cyber-green hover:bg-surface transition-all"
               >
                 <h3 className="text-base sm:text-lg font-semibold text-custom-text mb-2">Manage Products</h3>
                 <p className="text-sm sm:text-base text-text-secondary">Create and manage your products and courses</p>
               </Link>
               <Link
                 href="/dashboard/stripe-connect"
-                className="p-4 sm:p-6 border-2 border-border-default rounded-lg hover:border-cyber-green hover:bg-surface transition-all"
+                className="p-4 sm:p-6 border-2 border-border-default rounded-md hover:border-cyber-green hover:bg-surface transition-all"
               >
                 <h3 className="text-base sm:text-lg font-semibold text-custom-text mb-2">Payment Setup</h3>
                 <p className="text-sm sm:text-base text-text-secondary">Set up payments to receive money</p>

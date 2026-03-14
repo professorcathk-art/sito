@@ -118,11 +118,11 @@ export default function AppointmentsPage() {
           {loading ? (
             <div className="animate-pulse space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-24 bg-surface rounded-lg"></div>
+                <div key={i} className="h-24 bg-surface rounded-md"></div>
               ))}
             </div>
           ) : availableSlots.length === 0 ? (
-            <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+            <div className="bg-surface border border-border-default rounded-md p-8 text-center">
               <p className="text-text-secondary mb-4">No available appointment slots at the moment.</p>
               <p className="text-text-secondary text-sm">
                 Check back later or browse expert profiles to see their availability.
@@ -137,7 +137,7 @@ export default function AppointmentsPage() {
                 return (
                   <div
                     key={slot.id}
-                    className="bg-surface border border-border-default rounded-lg p-6"
+                    className="bg-surface border border-border-default rounded-md p-6"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -164,7 +164,7 @@ export default function AppointmentsPage() {
                       </div>
                       <Link
                         href={`/appointments/book/${slot.expert.id}?slot=${slot.id}`}
-                        className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
+                        className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
                       >
                         Book Now
                       </Link>

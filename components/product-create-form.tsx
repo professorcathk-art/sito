@@ -111,7 +111,7 @@ export function ProductCreateForm() {
 
   if (!user) {
     return (
-      <div className="bg-surface border border-border-default rounded-lg p-6">
+      <div className="bg-surface border border-border-default rounded-md p-6">
         <p className="text-text-secondary">Please sign in to create products.</p>
       </div>
     );
@@ -119,13 +119,13 @@ export function ProductCreateForm() {
 
   if (!accountId) {
     return (
-      <div className="bg-surface border border-border-default rounded-lg p-6">
+      <div className="bg-surface border border-border-default rounded-md p-6">
         <p className="text-text-secondary mb-4">
           Please set up your Stripe Connect account first to create products.
         </p>
         <a
           href="/dashboard/stripe-connect"
-          className="text-cyber-green hover:text-primary-hover"
+          className="text-cyber-green hover:text-white"
         >
           Go to Payment Setup →
         </a>
@@ -134,19 +134,19 @@ export function ProductCreateForm() {
   }
 
   return (
-    <div className="bg-surface border border-border-default rounded-lg p-6">
+    <div className="bg-surface border border-border-default rounded-md p-6">
       <h2 className="text-2xl font-bold text-custom-text mb-4">
         Create Product
       </h2>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+        <div className="mb-4 p-4 bg-red-900/30 border border-red-500/50 rounded-md">
           <p className="text-red-300">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-4 bg-green-900/30 border border-green-500/50 rounded-lg">
+        <div className="mb-4 p-4 bg-green-900/30 border border-green-500/50 rounded-md">
           <p className="text-green-300">Product created successfully!</p>
         </div>
       )}
@@ -162,7 +162,7 @@ export function ProductCreateForm() {
             onChange={(e) =>
               setFormData({ ...formData, name: e.target.value })
             }
-            className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+            className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
             placeholder="e.g., Online Course, Consultation"
             required
           />
@@ -177,7 +177,7 @@ export function ProductCreateForm() {
             onChange={(e) =>
               setFormData({ ...formData, description: e.target.value })
             }
-            className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+            className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
             rows={4}
             placeholder="Describe your product..."
           />
@@ -196,7 +196,7 @@ export function ProductCreateForm() {
               onChange={(e) =>
                 setFormData({ ...formData, price: e.target.value })
               }
-              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
               placeholder="0.00"
               required
             />
@@ -211,7 +211,7 @@ export function ProductCreateForm() {
               onChange={(e) =>
                 setFormData({ ...formData, currency: e.target.value })
               }
-              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
             >
               <option value="usd">USD ($)</option>
               <option value="eur">EUR (€)</option>
@@ -223,7 +223,7 @@ export function ProductCreateForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+          className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
         >
           {loading ? "Creating..." : "Create Product"}
         </button>

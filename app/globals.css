@@ -3,31 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --background: #0B0E14;
-  --foreground: #F3F4F6;
-  --surface: #151923;
-  --border-default: #232836;
-  --primary: #3B82F6;
-  --primary-hover: #2563EB;
-  --text-primary: #F3F4F6;
-  --text-secondary: #9CA3AF;
+  --background: #0A0A0A;
+  --foreground: #FFFFFF;
+  --surface: #121212;
+  --border-default: rgba(255, 255, 255, 0.05);
+  --text-primary: #FFFFFF;
+  --text-secondary: #6B7280;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0B0E14;
-    --foreground: #F3F4F6;
+    --background: #0A0A0A;
+    --foreground: #FFFFFF;
   }
 }
 
 body {
-  color: #F3F4F6;
-  background: #0B0E14;
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #FFFFFF;
+  background: #0A0A0A;
+  font-family: var(--font-inter), "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   scroll-behavior: smooth;
   font-feature-settings: "kern" 1, "liga" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
 }
 
 @layer utilities {
@@ -76,20 +75,20 @@ body {
   word-wrap: break-word;
   max-width: 100%;
   overflow-x: auto;
-  background: rgba(21, 25, 35, 0.8);
+  background: rgba(18, 18, 18, 0.8);
   padding: 0.5rem;
   border-radius: 0.25rem;
   font-size: 0.875rem;
-  border: 1px solid #232836;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .product-preview a {
-  color: #3B82F6;
+  color: #FFFFFF;
   text-decoration: underline;
 }
 
 .product-preview a:hover {
-  color: #60A5FA;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .product-preview h1,
@@ -146,10 +145,10 @@ body {
 }
 
 .product-preview blockquote {
-  border-left: 3px solid #3B82F6;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
   padding-left: 1rem;
   margin: 1rem 0;
-  color: rgba(243, 244, 246, 0.8);
+  color: rgba(255, 255, 255, 0.8);
   font-style: italic;
 }
 
@@ -247,40 +246,26 @@ body {
   transition-duration: 150ms;
 }
 
-/* Ensure text on dark backgrounds uses the custom text color */
-.bg-dark-green-950,
-.bg-dark-green-900,
-.bg-dark-green-800,
-[class*="bg-dark-green"],
+/* Midnight Monochromatic - Text colors */
+.bg-surface,
 [class*="bg-custom-bg"],
-.bg-surface {
-  color: #F3F4F6;
+[class*="bg-dark-green"] {
+  color: #FFFFFF;
 }
 
-/* Override for specific elements that need dark text on light backgrounds */
-.bg-white,
-.bg-gray-50,
-.bg-gray-100,
-.bg-white\/10,
-[class*="bg-white"],
-[class*="bg-gray"] {
-  color: inherit;
+/* Override for white buttons */
+.bg-white {
+  color: #000000;
 }
 
-/* Input placeholder colors for dark backgrounds */
+/* Input placeholder colors */
 input::placeholder,
 textarea::placeholder,
 select::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.4);
 }
 
-/* Premium input styling */
-.bg-dark-green-950 input,
-.bg-dark-green-900 input,
-.bg-dark-green-800 input,
-[class*="bg-dark-green"] input,
-[class*="bg-dark-green"] textarea,
-[class*="bg-dark-green"] select,
+/* Premium input styling - Midnight system */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -290,21 +275,53 @@ input[type="tel"],
 input[type="url"],
 textarea,
 select {
-  color: #F3F4F6;
-  background-color: #0B0E14;
-  border-color: #232836;
-  border-radius: 0.5rem;
+  color: #FFFFFF;
+  background-color: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0.375rem;
   padding: 0.5rem 1rem;
-  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: #3B82F6;
-  ring: 1px;
-  ring-color: #3B82F6;
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: #1A1A1A;
+}
+
+/* Ambient Glow Utility */
+.ambient-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.2) 0%, rgba(71, 85, 105, 0.2) 50%, transparent 70%);
+  filter: blur(80px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Glassmorphism utility */
+.glass {
+  backdrop-filter: blur(16px);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Mesh Gradient for placeholders */
+.mesh-gradient {
+  background: linear-gradient(135deg, #1A1A1A 0%, #0A0A0A 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Premium card hover interactions */
+.card-hover {
+  transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
 
 [class*="bg-dark-green"] input::placeholder,
@@ -312,22 +329,22 @@ select:focus {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Premium scrollbar styling */
+/* Premium scrollbar styling - Midnight */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0E14;
+  background: #0A0A0A;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #232836;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3B82F6;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Removed cyber/neon animations for premium professional design */
@@ -394,12 +411,12 @@ select:focus {
 }
 
 .blog-content a {
-  color: #3B82F6;
+  color: #FFFFFF;
   text-decoration: underline;
 }
 
 .blog-content a:hover {
-  color: #60A5FA;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .blog-content img {
@@ -434,21 +451,21 @@ select:focus {
 }
 
 .blog-content code {
-  background: rgba(21, 25, 35, 0.8);
+  background: rgba(18, 18, 18, 0.8);
   padding: 0.2em 0.4em;
   border-radius: 0.25rem;
   font-size: 0.9em;
-  color: #3B82F6;
-  border: 1px solid #232836;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .blog-content pre {
-  background: rgba(21, 25, 35, 0.8);
+  background: rgba(18, 18, 18, 0.8);
   padding: 1em;
   border-radius: 0.5rem;
   overflow-x: auto;
   margin: 2em 0;
-  border: 1px solid #232836;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .blog-content pre code {
@@ -457,10 +474,10 @@ select:focus {
 }
 
 .blog-content blockquote {
-  border-left: 3px solid #3B82F6;
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
   padding-left: 1.5em;
   margin: 2em 0;
-  color: rgba(243, 244, 246, 0.8);
+  color: rgba(255, 255, 255, 0.8);
   font-style: italic;
 }
 

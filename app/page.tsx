@@ -15,11 +15,11 @@ export default function Home() {
       {/* Privacy Policy Link - Server-rendered for Google OAuth compliance */}
       <div className="bg-surface border-b border-border-default py-2 px-4 text-center">
         <p className="text-xs sm:text-sm text-text-secondary">
-          <Link href="/privacy" className="text-primary hover:text-primary-hover underline font-medium">
+          <Link href="/privacy" className="text-primary hover:text-white underline font-medium">
             Privacy Policy (https://sito.club/privacy)
           </Link>
           {" · "}
-          <Link href="/terms" className="text-primary hover:text-primary-hover underline font-medium">
+          <Link href="/terms" className="text-primary hover:text-white underline font-medium">
             Terms of Service (https://sito.club/terms)
           </Link>
         </p>

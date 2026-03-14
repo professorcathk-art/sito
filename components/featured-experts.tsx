@@ -117,7 +117,7 @@ export function FeaturedExperts() {
               <Link
                 key={expert.id}
                 href={`/expert/${expert.id}`}
-                className="group bg-surface border border-border-default p-6 rounded-xl hover:border-primary transition-all duration-300 shadow-lg shadow-black/20 animate-fade-in-up"
+                className="group bg-[#121212] border border-white/5 card-hover p-6 rounded-xl card-hover animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="flex items-start gap-4 mb-3">
@@ -128,28 +128,30 @@ export function FeaturedExperts() {
                       className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-border-default flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-surface border-2 border-border-default flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg sm:text-2xl text-primary">{expert.name.charAt(0).toUpperCase()}</span>
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full mesh-gradient border-2 border-white/5 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-6 h-6 sm:w-8 sm:h-8 text-gray-700 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-base sm:text-lg font-bold text-text-primary group-hover:text-primary transition-colors truncate">{expert.name}</h3>
+                      <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-white transition-colors truncate">{expert.name}</h3>
                       {expert.verified && (
-                        <span className="text-primary flex-shrink-0" title="Verified Expert">
+                        <span className="text-white flex-shrink-0" title="Verified Expert">
                           ✓
                         </span>
                       )}
                     </div>
-                    <p className="text-text-secondary font-medium text-xs sm:text-sm">{expert.title}</p>
+                    <p className="text-gray-500 font-medium text-xs sm:text-sm">{expert.title}</p>
                   </div>
                 </div>
-                <p className="text-text-secondary text-xs sm:text-sm mb-3 line-clamp-2">{expert.bio}</p>
+                <p className="text-gray-500 text-xs sm:text-sm mb-3 line-clamp-2">{expert.bio}</p>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-primary bg-transparent px-2 py-1 rounded-full border border-primary truncate">
+                  <span className="text-xs text-white bg-transparent px-2 py-1 rounded-full border border-white/10 truncate">
                     {expert.category}
                   </span>
-                  <span className="text-xs text-text-secondary truncate">{expert.location}</span>
+                  <span className="text-xs text-gray-500 truncate">{expert.location}</span>
                 </div>
               </Link>
             ))}
@@ -159,7 +161,7 @@ export function FeaturedExperts() {
         <div className="text-center mt-6 sm:mt-8">
           <Link
             href="/directory"
-            className="inline-block bg-primary text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-medium hover:bg-primary-hover transition-all duration-300"
+            className="inline-block bg-white text-black px-5 sm:px-6 py-2.5 sm:py-3 rounded-md text-sm sm:text-base font-semibold hover:bg-gray-200 transition-all duration-300"
           >
             View All Experts
           </Link>

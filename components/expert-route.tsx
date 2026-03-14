@@ -69,7 +69,7 @@ export function ExpertRoute({ children }: { children: React.ReactNode }) {
           </p>
           <Link
             href="/profile/setup"
-            className="inline-block bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20"
+            className="inline-block bg-cyber-green text-custom-text px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
           >
             Complete Your Profile
           </Link>
