@@ -2,6 +2,169 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import type { StorefrontBlock } from "@/types/storefront";
+
+function BlocksPreview({
+  blocks,
+  profileData,
+  expertName,
+  expertBio,
+  expertAvatar,
+  verified,
+  products,
+  customBrandColor,
+  buttonStyle,
+  themePreset,
+  getButtonClasses,
+  getButtonStyle,
+}: {
+  blocks: StorefrontBlock[];
+  profileData?: { name: string; title: string; bio: string; avatarUrl: string; website?: string; linkedin?: string; instagramUrl?: string };
+  expertName: string;
+  expertBio: string;
+  expertAvatar?: string;
+  verified: boolean;
+  products: Array<{ id: string; name: string; price: number; pricing_type: string }>;
+  customBrandColor?: string;
+  buttonStyle: string;
+  themePreset: string;
+  getButtonClasses: () => string;
+  getButtonStyle: () => React.CSSProperties;
+}) {
+  const sortedBlocks = [...blocks].sort((a, b) => a.order - b.order);
+  const name = profileData?.name || expertName;
+  const bio = profileData?.bio ?? expertBio;
+  const avatar = profileData?.avatarUrl || expertAvatar;
+
+  return (
+    <>
+      {sortedBlocks.map((block) => {
+        if (block.type === "header") {
+          const d = block.data;
+          const headerName = (d.name as string) || name;
+          const headerTagline = (d.tagline as string) || profileData?.title || "";
+          const headerBio = (d.bio as string) || bio;
+          const headerAvatar = (d.avatarUrl as string) || avatar;
+          return (
+            <div key={block.id} className="flex flex-col items-center space-y-4">
+              {headerAvatar ? (
+                <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-slate-700">
+                  <Image src={headerAvatar} alt={headerName} fill className="object-cover" />
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center">
+                  <svg className="w-12 h-12 text-gray-700 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+              )}
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <h1 className="text-2xl font-bold">{headerName}</h1>
+                  {verified && <span title="Verified">✓</span>}
+                </div>
+                {headerTagline && <p className="text-sm mt-1 opacity-80">{headerTagline}</p>}
+                <p className="text-sm mt-2 opacity-80 line-clamp-3">{headerBio || "Expert bio"}</p>
+              </div>
+            </div>
+          );
+        }
+        if (block.type === "links") {
+          const items = (block.data.items as Array<{ title: string; url: string; icon?: string; order: number }>) || [];
+          return (
+            <div key={block.id} className="space-y-3">
+              {items
+                .filter((l) => l.title && l.url)
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                .map((link, idx) => (
+                  <a
+                    key={idx}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${getButtonClasses()} block text-center border-white/10 hover:opacity-90`}
+                    style={getButtonStyle()}
+                  >
+                    {link.title}
+                  </a>
+                ))}
+            </div>
+          );
+        }
+        if (block.type === "products") {
+          const show = (block.data.showProducts as boolean) !== false;
+          if (!show || products.length === 0) return null;
+          return (
+            <div key={block.id} className="space-y-3">
+              <h2 className="text-lg font-semibold mb-3">Products</h2>
+              {products.slice(0, 3).map((product) => (
+                <div key={product.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{product.name}</h3>
+                      <p className="text-sm opacity-70 mt-1">
+                        {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
+                      </p>
+                    </div>
+                    <div className={`${getButtonClasses()} w-24 text-sm`} style={getButtonStyle()}>
+                      View
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        }
+        if (block.type === "image_text") {
+          const d = block.data;
+          const imgUrl = d.imageUrl as string;
+          const title = d.title as string;
+          const text = d.text as string;
+          return (
+            <div key={block.id} className="space-y-3">
+              {imgUrl && (
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-800">
+                  <Image src={imgUrl} alt={title || ""} fill className="object-cover" />
+                </div>
+              )}
+              {title && <h3 className="text-lg font-semibold">{title}</h3>}
+              {text && <p className="text-sm opacity-80">{text}</p>}
+            </div>
+          );
+        }
+        if (block.type === "faq") {
+          const items = (block.data.items as Array<{ question: string; answer: string }>) || [];
+          return (
+            <div key={block.id} className="space-y-3">
+              <h2 className="text-lg font-semibold mb-3">FAQ</h2>
+              {items.filter((i) => i.question || i.answer).map((item, idx) => (
+                <div key={idx} className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                  {item.question && <h4 className="font-medium mb-2">{item.question}</h4>}
+                  {item.answer && <p className="text-sm opacity-80">{item.answer}</p>}
+                </div>
+              ))}
+            </div>
+          );
+        }
+        if (block.type === "testimonials") {
+          const items = (block.data.items as Array<{ name: string; quote: string; avatarUrl?: string }>) || [];
+          return (
+            <div key={block.id} className="space-y-3">
+              <h2 className="text-lg font-semibold mb-3">Testimonials</h2>
+              {items.filter((i) => i.name || i.quote).map((item, idx) => (
+                <div key={idx} className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                  {item.quote && <p className="text-sm opacity-90 italic">&quot;{item.quote}&quot;</p>}
+                  {item.name && <p className="text-sm font-medium mt-2">— {item.name}</p>}
+                </div>
+              ))}
+            </div>
+          );
+        }
+        return null;
+      })}
+    </>
+  );
+}
 
 interface StorefrontPreviewProps {
   themePreset: string;
@@ -17,6 +180,16 @@ interface StorefrontPreviewProps {
   expertAvatar?: string;
   verified: boolean;
   products: Array<{ id: string; name: string; price: number; pricing_type: string }>;
+  storefrontBlocks?: StorefrontBlock[];
+  profileData?: {
+    name: string;
+    title: string;
+    bio: string;
+    avatarUrl: string;
+    website: string;
+    linkedin: string;
+    instagramUrl: string;
+  };
 }
 
 export function StorefrontPreview({
@@ -33,6 +206,8 @@ export function StorefrontPreview({
   expertAvatar,
   verified,
   products,
+  storefrontBlocks,
+  profileData,
 }: StorefrontPreviewProps) {
   const [cssVars, setCssVars] = useState<Record<string, string>>({});
 
@@ -75,6 +250,17 @@ export function StorefrontPreview({
     }
   };
 
+  const getButtonStyle = () => {
+    if (!customBrandColor) return {};
+    if (buttonStyle === "outline") {
+      return { borderColor: customBrandColor, color: customBrandColor };
+    }
+    return {
+      backgroundColor: customBrandColor,
+      color: themePreset === "minimal-light" ? "#000000" : "#FFFFFF",
+    };
+  };
+
   return (
     <div className="sticky top-4 flex justify-center">
       {/* Mobile Phone Frame */}
@@ -89,6 +275,23 @@ export function StorefrontPreview({
         >
           {/* Storefront Content */}
           <div className="p-6 space-y-6">
+            {storefrontBlocks && storefrontBlocks.length > 0 ? (
+              <BlocksPreview
+                blocks={storefrontBlocks}
+                profileData={profileData}
+                expertName={expertName}
+                expertBio={expertBio}
+                expertAvatar={expertAvatar}
+                verified={verified}
+                products={products}
+                customBrandColor={customBrandColor}
+                buttonStyle={buttonStyle}
+                themePreset={themePreset}
+                getButtonClasses={getButtonClasses}
+                getButtonStyle={getButtonStyle}
+              />
+            ) : (
+              <>
             {/* Avatar Section */}
             <div className="flex flex-col items-center space-y-4">
               {expertAvatar ? (
@@ -222,6 +425,8 @@ export function StorefrontPreview({
                   <div className="h-3 bg-slate-700 rounded w-1/2"></div>
                 </div>
               </div>
+            )}
+              </>
             )}
           </div>
         </div>

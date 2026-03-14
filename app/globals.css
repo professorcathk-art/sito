@@ -11,6 +11,8 @@
   --border-default: #334155;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
+  --brand-color: #6366f1; /* Indigo-500 fallback for focus states */
+  --brand: #6366f1; /* Alias for storefront builder focus states */
 }
 
 @media (prefers-color-scheme: dark) {

@@ -19,6 +19,7 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         id,
         name,
         bio,
+        tagline,
         avatar_url,
         verified,
         listed_on_marketplace,
@@ -30,6 +31,7 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         storefront_show_appointments,
         storefront_show_blog,
         storefront_bio_override,
+        storefront_blocks,
         website,
         linkedin,
         instagram_url
@@ -108,11 +110,14 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
       hasAppointments = (count || 0) > 0;
     }
 
+    const storefrontBlocks = (profile.storefront_blocks as any[]) || [];
+
     return (
       <StorefrontView
         expertId={profile.id}
         expertName={profile.name || "Expert"}
         expertBio={profile.bio || ""}
+        expertTagline={profile.tagline}
         bioOverride={profile.storefront_bio_override}
         avatarUrl={profile.avatar_url}
         verified={profile.verified || false}
@@ -126,6 +131,7 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         products={products}
         blogPosts={blogPosts}
         hasAppointments={hasAppointments}
+        storefrontBlocks={storefrontBlocks}
       />
     );
   } catch (error: any) {

@@ -136,7 +136,7 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       icon: "👤",
     },
     {
-      name: "Storefront Editor",
+      name: "Profile & Storefront",
       href: "/dashboard/storefront",
       icon: "🎨",
     },
