@@ -110,7 +110,7 @@ export function SubscribeButton({ expertId, expertName }: SubscribeButtonProps) 
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="h-10 w-32 bg-dark-green-800/50 rounded-lg"></div>
+        <div className="h-10 w-32 bg-surface rounded-lg"></div>
       </div>
     );
   }
@@ -122,8 +122,8 @@ export function SubscribeButton({ expertId, expertName }: SubscribeButtonProps) 
         disabled={subscribing || user?.id === expertId}
         className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm whitespace-nowrap ${
           isSubscribed
-            ? "bg-dark-green-800/50 border border-cyber-green/30 text-cyber-green hover:bg-dark-green-800/70"
-            : "bg-cyber-green text-dark-green-900 hover:bg-cyber-green-light"
+            ? "bg-surface border border-border-default text-cyber-green hover:bg-dark-green-800/70"
+            : "bg-cyber-green text-white hover:bg-primary-hover"
         } disabled:opacity-50 disabled:cursor-not-allowed`}
       >
         {subscribing
@@ -132,7 +132,7 @@ export function SubscribeButton({ expertId, expertName }: SubscribeButtonProps) 
           ? "✓ Subscribed"
           : "Subscribe"}
       </button>
-      <span className="text-custom-text/70 text-sm hidden sm:inline">
+      <span className="text-text-secondary text-sm hidden sm:inline">
         {subscriberCount} {subscriberCount === 1 ? "subscriber" : "subscribers"}
       </span>
     </>

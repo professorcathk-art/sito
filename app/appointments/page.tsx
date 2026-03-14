@@ -110,7 +110,7 @@ export default function AppointmentsPage() {
         <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-custom-text mb-2">Book Appointments</h1>
-            <p className="text-custom-text/70">
+            <p className="text-text-secondary">
               Browse available time slots from experts and book 1-on-1 sessions
             </p>
           </div>
@@ -118,13 +118,13 @@ export default function AppointmentsPage() {
           {loading ? (
             <div className="animate-pulse space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-24 bg-dark-green-800/50 rounded-lg"></div>
+                <div key={i} className="h-24 bg-surface rounded-lg"></div>
               ))}
             </div>
           ) : availableSlots.length === 0 ? (
-            <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
-              <p className="text-custom-text/80 mb-4">No available appointment slots at the moment.</p>
-              <p className="text-custom-text/60 text-sm">
+            <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+              <p className="text-text-secondary mb-4">No available appointment slots at the moment.</p>
+              <p className="text-text-secondary text-sm">
                 Check back later or browse expert profiles to see their availability.
               </p>
             </div>
@@ -137,7 +137,7 @@ export default function AppointmentsPage() {
                 return (
                   <div
                     key={slot.id}
-                    className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6"
+                    className="bg-surface border border-border-default rounded-lg p-6"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -149,13 +149,13 @@ export default function AppointmentsPage() {
                             {slot.expert.name}
                           </Link>
                           {slot.expert.title && (
-                            <span className="text-custom-text/60 text-sm">• {slot.expert.title}</span>
+                            <span className="text-text-secondary text-sm">• {slot.expert.title}</span>
                           )}
                         </div>
                         <p className="text-lg font-semibold text-custom-text mb-2">
                           {formatDateTime(slot.start_time)} - {formatDateTime(slot.end_time)}
                         </p>
-                        <p className="text-custom-text/70 mb-4">
+                        <p className="text-text-secondary mb-4">
                           Duration: {Math.round(duration)} minutes • ${slot.rate_per_hour}/hour
                         </p>
                         <p className="text-xl font-bold text-cyber-green">
@@ -164,7 +164,7 @@ export default function AppointmentsPage() {
                       </div>
                       <Link
                         href={`/appointments/book/${slot.expert.id}?slot=${slot.id}`}
-                        className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                        className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                       >
                         Book Now
                       </Link>

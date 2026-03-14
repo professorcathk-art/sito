@@ -302,10 +302,10 @@ export function MessagesContent() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-pulse">
-          <div className="h-10 bg-dark-green-800/50 rounded w-1/4 mb-8"></div>
+          <div className="h-10 bg-surface rounded w-1/4 mb-8"></div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 bg-dark-green-800/30 border border-cyber-green/30 rounded-2xl p-4 h-96"></div>
-            <div className="lg:col-span-2 bg-dark-green-800/30 border border-cyber-green/30 rounded-2xl p-8 h-96"></div>
+            <div className="lg:col-span-1 bg-surface border border-border-default rounded-2xl p-4 h-96"></div>
+            <div className="lg:col-span-2 bg-surface border border-border-default rounded-2xl p-8 h-96"></div>
           </div>
         </div>
       </div>
@@ -319,7 +319,7 @@ export function MessagesContent() {
       
       {/* Compose Form */}
       {showCompose && composeExpertId && (
-        <div className="mb-6 bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-6">
+        <div className="mb-6 bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-custom-text">
               {composeExpertName ? `Send Message to ${composeExpertName}` : "Send Message"}
@@ -331,7 +331,7 @@ export function MessagesContent() {
                 setComposeExpertName("");
                 window.history.replaceState({}, "", "/messages");
               }}
-              className="text-custom-text/70 hover:text-custom-text"
+              className="text-text-secondary hover:text-custom-text"
             >
               ✕
             </button>
@@ -352,34 +352,34 @@ export function MessagesContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
-          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg">
-            <div className="p-4 border-b border-cyber-green/30">
+          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg">
+            <div className="p-4 border-b border-border-default">
               <h2 className="text-xl font-bold text-custom-text">Inbox</h2>
             </div>
             <div className="divide-y divide-cyber-green/20 max-h-[600px] overflow-y-auto">
               {messages.length === 0 ? (
-                <div className="p-8 text-center text-custom-text/70">No messages yet</div>
+                <div className="p-8 text-center text-text-secondary">No messages yet</div>
               ) : (
                 messages.map((message) => (
                   <button
                     key={message.id}
                     onClick={() => handleMessageSelect(message)}
-                    className={`w-full text-left p-4 hover:bg-dark-green-900/50 transition-colors ${
-                      selectedMessage?.id === message.id ? "bg-dark-green-900/50" : ""
+                    className={`w-full text-left p-4 hover:bg-custom-bg transition-colors ${
+                      selectedMessage?.id === message.id ? "bg-custom-bg" : ""
                     } ${message.unread ? "font-semibold" : ""}`}
                   >
                     <div className="flex items-start justify-between mb-1">
-                      <span className={`${message.unread ? "text-custom-text" : "text-custom-text/80"}`}>
+                      <span className={`${message.unread ? "text-custom-text" : "text-text-secondary"}`}>
                         {message.from}
                       </span>
                       {message.unread && (
                         <span className="h-2 w-2 bg-cyber-green rounded-full"></span>
                       )}
                     </div>
-                    <p className={`text-sm truncate ${message.unread ? "text-custom-text/90" : "text-custom-text/70"}`}>
+                    <p className={`text-sm truncate ${message.unread ? "text-text-primary" : "text-text-secondary"}`}>
                       {message.subject}
                     </p>
-                    <p className="text-xs text-custom-text/60 mt-1">{message.timestamp}</p>
+                    <p className="text-xs text-text-secondary mt-1">{message.timestamp}</p>
                   </button>
                 ))
               )}
@@ -388,15 +388,15 @@ export function MessagesContent() {
         </div>
         <div className="lg:col-span-2">
           {selectedMessage ? (
-            <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 flex flex-col h-full">
-              <div className="mb-6 pb-4 border-b border-cyber-green/30">
+            <div className="bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-8 flex flex-col h-full">
+              <div className="mb-6 pb-4 border-b border-border-default">
                 <h2 className="text-2xl font-bold text-custom-text mb-2">Conversation with {selectedMessage.from}</h2>
-                <p className="text-custom-text/70 text-sm">Subject: {selectedMessage.subject}</p>
+                <p className="text-text-secondary text-sm">Subject: {selectedMessage.subject}</p>
               </div>
               
               {loadingHistory ? (
                 <div className="flex-1 flex items-center justify-center min-h-[400px]">
-                  <div className="animate-pulse text-custom-text/70">Loading conversation...</div>
+                  <div className="animate-pulse text-text-secondary">Loading conversation...</div>
                 </div>
               ) : conversationHistory.length > 0 ? (
                 <div className="flex-1 overflow-y-auto space-y-4 mb-6 pr-2 max-h-[600px]">
@@ -408,44 +408,44 @@ export function MessagesContent() {
                       <div
                         className={`max-w-[80%] rounded-lg p-4 ${
                           msg.is_sent
-                            ? "bg-cyber-green/20 border border-cyber-green/30"
-                            : "bg-dark-green-900/30 border border-cyber-green/20"
+                            ? "bg-primary/20 border border-border-default"
+                            : "bg-surface border border-border-default"
                         }`}
                       >
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-semibold text-custom-text">
                             {msg.is_sent ? "You" : msg.from_name}
                           </span>
-                          <span className="text-xs text-custom-text/60">
+                          <span className="text-xs text-text-secondary">
                             {formatTimeAgo(msg.created_at)}
                           </span>
                         </div>
-                        <p className="text-custom-text/90 whitespace-pre-wrap text-sm">{msg.content}</p>
+                        <p className="text-text-primary whitespace-pre-wrap text-sm">{msg.content}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="flex-1 flex items-center justify-center min-h-[400px] text-custom-text/70">
+                <div className="flex-1 flex items-center justify-center min-h-[400px] text-text-secondary">
                   No conversation history found
                 </div>
               )}
               
-              <div className="pt-6 border-t border-cyber-green/30">
+              <div className="pt-6 border-t border-border-default">
                 <button
                   onClick={() => {
                     setShowCompose(true);
                     setComposeExpertId(selectedMessage.fromId);
                     setComposeExpertName(selectedMessage.from);
                   }}
-                  className="bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+                  className="bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20"
                 >
                   Reply
                 </button>
               </div>
             </div>
           ) : (
-            <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 text-center text-custom-text/70">
+            <div className="bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-8 text-center text-text-secondary">
               Select a message to view conversation
             </div>
           )}
@@ -603,11 +603,11 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           required={!isReply}
-          className="w-full px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
           placeholder={isReply ? "Re: [original subject]" : "What would you like to discuss?"}
         />
         {isReply && (
-          <p className="mt-1 text-xs text-custom-text/60">
+          <p className="mt-1 text-xs text-text-secondary">
             Subject will default to the original conversation subject if left empty
           </p>
         )}
@@ -622,7 +622,7 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
           onChange={(e) => setMessage(e.target.value)}
           required
           rows={10}
-          className="w-full px-4 py-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
+          className="w-full px-4 py-3 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
           placeholder="Write your message here..."
         />
       </div>
@@ -630,13 +630,13 @@ function MessageComposeForm({ expertId, onSent }: { expertId: string; onSent?: (
         <button
           type="submit"
           disabled={loading}
-          className="bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+          className="bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-black/20"
         >
           {loading ? "Sending..." : "Send Message"}
         </button>
         <a
           href="/messages"
-          className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+          className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
         >
           Cancel
         </a>

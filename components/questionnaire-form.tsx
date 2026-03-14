@@ -203,24 +203,24 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
   if (loading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-4 bg-dark-green-800/50 rounded w-3/4"></div>
-        <div className="h-10 bg-dark-green-800/50 rounded"></div>
+        <div className="h-4 bg-surface rounded w-3/4"></div>
+        <div className="h-10 bg-surface rounded"></div>
       </div>
     );
   }
 
   if (loading) {
-    return <div className="text-custom-text/60">Loading form...</div>;
+    return <div className="text-text-secondary">Loading form...</div>;
   }
 
   if (fields.length === 0 && !loading) {
     return (
-      <div className="text-custom-text/60">
+      <div className="text-text-secondary">
         <p className="mb-4">The registration form is not yet set up. Please contact the expert.</p>
         {onCancel && (
           <button
             onClick={onCancel}
-            className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50"
+            className="px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface"
           >
             Cancel
           </button>
@@ -240,7 +240,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
         {onCancel && (
           <button
             onClick={onCancel}
-            className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+            className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
           >
             Close
           </button>
@@ -267,7 +267,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
               onChange={(e) => handleChange(field.id, e.target.value)}
               placeholder={field.placeholder || ""}
               required={field.required}
-              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-cyber-green"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
             />
           )}
 
@@ -278,7 +278,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
               onChange={(e) => handleChange(field.id, e.target.value)}
               placeholder={field.placeholder || ""}
               required={field.required}
-              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-cyber-green"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
             />
           )}
 
@@ -289,7 +289,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
               placeholder={field.placeholder || ""}
               required={field.required}
               rows={4}
-              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-cyber-green"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
             />
           )}
 
@@ -298,7 +298,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
               value={responses[field.id] || ""}
               onChange={(e) => handleChange(field.id, e.target.value)}
               required={field.required}
-              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text focus:outline-none focus:border-cyber-green"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text focus:outline-none focus:border-primary"
             >
               <option value="">Select an option...</option>
               {field.options.map((option, idx) => (
@@ -320,7 +320,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
                     checked={responses[field.id] === option}
                     onChange={(e) => handleChange(field.id, e.target.value)}
                     required={field.required}
-                    className="w-4 h-4 text-cyber-green focus:ring-cyber-green"
+                    className="w-4 h-4 text-cyber-green focus:ring-primary"
                   />
                   <span>{option}</span>
                 </label>
@@ -336,7 +336,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
                     type="checkbox"
                     checked={(responses[field.id] || []).includes(option)}
                     onChange={(e) => handleCheckboxChange(field.id, option, e.target.checked)}
-                    className="w-4 h-4 text-cyber-green focus:ring-cyber-green rounded"
+                    className="w-4 h-4 text-cyber-green focus:ring-primary rounded"
                   />
                   <span>{option}</span>
                 </label>
@@ -350,7 +350,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
         <button
           type="submit"
           disabled={submitting}
-          className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
         >
           {submitting ? "Submitting..." : "Submit"}
         </button>
@@ -358,7 +358,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
           <button
             type="button"
             onClick={onCancel}
-            className="px-6 py-3 border border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/50 transition-colors"
+            className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-lg hover:bg-surface transition-colors"
           >
             Cancel
           </button>

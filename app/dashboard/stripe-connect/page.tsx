@@ -36,7 +36,7 @@ function StripeConnectContent() {
       </h1>
 
       {refresh && (
-        <div className="mb-6 p-4 bg-cyber-green/20 border border-cyber-green/50 rounded-lg">
+        <div className="mb-6 p-4 bg-primary/20 border border-border-default rounded-lg">
           <p className="text-custom-text">
             Please refresh the page to see your updated account status.
           </p>
@@ -64,7 +64,7 @@ export default function StripeConnectPage() {
     <ProtectedRoute>
       <ExpertRoute>
         <DashboardLayout>
-          <Suspense fallback={<div className="text-custom-text/60">Loading...</div>}>
+          <Suspense fallback={<div className="text-text-secondary">Loading...</div>}>
             <StripeConnectContent />
           </Suspense>
         </DashboardLayout>

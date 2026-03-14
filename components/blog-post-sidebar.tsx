@@ -81,12 +81,12 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
   return (
     <aside className="w-80 flex-shrink-0 ml-8">
       {/* Related Posts */}
-      <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-4">
+      <div className="bg-surface border border-border-default rounded-lg p-4">
         <h3 className="text-lg font-bold text-custom-text mb-4">Other Posts</h3>
         {loading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-20 bg-dark-green-900/50 rounded-lg animate-pulse"></div>
+              <div key={i} className="h-20 bg-custom-bg rounded-lg animate-pulse"></div>
             ))}
           </div>
         ) : relatedPosts.length > 0 ? (
@@ -95,17 +95,17 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
               <Link
                 key={post.id}
                 href={`/blog/${post.id}`}
-                className="block p-3 bg-dark-green-900/50 border border-cyber-green/20 rounded-lg hover:border-cyber-green/50 transition-colors"
+                className="block p-3 bg-custom-bg border border-border-default rounded-lg hover:border-border-default transition-colors"
               >
                 <h4 className="text-sm font-semibold text-custom-text mb-1 line-clamp-2">
                   {post.title}
                 </h4>
                 {post.description && (
-                  <p className="text-xs text-custom-text/70 line-clamp-2 mb-2">
+                  <p className="text-xs text-text-secondary line-clamp-2 mb-2">
                     {post.description}
                   </p>
                 )}
-                <div className="flex items-center gap-3 text-xs text-custom-text/60">
+                <div className="flex items-center gap-3 text-xs text-text-secondary">
                   <span>{post.view_count} views</span>
                   <span>•</span>
                   <span>❤️ {post.like_count}</span>
@@ -114,7 +114,7 @@ export function BlogPostSidebar({ currentPostId, expertId }: BlogPostSidebarProp
             ))}
           </div>
         ) : (
-          <p className="text-custom-text/60 text-sm">No other posts available</p>
+          <p className="text-text-secondary text-sm">No other posts available</p>
         )}
       </div>
     </aside>

@@ -179,8 +179,8 @@ export default function EditCoursePage() {
           <div className="pt-16 pb-12 px-4">
             <div className="max-w-4xl mx-auto">
               <div className="animate-pulse">
-                <div className="h-8 bg-dark-green-800/50 rounded w-1/3 mb-8"></div>
-                <div className="h-64 bg-dark-green-800/50 rounded"></div>
+                <div className="h-8 bg-surface rounded w-1/3 mb-8"></div>
+                <div className="h-64 bg-surface rounded"></div>
               </div>
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function EditCoursePage() {
               {course && !course.published && (
                 <button
                   onClick={handlePublish}
-                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                 >
                   Publish Course
                 </button>
@@ -214,7 +214,7 @@ export default function EditCoursePage() {
               {lessons.map((lesson, index) => (
                 <div
                   key={lesson.id}
-                  className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6"
+                  className="bg-surface border border-border-default rounded-lg p-6"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
@@ -222,7 +222,7 @@ export default function EditCoursePage() {
                         Lesson {index + 1}: {lesson.title}
                       </h3>
                       {lesson.description && (
-                        <p className="text-custom-text/70 mb-2">{lesson.description}</p>
+                        <p className="text-text-secondary mb-2">{lesson.description}</p>
                       )}
                     </div>
                     <div className="flex gap-2">
@@ -238,7 +238,7 @@ export default function EditCoursePage() {
                           });
                           setShowLessonForm(true);
                         }}
-                        className="px-4 py-2 bg-dark-green-900/50 text-custom-text rounded-lg hover:bg-dark-green-800 transition-colors"
+                        className="px-4 py-2 bg-custom-bg text-custom-text rounded-lg hover:bg-dark-green-800 transition-colors"
                       >
                         Edit
                       </button>
@@ -256,7 +256,7 @@ export default function EditCoursePage() {
 
             {/* Add/Edit Lesson Form */}
             {showLessonForm && (
-              <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
+              <div className="bg-surface border border-border-default rounded-lg p-6 mb-8">
                 <h2 className="text-2xl font-bold text-custom-text mb-6">
                   {editingLesson ? "Edit Lesson" : "Add New Lesson"}
                 </h2>
@@ -269,7 +269,7 @@ export default function EditCoursePage() {
                       type="text"
                       value={lessonForm.title}
                       onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                       required
                     />
                   </div>
@@ -280,7 +280,7 @@ export default function EditCoursePage() {
                     <textarea
                       value={lessonForm.description}
                       onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                       rows={2}
                     />
                   </div>
@@ -293,13 +293,13 @@ export default function EditCoursePage() {
                         type="text"
                         value={lessonForm.videoUrl}
                         onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
-                        className="flex-1 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                        className="flex-1 px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                         placeholder="https://youtube.com/watch?v=..."
                       />
                       <select
                         value={lessonForm.videoType}
                         onChange={(e) => setLessonForm({ ...lessonForm, videoType: e.target.value as any })}
-                        className="px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                        className="px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                       >
                         <option value="youtube">YouTube</option>
                         <option value="vimeo">Vimeo</option>
@@ -319,7 +319,7 @@ export default function EditCoursePage() {
                     <button
                       onClick={handleSaveLesson}
                       disabled={saving}
-                      className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+                      className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
                     >
                       {saving ? "Saving..." : editingLesson ? "Update Lesson" : "Add Lesson"}
                     </button>
@@ -335,7 +335,7 @@ export default function EditCoursePage() {
                           content: "",
                         });
                       }}
-                      className="px-6 py-3 border border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                      className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-lg hover:bg-surface transition-colors"
                     >
                       Cancel
                     </button>
@@ -349,14 +349,14 @@ export default function EditCoursePage() {
               <div className="space-y-3">
                 <button
                   onClick={() => setShowLessonForm(true)}
-                  className="w-full px-6 py-4 bg-dark-green-800/50 border-2 border-dashed border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
+                  className="w-full px-6 py-4 bg-surface border-2 border-dashed border-border-default text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
                 >
                   + Add Lesson
                 </button>
                 {skipLessons && (
                   <button
                     onClick={() => router.push("/products")}
-                    className="w-full px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                    className="w-full px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
                   >
                     Skip for Now - Return to Products
                   </button>

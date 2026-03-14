@@ -129,7 +129,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             {(productInfo?.e_learning_subtype || course.category) && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {productInfo?.e_learning_subtype && (
-                  <span className="px-3 py-1 bg-cyber-green/20 text-cyber-green rounded-full text-sm font-medium">
+                  <span className="px-3 py-1 bg-primary/20 text-cyber-green rounded-full text-sm font-medium">
                     {productInfo.e_learning_subtype === 'online-course' ? 'Online Course' :
                      productInfo.e_learning_subtype === 'ebook' ? 'Ebook' :
                      productInfo.e_learning_subtype === 'ai-prompt' ? 'AI Prompt' :
@@ -139,7 +139,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   </span>
                 )}
                 {course.category && (
-                  <span className="px-3 py-1 bg-dark-green-800/50 text-custom-text/80 rounded-full text-sm">
+                  <span className="px-3 py-1 bg-surface text-text-secondary rounded-full text-sm">
                     {course.category}
                   </span>
                 )}
@@ -163,24 +163,24 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     {expertProfile.name || "Expert"}
                   </Link>
                   {expertProfile.title && (
-                    <p className="text-custom-text/70 text-sm">{expertProfile.title}</p>
+                    <p className="text-text-secondary text-sm">{expertProfile.title}</p>
                   )}
                 </div>
               </div>
             )}
           </div>
 
-          <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
+          <div className="bg-surface border border-border-default rounded-lg p-6 mb-8">
             {course.description && (
               <div 
-                className="prose prose-invert prose-lg max-w-none blog-content text-custom-text/80 mb-4"
+                className="prose prose-invert prose-lg max-w-none blog-content text-text-secondary mb-4"
                 dangerouslySetInnerHTML={{ __html: course.description }}
               />
             )}
             {/* Show webinar date/time for live webinars */}
             {productInfo?.e_learning_subtype === "live-webinar" && productInfo?.webinar_date_time && (
-              <div className="mb-4 p-4 bg-cyber-green/10 border border-cyber-green/30 rounded-lg">
-                <p className="text-sm text-custom-text/70 mb-1">Live Webinar Date & Time:</p>
+              <div className="mb-4 p-4 bg-primary/10 border border-border-default rounded-lg">
+                <p className="text-sm text-text-secondary mb-1">Live Webinar Date & Time:</p>
                 <p className="text-lg font-semibold text-cyber-green">
                   {new Date(productInfo.webinar_date_time).toLocaleString('en-US', {
                     timeZone: 'Asia/Hong_Kong',
@@ -206,7 +206,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     {course.is_free ? "Free" : `$${course.price}`}
                   </span>
                   {!course.is_free && (
-                    <span className="text-custom-text/60">One-time payment</span>
+                    <span className="text-text-secondary">One-time payment</span>
                   )}
                 </>
               )}
@@ -220,10 +220,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 {lessons.map((lesson, index) => (
                   <div
                     key={lesson.id}
-                    className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-4"
+                    className="bg-surface border border-border-default rounded-lg p-4"
                   >
                     <div className="flex items-start gap-4">
-                      <span className="flex-shrink-0 w-8 h-8 bg-cyber-green text-dark-green-900 rounded-full flex items-center justify-center font-bold">
+                      <span className="flex-shrink-0 w-8 h-8 bg-cyber-green text-white rounded-full flex items-center justify-center font-bold">
                         {index + 1}
                       </span>
                       <div className="flex-1">
@@ -231,14 +231,14 @@ export default async function CoursePage({ params }: CoursePageProps) {
                           {lesson.title}
                         </h3>
                         {lesson.description && (
-                          <p className="text-custom-text/70 text-sm mb-2">{lesson.description}</p>
+                          <p className="text-text-secondary text-sm mb-2">{lesson.description}</p>
                         )}
                         {lesson.video_url && (
                           <a
                             href={lesson.video_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-cyber-green hover:text-cyber-green-light text-sm"
+                            className="text-cyber-green hover:text-primary-hover text-sm"
                           >
                             Watch Video →
                           </a>

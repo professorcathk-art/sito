@@ -12,7 +12,7 @@ export function FeaturedBlogPosts() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-1 sm:mb-2 tracking-tight">
               Latest Blog Posts
             </h2>
-            <p className="text-sm sm:text-base text-custom-text/80">
+            <p className="text-sm sm:text-base text-text-secondary">
               Insights and knowledge from our experts
             </p>
           </div>

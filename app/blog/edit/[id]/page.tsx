@@ -150,7 +150,7 @@ export default function EditBlogPostPage() {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-cyber-green"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
                   placeholder="Enter blog post title"
                   required
                 />
@@ -164,7 +164,7 @@ export default function EditBlogPostPage() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-cyber-green"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
                   placeholder="Brief description of your post"
                   rows={3}
                 />
@@ -190,7 +190,7 @@ export default function EditBlogPostPage() {
                 <select
                   value={formData.accessLevel}
                   onChange={(e) => setFormData({ ...formData, accessLevel: e.target.value as "public" | "subscriber" })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text focus:outline-none focus:border-cyber-green"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text focus:outline-none focus:border-primary"
                 >
                   <option value="public">Public</option>
                   <option value="subscriber">Subscriber-only</option>
@@ -202,14 +202,14 @@ export default function EditBlogPostPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? "Saving..." : "Update Blog Post"}
                 </button>
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="px-6 py-3 border border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                  className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-lg hover:bg-surface transition-colors"
                 >
                   Cancel
                 </button>

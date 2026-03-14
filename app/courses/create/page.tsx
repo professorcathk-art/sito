@@ -115,7 +115,7 @@ export default function CreateCoursePage() {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-cyber-green"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
                   placeholder="Enter course title"
                   required
                 />
@@ -129,7 +129,7 @@ export default function CreateCoursePage() {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-cyber-green"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
                   placeholder="Describe your course"
                   rows={5}
                   required
@@ -146,7 +146,7 @@ export default function CreateCoursePage() {
                   accept="image/*"
                   onChange={handleCoverImageUpload}
                   disabled={uploadingImage}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                 />
                 {formData.coverImageUrl && (
                   <img
@@ -166,10 +166,10 @@ export default function CreateCoursePage() {
                   type="text"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-cyber-green"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
                   placeholder="e.g., AI Courses, Business, Design, Marketing"
                 />
-                <p className="text-xs text-custom-text/60 mt-1">Categorize your course to help users discover it</p>
+                <p className="text-xs text-text-secondary mt-1">Categorize your course to help users discover it</p>
               </div>
 
               {/* Pricing */}
@@ -179,7 +179,7 @@ export default function CreateCoursePage() {
                     type="checkbox"
                     checked={formData.isFree}
                     onChange={(e) => setFormData({ ...formData, isFree: e.target.checked, price: e.target.checked ? "0" : formData.price })}
-                    className="w-4 h-4 text-cyber-green bg-dark-green-900 border-cyber-green/30 rounded focus:ring-cyber-green"
+                    className="w-4 h-4 text-cyber-green bg-dark-green-900 border-border-default rounded focus:ring-primary"
                   />
                   <span className="text-sm text-custom-text">Free Course</span>
                 </label>
@@ -194,7 +194,7 @@ export default function CreateCoursePage() {
                       min="0"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-cyber-green"
+                      className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text placeholder-custom-text/50 focus:outline-none focus:border-primary"
                       placeholder="0.00"
                       required={!formData.isFree}
                     />
@@ -207,14 +207,14 @@ export default function CreateCoursePage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? "Creating..." : "Create Course & Add Lessons"}
                 </button>
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="px-6 py-3 border border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                  className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-lg hover:bg-surface transition-colors"
                 >
                   Cancel
                 </button>

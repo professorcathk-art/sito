@@ -103,9 +103,9 @@ export function BlogPostsList({ expertId, limit = 10 }: BlogPostsListProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-48 bg-dark-green-800/50 rounded-lg mb-4"></div>
-            <div className="h-6 bg-dark-green-800/50 rounded w-3/4 mb-2"></div>
-            <div className="h-4 bg-dark-green-800/50 rounded w-1/2"></div>
+            <div className="h-48 bg-surface rounded-lg mb-4"></div>
+            <div className="h-6 bg-surface rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-surface rounded w-1/2"></div>
           </div>
         ))}
       </div>
@@ -115,7 +115,7 @@ export function BlogPostsList({ expertId, limit = 10 }: BlogPostsListProps) {
   if (posts.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-custom-text/70">No blog posts found.</p>
+        <p className="text-text-secondary">No blog posts found.</p>
       </div>
     );
   }
@@ -126,7 +126,7 @@ export function BlogPostsList({ expertId, limit = 10 }: BlogPostsListProps) {
         <Link
           key={post.id}
           href={`/blog/${post.id}`}
-          className="group bg-dark-green-800/30 border border-cyber-green/30 rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
+          className="group bg-surface border border-border-default rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
         >
           {post.featured_image_url && (
             <div className="relative w-full h-48 overflow-hidden">
@@ -142,9 +142,9 @@ export function BlogPostsList({ expertId, limit = 10 }: BlogPostsListProps) {
               {post.title}
             </h3>
             {post.description && (
-              <p className="text-custom-text/70 mb-4 line-clamp-3">{post.description}</p>
+              <p className="text-text-secondary mb-4 line-clamp-3">{post.description}</p>
             )}
-            <div className="flex items-center justify-between text-sm text-custom-text/60">
+            <div className="flex items-center justify-between text-sm text-text-secondary">
               <div className="flex items-center gap-2">
                 {post.profiles?.avatar_url ? (
                   <img

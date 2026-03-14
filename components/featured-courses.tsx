@@ -203,11 +203,11 @@ export function FeaturedCourses() {
                     <div className="w-full h-full flex items-center justify-center bg-surface p-4 overflow-y-auto">
                       {product.description ? (
                         <div 
-                          className="text-xs sm:text-sm text-custom-text/90 line-clamp-6 product-preview"
+                          className="text-xs sm:text-sm text-text-primary line-clamp-6 product-preview"
                           dangerouslySetInnerHTML={{ __html: product.description }}
                         />
                       ) : (
-                        <div className="text-center text-custom-text/60 text-sm">
+                        <div className="text-center text-text-secondary text-sm">
                           No description available
                         </div>
                       )}

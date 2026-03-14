@@ -371,7 +371,7 @@ export default function ManageAppointmentsPage() {
                   setSelectedProductId(products[0].id);
                 }
               }}
-              className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
             >
               Add Timeslots
             </button>
@@ -379,7 +379,7 @@ export default function ManageAppointmentsPage() {
 
           {/* Add Appointment Slots Form - Show at top */}
           {showForm && (
-            <form onSubmit={handleCreateSlots} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
+            <form onSubmit={handleCreateSlots} className="bg-surface border border-border-default rounded-lg p-6 mb-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-custom-text">Add Appointment Slots</h2>
                 <button
@@ -396,12 +396,12 @@ export default function ManageAppointmentsPage() {
                     });
                     setSelectedProductId(null);
                   }}
-                  className="text-custom-text/60 hover:text-custom-text"
+                  className="text-text-secondary hover:text-custom-text"
                 >
                   ✕
                 </button>
               </div>
-              <p className="text-custom-text/70 mb-6 text-sm">
+              <p className="text-text-secondary mb-6 text-sm">
                 Set a time range and interval, and the system will automatically create multiple booking slots for you.
               </p>
               
@@ -416,7 +416,7 @@ export default function ManageAppointmentsPage() {
                       setFormData({ ...formData, productId: e.target.value });
                       setSelectedProductId(e.target.value);
                     }}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                     required
                   >
                     <option value="">Select a product...</option>
@@ -438,7 +438,7 @@ export default function ManageAppointmentsPage() {
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
                     required
                   />
                 </div>
@@ -450,7 +450,7 @@ export default function ManageAppointmentsPage() {
                     type="time"
                     value={formData.startTime}
                     onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
                     required
                   />
                 </div>
@@ -462,7 +462,7 @@ export default function ManageAppointmentsPage() {
                     type="time"
                     value={formData.endTime}
                     onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:contrast-100"
                     required
                   />
                 </div>
@@ -473,7 +473,7 @@ export default function ManageAppointmentsPage() {
                   <select
                     value={formData.intervalMinutes}
                     onChange={(e) => setFormData({ ...formData, intervalMinutes: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                     required
                   >
                     <option value="15">15 minutes</option>
@@ -494,14 +494,14 @@ export default function ManageAppointmentsPage() {
                   min="0"
                   value={formData.ratePerHour}
                   onChange={(e) => setFormData({ ...formData, ratePerHour: e.target.value })}
-                  className="w-full max-w-xs px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full max-w-xs px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   required
                 />
               </div>
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                 >
                   Create Slots
                 </button>
@@ -519,7 +519,7 @@ export default function ManageAppointmentsPage() {
                     });
                     setSelectedProductId(null);
                   }}
-                  className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                  className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
                 >
                   Cancel
                 </button>
@@ -528,14 +528,14 @@ export default function ManageAppointmentsPage() {
           )}
 
           {/* Tabs */}
-          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 border-b border-cyber-green/30 mb-6 scrollbar-hide">
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 border-b border-border-default mb-6 scrollbar-hide">
             <div className="flex gap-3 sm:gap-6 min-w-max pb-1">
               <button
                 onClick={() => setActiveTab("my-bookings")}
                 className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
                   activeTab === "my-bookings"
                     ? "text-cyber-green border-b-2 border-cyber-green"
-                    : "text-custom-text/70 hover:text-custom-text"
+                    : "text-text-secondary hover:text-custom-text"
                 }`}
               >
                 My Bookings ({myBookings.length})
@@ -545,7 +545,7 @@ export default function ManageAppointmentsPage() {
                 className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
                   activeTab === "bookings"
                     ? "text-cyber-green border-b-2 border-cyber-green"
-                    : "text-custom-text/70 hover:text-custom-text"
+                    : "text-text-secondary hover:text-custom-text"
                 }`}
               >
                 Booked with Me ({bookedAppointments.length})
@@ -555,7 +555,7 @@ export default function ManageAppointmentsPage() {
                 className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
                   activeTab === "slots"
                     ? "text-cyber-green border-b-2 border-cyber-green"
-                    : "text-custom-text/70 hover:text-custom-text"
+                    : "text-text-secondary hover:text-custom-text"
                 }`}
               >
                 Available Timeslots ({slots.filter(s => s.is_available).length})
@@ -570,13 +570,13 @@ export default function ManageAppointmentsPage() {
               {loadingMyBookings ? (
                 <div className="animate-pulse space-y-4">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-20 bg-dark-green-800/50 rounded-lg"></div>
+                    <div key={i} className="h-20 bg-surface rounded-lg"></div>
                   ))}
                 </div>
               ) : myBookings.length === 0 ? (
-                <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
-                  <p className="text-custom-text/80 mb-4">You haven&apos;t booked any appointments yet.</p>
-                  <p className="text-custom-text/60 text-sm">
+                <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+                  <p className="text-text-secondary mb-4">You haven&apos;t booked any appointments yet.</p>
+                  <p className="text-text-secondary text-sm">
                     Browse experts and book appointments to see them here.
                   </p>
                 </div>
@@ -585,17 +585,17 @@ export default function ManageAppointmentsPage() {
                   {myBookings.map((appointment) => (
                     <div
                       key={appointment.id}
-                      className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6"
+                      className="bg-surface border border-border-default rounded-lg p-6"
                     >
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-lg font-semibold text-custom-text mb-2">
                             {formatDateTime(appointment.start_time)} - {formatDateTime(appointment.end_time)}
                           </p>
-                          <p className="text-custom-text/70 mb-1">
+                          <p className="text-text-secondary mb-1">
                             Expert: {appointment.profiles?.name || "Unknown Expert"} ({appointment.profiles?.email || "N/A"})
                           </p>
-                          <p className="text-custom-text/70">
+                          <p className="text-text-secondary">
                             ${appointment.rate_per_hour}/hour • Total: ${appointment.total_amount.toFixed(2)} • Status: {appointment.status}
                           </p>
                         </div>
@@ -614,13 +614,13 @@ export default function ManageAppointmentsPage() {
             {loadingBookings ? (
               <div className="animate-pulse space-y-4">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-20 bg-dark-green-800/50 rounded-lg"></div>
+                  <div key={i} className="h-20 bg-surface rounded-lg"></div>
                 ))}
               </div>
             ) : bookedAppointments.length === 0 ? (
-              <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
-                <p className="text-custom-text/80 mb-4">No appointments booked yet.</p>
-                <p className="text-custom-text/60 text-sm">
+              <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+                <p className="text-text-secondary mb-4">No appointments booked yet.</p>
+                <p className="text-text-secondary text-sm">
                   Users will see your available slots and book them here.
                 </p>
               </div>
@@ -629,17 +629,17 @@ export default function ManageAppointmentsPage() {
                 {bookedAppointments.map((appointment) => (
                   <div
                     key={appointment.id}
-                    className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6"
+                    className="bg-surface border border-border-default rounded-lg p-6"
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-lg font-semibold text-custom-text mb-2">
                           {formatDateTime(appointment.start_time)} - {formatDateTime(appointment.end_time)}
                         </p>
-                        <p className="text-custom-text/70 mb-1">
+                        <p className="text-text-secondary mb-1">
                           Booked by: {appointment.profiles?.name || "N/A"} ({appointment.profiles?.email || "N/A"})
                         </p>
-                        <p className="text-custom-text/70">
+                        <p className="text-text-secondary">
                           ${appointment.rate_per_hour}/hour • Total: ${appointment.total_amount.toFixed(2)} • Status: {appointment.status}
                         </p>
                       </div>
@@ -658,13 +658,13 @@ export default function ManageAppointmentsPage() {
               {loading ? (
                 <div className="animate-pulse space-y-4">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-20 bg-dark-green-800/50 rounded-lg"></div>
+                    <div key={i} className="h-20 bg-surface rounded-lg"></div>
                   ))}
                 </div>
               ) : slots.length === 0 ? (
-                <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
-                  <p className="text-custom-text/80 mb-4">No appointment slots created yet.</p>
-                  <p className="text-custom-text/60 text-sm mb-4">
+                <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+                  <p className="text-text-secondary mb-4">No appointment slots created yet.</p>
+                  <p className="text-text-secondary text-sm mb-4">
                     Create time slots to allow users to book 1-on-1 sessions with you.
                   </p>
                   <button
@@ -672,7 +672,7 @@ export default function ManageAppointmentsPage() {
                       fetchSlots();
                       fetchProducts();
                     }}
-                    className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                    className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm"
                   >
                     Refresh
                   </button>
@@ -697,7 +697,7 @@ export default function ManageAppointmentsPage() {
                       if (productSlots.length === 0) return null;
                       
                       return (
-                        <div key={product.id} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                        <div key={product.id} className="bg-surface border border-border-default rounded-lg p-6">
                           <h3 className="text-xl font-bold text-custom-text mb-4">{product.name}</h3>
                           <CalendarView
                             slots={productSlots}
@@ -759,7 +759,7 @@ export default function ManageAppointmentsPage() {
                       return Object.entries(groupedByProduct).map(([productId, productSlots]) => {
                         const productName = productSlots[0]?.products?.name || "Unknown Product";
                         return (
-                          <div key={productId} className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                          <div key={productId} className="bg-surface border border-border-default rounded-lg p-6">
                             <h3 className="text-xl font-bold text-custom-text mb-4">{productName}</h3>
                             <CalendarView
                               slots={productSlots}
@@ -803,7 +803,7 @@ export default function ManageAppointmentsPage() {
                     
                     {/* Show unlinked slots */}
                     {slots.filter(s => !s.product_id).length > 0 && (
-                      <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                      <div className="bg-surface border border-border-default rounded-lg p-6">
                         <h3 className="text-xl font-bold text-custom-text mb-4">Unlinked Timeslots</h3>
                         <CalendarView
                           slots={slots.filter(s => !s.product_id)}
@@ -883,7 +883,7 @@ export default function ManageAppointmentsPage() {
                     const dateStr = `${slotDate.getFullYear()}-${String(slotDate.getMonth() + 1).padStart(2, '0')}-${String(slotDate.getDate()).padStart(2, '0')}`;
                     return dateStr === selectedDate && (selectedProductId ? s.product_id === selectedProductId : true);
                   }).length > 0 && (
-                    <div className="mt-6 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                    <div className="mt-6 bg-surface border border-border-default rounded-lg p-6">
                       <h3 className="text-xl font-bold text-custom-text mb-4">
                         Timeslots for {(() => {
                           const [year, month, day] = selectedDate.split('-').map(Number);
@@ -895,7 +895,7 @@ export default function ManageAppointmentsPage() {
                           });
                         })()}
                         {selectedProductId && products.find(p => p.id === selectedProductId) && (
-                          <span className="text-lg text-custom-text/70 ml-2">
+                          <span className="text-lg text-text-secondary ml-2">
                             - {products.find(p => p.id === selectedProductId)?.name}
                           </span>
                         )}
@@ -921,13 +921,13 @@ export default function ManageAppointmentsPage() {
                             return (
                               <div
                                 key={slot.id}
-                                className="flex items-center justify-between p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg"
+                                className="flex items-center justify-between p-4 bg-custom-bg border border-border-default rounded-lg"
                               >
                                 <div>
                                   <p className="text-custom-text font-semibold">
                                     {startTime} - {endTime}
                                   </p>
-                                  <p className="text-sm text-custom-text/70">
+                                  <p className="text-sm text-text-secondary">
                                     ${slot.rate_per_hour}/hour • {duration} min •{" "}
                                     {slot.is_available ? (
                                       <span className="text-green-300">Available</span>
@@ -935,7 +935,7 @@ export default function ManageAppointmentsPage() {
                                       <span className="text-red-300">Unavailable</span>
                                     )}
                                     {slot.products && (
-                                      <span className="ml-2 text-xs text-custom-text/60">
+                                      <span className="ml-2 text-xs text-text-secondary">
                                         ({slot.products.name})
                                       </span>
                                     )}
@@ -953,7 +953,7 @@ export default function ManageAppointmentsPage() {
                                         .eq("expert_id", user?.id)
                                         .then(() => fetchSlots());
                                     }}
-                                    className="w-5 h-5 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                                    className="w-5 h-5 text-cyber-green focus:ring-primary border-gray-300 rounded"
                                   />
                                   <span className="text-sm text-custom-text">Available</span>
                                 </label>

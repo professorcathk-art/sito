@@ -72,13 +72,13 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
   return (
     <div className="space-y-6">
       {/* Calendar */}
-      <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+      <div className="bg-surface border border-border-default rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-custom-text">Calendar</h3>
           <div className="flex gap-2">
             <button
               onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}
-              className="px-3 py-1 bg-dark-green-900/50 border border-cyber-green/30 rounded text-custom-text hover:bg-dark-green-800/50"
+              className="px-3 py-1 bg-custom-bg border border-border-default rounded text-custom-text hover:bg-surface"
             >
               ←
             </button>
@@ -87,7 +87,7 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
             </span>
             <button
               onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}
-              className="px-3 py-1 bg-dark-green-900/50 border border-cyber-green/30 rounded text-custom-text hover:bg-dark-green-800/50"
+              className="px-3 py-1 bg-custom-bg border border-border-default rounded text-custom-text hover:bg-surface"
             >
               →
             </button>
@@ -96,7 +96,7 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
 
         <div className="grid grid-cols-7 gap-2">
           {dayNames.map((day) => (
-            <div key={day} className="text-center text-sm font-semibold text-custom-text/70 py-2">
+            <div key={day} className="text-center text-sm font-semibold text-text-secondary py-2">
               {day}
             </div>
           ))}
@@ -122,8 +122,8 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
                   isSelected
                     ? "bg-cyber-green/30 border-cyber-green"
                     : hasSlots
-                    ? "bg-dark-green-900/50 border-cyber-green/30 hover:border-cyber-green/50"
-                    : "bg-dark-green-900/30 border-cyber-green/20"
+                    ? "bg-custom-bg border-border-default hover:border-border-default"
+                    : "bg-surface border-border-default"
                 } ${isPast ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} ${
                   isToday ? "ring-2 ring-cyber-green/50" : ""
                 }`}
@@ -146,7 +146,7 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
 
       {/* Selected Date Slots - Only show if hideSlotsDisplay is false */}
       {!hideSlotsDisplay && selectedDate && (
-        <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+        <div className="bg-surface border border-border-default rounded-lg p-6">
           <h3 className="text-xl font-bold text-custom-text mb-4">
             Timeslots for {(() => {
               // Parse YYYY-MM-DD format to local date
@@ -174,13 +174,13 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
                 return (
                   <div
                     key={slot.id}
-                    className="flex items-center justify-between p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg"
+                    className="flex items-center justify-between p-4 bg-custom-bg border border-border-default rounded-lg"
                   >
                     <div>
                       <p className="text-custom-text font-semibold">
                         {startTime} - {endTime}
                       </p>
-                      <p className="text-sm text-custom-text/70">
+                      <p className="text-sm text-text-secondary">
                         ${slot.rate_per_hour}/hour •{" "}
                         {slot.is_available ? (
                           <span className="text-green-300">Available</span>
@@ -195,7 +195,7 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
                           type="checkbox"
                           checked={slot.is_available}
                           onChange={(e) => onSlotToggle(slot.id, e.target.checked)}
-                          className="w-5 h-5 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                          className="w-5 h-5 text-cyber-green focus:ring-primary border-gray-300 rounded"
                         />
                         <span className="text-sm text-custom-text">Available</span>
                       </label>
@@ -205,7 +205,7 @@ export function CalendarView({ slots, onDateSelect, onSlotToggle, showToggle = f
               })}
             </div>
           ) : (
-            <p className="text-custom-text/70 text-center py-4">No timeslots available for this date.</p>
+            <p className="text-text-secondary text-center py-4">No timeslots available for this date.</p>
           )}
         </div>
       )}

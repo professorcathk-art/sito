@@ -266,23 +266,23 @@ export function AdminRefundManagement() {
 
   if (loading) {
     return (
-      <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+      <div className="bg-surface border border-border-default rounded-lg p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-dark-green-900/50 rounded w-1/4 mb-4"></div>
-          <div className="h-4 bg-dark-green-900/50 rounded w-3/4 mb-2"></div>
-          <div className="h-4 bg-dark-green-900/50 rounded w-1/2"></div>
+          <div className="h-6 bg-custom-bg rounded w-1/4 mb-4"></div>
+          <div className="h-4 bg-custom-bg rounded w-3/4 mb-2"></div>
+          <div className="h-4 bg-custom-bg rounded w-1/2"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+    <div className="bg-surface border border-border-default rounded-lg p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
         <h2 className="text-2xl font-bold text-custom-text">Refund Management</h2>
         <button
           onClick={fetchRefundableItems}
-          className="px-4 py-2 bg-cyber-green/20 border border-cyber-green/50 text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors text-sm font-medium"
+          className="px-4 py-2 bg-primary/20 border border-border-default text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors text-sm font-medium"
         >
           Refresh
         </button>
@@ -307,7 +307,7 @@ export function AdminRefundManagement() {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as any)}
-            className="px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text focus:border-cyber-green focus:outline-none"
+            className="px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text focus:border-primary focus:outline-none"
           >
             <option value="all">All</option>
             <option value="course">Courses</option>
@@ -319,7 +319,7 @@ export function AdminRefundManagement() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text focus:border-cyber-green focus:outline-none"
+            className="px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text focus:border-primary focus:outline-none"
           >
             <option value="all">All</option>
             <option value="none">Not Refunded</option>
@@ -336,7 +336,7 @@ export function AdminRefundManagement() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-cyber-green/30">
+                <tr className="border-b border-border-default">
                   <th className="text-left p-3 text-sm font-semibold text-custom-text">Course</th>
                   <th className="text-left p-3 text-sm font-semibold text-custom-text">Student</th>
                   <th className="text-left p-3 text-sm font-semibold text-custom-text">Expert</th>
@@ -364,7 +364,7 @@ export function AdminRefundManagement() {
                     <td className="p-3 text-sm">
                       {getRefundStatusBadge(enrollment.refund_status)}
                     </td>
-                    <td className="p-3 text-sm text-custom-text/70">
+                    <td className="p-3 text-sm text-text-secondary">
                       {new Date(enrollment.enrolled_at).toLocaleDateString()}
                     </td>
                     <td className="p-3">
@@ -378,7 +378,7 @@ export function AdminRefundManagement() {
                         </button>
                       )}
                       {enrollment.refund_status === "refunded" && enrollment.refund_amount && (
-                        <span className="text-xs text-custom-text/60">
+                        <span className="text-xs text-text-secondary">
                           Refunded: ${enrollment.refund_amount.toFixed(2)}
                         </span>
                       )}
@@ -398,7 +398,7 @@ export function AdminRefundManagement() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-cyber-green/30">
+                <tr className="border-b border-border-default">
                   <th className="text-left p-3 text-sm font-semibold text-custom-text">Customer</th>
                   <th className="text-left p-3 text-sm font-semibold text-custom-text">Expert</th>
                   <th className="text-left p-3 text-sm font-semibold text-custom-text">Date/Time</th>
@@ -426,12 +426,12 @@ export function AdminRefundManagement() {
                     <td className="p-3 text-sm">
                       <div className="flex flex-col gap-1">
                         {getRefundStatusBadge(appointment.refund_status)}
-                        <span className="text-xs text-custom-text/60">
+                        <span className="text-xs text-text-secondary">
                           {appointment.status}
                         </span>
                       </div>
                     </td>
-                    <td className="p-3 text-sm text-custom-text/70">
+                    <td className="p-3 text-sm text-text-secondary">
                       {new Date(appointment.created_at).toLocaleDateString()}
                     </td>
                     <td className="p-3">
@@ -445,7 +445,7 @@ export function AdminRefundManagement() {
                         </button>
                       )}
                       {appointment.refund_status === "refunded" && appointment.refund_amount && (
-                        <span className="text-xs text-custom-text/60">
+                        <span className="text-xs text-text-secondary">
                           Refunded: ${appointment.refund_amount.toFixed(2)}
                         </span>
                       )}
@@ -460,7 +460,7 @@ export function AdminRefundManagement() {
 
       {enrollments.length === 0 && appointments.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-custom-text/60">No refundable items found.</p>
+          <p className="text-text-secondary">No refundable items found.</p>
         </div>
       )}
 

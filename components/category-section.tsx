@@ -55,7 +55,7 @@ export function CategorySection() {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-cyber-green mb-2 sm:mb-3 text-glow animate-pulse-glow tracking-tight">
             Explore by Category
           </h2>
-          <p className="text-base sm:text-lg text-custom-text/80 max-w-2xl mx-auto px-4">
+          <p className="text-base sm:text-lg text-text-secondary max-w-2xl mx-auto px-4">
             Find experts across various industries and specialties
           </p>
         </div>
@@ -64,14 +64,14 @@ export function CategorySection() {
             <Link
               key={category.name}
               href={`/directory?category=${encodeURIComponent(category.name)}`}
-              className="group relative overflow-hidden rounded-xl bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-5 sm:p-6 hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-500 transform hover:-translate-y-1 sm:hover:-translate-y-2 hover:scale-[1.01] sm:hover:scale-[1.02] animate-fade-in-up"
+              className="group relative overflow-hidden rounded-xl bg-surface backdrop-blur-sm border border-border-default p-5 sm:p-6 hover:bg-surface hover:border-cyber-green hover:shadow-lg shadow-black/20 transition-all duration-500 transform hover:-translate-y-1 sm:hover:-translate-y-2 hover:scale-[1.01] sm:hover:scale-[1.02] animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Cyber glow effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyber-green/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               
               {/* Border glow */}
-              <div className="absolute inset-0 rounded-xl border-2 border-cyber-green/0 group-hover:border-cyber-green/50 transition-all duration-500"></div>
+              <div className="absolute inset-0 rounded-xl border-2 border-cyber-green/0 group-hover:border-border-default transition-all duration-500"></div>
               
               <div className="relative z-10">
                 <div className="text-3xl sm:text-4xl mb-2 sm:mb-3 transform group-hover:scale-110 transition-transform duration-300 animate-float" style={{ animationDelay: `${index * 0.2}s` }}>
@@ -80,7 +80,7 @@ export function CategorySection() {
                 <h3 className="text-lg sm:text-xl font-bold text-cyber-green transition-colors duration-300 mb-1 sm:mb-2 group-hover:text-glow">
                   {category.name}
                 </h3>
-                <p className="text-custom-text/70 text-xs sm:text-sm transition-colors duration-300 leading-relaxed">
+                <p className="text-text-secondary text-xs sm:text-sm transition-colors duration-300 leading-relaxed">
                   {category.description}
                 </p>
               </div>

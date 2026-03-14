@@ -115,7 +115,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
               </Link>
               {loading ? (
-                <div className="text-custom-text/80 animate-pulse text-sm lg:text-base">Loading...</div>
+                <div className="text-text-secondary animate-pulse text-sm lg:text-base">Loading...</div>
               ) : user ? (
                 <>
                   <Link
@@ -157,7 +157,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
               <div className="md:hidden relative z-50">
                 <button
                   onClick={() => setDashboardMenuOpen(!dashboardMenuOpen)}
-                  className="text-custom-text hover:text-cyber-green transition-colors p-2 -mr-2 bg-dark-green-800/50 rounded-lg border border-cyber-green/30"
+                  className="text-custom-text hover:text-cyber-green transition-colors p-2 -mr-2 bg-surface rounded-lg border border-border-default"
                   aria-label="Toggle navigation menu"
                 >
                   <svg

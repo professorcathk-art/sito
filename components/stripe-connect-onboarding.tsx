@@ -407,25 +407,25 @@ export function StripeConnectOnboarding() {
 
   if (!user) {
     return (
-      <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
-        <p className="text-custom-text/80">Please sign in to set up payments.</p>
+      <div className="bg-surface border border-border-default rounded-lg p-6">
+        <p className="text-text-secondary">Please sign in to set up payments.</p>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+      <div className="bg-surface border border-border-default rounded-lg p-6">
         <div className="animate-pulse">
-          <div className="h-4 bg-dark-green-900/50 rounded w-3/4 mb-4"></div>
-          <div className="h-4 bg-dark-green-900/50 rounded w-1/2"></div>
+          <div className="h-4 bg-custom-bg rounded w-3/4 mb-4"></div>
+          <div className="h-4 bg-custom-bg rounded w-1/2"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+    <div className="bg-surface border border-border-default rounded-lg p-6">
       <h2 className="text-2xl font-bold text-custom-text mb-4">
         Stripe Connect Setup
       </h2>
@@ -464,7 +464,7 @@ export function StripeConnectOnboarding() {
               )}
             </div>
           )}
-          <p className="text-custom-text/80 mb-4">
+          <p className="text-text-secondary mb-4">
             Connect your Stripe account to start receiving payments. You will be able to
             accept payments from customers and receive payouts directly to your bank account.
           </p>
@@ -474,14 +474,14 @@ export function StripeConnectOnboarding() {
             <label className="block text-sm font-medium text-custom-text mb-2">
               Select Your Country <span className="text-red-400">*</span>
             </label>
-            <p className="text-xs text-custom-text/60 mb-2">
+            <p className="text-xs text-text-secondary mb-2">
               This determines which Stripe region your account will be created in. 
               Make sure it matches your business location.
             </p>
             <select
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
-              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text focus:border-cyber-green focus:outline-none"
+              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text focus:border-primary focus:outline-none"
               disabled={creating || true}
               required
             >
@@ -495,7 +495,7 @@ export function StripeConnectOnboarding() {
                 ))
               )}
             </select>
-            <p className="text-xs text-custom-text/60 mt-2">
+            <p className="text-xs text-text-secondary mt-2">
               Currently, built-in payment processing is only available for Hong Kong users.
             </p>
           </div>
@@ -513,7 +513,7 @@ export function StripeConnectOnboarding() {
                 <button
                   onClick={handleCreateAccount}
                   disabled={creating || !selectedCountry || loading}
-                  className="flex-1 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {creating ? "Creating Account..." : "Create New Account"}
                 </button>
@@ -522,7 +522,7 @@ export function StripeConnectOnboarding() {
               <button
                 onClick={handleCreateAccount}
                 disabled={creating || !selectedCountry}
-                className="w-full px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {creating ? "Creating Account..." : "Create Stripe Account"}
               </button>
@@ -530,8 +530,8 @@ export function StripeConnectOnboarding() {
           </div>
           
           {(accountStatus?.accountId || hasAccountIdInDb) && (
-            <div className="p-3 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg">
-              <p className="text-xs text-custom-text/70 text-center">
+            <div className="p-3 bg-custom-bg border border-border-default rounded-lg">
+              <p className="text-xs text-text-secondary text-center">
                 <strong>Reset Account:</strong> This will clear the invalid account ID from your database. 
                 After resetting, you can create a new Stripe account for live mode.
               </p>
@@ -546,7 +546,7 @@ export function StripeConnectOnboarding() {
           {/* Account Status */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-custom-text/80">Account Status:</span>
+              <span className="text-text-secondary">Account Status:</span>
               <span
                 className={`font-semibold ${
                   accountStatus.readyToReceivePayments
@@ -565,7 +565,7 @@ export function StripeConnectOnboarding() {
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-custom-text/80">Payment Ready:</span>
+              <span className="text-text-secondary">Payment Ready:</span>
               <span
                 className={`font-semibold ${
                   accountStatus.readyToReceivePayments
@@ -604,7 +604,7 @@ export function StripeConnectOnboarding() {
               <button
                 onClick={handleStartOnboarding}
                 disabled={onboarding}
-                className="w-full px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+                className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
               >
                 {onboarding
                   ? "Redirecting to Stripe..."
@@ -612,7 +612,7 @@ export function StripeConnectOnboarding() {
                   ? "Complete Onboarding"
                   : "Onboard to Collect Payments"}
               </button>
-              <p className="text-custom-text/60 text-sm text-center">
+              <p className="text-text-secondary text-sm text-center">
                 Click the button above to complete your Stripe account setup. 
                 You will need to provide business information, bank details, and identity verification.
               </p>
@@ -632,13 +632,13 @@ export function StripeConnectOnboarding() {
               </div>
 
               {/* Total Earnings Display */}
-              <div className="p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg">
+              <div className="p-4 bg-custom-bg border border-border-default rounded-lg">
                 <h3 className="text-lg font-bold text-custom-text mb-3">
                   Total Earnings
                 </h3>
                 {loadingEarnings ? (
                   <div className="animate-pulse">
-                    <div className="h-8 bg-dark-green-800/50 rounded w-1/2"></div>
+                    <div className="h-8 bg-surface rounded w-1/2"></div>
                   </div>
                 ) : earnings ? (
                   <div className="space-y-2">
@@ -647,7 +647,7 @@ export function StripeConnectOnboarding() {
                         {earnings.currency} {earnings.totalEarnings.toFixed(2)}
                       </span>
                     </div>
-                    <div className="text-sm text-custom-text/70 space-y-1">
+                    <div className="text-sm text-text-secondary space-y-1">
                       <div className="flex justify-between">
                         <span>Available:</span>
                         <span className="text-custom-text">
@@ -663,7 +663,7 @@ export function StripeConnectOnboarding() {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-custom-text/60 mt-2">
+                    <p className="text-xs text-text-secondary mt-2">
                       Funds are automatically transferred to your connected bank account according to your payout schedule.
                     </p>
                     {accountStatus?.accountId && (
@@ -671,14 +671,14 @@ export function StripeConnectOnboarding() {
                         href={`https://dashboard.stripe.com/connect/accounts/overview/${accountStatus.accountId}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-block mt-3 px-4 py-2 bg-cyber-green/20 border border-cyber-green/50 text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors text-sm font-medium"
+                        className="inline-block mt-3 px-4 py-2 bg-primary/20 border border-border-default text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors text-sm font-medium"
                       >
                         View Stripe Dashboard →
                       </a>
                     )}
                   </div>
                 ) : (
-                  <p className="text-custom-text/60 text-sm">
+                  <p className="text-text-secondary text-sm">
                     No earnings data available yet.
                   </p>
                 )}
@@ -691,7 +691,7 @@ export function StripeConnectOnboarding() {
             <button
               onClick={checkAccountStatus}
               disabled={loading}
-              className="flex-1 px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors disabled:opacity-50 text-sm"
+              className="flex-1 px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors disabled:opacity-50 text-sm"
             >
               Refresh Status
             </button>
@@ -704,7 +704,7 @@ export function StripeConnectOnboarding() {
             </button>
           </div>
           
-          <p className="text-xs text-custom-text/60 text-center mt-2">
+          <p className="text-xs text-text-secondary text-center mt-2">
             Reset Account: Clear your current Stripe account to create a new one (useful when switching from test to live mode)
           </p>
         </div>

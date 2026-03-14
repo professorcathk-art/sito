@@ -200,10 +200,10 @@ export default function ProfilePage() {
         <DashboardLayout>
           <div className="px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
-              <div className="h-32 bg-dark-green-800/30 rounded-lg mb-8"></div>
+              <div className="h-32 bg-surface rounded-lg mb-8"></div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-20 bg-dark-green-800/30 rounded-lg"></div>
+                  <div key={i} className="h-20 bg-surface rounded-lg"></div>
                 ))}
               </div>
             </div>
@@ -218,11 +218,11 @@ export default function ProfilePage() {
       <ProtectedRoute>
         <DashboardLayout>
           <div className="px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center py-12 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg">
-              <p className="text-custom-text/80 text-lg mb-4">You haven&apos;t set up your profile yet.</p>
+            <div className="text-center py-12 bg-surface border border-border-default rounded-lg">
+              <p className="text-text-secondary text-lg mb-4">You haven&apos;t set up your profile yet.</p>
               <button
                 onClick={() => router.push("/profile/setup")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 <span>⚙️</span>
                 <span>Set Up Your Profile</span>
@@ -243,19 +243,19 @@ export default function ProfilePage() {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6 mb-6">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text">Profile</h1>
               {/* Prominent Setup CTA */}
-              <div className="bg-gradient-to-r from-cyber-green/20 to-cyber-green/10 border-2 border-cyber-green/50 rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all">
+              <div className="bg-gradient-to-r from-cyber-green/20 to-cyber-green/10 border-2 border-border-default rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                   <div className="flex-1">
                     <p className="text-base sm:text-lg font-semibold text-custom-text mb-1">
                       🚀 Start sharing your knowledge and expertise Now
                     </p>
-                    <p className="text-sm text-custom-text/80">
+                    <p className="text-sm text-text-secondary">
                       Complete your expert profile to unlock all features and connect with learners worldwide
                     </p>
                   </div>
                   <button
                     onClick={() => router.push("/profile/setup")}
-                    className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-cyber-green text-dark-green-900 font-bold rounded-lg hover:bg-cyber-green-light transition-all transform hover:scale-105 shadow-[0_0_25px_rgba(0,255,136,0.5)] text-base sm:text-lg whitespace-nowrap animate-pulse-glow"
+                    className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-cyber-green text-white font-bold rounded-lg hover:bg-primary-hover transition-all transform hover:scale-105 shadow-[0_0_25px_rgba(0,255,136,0.5)] text-base sm:text-lg whitespace-nowrap animate-pulse-glow"
                   >
                     <span className="text-xl">⚙️</span>
                     <span>Set up Experts Profile</span>
@@ -267,7 +267,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Profile Header */}
-          <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 mb-8">
+          <div className="bg-surface border border-border-default rounded-lg p-8 mb-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
               {/* Avatar */}
               <div className="flex-shrink-0">
@@ -277,10 +277,10 @@ export default function ProfilePage() {
                     alt={profile.name}
                     width={120}
                     height={120}
-                    className="rounded-full border-4 border-cyber-green/30"
+                    className="rounded-full border-4 border-border-default"
                   />
                 ) : (
-                  <div className="w-30 h-30 rounded-full bg-dark-green-700 border-4 border-cyber-green/30 flex items-center justify-center">
+                  <div className="w-30 h-30 rounded-full bg-dark-green-700 border-4 border-border-default flex items-center justify-center">
                     <span className="text-4xl text-cyber-green font-bold">
                       {profile.name.charAt(0).toUpperCase()}
                     </span>
@@ -299,11 +299,11 @@ export default function ProfilePage() {
                   )}
                 </div>
                 {profile.title && (
-                  <p className="text-xl text-custom-text/80 mb-2">{profile.title}</p>
+                  <p className="text-xl text-text-secondary mb-2">{profile.title}</p>
                 )}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-custom-text/70 mb-3">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary mb-3">
                   {profile.category_name && (
-                    <span className="text-xs text-cyber-green bg-dark-green-900/50 px-2 py-1 rounded-full border border-cyber-green/30">
+                    <span className="text-xs text-cyber-green bg-custom-bg px-2 py-1 rounded-full border border-border-default">
                       {profile.category_name}
                     </span>
                   )}
@@ -315,7 +315,7 @@ export default function ProfilePage() {
                   )}
                 </div>
                 {profile.bio && (
-                  <p className="text-custom-text/90 mb-4">{profile.bio}</p>
+                  <p className="text-text-primary mb-4">{profile.bio}</p>
                 )}
                 {(profile.website || profile.linkedin || profile.instagram_url) && (
                   <div className="flex flex-wrap gap-4">
@@ -324,7 +324,7 @@ export default function ProfilePage() {
                         href={profile.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-cyber-green hover:text-cyber-green-light underline text-sm"
+                        className="text-cyber-green hover:text-primary-hover underline text-sm"
                       >
                         Website
                       </a>
@@ -334,7 +334,7 @@ export default function ProfilePage() {
                         href={profile.linkedin}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-cyber-green hover:text-cyber-green-light underline text-sm"
+                        className="text-cyber-green hover:text-primary-hover underline text-sm"
                       >
                         LinkedIn
                       </a>
@@ -344,7 +344,7 @@ export default function ProfilePage() {
                         href={profile.instagram_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-cyber-green hover:text-cyber-green-light underline text-sm"
+                        className="text-cyber-green hover:text-primary-hover underline text-sm"
                       >
                         Instagram
                       </a>
@@ -357,33 +357,33 @@ export default function ProfilePage() {
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 text-center">
+            <div className="bg-surface border border-border-default rounded-lg p-6 text-center">
               <div className="text-3xl font-bold text-cyber-green mb-1">{stats.blogPosts}</div>
-              <div className="text-sm text-custom-text/70">Blog Posts</div>
+              <div className="text-sm text-text-secondary">Blog Posts</div>
             </div>
-            <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 text-center">
+            <div className="bg-surface border border-border-default rounded-lg p-6 text-center">
               <div className="text-3xl font-bold text-cyber-green mb-1">{stats.courses}</div>
-              <div className="text-sm text-custom-text/70">Courses</div>
+              <div className="text-sm text-text-secondary">Courses</div>
             </div>
-            <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 text-center">
+            <div className="bg-surface border border-border-default rounded-lg p-6 text-center">
               <div className="text-3xl font-bold text-cyber-green mb-1">{stats.subscribers}</div>
-              <div className="text-sm text-custom-text/70">Subscribers</div>
+              <div className="text-sm text-text-secondary">Subscribers</div>
             </div>
-            <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 text-center">
+            <div className="bg-surface border border-border-default rounded-lg p-6 text-center">
               <div className="text-3xl font-bold text-cyber-green mb-1">{stats.products}</div>
-              <div className="text-sm text-custom-text/70">Products</div>
+              <div className="text-sm text-text-secondary">Products</div>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 mb-6 border-b border-cyber-green/30 scrollbar-hide">
+          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 mb-6 border-b border-border-default scrollbar-hide">
             <div className="flex gap-3 sm:gap-6 min-w-max pb-1">
               <button
                 onClick={() => setActiveTab("profile")}
                 className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
                   activeTab === "profile"
                     ? "text-cyber-green border-b-2 border-cyber-green"
-                    : "text-custom-text/70 hover:text-custom-text"
+                    : "text-text-secondary hover:text-custom-text"
                 }`}
               >
                 Profile
@@ -393,7 +393,7 @@ export default function ProfilePage() {
                 className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base flex items-center gap-1.5 sm:gap-2 ${
                   activeTab === "messages"
                     ? "text-cyber-green border-b-2 border-cyber-green"
-                    : "text-custom-text/70 hover:text-custom-text"
+                    : "text-text-secondary hover:text-custom-text"
                 }`}
               >
                 <span>Recent Messages</span>
@@ -408,7 +408,7 @@ export default function ProfilePage() {
                 className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
                   activeTab === "connections"
                     ? "text-cyber-green border-b-2 border-cyber-green"
-                    : "text-custom-text/70 hover:text-custom-text"
+                    : "text-text-secondary hover:text-custom-text"
                 }`}
               >
                 Connections
@@ -420,36 +420,36 @@ export default function ProfilePage() {
           {activeTab === "profile" && (
             <>
               {/* Quick Links */}
-              <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
+              <div className="bg-surface border border-border-default rounded-lg p-6 mb-8">
                 <h3 className="text-xl font-bold text-custom-text mb-4">Quick Actions</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Link
                     href="/dashboard/blog"
-                    className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+                    className="p-4 border border-border-default rounded-lg hover:border-cyber-green hover:bg-surface transition-all"
                   >
                     <div className="font-semibold text-custom-text mb-1">Manage Blog Posts</div>
-                    <div className="text-sm text-custom-text/70">View and edit your blog posts</div>
+                    <div className="text-sm text-text-secondary">View and edit your blog posts</div>
                   </Link>
                   <Link
                     href="/courses/manage"
-                    className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+                    className="p-4 border border-border-default rounded-lg hover:border-cyber-green hover:bg-surface transition-all"
                   >
                     <div className="font-semibold text-custom-text mb-1">Manage Courses</div>
-                    <div className="text-sm text-custom-text/70">View and edit your courses</div>
+                    <div className="text-sm text-text-secondary">View and edit your courses</div>
                   </Link>
                   <Link
                     href="/products"
-                    className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+                    className="p-4 border border-border-default rounded-lg hover:border-cyber-green hover:bg-surface transition-all"
                   >
                     <div className="font-semibold text-custom-text mb-1">Manage Products</div>
-                    <div className="text-sm text-custom-text/70">View and edit your products</div>
+                    <div className="text-sm text-text-secondary">View and edit your products</div>
                   </Link>
                   <Link
                     href={`/expert/${user?.id}`}
-                    className="p-4 border border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/30 transition-all"
+                    className="p-4 border border-border-default rounded-lg hover:border-cyber-green hover:bg-surface transition-all"
                   >
                     <div className="font-semibold text-custom-text mb-1">View Public Profile</div>
-                    <div className="text-sm text-custom-text/70">See how others see your profile</div>
+                    <div className="text-sm text-text-secondary">See how others see your profile</div>
                   </Link>
                 </div>
               </div>
@@ -457,12 +457,12 @@ export default function ProfilePage() {
           )}
 
           {activeTab === "messages" && (
-            <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 mb-8">
+            <div className="bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-8 mb-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-custom-text">Recent Messages</h2>
                 <Link
                   href="/messages"
-                  className="text-cyber-green hover:text-cyber-green-light font-semibold hover:underline"
+                  className="text-cyber-green hover:text-primary-hover font-semibold hover:underline"
                 >
                   View All →
                 </Link>
@@ -473,30 +473,30 @@ export default function ProfilePage() {
                     <Link
                       key={message.id}
                       href={`/messages`}
-                      className="block bg-dark-green-900/30 border border-cyber-green/20 rounded-lg p-4 hover:bg-dark-green-900/50 hover:border-cyber-green/40 transition-all"
+                      className="block bg-surface border border-border-default rounded-lg p-4 hover:bg-custom-bg hover:border-cyber-green/40 transition-all"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className={`font-semibold ${message.read ? "text-custom-text/80" : "text-custom-text"}`}>
+                            <span className={`font-semibold ${message.read ? "text-text-secondary" : "text-custom-text"}`}>
                               {message.from_name}
                             </span>
                             {!message.read && (
                               <span className="h-2 w-2 bg-cyber-green rounded-full"></span>
                             )}
                           </div>
-                          <p className={`text-sm ${message.read ? "text-custom-text/70" : "text-custom-text font-medium"}`}>
+                          <p className={`text-sm ${message.read ? "text-text-secondary" : "text-custom-text font-medium"}`}>
                             {message.subject}
                           </p>
-                          <p className="text-xs text-custom-text/60 mt-1 line-clamp-1">{message.content}</p>
+                          <p className="text-xs text-text-secondary mt-1 line-clamp-1">{message.content}</p>
                         </div>
-                        <span className="text-xs text-custom-text/60 ml-4">{formatTimeAgo(message.created_at)}</span>
+                        <span className="text-xs text-text-secondary ml-4">{formatTimeAgo(message.created_at)}</span>
                       </div>
                     </Link>
                   ))}
                 </div>
               ) : (
-                <p className="text-custom-text/70 text-center py-4">No messages yet</p>
+                <p className="text-text-secondary text-center py-4">No messages yet</p>
               )}
             </div>
           )}

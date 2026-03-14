@@ -44,7 +44,7 @@ export function RubiksCube() {
         {colors.map((color, i) => (
           <div
             key={i}
-            className="rounded-sm border border-cyber-green/30"
+            className="rounded-sm border border-border-default"
             style={{ backgroundColor: color }}
           />
         ))}

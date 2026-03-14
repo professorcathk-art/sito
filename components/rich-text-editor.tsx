@@ -206,9 +206,9 @@ export function RichTextEditor({
   }
 
   return (
-    <div className="border border-cyber-green/30 rounded-lg bg-dark-green-900/30">
+    <div className="border border-border-default rounded-lg bg-surface">
       {/* Toolbar */}
-      <div className="flex flex-wrap gap-2 p-3 border-b border-cyber-green/30 bg-dark-green-800/30">
+      <div className="flex flex-wrap gap-2 p-3 border-b border-border-default bg-surface">
         {/* Text formatting */}
         <button
           type="button"
@@ -216,8 +216,8 @@ export function RichTextEditor({
           disabled={!editor.can().chain().focus().toggleBold().run()}
           className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
             editor.isActive("bold")
-              ? "bg-cyber-green text-dark-green-900"
-              : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+              ? "bg-cyber-green text-white"
+              : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
           }`}
         >
           <strong>B</strong>
@@ -228,8 +228,8 @@ export function RichTextEditor({
           disabled={!editor.can().chain().focus().toggleItalic().run()}
           className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
             editor.isActive("italic")
-              ? "bg-cyber-green text-dark-green-900"
-              : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+              ? "bg-cyber-green text-white"
+              : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
           }`}
         >
           <em>I</em>
@@ -240,22 +240,22 @@ export function RichTextEditor({
           disabled={!editor.can().chain().focus().toggleStrike().run()}
           className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
             editor.isActive("strike")
-              ? "bg-cyber-green text-dark-green-900"
-              : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+              ? "bg-cyber-green text-white"
+              : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
           }`}
         >
           <s>S</s>
         </button>
 
         {/* Headers */}
-        <div className="border-l border-cyber-green/30 pl-2">
+        <div className="border-l border-border-default pl-2">
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("heading", { level: 1 })
-                ? "bg-cyber-green text-dark-green-900"
-                : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+                ? "bg-cyber-green text-white"
+                : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
             H1
@@ -265,8 +265,8 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("heading", { level: 2 })
-                ? "bg-cyber-green text-dark-green-900"
-                : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+                ? "bg-cyber-green text-white"
+                : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
             H2
@@ -276,8 +276,8 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("heading", { level: 3 })
-                ? "bg-cyber-green text-dark-green-900"
-                : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+                ? "bg-cyber-green text-white"
+                : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
             H3
@@ -285,14 +285,14 @@ export function RichTextEditor({
         </div>
 
         {/* Lists */}
-        <div className="border-l border-cyber-green/30 pl-2">
+        <div className="border-l border-border-default pl-2">
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("bulletList")
-                ? "bg-cyber-green text-dark-green-900"
-                : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+                ? "bg-cyber-green text-white"
+                : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
             •
@@ -302,8 +302,8 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("orderedList")
-                ? "bg-cyber-green text-dark-green-900"
-                : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+                ? "bg-cyber-green text-white"
+                : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
             1.
@@ -311,15 +311,15 @@ export function RichTextEditor({
         </div>
 
         {/* Code */}
-        <div className="border-l border-cyber-green/30 pl-2">
+        <div className="border-l border-border-default pl-2">
           <button
             type="button"
             onClick={() => editor.chain().focus().toggleCode().run()}
             disabled={!editor.can().chain().focus().toggleCode().run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("code")
-                ? "bg-cyber-green text-dark-green-900"
-                : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+                ? "bg-cyber-green text-white"
+                : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
             &lt;/&gt;
@@ -329,8 +329,8 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("codeBlock")
-                ? "bg-cyber-green text-dark-green-900"
-                : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+                ? "bg-cyber-green text-white"
+                : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
             { }
@@ -338,12 +338,12 @@ export function RichTextEditor({
         </div>
 
         {/* Media */}
-        <div className="border-l border-cyber-green/30 pl-2">
+        <div className="border-l border-border-default pl-2">
           <button
             type="button"
             onClick={handleImageUpload}
             disabled={uploading}
-            className="px-3 py-1.5 rounded text-sm font-medium transition-colors bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800 disabled:opacity-50"
+            className="px-3 py-1.5 rounded text-sm font-medium transition-colors bg-custom-bg text-custom-text hover:bg-dark-green-800 disabled:opacity-50"
           >
             {uploading ? "..." : "🖼️"}
           </button>
@@ -351,7 +351,7 @@ export function RichTextEditor({
             type="button"
             onClick={handleFileUpload}
             disabled={uploading || !onFileUpload}
-            className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors bg-cyber-green/20 text-cyber-green border-2 border-cyber-green/50 hover:bg-cyber-green/30 hover:border-cyber-green disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors bg-primary/20 text-cyber-green border-2 border-border-default hover:bg-cyber-green/30 hover:border-cyber-green disabled:opacity-50 disabled:cursor-not-allowed"
             title="Upload attachment (PDF, DOC, ZIP, etc.)"
           >
             📎 Upload Attachment
@@ -359,28 +359,28 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={addYoutubeVideo}
-            className="px-3 py-1.5 rounded text-sm font-medium transition-colors bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+            className="px-3 py-1.5 rounded text-sm font-medium transition-colors bg-custom-bg text-custom-text hover:bg-dark-green-800"
           >
             ▶️
           </button>
           <button
             type="button"
             onClick={addVimeoVideo}
-            className="px-3 py-1.5 rounded text-sm font-medium transition-colors bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+            className="px-3 py-1.5 rounded text-sm font-medium transition-colors bg-custom-bg text-custom-text hover:bg-dark-green-800"
           >
             🎬
           </button>
           <button
             type="button"
             onClick={addPodcastAudio}
-            className="px-3 py-1.5 rounded text-sm font-medium transition-colors bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+            className="px-3 py-1.5 rounded text-sm font-medium transition-colors bg-custom-bg text-custom-text hover:bg-dark-green-800"
           >
             🎵
           </button>
         </div>
 
         {/* Link */}
-        <div className="border-l border-cyber-green/30 pl-2">
+        <div className="border-l border-border-default pl-2">
           <button
             type="button"
             onClick={() => {
@@ -391,8 +391,8 @@ export function RichTextEditor({
             }}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("link")
-                ? "bg-cyber-green text-dark-green-900"
-                : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+                ? "bg-cyber-green text-white"
+                : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
             🔗
@@ -400,7 +400,7 @@ export function RichTextEditor({
         </div>
 
         {/* Raw HTML Mode Toggle */}
-        <div className="border-l border-cyber-green/30 pl-2 ml-auto">
+        <div className="border-l border-border-default pl-2 ml-auto">
           <button
             type="button"
             onClick={() => {
@@ -419,8 +419,8 @@ export function RichTextEditor({
             }}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               isRawHtmlMode
-                ? "bg-cyber-green text-dark-green-900"
-                : "bg-dark-green-900/50 text-custom-text hover:bg-dark-green-800"
+                ? "bg-cyber-green text-white"
+                : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
             {isRawHtmlMode ? "📝 Editor" : "🔧 HTML"}
@@ -436,7 +436,7 @@ export function RichTextEditor({
             setRawHtmlContent(e.target.value);
             onChange(e.target.value);
           }}
-          className="w-full min-h-[300px] p-4 bg-dark-green-900/50 border-0 text-custom-text font-mono text-sm focus:outline-none resize-y"
+          className="w-full min-h-[300px] p-4 bg-custom-bg border-0 text-custom-text font-mono text-sm focus:outline-none resize-y"
           placeholder="Enter raw HTML code here..."
         />
       ) : (

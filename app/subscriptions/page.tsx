@@ -112,15 +112,15 @@ export default function SubscriptionsPage() {
           {loading ? (
             <div className="animate-pulse space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-20 bg-dark-green-800/50 rounded-lg"></div>
+                <div key={i} className="h-20 bg-surface rounded-lg"></div>
               ))}
             </div>
           ) : subscriptions.length === 0 ? (
-            <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
-              <p className="text-custom-text/80 mb-4">You haven&apos;t subscribed to any experts yet.</p>
+            <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+              <p className="text-text-secondary mb-4">You haven&apos;t subscribed to any experts yet.</p>
               <Link
                 href="/directory"
-                className="inline-block bg-cyber-green text-dark-green-900 px-6 py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors"
+                className="inline-block bg-cyber-green text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors"
               >
                 Browse Experts
               </Link>
@@ -130,7 +130,7 @@ export default function SubscriptionsPage() {
               {subscriptions.map((subscription) => (
                 <div
                   key={subscription.id}
-                  className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6"
+                  className="bg-surface border border-border-default rounded-lg p-6"
                 >
                   <div className="flex items-start gap-4 mb-4">
                     {subscription.expert.avatar_url ? (
@@ -161,12 +161,12 @@ export default function SubscriptionsPage() {
                         )}
                       </div>
                       {subscription.expert.title && (
-                        <p className="text-custom-text/70 text-sm">{subscription.expert.title}</p>
+                        <p className="text-text-secondary text-sm">{subscription.expert.title}</p>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-custom-text/60 text-sm">
+                    <span className="text-text-secondary text-sm">
                       Subscribed {new Date(subscription.created_at).toLocaleDateString()}
                     </span>
                     <button

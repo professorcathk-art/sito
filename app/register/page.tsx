@@ -10,12 +10,12 @@ export default function RegisterPage() {
             Sito
           </Link>
           <h1 className="text-3xl font-bold text-custom-text mb-2">Create Account</h1>
-          <p className="text-custom-text/80">Join Sito and connect with industry experts</p>
+          <p className="text-text-secondary">Join Sito and connect with industry experts</p>
         </div>
         <RegisterForm />
-        <p className="text-center mt-6 text-custom-text/80">
+        <p className="text-center mt-6 text-text-secondary">
           Already have an account?{" "}
-          <Link href="/login" className="text-cyber-green font-semibold hover:text-cyber-green-light hover:underline">
+          <Link href="/login" className="text-cyber-green font-semibold hover:text-primary-hover hover:underline">
             Sign in
           </Link>
         </p>

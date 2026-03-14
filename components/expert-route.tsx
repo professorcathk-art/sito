@@ -50,7 +50,7 @@ export function ExpertRoute({ children }: { children: React.ReactNode }) {
   if (authLoading || checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-dark-green-950">
-        <div className="text-custom-text/80 animate-pulse">Loading...</div>
+        <div className="text-text-secondary animate-pulse">Loading...</div>
       </div>
     );
   }
@@ -62,14 +62,14 @@ export function ExpertRoute({ children }: { children: React.ReactNode }) {
   if (!isExpert) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-dark-green-950 px-4">
-        <div className="max-w-2xl w-full bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 text-center">
+        <div className="max-w-2xl w-full bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-8 text-center">
           <h2 className="text-3xl font-bold text-custom-text mb-4">Expert Profile Required</h2>
-          <p className="text-custom-text/80 mb-6">
+          <p className="text-text-secondary mb-6">
             You need to complete your expert profile to access this feature. Complete your profile with your category, bio, and other details to unlock expert features.
           </p>
           <Link
             href="/profile/setup"
-            className="inline-block bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+            className="inline-block bg-cyber-green text-custom-text px-6 py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20"
           >
             Complete Your Profile
           </Link>

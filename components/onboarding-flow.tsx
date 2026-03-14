@@ -451,7 +451,7 @@ export function OnboardingFlow() {
       <div className="min-h-screen bg-custom-bg flex items-center justify-center">
         <div className="text-center">
           <p className="text-custom-text mb-4">Please sign in to continue</p>
-          <Link href="/login" className="text-cyber-green hover:text-cyber-green-light">
+          <Link href="/login" className="text-cyber-green hover:text-primary-hover">
             Go to Login
           </Link>
         </div>
@@ -467,41 +467,41 @@ export function OnboardingFlow() {
             Sito
           </Link>
           <h1 className="text-3xl font-bold text-custom-text mb-2">Welcome to Sito!</h1>
-          <p className="text-custom-text/80">Let&apos;s get you started</p>
+          <p className="text-text-secondary">Let&apos;s get you started</p>
         </div>
 
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step === "intention" ? "bg-cyber-green text-dark-green-900" : 
+              step === "intention" ? "bg-cyber-green text-white" : 
               step === "learner-details" || step === "expert-details" || step === "profile-completion" 
-                ? "bg-cyber-green/50 text-custom-text" : "bg-dark-green-800/50 text-custom-text/50"
+                ? "bg-cyber-green/50 text-custom-text" : "bg-surface text-custom-text/50"
             }`}>
               1
             </div>
             <div className={`h-1 w-16 ${
               step === "learner-details" || step === "expert-details" || step === "profile-completion"
-                ? "bg-cyber-green" : "bg-dark-green-800/50"
+                ? "bg-cyber-green" : "bg-surface"
             }`}></div>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step === "learner-details" || step === "expert-details" ? "bg-cyber-green text-dark-green-900" :
-              step === "profile-completion" ? "bg-cyber-green/50 text-custom-text" : "bg-dark-green-800/50 text-custom-text/50"
+              step === "learner-details" || step === "expert-details" ? "bg-cyber-green text-white" :
+              step === "profile-completion" ? "bg-cyber-green/50 text-custom-text" : "bg-surface text-custom-text/50"
             }`}>
               2
             </div>
             <div className={`h-1 w-16 ${
-              step === "profile-completion" ? "bg-cyber-green" : "bg-dark-green-800/50"
+              step === "profile-completion" ? "bg-cyber-green" : "bg-surface"
             }`}></div>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step === "profile-completion" ? "bg-cyber-green text-dark-green-900" : "bg-dark-green-800/50 text-custom-text/50"
+              step === "profile-completion" ? "bg-cyber-green text-white" : "bg-surface text-custom-text/50"
             }`}>
               3
             </div>
           </div>
         </div>
 
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-8 rounded-2xl shadow-lg">
+        <div className="bg-surface backdrop-blur-sm border border-border-default p-8 rounded-2xl shadow-lg">
           {error && (
             <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 text-red-200 rounded-lg">
               {error}
@@ -512,19 +512,19 @@ export function OnboardingFlow() {
           {step === "intention" && (
             <div>
               <h2 className="text-2xl font-bold text-custom-text mb-4">What brings you to Sito?</h2>
-              <p className="text-custom-text/80 mb-6">
+              <p className="text-text-secondary mb-6">
                 We&apos;d love to understand your goals so we can personalize your experience
               </p>
               <div className="space-y-4">
                 <button
                   onClick={() => handleIntentionSelect("learn")}
-                  className="w-full p-6 bg-dark-green-900/50 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/70 transition-all text-left"
+                  className="w-full p-6 bg-custom-bg border-2 border-border-default rounded-lg hover:border-cyber-green hover:bg-dark-green-900/70 transition-all text-left"
                 >
                   <div className="flex items-center gap-4">
                     <div className="text-4xl">🎓</div>
                     <div>
                       <h3 className="text-xl font-semibold text-custom-text mb-1">Learn from Experts</h3>
-                      <p className="text-custom-text/70">
+                      <p className="text-text-secondary">
                         I want to learn new skills, gain knowledge, and connect with industry experts
                       </p>
                     </div>
@@ -532,13 +532,13 @@ export function OnboardingFlow() {
                 </button>
                 <button
                   onClick={() => handleIntentionSelect("teach")}
-                  className="w-full p-6 bg-dark-green-900/50 border-2 border-cyber-green/30 rounded-lg hover:border-cyber-green hover:bg-dark-green-900/70 transition-all text-left"
+                  className="w-full p-6 bg-custom-bg border-2 border-border-default rounded-lg hover:border-cyber-green hover:bg-dark-green-900/70 transition-all text-left"
                 >
                   <div className="flex items-center gap-4">
                     <div className="text-4xl">💡</div>
                     <div>
                       <h3 className="text-xl font-semibold text-custom-text mb-1">Share Knowledge & Experience</h3>
-                      <p className="text-custom-text/70">
+                      <p className="text-text-secondary">
                         I want to teach, mentor, and share my expertise with others
                       </p>
                     </div>
@@ -561,14 +561,14 @@ export function OnboardingFlow() {
                     <input
                       id="learning-interest-input"
                       type="text"
-                      className="flex-1 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      className="flex-1 px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                       placeholder="e.g., Web Development, Trading, Design..."
                       onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addLearningInterest())}
                     />
                     <button
                       type="button"
                       onClick={addLearningInterest}
-                      className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light"
+                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover"
                     >
                       Add
                     </button>
@@ -578,7 +578,7 @@ export function OnboardingFlow() {
                       {learningInterests.map((interest, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1 bg-cyber-green/20 text-cyber-green rounded-full text-sm flex items-center gap-2"
+                          className="px-3 py-1 bg-primary/20 text-cyber-green rounded-full text-sm flex items-center gap-2"
                         >
                           {interest}
                           <button
@@ -601,7 +601,7 @@ export function OnboardingFlow() {
                   <select
                     value={learningCategoryId}
                     onChange={(e) => setLearningCategoryId(e.target.value)}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   >
                     <option value="">Select a category...</option>
                     {categories.map((cat) => (
@@ -619,7 +619,7 @@ export function OnboardingFlow() {
                   <select
                     value={learningLocation}
                     onChange={(e) => setLearningLocation(e.target.value)}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   >
                     <option value="">Select a location...</option>
                     {countries.map((country) => (
@@ -637,7 +637,7 @@ export function OnboardingFlow() {
                   <select
                     value={experienceLevel}
                     onChange={(e) => setExperienceLevel(e.target.value as any)}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   >
                     <option value="">Select your level...</option>
                     <option value="beginner">Beginner</option>
@@ -656,7 +656,7 @@ export function OnboardingFlow() {
                     onChange={(e) => setAge(e.target.value)}
                     min="13"
                     max="120"
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                     placeholder="e.g., 25"
                   />
                 </div>
@@ -665,14 +665,14 @@ export function OnboardingFlow() {
                   <button
                     type="button"
                     onClick={() => setStep("intention")}
-                    className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50"
+                    className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleLearnerSubmit}
                     disabled={loading}
-                    className="flex-1 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover disabled:opacity-50"
                   >
                     {loading ? "Saving..." : "Continue"}
                   </button>
@@ -693,7 +693,7 @@ export function OnboardingFlow() {
                   <select
                     value={expertiseCategoryId}
                     onChange={(e) => setExpertiseCategoryId(e.target.value)}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   >
                     <option value="">Select your area of expertise...</option>
                     {categories.map((cat) => (
@@ -711,7 +711,7 @@ export function OnboardingFlow() {
                   <select
                     value={expertiseLevel}
                     onChange={(e) => setExpertiseLevel(e.target.value as any)}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   >
                     <option value="">Select your level...</option>
                     <option value="beginner">Beginner</option>
@@ -729,7 +729,7 @@ export function OnboardingFlow() {
                     value={expertBio}
                     onChange={(e) => setExpertBio(e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                     placeholder="Tell us about yourself, your background, and what makes you an expert..."
                   />
                 </div>
@@ -742,14 +742,14 @@ export function OnboardingFlow() {
                     <input
                       id="teaching-interest-input"
                       type="text"
-                      className="flex-1 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      className="flex-1 px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                       placeholder="e.g., React Development, Investment Strategies..."
                       onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTeachingInterest())}
                     />
                     <button
                       type="button"
                       onClick={addTeachingInterest}
-                      className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light"
+                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover"
                     >
                       Add
                     </button>
@@ -759,7 +759,7 @@ export function OnboardingFlow() {
                       {teachingInterests.map((interest, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1 bg-cyber-green/20 text-cyber-green rounded-full text-sm flex items-center gap-2"
+                          className="px-3 py-1 bg-primary/20 text-cyber-green rounded-full text-sm flex items-center gap-2"
                         >
                           {interest}
                           <button
@@ -779,14 +779,14 @@ export function OnboardingFlow() {
                   <button
                     type="button"
                     onClick={() => setStep("intention")}
-                    className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50"
+                    className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleExpertSubmit}
                     disabled={loading}
-                    className="flex-1 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover disabled:opacity-50"
                   >
                     {loading ? "Saving..." : "Continue"}
                   </button>
@@ -799,7 +799,7 @@ export function OnboardingFlow() {
           {step === "profile-completion" && (
             <div>
               <h2 className="text-2xl font-bold text-custom-text mb-4">Complete Your Profile</h2>
-              <p className="text-custom-text/80 mb-6">
+              <p className="text-text-secondary mb-6">
                 Add a few final details to personalize your profile
               </p>
               <div className="space-y-6">
@@ -812,14 +812,14 @@ export function OnboardingFlow() {
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     required
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                     placeholder="Your name"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
-                    Tagline (Optional) <span className="text-xs text-custom-text/60">({tagline.length}/100 characters)</span>
+                    Tagline (Optional) <span className="text-xs text-text-secondary">({tagline.length}/100 characters)</span>
                   </label>
                   <input
                     type="text"
@@ -831,7 +831,7 @@ export function OnboardingFlow() {
                       }
                     }}
                     maxLength={100}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                     placeholder="A short tagline about yourself"
                   />
                   {tagline.length >= 90 && tagline.length < 100 && (
@@ -849,7 +849,7 @@ export function OnboardingFlow() {
                   <select
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   >
                     <option value="">Select a location...</option>
                     {countries.map((country) => (
@@ -870,14 +870,14 @@ export function OnboardingFlow() {
                         setStep("expert-details");
                       }
                     }}
-                    className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50"
+                    className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleProfileCompletion}
                     disabled={loading || !displayName.trim() || (tagline ? tagline.length > 100 : false)}
-                    className="flex-1 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover disabled:opacity-50"
                   >
                     {loading ? "Completing..." : "Complete Setup"}
                   </button>

@@ -129,21 +129,21 @@ export default function LearningRequestsPage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2">Learning Requests</h1>
-              <p className="text-base sm:text-lg text-custom-text/80">
+              <p className="text-base sm:text-lg text-text-secondary">
                 Students post what they want to learn. Experts can find and connect with them.
               </p>
             </div>
             {user ? (
               <button
                 onClick={() => setShowCreateForm(!showCreateForm)}
-                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 {showCreateForm ? "Cancel" : "+ Post Request"}
               </button>
             ) : (
               <button
                 onClick={() => router.push("/login?redirect=/learning-requests")}
-                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 Sign In to Post a Learning Request
               </button>
@@ -151,7 +151,7 @@ export default function LearningRequestsPage() {
           </div>
 
           {showCreateForm && (
-            <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 mb-8">
+            <div className="bg-surface border border-border-default rounded-lg p-6 mb-8">
               <h2 className="text-2xl font-bold text-custom-text mb-4">Post a Learning Request</h2>
               <form onSubmit={handleCreateRequest} className="space-y-4">
                 <div>
@@ -160,7 +160,7 @@ export default function LearningRequestsPage() {
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                     placeholder="e.g., Learn Python for Data Science"
                     required
                   />
@@ -171,7 +171,7 @@ export default function LearningRequestsPage() {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={6}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                     placeholder="Describe what you want to learn, your current level, goals, etc."
                     required
                   />
@@ -182,7 +182,7 @@ export default function LearningRequestsPage() {
                     type="text"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                     placeholder="e.g., Programming, Design, Business"
                   />
                 </div>
@@ -192,7 +192,7 @@ export default function LearningRequestsPage() {
                     id="isAnonymous"
                     checked={formData.isAnonymous}
                     onChange={(e) => setFormData({ ...formData, isAnonymous: e.target.checked })}
-                    className="w-4 h-4 text-cyber-green focus:ring-cyber-green rounded"
+                    className="w-4 h-4 text-cyber-green focus:ring-primary rounded"
                   />
                   <label htmlFor="isAnonymous" className="ml-2 block text-sm text-custom-text">
                     Post anonymously (experts can still contact you)
@@ -200,7 +200,7 @@ export default function LearningRequestsPage() {
                 </div>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                 >
                   Post Request
                 </button>
@@ -211,16 +211,16 @@ export default function LearningRequestsPage() {
           {loading ? (
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-32 bg-dark-green-800/30 rounded-lg animate-pulse"></div>
+                <div key={i} className="h-32 bg-surface rounded-lg animate-pulse"></div>
               ))}
             </div>
           ) : requests.length === 0 ? (
-            <div className="text-center py-12 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg">
-              <p className="text-custom-text/80 text-lg mb-4">No learning requests yet.</p>
+            <div className="text-center py-12 bg-surface border border-border-default rounded-lg">
+              <p className="text-text-secondary text-lg mb-4">No learning requests yet.</p>
               {user && (
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                 >
                   Be the first to post!
                 </button>
@@ -231,20 +231,20 @@ export default function LearningRequestsPage() {
               {requests.map((request) => (
                 <div
                   key={request.id}
-                  className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 hover:border-cyber-green transition-colors"
+                  className="bg-surface border border-border-default rounded-lg p-6 hover:border-cyber-green transition-colors"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-xl font-bold text-custom-text">{request.title}</h3>
                         {request.category && (
-                          <span className="text-xs text-cyber-green bg-dark-green-900/50 px-2 py-1 rounded-full border border-cyber-green/30">
+                          <span className="text-xs text-cyber-green bg-custom-bg px-2 py-1 rounded-full border border-border-default">
                             {request.category}
                           </span>
                         )}
                       </div>
-                      <p className="text-custom-text/80 mb-4 whitespace-pre-wrap">{request.description}</p>
-                      <div className="flex items-center gap-4 text-sm text-custom-text/60">
+                      <p className="text-text-secondary mb-4 whitespace-pre-wrap">{request.description}</p>
+                      <div className="flex items-center gap-4 text-sm text-text-secondary">
                         {request.is_anonymous ? (
                           <span>Posted anonymously</span>
                         ) : request.profiles ? (
@@ -272,7 +272,7 @@ export default function LearningRequestsPage() {
                     {user?.id !== request.user_id && (
                       <button
                         onClick={() => handleContact(request)}
-                        className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm whitespace-nowrap"
+                        className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm whitespace-nowrap"
                       >
                         {user ? "Connect & Message" : "Send Message"}
                       </button>

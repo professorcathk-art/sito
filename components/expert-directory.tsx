@@ -222,37 +222,37 @@ export function ExpertDirectory() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
       <div className="mb-6">
-        <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2 text-glow">Featured Experts</h1>
-        <p className="text-xl text-custom-text/80 mb-6">
+        <h1 className="text-3xl sm:text-4xl font-bold text-text-primary mb-2">Featured Experts</h1>
+        <p className="text-xl text-text-secondary mb-6">
           Discover industry experts ready to guide your journey
         </p>
         
         {/* Filters */}
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-6 rounded-xl mb-6">
+        <div className="bg-surface border border-border-default p-6 rounded-xl mb-6 shadow-lg shadow-black/20">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Search */}
             <div>
-              <label className="block text-sm font-medium text-custom-text mb-2">Search</label>
+              <label className="block text-sm font-medium text-text-primary mb-2">Search</label>
               <input
                 type="text"
                 placeholder="Search by name, title..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary placeholder-text-secondary"
               />
             </div>
             
             {/* Category Filter */}
             <div>
-              <label className="block text-sm font-medium text-custom-text mb-2">Category</label>
+              <label className="block text-sm font-medium text-text-primary mb-2">Category</label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary"
               >
                 <option value="">All Categories</option>
                 {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id} className="bg-dark-green-900">
+                  <option key={cat.id} value={cat.id} className="bg-custom-bg">
                     {cat.name}
                   </option>
                 ))}
@@ -261,15 +261,15 @@ export function ExpertDirectory() {
             
             {/* Location Filter */}
             <div>
-              <label className="block text-sm font-medium text-custom-text mb-2">Location</label>
+              <label className="block text-sm font-medium text-text-primary mb-2">Location</label>
               <select
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text-primary"
               >
                 <option value="">All Locations</option>
                 {countries.map((country) => (
-                  <option key={country.id} value={country.id} className="bg-dark-green-900">
+                  <option key={country.id} value={country.id} className="bg-custom-bg">
                     {country.name}
                   </option>
                 ))}
@@ -285,7 +285,7 @@ export function ExpertDirectory() {
                 setSelectedLocation("");
                 setSearchQuery("");
               }}
-              className="mt-4 px-4 py-2 bg-dark-green-800/50 text-custom-text border border-cyber-green/30 rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm"
+              className="mt-4 px-4 py-2 bg-surface text-text-primary border border-border-default rounded-lg hover:border-primary transition-colors text-sm"
             >
               Clear All Filters
             </button>
@@ -295,11 +295,11 @@ export function ExpertDirectory() {
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-custom-text/80 animate-pulse">Loading experts...</p>
+          <p className="text-text-secondary animate-pulse">Loading experts...</p>
         </div>
       ) : experts.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-custom-text/80 text-lg">No experts found matching your criteria.</p>
+          <p className="text-text-secondary text-lg">No experts found matching your criteria.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
@@ -311,7 +311,7 @@ export function ExpertDirectory() {
             return (
               <div
                 key={expert.id}
-                className="group bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl hover:bg-dark-green-800/50 hover:border-cyber-green hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all duration-300 transform hover:-translate-y-2 hover:scale-[1.05] flex flex-col overflow-hidden"
+                className="group bg-surface border border-border-default rounded-xl hover:border-primary transition-all duration-300 shadow-lg shadow-black/20 flex flex-col overflow-hidden"
               >
                 <Link href={`/expert/${expert.id}`} className="flex-1 flex flex-col">
                   {/* Poster-style image section - shorter height */}
@@ -325,7 +325,7 @@ export function ExpertDirectory() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-cyber-green/50">
+                        <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-primary/50">
                           {getInitials(expert.name)}
                         </div>
                       </div>
@@ -336,7 +336,7 @@ export function ExpertDirectory() {
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="text-white font-bold text-sm sm:text-base truncate">{expert.name}</h3>
                           {expert.verified && (
-                            <span className="text-cyber-green flex-shrink-0" title="Verified Expert">
+                            <span className="text-primary flex-shrink-0" title="Verified Expert">
                               ✓
                             </span>
                           )}
@@ -351,31 +351,31 @@ export function ExpertDirectory() {
                   <div className="p-3 sm:p-4 flex-1 flex flex-col">
                     <div className="mb-2">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-custom-text font-bold text-sm sm:text-base truncate">{expert.name}</h3>
+                        <h3 className="text-text-primary font-bold text-sm sm:text-base truncate">{expert.name}</h3>
                         {expert.verified && (
-                          <span className="text-cyber-green flex-shrink-0 text-sm" title="Verified Expert">
+                          <span className="text-primary flex-shrink-0 text-sm" title="Verified Expert">
                             ✓
                           </span>
                         )}
                       </div>
-                      <p className="text-custom-text/80 text-xs truncate mb-2">{expert.title}</p>
+                      <p className="text-text-secondary text-xs truncate mb-2">{expert.title}</p>
                     </div>
                     
                     {/* Bio section - show more text */}
                     {expert.bio && (
-                      <p className="text-custom-text/70 text-xs sm:text-sm mb-3 line-clamp-4 leading-relaxed">
+                      <p className="text-text-secondary text-xs sm:text-sm mb-3 line-clamp-4 leading-relaxed">
                         {expert.bio}
                       </p>
                     )}
                     
                     <div className="flex flex-wrap gap-2 mt-auto">
                       {expert.category_name && (
-                        <span className="text-xs text-cyber-green bg-dark-green-900/50 px-2 py-1 rounded-full border border-cyber-green/30 truncate">
+                        <span className="text-xs text-primary bg-transparent px-2 py-1 rounded-full border border-primary truncate">
                           {expert.category_name}
                         </span>
                       )}
                       {expert.country_name && (
-                        <span className="text-xs text-custom-text/70 truncate">{expert.country_name}</span>
+                        <span className="text-xs text-text-secondary truncate">{expert.country_name}</span>
                       )}
                     </div>
                   </div>
@@ -383,38 +383,38 @@ export function ExpertDirectory() {
                 
                 {/* Connect Button */}
                 {!isOwnProfile && user && (
-                  <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 border-t border-cyber-green/20">
+                  <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 border-t border-border-default">
                     {connectionStatus === "none" && (
                       <button
                         onClick={(e) => handleConnect(expert.id, e)}
                         disabled={isConnecting}
-                        className="w-full bg-cyber-green text-dark-green-900 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(0,255,136,0.3)]"
+                        className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary-hover transition-colors text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isConnecting ? "Connecting..." : "Connect"}
                       </button>
                     )}
                     {connectionStatus === "pending" && (
-                      <div className="w-full text-center py-2 rounded-lg bg-dark-green-700/50 text-custom-text/80 border border-cyber-green/30 text-xs sm:text-sm">
+                      <div className="w-full text-center py-2 rounded-lg bg-surface text-text-secondary border border-border-default text-xs sm:text-sm">
                         Connection Pending
                       </div>
                     )}
                     {connectionStatus === "accepted" && (
-                      <div className="w-full text-center py-2 rounded-lg bg-dark-green-700/50 text-custom-text/80 border border-cyber-green/30 text-xs sm:text-sm">
+                      <div className="w-full text-center py-2 rounded-lg bg-surface text-text-secondary border border-primary text-xs sm:text-sm">
                         Connected
                       </div>
                     )}
                     {connectionStatus === "rejected" && (
-                      <div className="w-full text-center py-2 rounded-lg bg-dark-green-700/50 text-custom-text/80 border border-red-500/30 text-xs sm:text-sm">
+                      <div className="w-full text-center py-2 rounded-lg bg-surface text-text-secondary border border-red-500/30 text-xs sm:text-sm">
                         Connection Rejected
                       </div>
                     )}
                   </div>
                 )}
                 {!user && (
-                  <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 border-t border-cyber-green/20">
+                  <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-0 border-t border-border-default">
                     <Link
                       href={`/expert/${expert.id}`}
-                      className="block w-full bg-dark-green-800/50 text-custom-text py-2 rounded-lg font-semibold hover:bg-dark-green-800 transition-colors text-xs sm:text-sm text-center border border-cyber-green/30"
+                      className="block w-full bg-surface text-text-primary py-2 rounded-lg font-medium hover:bg-surface/80 transition-colors text-xs sm:text-sm text-center border border-border-default"
                     >
                       View Profile
                     </Link>
@@ -427,16 +427,16 @@ export function ExpertDirectory() {
       )}
 
       {/* Signup CTA Section */}
-      <div className="mt-12 mb-8 bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 sm:p-8 text-center">
-        <h2 className="text-2xl sm:text-3xl font-bold text-custom-text mb-3 sm:mb-4">
+      <div className="mt-12 mb-8 bg-surface border border-border-default rounded-xl p-6 sm:p-8 text-center shadow-lg shadow-black/20">
+        <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-3 sm:mb-4">
           Can&apos;t find an expert here?
         </h2>
-        <p className="text-custom-text/80 mb-4 sm:mb-6 text-sm sm:text-base max-w-2xl mx-auto">
+        <p className="text-text-secondary mb-4 sm:mb-6 text-sm sm:text-base max-w-2xl mx-auto">
           Tell us what you want to learn, and we&apos;ll match you with the perfect expert from our network of 100+ industry professionals. Your learning journey starts here.
         </p>
         <Link
           href="/register"
-          className="inline-block bg-cyber-green text-dark-green-900 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold hover:bg-cyber-green-light transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_rgba(0,255,136,0.4)] text-sm sm:text-base"
+          className="inline-block bg-primary text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-medium hover:bg-primary-hover transition-all duration-300 text-sm sm:text-base"
         >
           Sign Up Now
         </Link>

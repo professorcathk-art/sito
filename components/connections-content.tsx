@@ -155,8 +155,8 @@ export function ConnectionsContent() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-pulse">
-          <div className="h-10 bg-dark-green-800/50 rounded w-1/4 mb-8"></div>
-          <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-xl p-6 h-64"></div>
+          <div className="h-10 bg-surface rounded w-1/4 mb-8"></div>
+          <div className="bg-surface border border-border-default rounded-xl p-6 h-64"></div>
         </div>
       </div>
     );
@@ -167,14 +167,14 @@ export function ConnectionsContent() {
       <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text mb-6 sm:mb-8">Connections</h1>
 
       {/* Tabs */}
-      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 mb-6 border-b border-cyber-green/30 scrollbar-hide">
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 mb-6 border-b border-border-default scrollbar-hide">
         <div className="flex gap-3 sm:gap-6 min-w-max pb-1">
           <button
             onClick={() => setActiveTab("received")}
             className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base flex items-center gap-1.5 sm:gap-2 ${
               activeTab === "received"
                 ? "text-cyber-green border-b-2 border-cyber-green"
-                : "text-custom-text/70 hover:text-custom-text"
+                : "text-text-secondary hover:text-custom-text"
             }`}
           >
             <span>Received Requests</span>
@@ -189,7 +189,7 @@ export function ConnectionsContent() {
             className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
               activeTab === "sent"
                 ? "text-cyber-green border-b-2 border-cyber-green"
-                : "text-custom-text/70 hover:text-custom-text"
+                : "text-text-secondary hover:text-custom-text"
             }`}
           >
             Sent Requests
@@ -199,7 +199,7 @@ export function ConnectionsContent() {
             className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
               activeTab === "accepted"
                 ? "text-cyber-green border-b-2 border-cyber-green"
-                : "text-custom-text/70 hover:text-custom-text"
+                : "text-text-secondary hover:text-custom-text"
             }`}
           >
             Accepted Connections
@@ -209,32 +209,32 @@ export function ConnectionsContent() {
 
       {/* Content */}
       {activeTab === "received" && (
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6">
           {receivedRequests.length === 0 ? (
-            <p className="text-custom-text/70 text-center py-8">No pending connection requests</p>
+            <p className="text-text-secondary text-center py-8">No pending connection requests</p>
           ) : (
             <div className="space-y-4">
               {receivedRequests.map((connection) => (
                 <div
                   key={connection.id}
-                  className="bg-dark-green-900/30 border border-cyber-green/20 rounded-lg p-4 flex items-center justify-between"
+                  className="bg-surface border border-border-default rounded-lg p-4 flex items-center justify-between"
                 >
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-custom-text mb-1">
                       {connection.user_name}
                     </h3>
-                    <p className="text-sm text-custom-text/70">Sent {formatDate(connection.created_at)}</p>
+                    <p className="text-sm text-text-secondary">Sent {formatDate(connection.created_at)}</p>
                   </div>
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleAccept(connection.id)}
-                      className="px-4 py-2 bg-cyber-green text-custom-text rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+                      className="px-4 py-2 bg-cyber-green text-custom-text rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20"
                     >
                       Accept
                     </button>
                     <button
                       onClick={() => handleReject(connection.id)}
-                      className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                      className="px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
                     >
                       Reject
                     </button>
@@ -247,23 +247,23 @@ export function ConnectionsContent() {
       )}
 
       {activeTab === "sent" && (
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6">
           {sentRequests.length === 0 ? (
-            <p className="text-custom-text/70 text-center py-8">No pending sent requests</p>
+            <p className="text-text-secondary text-center py-8">No pending sent requests</p>
           ) : (
             <div className="space-y-4">
               {sentRequests.map((connection) => (
                 <div
                   key={connection.id}
-                  className="bg-dark-green-900/30 border border-cyber-green/20 rounded-lg p-4 flex items-center justify-between"
+                  className="bg-surface border border-border-default rounded-lg p-4 flex items-center justify-between"
                 >
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-custom-text mb-1">
                       {connection.expert_name}
                     </h3>
-                    <p className="text-sm text-custom-text/70">Sent {formatDate(connection.created_at)}</p>
+                    <p className="text-sm text-text-secondary">Sent {formatDate(connection.created_at)}</p>
                   </div>
-                  <span className="px-4 py-2 border border-cyber-green/50 text-cyber-green rounded-lg">
+                  <span className="px-4 py-2 border border-border-default text-cyber-green rounded-lg">
                     Pending
                   </span>
                 </div>
@@ -274,34 +274,34 @@ export function ConnectionsContent() {
       )}
 
       {activeTab === "accepted" && (
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6">
           {acceptedConnections.length === 0 ? (
-            <p className="text-custom-text/70 text-center py-8">No accepted connections yet</p>
+            <p className="text-text-secondary text-center py-8">No accepted connections yet</p>
           ) : (
             <div className="space-y-4">
               {acceptedConnections.map((connection) => (
                 <div
                   key={connection.id}
-                  className="bg-dark-green-900/30 border border-cyber-green/20 rounded-lg p-4 flex items-center justify-between"
+                  className="bg-surface border border-border-default rounded-lg p-4 flex items-center justify-between"
                 >
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-custom-text mb-1">
                       {connection.expert_name || connection.user_name}
                     </h3>
-                    <p className="text-sm text-custom-text/70">
+                    <p className="text-sm text-text-secondary">
                       Connected {formatDate(connection.created_at)}
                     </p>
                   </div>
                   <div className="flex gap-3">
                     <Link
                       href={`/expert/${connection.expert_id === user?.id ? connection.user_id : connection.expert_id}`}
-                      className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                      className="px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
                     >
                       View Profile
                     </Link>
                     <Link
                       href={`/messages?expert=${connection.expert_id === user?.id ? connection.user_id : connection.expert_id}`}
-                      className="px-4 py-2 bg-cyber-green text-custom-text rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+                      className="px-4 py-2 bg-cyber-green text-custom-text rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20"
                     >
                       Message
                     </Link>

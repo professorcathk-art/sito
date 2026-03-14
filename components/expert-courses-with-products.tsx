@@ -67,9 +67,9 @@ export function ExpertCoursesWithProducts({ expertId, products, supabase }: Expe
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-48 bg-dark-green-800/50 rounded-lg mb-4"></div>
-            <div className="h-6 bg-dark-green-800/50 rounded w-3/4 mb-2"></div>
-            <div className="h-4 bg-dark-green-800/50 rounded w-1/2"></div>
+            <div className="h-48 bg-surface rounded-lg mb-4"></div>
+            <div className="h-6 bg-surface rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-surface rounded w-1/2"></div>
           </div>
         ))}
       </div>
@@ -79,7 +79,7 @@ export function ExpertCoursesWithProducts({ expertId, products, supabase }: Expe
   if (courses.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-custom-text/70">No courses available yet.</p>
+        <p className="text-text-secondary">No courses available yet.</p>
       </div>
     );
   }
@@ -90,7 +90,7 @@ export function ExpertCoursesWithProducts({ expertId, products, supabase }: Expe
         <Link
           key={course.id}
           href={`/courses/${course.id}`}
-          className="group bg-dark-green-800/30 border border-cyber-green/30 rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
+          className="group bg-surface border border-border-default rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
         >
           {course.cover_image_url && (
             <div className="relative w-full h-48 overflow-hidden">
@@ -106,13 +106,13 @@ export function ExpertCoursesWithProducts({ expertId, products, supabase }: Expe
               {course.title}
             </h3>
             {course.description && (
-              <p className="text-custom-text/70 mb-4 line-clamp-3">{course.description}</p>
+              <p className="text-text-secondary mb-4 line-clamp-3">{course.description}</p>
             )}
             <div className="flex items-center justify-between">
               <span className="text-cyber-green font-semibold">
                 {course.is_free ? "Free" : `$${course.price}`}
               </span>
-              <span className="text-custom-text/60 text-sm">View Course →</span>
+              <span className="text-text-secondary text-sm">View Course →</span>
             </div>
           </div>
         </Link>

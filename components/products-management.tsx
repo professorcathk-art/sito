@@ -1491,8 +1491,8 @@ export function ProductsManagement() {
   if (loading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-10 bg-dark-green-800/50 rounded"></div>
-        <div className="h-32 bg-dark-green-800/50 rounded"></div>
+        <div className="h-10 bg-surface rounded"></div>
+        <div className="h-32 bg-surface rounded"></div>
       </div>
     );
   }
@@ -1548,7 +1548,7 @@ export function ProductsManagement() {
                 webinarDateTime: "",
               });
             }}
-            className="bg-cyber-green text-custom-text px-4 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+            className="bg-cyber-green text-custom-text px-4 py-2 rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20"
           >
             + Add Product
           </button>
@@ -1556,14 +1556,14 @@ export function ProductsManagement() {
       </div>
 
       {/* Tabs */}
-      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 border-b border-cyber-green/30 scrollbar-hide">
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 border-b border-border-default scrollbar-hide">
         <div className="flex gap-3 sm:gap-6 min-w-max pb-1">
           <button
             onClick={() => setActiveTab("products")}
             className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
               activeTab === "products"
                 ? "text-cyber-green border-b-2 border-cyber-green"
-                : "text-custom-text/70 hover:text-custom-text"
+                : "text-text-secondary hover:text-custom-text"
             }`}
           >
             My Products ({products.length})
@@ -1576,7 +1576,7 @@ export function ProductsManagement() {
             className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
               activeTab === "interests"
                 ? "text-cyber-green border-b-2 border-cyber-green"
-                : "text-custom-text/70 hover:text-custom-text"
+                : "text-text-secondary hover:text-custom-text"
             }`}
           >
             Registered Interests ({Object.values(interestCounts).reduce((sum, count) => sum + count, 0)})
@@ -1592,7 +1592,7 @@ export function ProductsManagement() {
 
       {/* Add/Edit Product Form */}
       {showAddForm && activeTab === "products" && (
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6">
           <h3 className="text-xl font-bold text-custom-text mb-4">
             {editingProduct ? "Edit Product" : "Add New Product"}
           </h3>
@@ -1606,7 +1606,7 @@ export function ProductsManagement() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50"
                 placeholder="e.g., 1-on-1 Consultation"
               />
             </div>
@@ -1626,13 +1626,13 @@ export function ProductsManagement() {
                     price: "",
                   });
                 }}
-                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text"
                 required
               >
                 <option value="e-learning">e-Learning</option>
                 <option value="appointment">1-on-1 Session</option>
               </select>
-              <p className="text-xs text-custom-text/60 mt-1">
+              <p className="text-xs text-text-secondary mt-1">
                 {formData.product_type === "e-learning" && "Create an e-learning product with lessons. You can add lessons now or skip and add them later."}
                 {formData.product_type === "appointment" && "Create a 1-on-1 session service. After adding description, you'll set up appointment slots and pricing."}
               </p>
@@ -1647,7 +1647,7 @@ export function ProductsManagement() {
                   <select
                     value={formData.e_learning_subtype}
                     onChange={(e) => setFormData({ ...formData, e_learning_subtype: e.target.value as "online-course" | "ebook" | "ai-prompt" | "live-webinar" | "other" })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text"
                     required
                   >
                     <option value="">Select sub-type</option>
@@ -1657,7 +1657,7 @@ export function ProductsManagement() {
                     <option value="live-webinar">Live Webinar</option>
                     <option value="other">Other</option>
                   </select>
-                  <p className="text-xs text-custom-text/60 mt-1">Categorize your e-learning product</p>
+                  <p className="text-xs text-text-secondary mt-1">Categorize your e-learning product</p>
                 </div>
                 
                 {/* Webinar Date/Time and Expiry Date - only show for live webinar */}
@@ -1671,10 +1671,10 @@ export function ProductsManagement() {
                         type="datetime-local"
                         value={formData.webinarDateTime}
                         onChange={(e) => setFormData({ ...formData, webinarDateTime: e.target.value })}
-                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                        className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text"
                         required={formData.e_learning_subtype === "live-webinar"}
                       />
-                      <p className="text-xs text-custom-text/60 mt-1">When the live webinar will take place</p>
+                      <p className="text-xs text-text-secondary mt-1">When the live webinar will take place</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-custom-text mb-2">
@@ -1684,10 +1684,10 @@ export function ProductsManagement() {
                         type="datetime-local"
                         value={formData.webinarExpiryDate}
                         onChange={(e) => setFormData({ ...formData, webinarExpiryDate: e.target.value })}
-                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                        className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text"
                         required={formData.e_learning_subtype === "live-webinar"}
                       />
-                      <p className="text-xs text-custom-text/60 mt-1">Registration will close after this date</p>
+                      <p className="text-xs text-text-secondary mt-1">Registration will close after this date</p>
                     </div>
                   </>
                 )}
@@ -1704,11 +1704,11 @@ export function ProductsManagement() {
                     type="text"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text"
                     placeholder="e.g., AI Courses, Business, Design, Marketing"
                     required
                   />
-                  <p className="text-xs text-custom-text/60 mt-1">Choose a topic to help users discover your course</p>
+                  <p className="text-xs text-text-secondary mt-1">Choose a topic to help users discover your course</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
@@ -1719,21 +1719,21 @@ export function ProductsManagement() {
                     accept="image/*"
                     onChange={handleCoverImageUpload}
                     disabled={uploadingImage}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text focus:ring-2 focus:ring-cyber-green focus:border-cyber-green"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text focus:ring-2 focus:ring-primary focus:border-primary"
                   />
                   {uploadingImage && (
-                    <p className="text-xs text-custom-text/60 mt-1">Uploading image...</p>
+                    <p className="text-xs text-text-secondary mt-1">Uploading image...</p>
                   )}
                   {formData.coverImageUrl && (
                     <div className="mt-4">
                       <img
                         src={formData.coverImageUrl}
                         alt="Cover preview"
-                        className="max-w-md rounded-lg border border-cyber-green/30"
+                        className="max-w-md rounded-lg border border-border-default"
                       />
                     </div>
                   )}
-                  <p className="text-xs text-custom-text/60 mt-1">Upload a cover image for your course (max 5MB)</p>
+                  <p className="text-xs text-text-secondary mt-1">Upload a cover image for your course (max 5MB)</p>
                 </div>
               </>
             )}
@@ -1752,7 +1752,7 @@ export function ProductsManagement() {
                       min="0"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="w-32 px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                      className="w-32 px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text"
                       placeholder="0.00"
                       required={!formData.enrollmentOnRequest}
                       disabled={formData.enrollmentOnRequest}
@@ -1769,7 +1769,7 @@ export function ProductsManagement() {
                             setFormData({ ...formData, price: formData.price === "0" ? "" : formData.price });
                           }
                         }}
-                        className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                        className="h-4 w-4 text-cyber-green focus:ring-primary border-gray-300 rounded"
                         disabled={formData.enrollmentOnRequest}
                       />
                       <span className="text-sm">Free</span>
@@ -1786,13 +1786,13 @@ export function ProductsManagement() {
                             price: e.target.checked ? "" : formData.price
                           });
                         }}
-                        className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                        className="h-4 w-4 text-cyber-green focus:ring-primary border-gray-300 rounded"
                       />
                       <span className="text-sm">Enrollment on Request</span>
                     </label>
                   </div>
                   {formData.enrollmentOnRequest && (
-                    <p className="text-xs text-custom-text/60 italic">
+                    <p className="text-xs text-text-secondary italic">
                       Note: This means price will not be displayed. Users will need to contact you directly for enrollment.
                     </p>
                   )}
@@ -1818,13 +1818,13 @@ export function ProductsManagement() {
                         contact_type: method === "offline" ? (formData.contact_type || "email") : "email",
                       });
                     }}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text"
                     required
                   >
                     <option value="stripe">Stripe (Online Payment)</option>
                     <option value="offline">Offline Payment (Show Contact Email)</option>
                   </select>
-                  <p className="text-xs text-custom-text/60 mt-1">
+                  <p className="text-xs text-text-secondary mt-1">
                     {formData.payment_method === "stripe" && "Users will pay via Stripe checkout. Make sure you have set up your Stripe account."}
                     {formData.payment_method === "offline" && "Users will see your contact email and can transact offline. After payment, you can manually add them to the course."}
                   </p>
@@ -1839,7 +1839,7 @@ export function ProductsManagement() {
                       <select
                         value={formData.contact_type}
                         onChange={(e) => setFormData({ ...formData, contact_type: e.target.value as "email" | "url", contact_email: "", contact_url: "" })}
-                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                        className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text"
                         required
                       >
                         <option value="email">Email</option>
@@ -1855,11 +1855,11 @@ export function ProductsManagement() {
                           type="email"
                           value={formData.contact_email}
                           onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                          className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text"
                           placeholder="your@email.com"
                           required
                         />
-                        <p className="text-xs text-custom-text/60 mt-1">This email will be shown to users for offline payment transactions</p>
+                        <p className="text-xs text-text-secondary mt-1">This email will be shown to users for offline payment transactions</p>
                       </div>
                     )}
                     {formData.contact_type === "url" && (
@@ -1871,11 +1871,11 @@ export function ProductsManagement() {
                           type="url"
                           value={formData.contact_url}
                           onChange={(e) => setFormData({ ...formData, contact_url: e.target.value })}
-                          className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text"
+                          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text"
                           placeholder="https://example.com/contact"
                           required
                         />
-                        <p className="text-xs text-custom-text/60 mt-1">This URL will be shown to users for offline payment transactions</p>
+                        <p className="text-xs text-text-secondary mt-1">This URL will be shown to users for offline payment transactions</p>
                       </div>
                     )}
                   </div>
@@ -1905,7 +1905,7 @@ export function ProductsManagement() {
             <div className="flex gap-4">
               <button
                 type="submit"
-                className="bg-cyber-green text-custom-text px-6 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)]"
+                className="bg-cyber-green text-custom-text px-6 py-2 rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20"
               >
                 {editingProduct 
                   ? "Update Product" 
@@ -1945,7 +1945,7 @@ export function ProductsManagement() {
                     webinarDateTime: "",
                   });
                 }}
-                className="px-6 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                className="px-6 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
               >
                 Cancel
               </button>
@@ -1956,7 +1956,7 @@ export function ProductsManagement() {
 
       {/* Appointment Form (Embedded) */}
       {showAppointmentForm && currentProductId && (
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 mb-6">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6 mb-6">
           <h3 className="text-xl font-bold text-custom-text mb-4">Set Up Appointment Slots</h3>
           <form onSubmit={async (e) => {
             e.preventDefault();
@@ -2075,7 +2075,7 @@ export function ProductsManagement() {
                   type="date"
                   value={appointmentFormData.date}
                   onChange={(e) => setAppointmentFormData({ ...appointmentFormData, date: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   required
                 />
               </div>
@@ -2085,7 +2085,7 @@ export function ProductsManagement() {
                   type="time"
                   value={appointmentFormData.startTime}
                   onChange={(e) => setAppointmentFormData({ ...appointmentFormData, startTime: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   required
                 />
               </div>
@@ -2095,7 +2095,7 @@ export function ProductsManagement() {
                   type="time"
                   value={appointmentFormData.endTime}
                   onChange={(e) => setAppointmentFormData({ ...appointmentFormData, endTime: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   required
                 />
               </div>
@@ -2104,7 +2104,7 @@ export function ProductsManagement() {
                 <select
                   value={appointmentFormData.intervalMinutes}
                   onChange={(e) => setAppointmentFormData({ ...appointmentFormData, intervalMinutes: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   required
                 >
                   <option value="15">15 minutes</option>
@@ -2123,14 +2123,14 @@ export function ProductsManagement() {
                 min="0"
                 value={appointmentFormData.ratePerHour}
                 onChange={(e) => setAppointmentFormData({ ...appointmentFormData, ratePerHour: e.target.value })}
-                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                 required
               />
             </div>
             <div className="flex gap-4">
               <button
                 type="submit"
-                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 Create Slots
               </button>
@@ -2140,7 +2140,7 @@ export function ProductsManagement() {
                   setShowAppointmentForm(false);
                   setCurrentProductId(null);
                 }}
-                className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
               >
                 Skip for Now
               </button>
@@ -2151,11 +2151,11 @@ export function ProductsManagement() {
 
       {/* Questionnaire Form (Embedded) */}
       {showQuestionnaireForm && questionnaireType && (
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 mb-6">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6 mb-6">
           <h3 className="text-xl font-bold text-custom-text mb-4">
             {questionnaireType === "course_enrollment" ? "Create Enrollment Form (Required)" : "Create Appointment Booking Form"}
           </h3>
-          <p className="text-sm text-custom-text/70 mb-6">
+          <p className="text-sm text-text-secondary mb-6">
             {questionnaireType === "course_enrollment" 
               ? "Create a form for users to fill out before enrolling. Name and Email fields are already added and are required. You can add more fields if needed. Click 'Publish Course' when ready."
               : "Add custom questions for users to fill out before booking."}
@@ -2165,10 +2165,10 @@ export function ProductsManagement() {
           {questionnaireFields.length > 0 && (
             <div className="mb-6 space-y-2">
               {questionnaireFields.map((field, index) => (
-                <div key={field.id || index} className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-3 flex items-center justify-between">
+                <div key={field.id || index} className="bg-custom-bg border border-border-default rounded-lg p-3 flex items-center justify-between">
                   <div className="flex-1">
                     <span className="text-custom-text font-semibold">{field.label}</span>
-                    <span className="text-custom-text/60 text-sm ml-2">({field.field_type})</span>
+                    <span className="text-text-secondary text-sm ml-2">({field.field_type})</span>
                     {field.required && <span className="text-red-400 text-sm ml-2">*</span>}
                   </div>
                   <div className="flex gap-2">
@@ -2186,7 +2186,7 @@ export function ProductsManagement() {
                         });
                         setShowFieldForm(true);
                       }}
-                      className="text-cyber-green hover:text-cyber-green-light text-sm"
+                      className="text-cyber-green hover:text-primary-hover text-sm"
                     >
                       Edit
                     </button>
@@ -2300,13 +2300,13 @@ export function ProductsManagement() {
                 console.error("Error saving field:", err);
                 alert("Failed to save field. Please try again.");
               }
-            }} className="space-y-4 mb-4 bg-dark-green-900/30 p-4 rounded-lg">
+            }} className="space-y-4 mb-4 bg-surface p-4 rounded-lg">
               <div>
                 <label className="block text-sm font-medium text-custom-text mb-2">Field Type *</label>
                 <select
                   value={fieldForm.field_type}
                   onChange={(e) => setFieldForm({ ...fieldForm, field_type: e.target.value as any })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   required
                 >
                   <option value="text">Text</option>
@@ -2323,7 +2323,7 @@ export function ProductsManagement() {
                   type="text"
                   value={fieldForm.label}
                   onChange={(e) => setFieldForm({ ...fieldForm, label: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   required
                 />
               </div>
@@ -2333,7 +2333,7 @@ export function ProductsManagement() {
                   type="text"
                   value={fieldForm.placeholder}
                   onChange={(e) => setFieldForm({ ...fieldForm, placeholder: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                 />
               </div>
               {fieldForm.field_type === "phone" && (
@@ -2343,7 +2343,7 @@ export function ProductsManagement() {
                     <select
                       value={fieldForm.country_code || "+852"}
                       onChange={(e) => setFieldForm({ ...fieldForm, country_code: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                       required
                     >
                       <option value="+852">🇭🇰 Hong Kong (+852)</option>
@@ -2391,7 +2391,7 @@ export function ProductsManagement() {
                       type="text"
                       value={fieldForm.label}
                       onChange={(e) => setFieldForm({ ...fieldForm, label: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                       placeholder="e.g., Phone Number, Mobile Number"
                       required
                     />
@@ -2402,7 +2402,7 @@ export function ProductsManagement() {
                       type="text"
                       value={fieldForm.placeholder}
                       onChange={(e) => setFieldForm({ ...fieldForm, placeholder: e.target.value })}
-                      className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                      className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                       placeholder="e.g., Enter your phone number"
                     />
                   </div>
@@ -2415,7 +2415,7 @@ export function ProductsManagement() {
                     type="text"
                     value={fieldForm.options}
                     onChange={(e) => setFieldForm({ ...fieldForm, options: e.target.value })}
-                    className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                     placeholder="Option 1, Option 2, Option 3"
                     required
                   />
@@ -2426,14 +2426,14 @@ export function ProductsManagement() {
                   type="checkbox"
                   checked={fieldForm.required}
                   onChange={(e) => setFieldForm({ ...fieldForm, required: e.target.checked })}
-                  className="w-4 h-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                  className="w-4 h-4 text-cyber-green focus:ring-primary border-gray-300 rounded"
                 />
                 <label className="text-sm text-custom-text">Required field</label>
               </div>
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                 >
                   {editingField ? "Update Field" : "Add Field"}
                 </button>
@@ -2451,7 +2451,7 @@ export function ProductsManagement() {
                       country_code: "+852",
                     });
                   }}
-                  className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                  className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
                 >
                   Cancel
                 </button>
@@ -2462,7 +2462,7 @@ export function ProductsManagement() {
           {/* Field Templates */}
           {!showFieldForm && questionnaireFields.length === 0 && (
             <div className="mb-6">
-              <p className="text-sm text-custom-text/70 mb-4">Quick add common fields:</p>
+              <p className="text-sm text-text-secondary mb-4">Quick add common fields:</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {[
                   { type: "text", label: "Phone Number", placeholder: "Enter your phone number", required: true },
@@ -2532,10 +2532,10 @@ export function ProductsManagement() {
                         alert("Failed to add field. Please try again.");
                       }
                     }}
-                    className="px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text hover:bg-dark-green-800/50 transition-colors text-left"
+                    className="px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text hover:bg-surface transition-colors text-left"
                   >
                     <div className="font-semibold">{template.label}</div>
-                    <div className="text-xs text-custom-text/60">{template.type}</div>
+                    <div className="text-xs text-text-secondary">{template.type}</div>
                   </button>
                 ))}
               </div>
@@ -2591,7 +2591,7 @@ export function ProductsManagement() {
                   }
                   setShowFieldForm(true);
                 }}
-                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 + Add Custom Field
               </button>
@@ -2704,7 +2704,7 @@ export function ProductsManagement() {
                     alert(`Failed to publish course: ${err.message || "Please try again."}`);
                   }
                 }}
-                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 Publish Product
               </button>
@@ -2769,7 +2769,7 @@ export function ProductsManagement() {
                     alert(`Failed to set up appointment: ${err.message || "Please try again."}`);
                   }
                 }}
-                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 {editingProduct && editingProduct.product_type === "appointment" ? "Save Updates" : "Continue to Set Up Slots"}
               </button>
@@ -2780,12 +2780,12 @@ export function ProductsManagement() {
 
       {/* Course Lessons Form (Embedded) */}
       {showCourseForm && currentCourseId && (
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 mb-6">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6 mb-6">
           <h3 className="text-xl font-bold text-custom-text mb-4">Add Course Lessons</h3>
           {courseLessons.length > 0 && (
             <div className="mb-4 space-y-2">
               {courseLessons.map((lesson, index) => (
-                <div key={lesson.id || index} className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-3 flex items-center justify-between">
+                <div key={lesson.id || index} className="bg-custom-bg border border-border-default rounded-lg p-3 flex items-center justify-between">
                   <span className="text-custom-text">{index + 1}. {lesson.title || "Untitled Lesson"}</span>
                   <button
                     type="button"
@@ -2847,7 +2847,7 @@ export function ProductsManagement() {
                   type="text"
                   value={lessonForm.title}
                   onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   required
                 />
               </div>
@@ -2856,7 +2856,7 @@ export function ProductsManagement() {
                 <textarea
                   value={lessonForm.description}
                   onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   rows={3}
                 />
               </div>
@@ -2866,14 +2866,14 @@ export function ProductsManagement() {
                   type="url"
                   value={lessonForm.videoUrl}
                   onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
-                  className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                  className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                   placeholder="https://youtube.com/watch?v=..."
                 />
               </div>
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                 >
                   {editingLesson ? "Update Lesson" : "Add Lesson"}
                 </button>
@@ -2884,7 +2884,7 @@ export function ProductsManagement() {
                     setEditingLesson(null);
                     setLessonForm({ title: "", description: "", videoUrl: "", videoType: "youtube", content: "" });
                   }}
-                  className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                  className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
                 >
                   Cancel
                 </button>
@@ -2896,7 +2896,7 @@ export function ProductsManagement() {
               <button
                 type="button"
                 onClick={() => setShowLessonForm(true)}
-                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 + Add Lesson
               </button>
@@ -2922,7 +2922,7 @@ export function ProductsManagement() {
                     alert("Failed to publish course. Please try again.");
                   }
                 }}
-                className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
               >
                 {courseLessons.length === 0 ? "Skip & Publish Product" : "Publish Product"}
               </button>
@@ -2935,34 +2935,34 @@ export function ProductsManagement() {
       {activeTab === "products" && (
         <div className="space-y-4">
           {products.length === 0 ? (
-            <div className="text-center py-12 bg-dark-green-800/30 border border-cyber-green/30 rounded-xl">
-              <p className="text-custom-text/70 mb-4">No products yet. Add your first product to get started!</p>
+            <div className="text-center py-12 bg-surface border border-border-default rounded-xl">
+              <p className="text-text-secondary mb-4">No products yet. Add your first product to get started!</p>
             </div>
           ) : (
             products.map((product) => (
               <div
                 key={product.id}
-                className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl p-6 flex flex-col"
+                className="bg-surface backdrop-blur-sm border border-border-default rounded-xl p-6 flex flex-col"
               >
                 <div className="flex-1">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-custom-text mb-2">{product.name}</h3>
                       <div 
-                        className="product-preview text-custom-text/80 mb-3"
+                        className="product-preview text-text-secondary mb-3"
                         dangerouslySetInnerHTML={{ __html: product.description }}
                       />
                       <div className="flex flex-wrap items-center gap-4 text-sm">
                         <span className="text-cyber-green font-semibold">
                           USD ${product.price} {product.pricing_type === "hourly" ? "/ hour" : ""}
                         </span>
-                        <span className="text-custom-text/60">
+                        <span className="text-text-secondary">
                           {product.pricing_type === "hourly" ? "Hourly Rate" : "One-off Price"}
                         </span>
                         {product.price > 0 && (
                           <span className={`text-xs px-2 py-1 rounded ${
                             product.stripe_product_id 
-                              ? "bg-cyber-green/20 text-cyber-green border border-cyber-green/30" 
+                              ? "bg-primary/20 text-cyber-green border border-border-default" 
                               : "bg-yellow-900/20 text-yellow-400 border border-yellow-500/30"
                           }`}>
                             {product.stripe_product_id ? "✓ Stripe Ready" : "⚠ Stripe Not Set"}
@@ -2973,7 +2973,7 @@ export function ProductsManagement() {
                   </div>
                 </div>
                 {/* Buttons at bottom - stack on mobile, horizontal on desktop */}
-                <div className="flex flex-col sm:flex-row gap-2 mt-4 pt-4 border-t border-cyber-green/20">
+                <div className="flex flex-col sm:flex-row gap-2 mt-4 pt-4 border-t border-border-default">
                   <button
                     onClick={async () => {
                       if (!user) return;
@@ -3012,7 +3012,7 @@ export function ProductsManagement() {
                           sessionStorage.setItem("selectedCourseId", product.course_id);
                         }
                       }}
-                      className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold border border-cyber-green rounded-lg hover:bg-cyber-green-light transition-colors text-sm inline-block text-center w-full sm:w-auto"
+                      className="px-4 py-2 bg-cyber-green text-white font-semibold border border-cyber-green rounded-lg hover:bg-primary-hover transition-colors text-sm inline-block text-center w-full sm:w-auto"
                     >
                       Set up e-Learnings
                     </Link>
@@ -3043,7 +3043,7 @@ export function ProductsManagement() {
                   )}
                   <button
                     onClick={() => handleEdit(product)}
-                    className="px-4 py-2 bg-dark-green-800/50 text-custom-text border border-cyber-green/30 rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm w-full sm:w-auto"
+                    className="px-4 py-2 bg-surface text-custom-text border border-border-default rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm w-full sm:w-auto"
                   >
                     Edit
                   </button>
@@ -3055,7 +3055,7 @@ export function ProductsManagement() {
                   </button>
                 </div>
                 {product.product_type === "e-learning" && product.course_id && showMembersForProduct === product.id && (
-                  <div className="mt-4 pt-4 border-t border-cyber-green/30">
+                  <div className="mt-4 pt-4 border-t border-border-default">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-lg font-semibold text-custom-text">Course Members</h4>
                       <div className="flex gap-2">
@@ -3126,7 +3126,7 @@ export function ProductsManagement() {
                               link.click();
                               document.body.removeChild(link);
                             }}
-                            className="text-xs bg-cyber-green text-dark-green-900 px-3 py-1 rounded font-semibold hover:bg-cyber-green-light transition-colors"
+                            className="text-xs bg-cyber-green text-white px-3 py-1 rounded font-semibold hover:bg-primary-hover transition-colors"
                           >
                             Download CSV
                           </button>
@@ -3136,16 +3136,16 @@ export function ProductsManagement() {
                             console.log("Refresh clicked for courseId:", product.course_id);
                             await fetchCourseMembers(product.course_id!);
                           }}
-                          className="text-xs text-cyber-green hover:text-cyber-green-light transition-colors"
+                          className="text-xs text-cyber-green hover:text-primary-hover transition-colors"
                         >
                           Refresh
                         </button>
                       </div>
                     </div>
                     {courseMembersMap[product.course_id] && courseMembersMap[product.course_id].length > 0 ? (
-                      <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg overflow-hidden">
+                      <div className="bg-custom-bg border border-border-default rounded-lg overflow-hidden">
                         <table className="w-full">
-                          <thead className="bg-dark-green-900/50 border-b border-cyber-green/30">
+                          <thead className="bg-custom-bg border-b border-border-default">
                             <tr>
                               <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Name</th>
                               <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Email</th>
@@ -3159,18 +3159,18 @@ export function ProductsManagement() {
                             {courseMembersMap[product.course_id].map((member: any) => (
                               <tr
                                 key={member.id}
-                                className="border-b border-cyber-green/10 hover:bg-dark-green-900/30 transition-colors"
+                                className="border-b border-cyber-green/10 hover:bg-surface transition-colors"
                               >
                                 <td className="px-4 py-3 text-sm text-custom-text">{member.name}</td>
                                 <td className="px-4 py-3 text-sm text-custom-text">{member.email}</td>
-                                <td className="px-4 py-3 text-sm text-custom-text/70">
+                                <td className="px-4 py-3 text-sm text-text-secondary">
                                   {new Date(member.enrolled_at).toLocaleDateString()}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-custom-text/70">
+                                <td className="px-4 py-3 text-sm text-text-secondary">
                                   {member.questionnaire_responses ? (
                                     <details className="cursor-pointer">
-                                      <summary className="text-cyber-green hover:text-cyber-green-light">View Form Data</summary>
-                                      <div className="mt-2 p-2 bg-dark-green-900/50 rounded text-xs">
+                                      <summary className="text-cyber-green hover:text-primary-hover">View Form Data</summary>
+                                      <div className="mt-2 p-2 bg-custom-bg rounded text-xs">
                                         {Object.entries(member.questionnaire_responses).map(([key, value]: [string, any]) => (
                                           <div key={key} className="mb-1">
                                             <span className="font-semibold">{key}:</span> {String(value)}
@@ -3191,9 +3191,9 @@ export function ProductsManagement() {
                                   ) : member.refund_status === "failed" ? (
                                     <span className="text-red-300">Failed</span>
                                   ) : member.payment_intent_id ? (
-                                    <span className="text-custom-text/60">Paid</span>
+                                    <span className="text-text-secondary">Paid</span>
                                   ) : (
-                                    <span className="text-custom-text/60">Free</span>
+                                    <span className="text-text-secondary">Free</span>
                                   )}
                                 </td>
                                 <td className="px-4 py-3 text-sm">
@@ -3235,7 +3235,7 @@ export function ProductsManagement() {
                                           alert("Failed to invite user. Please try again.");
                                         }
                                       }}
-                                      className="px-3 py-1 bg-cyber-green/20 text-cyber-green border border-cyber-green/50 rounded hover:bg-cyber-green/30 transition-colors text-xs"
+                                      className="px-3 py-1 bg-primary/20 text-cyber-green border border-border-default rounded hover:bg-cyber-green/30 transition-colors text-xs"
                                       title="Invite a user to this course by email"
                                     >
                                       Invite
@@ -3333,11 +3333,11 @@ export function ProductsManagement() {
                       </div>
                     ) : courseMembersMap[product.course_id] === undefined ? (
                       <div className="text-center py-4">
-                        <p className="text-custom-text/60 text-sm">Loading members...</p>
+                        <p className="text-text-secondary text-sm">Loading members...</p>
                       </div>
                     ) : (
                       <div className="text-center py-4">
-                        <p className="text-custom-text/60 text-sm">No members enrolled yet.</p>
+                        <p className="text-text-secondary text-sm">No members enrolled yet.</p>
                         <p className="text-custom-text/40 text-xs mt-2">
                           Check console for debugging info (courseId: {product.course_id})
                         </p>
@@ -3355,26 +3355,26 @@ export function ProductsManagement() {
       {activeTab === "interests" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-custom-text/80">
+            <p className="text-text-secondary">
               Users who registered interest in your products
             </p>
             {interests.length > 0 && (
               <button
                 onClick={downloadInterestsCSV}
-                className="bg-cyber-green text-custom-text px-4 py-2 rounded-lg font-semibold hover:bg-cyber-green-light transition-colors shadow-[0_0_15px_rgba(0,255,136,0.3)] text-sm"
+                className="bg-cyber-green text-custom-text px-4 py-2 rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg shadow-black/20 text-sm"
               >
                 Download CSV
               </button>
             )}
           </div>
           {interests.length === 0 ? (
-            <div className="text-center py-12 bg-dark-green-800/30 border border-cyber-green/30 rounded-xl">
-              <p className="text-custom-text/70">No interests registered yet.</p>
+            <div className="text-center py-12 bg-surface border border-border-default rounded-xl">
+              <p className="text-text-secondary">No interests registered yet.</p>
             </div>
           ) : (
-            <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-xl overflow-hidden">
+            <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl overflow-hidden">
               <table className="w-full">
-                <thead className="bg-dark-green-900/50 border-b border-cyber-green/30">
+                <thead className="bg-custom-bg border-b border-border-default">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Product</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">User Name</th>
@@ -3389,21 +3389,21 @@ export function ProductsManagement() {
                   {interests.map((interest) => (
                     <tr
                       key={interest.id}
-                      className="border-b border-cyber-green/10 hover:bg-dark-green-900/30 transition-colors"
+                      className="border-b border-cyber-green/10 hover:bg-surface transition-colors"
                     >
                       <td className="px-4 py-3 text-sm text-custom-text">{interest.product_name}</td>
                       <td className="px-4 py-3 text-sm text-custom-text">{interest.user_name}</td>
                       <td className="px-4 py-3 text-sm text-custom-text">{interest.user_email}</td>
-                      <td className="px-4 py-3 text-sm text-custom-text/70">
+                      <td className="px-4 py-3 text-sm text-text-secondary">
                         {interest.country_code && interest.phone_number 
                           ? `${interest.country_code} ${interest.phone_number}` 
                           : interest.phone_number || "-"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-custom-text/70">
+                      <td className="px-4 py-3 text-sm text-text-secondary">
                         {interest.questionnaire_responses ? (
                           <details className="cursor-pointer">
-                            <summary className="text-cyber-green hover:text-cyber-green-light">View Form Data</summary>
-                            <div className="mt-2 p-2 bg-dark-green-900/50 rounded text-xs">
+                            <summary className="text-cyber-green hover:text-primary-hover">View Form Data</summary>
+                            <div className="mt-2 p-2 bg-custom-bg rounded text-xs">
                               {Object.entries(interest.questionnaire_responses).map(([key, value]: [string, any]) => (
                                 <div key={key} className="mb-1">
                                   <span className="font-semibold">{key}:</span> {String(value)}
@@ -3415,7 +3415,7 @@ export function ProductsManagement() {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {interest.purchased ? (
-                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-cyber-green/20 text-cyber-green border border-cyber-green/30">
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-primary/20 text-cyber-green border border-border-default">
                             ✓ Yes
                           </span>
                         ) : (
@@ -3424,7 +3424,7 @@ export function ProductsManagement() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-custom-text/70">
+                      <td className="px-4 py-3 text-sm text-text-secondary">
                         {new Date(interest.created_at).toLocaleDateString()}
                       </td>
                     </tr>
@@ -3439,7 +3439,7 @@ export function ProductsManagement() {
       {/* View Form Modal */}
       {viewingFormProductId && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-dark-green-900 border border-cyber-green/30 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-dark-green-900 border border-border-default rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-custom-text">Product Form Preview</h2>
               <button
@@ -3447,33 +3447,33 @@ export function ProductsManagement() {
                   setViewingFormProductId(null);
                   setViewingFormFields([]);
                 }}
-                className="text-custom-text/60 hover:text-custom-text transition-colors"
+                className="text-text-secondary hover:text-custom-text transition-colors"
               >
                 ✕
               </button>
             </div>
             {viewingFormFields.length === 0 ? (
-              <p className="text-custom-text/60">No form fields have been set up yet.</p>
+              <p className="text-text-secondary">No form fields have been set up yet.</p>
             ) : (
               <div className="space-y-4">
                 {viewingFormFields.map((field) => (
-                  <div key={field.id} className="bg-dark-green-800/30 border border-cyber-green/20 rounded-lg p-4">
+                  <div key={field.id} className="bg-surface border border-border-default rounded-lg p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <span className="font-semibold text-custom-text">{field.label}</span>
                           {field.required && <span className="text-red-400 text-xs">*</span>}
-                          <span className="text-xs text-custom-text/60 bg-cyber-green/20 px-2 py-1 rounded">
+                          <span className="text-xs text-text-secondary bg-primary/20 px-2 py-1 rounded">
                             {field.field_type}
                           </span>
                         </div>
                         {field.placeholder && (
-                          <p className="text-sm text-custom-text/60 mb-2">Placeholder: {field.placeholder}</p>
+                          <p className="text-sm text-text-secondary mb-2">Placeholder: {field.placeholder}</p>
                         )}
                         {field.options && Array.isArray(field.options) && field.options.length > 0 && (
                           <div className="mt-2">
-                            <p className="text-sm text-custom-text/60 mb-1">Options:</p>
-                            <ul className="list-disc list-inside text-sm text-custom-text/70">
+                            <p className="text-sm text-text-secondary mb-1">Options:</p>
+                            <ul className="list-disc list-inside text-sm text-text-secondary">
                               {field.options.map((opt: string, idx: number) => (
                                 <li key={idx}>{opt}</li>
                               ))}

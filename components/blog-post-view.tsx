@@ -305,8 +305,8 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="animate-pulse">
-          <div className="h-8 bg-dark-green-800/50 rounded w-3/4 mb-4"></div>
-          <div className="h-4 bg-dark-green-800/50 rounded w-1/2"></div>
+          <div className="h-8 bg-surface rounded w-3/4 mb-4"></div>
+          <div className="h-4 bg-surface rounded w-1/2"></div>
         </div>
       </div>
     );
@@ -323,7 +323,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
             {blogPost.title}
           </h1>
           {blogPost.description && (
-            <p className="text-xl text-custom-text/80 mb-6">{blogPost.description}</p>
+            <p className="text-xl text-text-secondary mb-6">{blogPost.description}</p>
           )}
           {blogPost.profiles && (
             <div className="flex items-start gap-4 mb-4">
@@ -345,7 +345,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                 <div>
                   <div className="font-semibold">{blogPost.profiles.name}</div>
                   {blogPost.profiles.title && (
-                    <div className="text-sm text-custom-text/70">{blogPost.profiles.title}</div>
+                    <div className="text-sm text-text-secondary">{blogPost.profiles.title}</div>
                   )}
                 </div>
               </Link>
@@ -353,9 +353,9 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
           )}
         </header>
         
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 text-center">
+        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-custom-text mb-4">Access Restricted</h2>
-          <p className="text-custom-text/80 mb-6">
+          <p className="text-text-secondary mb-6">
             {blogPost.access_level === "subscriber"
               ? "This post is available to subscribers only."
               : "This post is available to paid members only."}
@@ -363,14 +363,14 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
           {blogPost.access_level === "subscriber" ? (
             <Link
               href={`/expert/${blogPost.expert_id}`}
-              className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
             >
               Subscribe to {blogPost.profiles?.name || "Expert"}
             </Link>
           ) : (
             <Link
               href={`/expert/${blogPost.expert_id}`}
-              className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
             >
               View Courses
             </Link>
@@ -394,7 +394,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                   liked
                     ? "bg-red-900/30 text-red-300 border border-red-500/50"
-                    : "bg-dark-green-900/50 text-custom-text border border-cyber-green/30 hover:bg-dark-green-800/50"
+                    : "bg-custom-bg text-custom-text border border-border-default hover:bg-surface"
                 }`}
               >
                 <span>{liked ? "❤️" : "🤍"}</span>
@@ -405,8 +405,8 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                 disabled={saving}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                   saved
-                    ? "bg-cyber-green/20 text-cyber-green border border-cyber-green/50"
-                    : "bg-dark-green-900/50 text-custom-text border border-cyber-green/30 hover:bg-dark-green-800/50"
+                    ? "bg-primary/20 text-cyber-green border border-border-default"
+                    : "bg-custom-bg text-custom-text border border-border-default hover:bg-surface"
                 }`}
               >
                 <span>{saved ? "✓" : "○"}</span>
@@ -420,7 +420,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
           </h1>
           
           {blogPost.description && (
-            <p className="text-xl text-custom-text/80 mb-6">{blogPost.description}</p>
+            <p className="text-xl text-text-secondary mb-6">{blogPost.description}</p>
           )}
 
           <div className="mb-6">
@@ -444,7 +444,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                   <div>
                     <div className="font-semibold">{blogPost.profiles.name}</div>
                     {blogPost.profiles.title && (
-                      <div className="text-sm text-custom-text/70">{blogPost.profiles.title}</div>
+                      <div className="text-sm text-text-secondary">{blogPost.profiles.title}</div>
                     )}
                   </div>
                 </Link>
@@ -458,7 +458,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                     <SubscribeButton expertId={blogPost.profiles.id} expertName={blogPost.profiles.name} />
                     <Link
                       href={`/messages?expert=${blogPost.profiles.id}`}
-                      className="px-4 py-2 bg-dark-green-800/50 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm font-medium"
+                      className="px-4 py-2 bg-surface border border-border-default text-custom-text rounded-lg hover:bg-dark-green-800 hover:border-cyber-green transition-colors text-sm font-medium"
                     >
                       Message
                     </Link>
@@ -467,10 +467,10 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                       disabled={connecting || connectionStatus !== "none"}
                       className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
                         connectionStatus === "pending"
-                          ? "border-cyber-green/50 text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
+                          ? "border-border-default text-cyber-green bg-surface cursor-not-allowed"
                           : connectionStatus === "accepted"
-                          ? "border-cyber-green text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
-                          : "border-cyber-green/30 text-custom-text hover:bg-dark-green-800/50 hover:border-cyber-green"
+                          ? "border-cyber-green text-cyber-green bg-surface cursor-not-allowed"
+                          : "border-border-default text-custom-text hover:bg-surface hover:border-cyber-green"
                       }`}
                     >
                       {connecting
@@ -486,14 +486,14 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                   // Show CTA button for non-signed-in users
                   <Link
                     href={`/expert/${blogPost.profiles.id}`}
-                    className="px-4 py-2 border border-cyber-green/30 text-cyber-green rounded-lg hover:bg-cyber-green/10 transition-colors text-sm font-medium"
+                    className="px-4 py-2 border border-border-default text-cyber-green rounded-lg hover:bg-primary/10 transition-colors text-sm font-medium"
                   >
                     View Expert Profile
                   </Link>
                 ) : null}
               </div>
             )}
-            <div className="flex items-center gap-4 text-custom-text/70 text-sm">
+            <div className="flex items-center gap-4 text-text-secondary text-sm">
               <time dateTime={blogPost.published_at}>
                 {new Date(blogPost.published_at).toLocaleDateString("en-US", {
                   year: "numeric",
@@ -543,24 +543,24 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
             </div>
             
             {/* Sign-in prompt overlay */}
-            <div className="relative mt-8 bg-gradient-to-br from-cyber-green/10 to-dark-green-800/50 border-2 border-cyber-green/50 rounded-xl p-8 text-center shadow-xl">
+            <div className="relative mt-8 bg-gradient-to-br from-cyber-green/10 to-dark-green-800/50 border-2 border-border-default rounded-xl p-8 text-center shadow-xl">
               <div className="max-w-lg mx-auto">
                 <h3 className="text-2xl sm:text-3xl font-bold text-custom-text mb-3">
                   🔒 Sign in to continue reading
                 </h3>
-                <p className="text-base sm:text-lg text-custom-text/90 mb-6">
+                <p className="text-base sm:text-lg text-text-primary mb-6">
                   This article is available to registered members. Sign in to read the full content and unlock access to all expert insights.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link
                     href={`/login?redirect=/blog/${blogPost.id}`}
-                    className="px-6 py-3 bg-cyber-green text-dark-green-900 font-bold rounded-lg hover:bg-cyber-green-light transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(0,255,136,0.4)]"
+                    className="px-6 py-3 bg-cyber-green text-white font-bold rounded-lg hover:bg-primary-hover transition-all transform hover:scale-105 shadow-lg shadow-black/20"
                   >
                     Sign In to Continue
                   </Link>
                   <Link
                     href={`/register?redirect=/blog/${blogPost.id}`}
-                    className="px-6 py-3 border-2 border-cyber-green/50 text-cyber-green font-semibold rounded-lg hover:bg-cyber-green/10 transition-all"
+                    className="px-6 py-3 border-2 border-border-default text-cyber-green font-semibold rounded-lg hover:bg-primary/10 transition-all"
                   >
                     Create Account
                   </Link>
@@ -570,9 +570,9 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
           </div>
         ) : !hasAccess ? (
           // Signed-in but no access (subscriber/paid content)
-          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 text-center">
+          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-8 text-center">
             <h2 className="text-2xl font-bold text-custom-text mb-4">Access Restricted</h2>
-            <p className="text-custom-text/80 mb-6">
+            <p className="text-text-secondary mb-6">
               {blogPost.access_level === "subscriber"
                 ? "This post is available to subscribers only."
                 : "This post is available to paid members only."}
@@ -580,14 +580,14 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
             {blogPost.access_level === "subscriber" ? (
               <Link
                 href={`/expert/${blogPost.expert_id}`}
-                className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 Subscribe to {blogPost.profiles?.name || "Expert"}
               </Link>
             ) : (
               <Link
                 href={`/expert/${blogPost.expert_id}`}
-                className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 View Courses
               </Link>

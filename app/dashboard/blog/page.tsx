@@ -91,7 +91,7 @@ export default function DashboardBlogPage() {
             <h1 className="text-4xl font-bold text-custom-text">My Blog Posts</h1>
             <button
               onClick={() => router.push("/blog/create")}
-              className="flex items-center gap-2 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+              className="flex items-center gap-2 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
             >
               <span className="text-xl">+</span>
               <span>Create Blog Post</span>
@@ -101,15 +101,15 @@ export default function DashboardBlogPage() {
           {loading ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-32 bg-dark-green-800/30 rounded-lg animate-pulse"></div>
+                <div key={i} className="h-32 bg-surface rounded-lg animate-pulse"></div>
               ))}
             </div>
           ) : posts.length === 0 ? (
-            <div className="text-center py-12 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg">
-              <p className="text-custom-text/80 text-lg mb-4">You haven&apos;t created any blog posts yet.</p>
+            <div className="text-center py-12 bg-surface border border-border-default rounded-lg">
+              <p className="text-text-secondary text-lg mb-4">You haven&apos;t created any blog posts yet.</p>
               <button
                 onClick={() => router.push("/blog/create")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 <span className="text-xl">+</span>
                 <span>Create Your First Blog Post</span>
@@ -120,7 +120,7 @@ export default function DashboardBlogPage() {
               {posts.map((post) => (
                 <div
                   key={post.id}
-                  className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
+                  className="bg-surface border border-border-default rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
                 >
                   <div className="flex">
                     {/* Featured Image */}
@@ -157,14 +157,14 @@ export default function DashboardBlogPage() {
                               Draft
                             </span>
                           )}
-                          <span className="text-xs bg-dark-green-900/50 text-custom-text/70 px-2 py-1 rounded">
+                          <span className="text-xs bg-custom-bg text-text-secondary px-2 py-1 rounded">
                             {post.access_level}
                           </span>
                         </div>
-                        <p className="text-sm text-custom-text/70 line-clamp-2 mb-3">
+                        <p className="text-sm text-text-secondary line-clamp-2 mb-3">
                           {post.description}
                         </p>
-                        <div className="flex items-center gap-4 text-xs text-custom-text/60">
+                        <div className="flex items-center gap-4 text-xs text-text-secondary">
                           <span>{formatDate(post.published_at)}</span>
                           <span>•</span>
                           <span>{post.reading_time_minutes} min read</span>
@@ -179,13 +179,13 @@ export default function DashboardBlogPage() {
                       <div className="flex items-center gap-3 mt-4">
                         <Link
                           href={`/blog/${post.id}`}
-                          className="px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-900 hover:border-cyber-green transition-colors text-sm"
+                          className="px-4 py-2 bg-custom-bg border border-border-default text-custom-text rounded-lg hover:bg-dark-green-900 hover:border-cyber-green transition-colors text-sm"
                         >
                           View
                         </Link>
                         <Link
                           href={`/blog/edit/${post.id}`}
-                          className="px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-900 hover:border-cyber-green transition-colors text-sm"
+                          className="px-4 py-2 bg-custom-bg border border-border-default text-custom-text rounded-lg hover:bg-dark-green-900 hover:border-cyber-green transition-colors text-sm"
                         >
                           Edit
                         </Link>

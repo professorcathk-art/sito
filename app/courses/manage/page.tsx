@@ -464,7 +464,7 @@ export default function ManageCoursePage() {
             <h1 className="text-4xl font-bold text-custom-text">Classroom</h1>
             <button
               onClick={() => fetchCourses()}
-              className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+              className="px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
             >
               🔄 Refresh
             </button>
@@ -473,9 +473,9 @@ export default function ManageCoursePage() {
           {!selectedCourse ? (
             <div className="space-y-4">
               {courses.length === 0 ? (
-                <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
-                  <p className="text-custom-text/80 mb-4">No courses found.</p>
-                  <p className="text-custom-text/60 text-sm mb-4">
+                <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+                  <p className="text-text-secondary mb-4">No courses found.</p>
+                  <p className="text-text-secondary text-sm mb-4">
                     {user && courses.some(c => c.expert_id === user.id)
                       ? "Create a course from the Products page first."
                       : "You haven't enrolled in any courses yet. Purchase a course to get started."}
@@ -483,13 +483,13 @@ export default function ManageCoursePage() {
                   <div className="flex gap-4 justify-center">
                     <button
                       onClick={() => fetchCourses()}
-                      className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                      className="px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
                     >
                       🔄 Refresh
                     </button>
                     <Link
                       href="/products"
-                      className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                      className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                     >
                       Browse Courses
                     </Link>
@@ -501,7 +501,7 @@ export default function ManageCoursePage() {
                     <div
                       key={course.id}
                       onClick={() => handleSelectCourse(course)}
-                      className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 cursor-pointer hover:border-cyber-green transition-colors"
+                      className="bg-surface border border-border-default rounded-lg p-6 cursor-pointer hover:border-cyber-green transition-colors"
                     >
                       {course.cover_image_url && (
                         <img
@@ -511,7 +511,7 @@ export default function ManageCoursePage() {
                         />
                       )}
                       <h3 className="text-xl font-bold text-custom-text mb-2">{course.title}</h3>
-                      <p className="text-custom-text/70 text-sm mb-4 line-clamp-2">
+                      <p className="text-text-secondary text-sm mb-4 line-clamp-2">
                         {course.description || "No description"}
                       </p>
                       <div className="flex items-center justify-between">
@@ -531,19 +531,19 @@ export default function ManageCoursePage() {
             <div className="space-y-8">
               <button
                 onClick={() => setSelectedCourse(null)}
-                className="text-cyber-green hover:text-cyber-green-light mb-4"
+                className="text-cyber-green hover:text-primary-hover mb-4"
               >
                 ← Back to Classroom
               </button>
 
               {/* Course Details - View/Edit based on ownership */}
-              <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+              <div className="bg-surface border border-border-default rounded-lg p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-custom-text">Details</h2>
                   {selectedCourse.expert_id === user?.id && !showDetailsEdit && (
                     <button
                       onClick={() => setShowDetailsEdit(true)}
-                      className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm"
                     >
                       Update Course Details
                     </button>
@@ -559,7 +559,7 @@ export default function ManageCoursePage() {
                         type="text"
                         value={courseForm.title}
                         onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
-                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                        className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                       />
                     </div>
                     <div>
@@ -575,7 +575,7 @@ export default function ManageCoursePage() {
                         type="text"
                         value={courseForm.coverImageUrl}
                         onChange={(e) => setCourseForm({ ...courseForm, coverImageUrl: e.target.value })}
-                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                        className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                         placeholder="https://..."
                       />
                     </div>
@@ -585,10 +585,10 @@ export default function ManageCoursePage() {
                         type="text"
                         value={courseForm.category}
                         onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
-                        className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                        className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                         placeholder="e.g., AI Courses, Business, Design, Marketing"
                       />
-                      <p className="text-xs text-custom-text/60 mt-1">Categorize your course to help users discover it</p>
+                      <p className="text-xs text-text-secondary mt-1">Categorize your course to help users discover it</p>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="flex items-center mt-6">
@@ -597,7 +597,7 @@ export default function ManageCoursePage() {
                           id="is_free"
                           checked={courseForm.isFree}
                           onChange={(e) => setCourseForm({ ...courseForm, isFree: e.target.checked })}
-                          className="h-4 w-4 text-cyber-green focus:ring-cyber-green border-gray-300 rounded"
+                          className="h-4 w-4 text-cyber-green focus:ring-primary border-gray-300 rounded"
                         />
                         <label htmlFor="is_free" className="ml-2 block text-sm text-custom-text">
                           Free Course
@@ -611,7 +611,7 @@ export default function ManageCoursePage() {
                           setShowDetailsEdit(false);
                         }}
                         disabled={saving}
-                        className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+                        className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
                       >
                         {saving ? "Saving..." : "Save Details"}
                       </button>
@@ -629,7 +629,7 @@ export default function ManageCoursePage() {
                             category: selectedCourse.category || "",
                           });
                         }}
-                        className="px-6 py-3 border border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                        className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-lg hover:bg-surface transition-colors"
                       >
                         Cancel
                       </button>
@@ -691,21 +691,21 @@ export default function ManageCoursePage() {
                     // View-only mode for owner
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-custom-text/70 mb-2">Title</label>
+                        <label className="block text-sm font-medium text-text-secondary mb-2">Title</label>
                         <p className="text-custom-text">{selectedCourse.title}</p>
                       </div>
                       {selectedCourse.description && (
                         <div>
-                          <label className="block text-sm font-medium text-custom-text/70 mb-2">Description</label>
+                          <label className="block text-sm font-medium text-text-secondary mb-2">Description</label>
                           <div 
-                            className="prose prose-invert prose-lg max-w-none blog-content text-custom-text/80"
+                            className="prose prose-invert prose-lg max-w-none blog-content text-text-secondary"
                             dangerouslySetInnerHTML={{ __html: selectedCourse.description }}
                           />
                         </div>
                       )}
                       {selectedCourse.cover_image_url && (
                         <div>
-                          <label className="block text-sm font-medium text-custom-text/70 mb-2">Cover Image</label>
+                          <label className="block text-sm font-medium text-text-secondary mb-2">Cover Image</label>
                           <img
                             src={selectedCourse.cover_image_url}
                             alt={selectedCourse.title}
@@ -715,12 +715,12 @@ export default function ManageCoursePage() {
                       )}
                       {selectedCourse.category && (
                         <div>
-                          <label className="block text-sm font-medium text-custom-text/70 mb-2">Category</label>
+                          <label className="block text-sm font-medium text-text-secondary mb-2">Category</label>
                           <p className="text-custom-text">{selectedCourse.category}</p>
                         </div>
                       )}
                       <div>
-                        <label className="block text-sm font-medium text-custom-text/70 mb-2">Price</label>
+                        <label className="block text-sm font-medium text-text-secondary mb-2">Price</label>
                         <p className="text-custom-text">
                           {selectedCourse.is_free ? "Free" : `$${selectedCourse.price}`}
                         </p>
@@ -731,21 +731,21 @@ export default function ManageCoursePage() {
                   // Non-owner view-only
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-custom-text/70 mb-2">Title</label>
+                      <label className="block text-sm font-medium text-text-secondary mb-2">Title</label>
                       <p className="text-custom-text">{selectedCourse.title}</p>
                     </div>
                     {selectedCourse.description && (
                       <div>
-                        <label className="block text-sm font-medium text-custom-text/70 mb-2">Description</label>
+                        <label className="block text-sm font-medium text-text-secondary mb-2">Description</label>
                         <div 
-                          className="prose prose-invert prose-lg max-w-none blog-content text-custom-text/80"
+                          className="prose prose-invert prose-lg max-w-none blog-content text-text-secondary"
                           dangerouslySetInnerHTML={{ __html: selectedCourse.description }}
                         />
                       </div>
                     )}
                     {selectedCourse.cover_image_url && (
                       <div>
-                        <label className="block text-sm font-medium text-custom-text/70 mb-2">Cover Image</label>
+                        <label className="block text-sm font-medium text-text-secondary mb-2">Cover Image</label>
                         <img
                           src={selectedCourse.cover_image_url}
                           alt={selectedCourse.title}
@@ -755,12 +755,12 @@ export default function ManageCoursePage() {
                     )}
                     {selectedCourse.category && (
                       <div>
-                        <label className="block text-sm font-medium text-custom-text/70 mb-2">Category</label>
+                        <label className="block text-sm font-medium text-text-secondary mb-2">Category</label>
                         <p className="text-custom-text">{selectedCourse.category}</p>
                       </div>
                     )}
                     <div>
-                      <label className="block text-sm font-medium text-custom-text/70 mb-2">Price</label>
+                      <label className="block text-sm font-medium text-text-secondary mb-2">Price</label>
                       <p className="text-custom-text">
                         {selectedCourse.is_free ? "Free" : `$${selectedCourse.price}`}
                       </p>
@@ -770,16 +770,16 @@ export default function ManageCoursePage() {
               </div>
 
               {/* Lessons - View/Edit based on ownership */}
-              <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+              <div className="bg-surface border border-border-default rounded-lg p-6">
                 <h2 className="text-2xl font-bold text-custom-text mb-6">Lessons</h2>
                 {lessons.length === 0 ? (
-                  <p className="text-custom-text/70 mb-4">No lessons added yet.</p>
+                  <p className="text-text-secondary mb-4">No lessons added yet.</p>
                 ) : (
                   <div className="space-y-4 mb-6">
                     {lessons.map((lesson, index) => (
                       <div
                         key={lesson.id}
-                        className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-4"
+                        className="bg-custom-bg border border-border-default rounded-lg p-4"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -787,21 +787,21 @@ export default function ManageCoursePage() {
                               {index + 1}. {lesson.title}
                             </p>
                             {lesson.description && (
-                              <p className="text-custom-text/70 text-sm mb-2">{lesson.description}</p>
+                              <p className="text-text-secondary text-sm mb-2">{lesson.description}</p>
                             )}
                             {lesson.video_url && (
                               <a
                                 href={lesson.video_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-cyber-green hover:text-cyber-green-light text-sm"
+                                className="text-cyber-green hover:text-primary-hover text-sm"
                               >
                                 Watch Video →
                               </a>
                             )}
                             {lesson.content && (
                               <div 
-                                className="prose prose-invert prose-sm max-w-none blog-content text-custom-text/80 mt-2"
+                                className="prose prose-invert prose-sm max-w-none blog-content text-text-secondary mt-2"
                                 dangerouslySetInnerHTML={{ __html: lesson.content }}
                               />
                             )}
@@ -833,7 +833,7 @@ export default function ManageCoursePage() {
                 {selectedCourse.expert_id === user?.id && (
                   <>
                     {showLessonForm && (
-                      <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg p-6 mt-6">
+                      <div className="bg-custom-bg border border-border-default rounded-lg p-6 mt-6">
                         <h3 className="text-xl font-bold text-custom-text mb-4">
                           {editingLesson ? "Edit Lesson" : "Add New Lesson"}
                         </h3>
@@ -844,7 +844,7 @@ export default function ManageCoursePage() {
                               type="text"
                               value={lessonForm.title}
                               onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
-                              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                               required
                             />
                           </div>
@@ -854,7 +854,7 @@ export default function ManageCoursePage() {
                               value={lessonForm.description}
                               onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
                               rows={3}
-                              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                             ></textarea>
                           </div>
                           <div>
@@ -863,7 +863,7 @@ export default function ManageCoursePage() {
                               type="text"
                               value={lessonForm.videoUrl}
                               onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
-                              className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                               placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                             />
                           </div>
@@ -873,7 +873,7 @@ export default function ManageCoursePage() {
                               <select
                                 value={lessonForm.videoType}
                                 onChange={(e) => setLessonForm({ ...lessonForm, videoType: e.target.value as "youtube" | "vimeo" })}
-                                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                               >
                                 <option value="youtube">YouTube</option>
                                 <option value="vimeo">Vimeo</option>
@@ -883,12 +883,12 @@ export default function ManageCoursePage() {
                           <div>
                             <div className="flex items-center justify-between mb-2">
                               <label className="block text-sm font-medium text-custom-text">
-                                Lesson Content <span className="text-xs text-custom-text/60">(Rich Text)</span>
+                                Lesson Content <span className="text-xs text-text-secondary">(Rich Text)</span>
                               </label>
                               <button
                                 type="button"
                                 onClick={() => setIsRichTextMode(!isRichTextMode)}
-                                className="px-3 py-1 text-xs font-medium bg-dark-green-800/50 border border-cyber-green/30 rounded-lg text-custom-text hover:bg-dark-green-800 hover:border-cyber-green transition-colors"
+                                className="px-3 py-1 text-xs font-medium bg-surface border border-border-default rounded-lg text-custom-text hover:bg-dark-green-800 hover:border-cyber-green transition-colors"
                               >
                                 {isRichTextMode ? "Plain Text" : "Rich Text"}
                               </button>
@@ -907,7 +907,7 @@ export default function ManageCoursePage() {
                                 value={lessonForm.content}
                                 onChange={(e) => setLessonForm({ ...lessonForm, content: e.target.value })}
                                 rows={6}
-                                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text"
                                 placeholder="Enter lesson content (plain text)"
                               ></textarea>
                             )}
@@ -915,7 +915,7 @@ export default function ManageCoursePage() {
                           <div className="flex gap-4">
                             <button
                               type="submit"
-                              className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                              className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                             >
                               {editingLesson ? "Update Lesson" : "Add Lesson"}
                             </button>
@@ -932,7 +932,7 @@ export default function ManageCoursePage() {
                                   content: "",
                                 });
                               }}
-                              className="px-6 py-3 border border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                              className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-lg hover:bg-surface transition-colors"
                             >
                               Cancel
                             </button>
@@ -945,7 +945,7 @@ export default function ManageCoursePage() {
                     {!showLessonForm && (
                       <button
                         onClick={() => setShowLessonForm(true)}
-                        className="w-full px-6 py-4 bg-dark-green-800/50 border-2 border-dashed border-cyber-green/30 text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
+                        className="w-full px-6 py-4 bg-surface border-2 border-dashed border-border-default text-custom-text font-semibold rounded-lg hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
                       >
                         + Add Lesson
                       </button>
@@ -956,12 +956,12 @@ export default function ManageCoursePage() {
 
               {/* Course Members - Only show for course owner */}
               {selectedCourse.expert_id === user?.id && (
-                <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                <div className="bg-surface border border-border-default rounded-lg p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-custom-text">Course Members</h2>
                     <button
                       onClick={() => setShowAddMemberForm(!showAddMemberForm)}
-                      className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm"
                     >
                       {showAddMemberForm ? "Cancel" : "+ Add Member"}
                     </button>
@@ -969,7 +969,7 @@ export default function ManageCoursePage() {
 
                   {/* Add Member Form */}
                   {showAddMemberForm && (
-                    <form onSubmit={handleAddMember} className="mb-6 p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg">
+                    <form onSubmit={handleAddMember} className="mb-6 p-4 bg-custom-bg border border-border-default rounded-lg">
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-custom-text mb-2">
                           Email Address *
@@ -978,17 +978,17 @@ export default function ManageCoursePage() {
                           type="email"
                           value={memberEmail}
                           onChange={(e) => setMemberEmail(e.target.value)}
-                          className="w-full px-4 py-2 bg-dark-green-800/50 border border-cyber-green/30 rounded-lg text-custom-text"
+                          className="w-full px-4 py-2 bg-surface border border-border-default rounded-lg text-custom-text"
                           placeholder="student@example.com"
                           required
                         />
-                        <p className="text-xs text-custom-text/60 mt-1">
+                        <p className="text-xs text-text-secondary mt-1">
                           Add a member by email. They will be able to access the course after you add them.
                         </p>
                       </div>
                       <button
                         type="submit"
-                        className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                        className="px-6 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                       >
                         Add Member
                       </button>
@@ -998,11 +998,11 @@ export default function ManageCoursePage() {
                   {/* Members List */}
                   <div className="space-y-2">
                     {enrollments.length === 0 ? (
-                      <p className="text-custom-text/60 text-sm">No members enrolled yet.</p>
+                      <p className="text-text-secondary text-sm">No members enrolled yet.</p>
                     ) : (
-                      <div className="bg-dark-green-900/50 border border-cyber-green/30 rounded-lg overflow-hidden">
+                      <div className="bg-custom-bg border border-border-default rounded-lg overflow-hidden">
                         <table className="w-full">
-                          <thead className="bg-dark-green-900/50 border-b border-cyber-green/30">
+                          <thead className="bg-custom-bg border-b border-border-default">
                             <tr>
                               <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Name</th>
                               <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Email</th>
@@ -1013,7 +1013,7 @@ export default function ManageCoursePage() {
                             {enrollments.map((enrollment) => (
                               <tr
                                 key={enrollment.id}
-                                className="border-b border-cyber-green/10 hover:bg-dark-green-900/30 transition-colors"
+                                className="border-b border-cyber-green/10 hover:bg-surface transition-colors"
                               >
                                 <td className="px-4 py-3 text-sm text-custom-text">
                                   {enrollment.profiles?.name || "N/A"}
@@ -1021,7 +1021,7 @@ export default function ManageCoursePage() {
                                 <td className="px-4 py-3 text-sm text-custom-text">
                                   {enrollment.user_email || enrollment.profiles?.email || "N/A"}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-custom-text/70">
+                                <td className="px-4 py-3 text-sm text-text-secondary">
                                   {new Date(enrollment.enrolled_at).toLocaleDateString()}
                                 </td>
                               </tr>

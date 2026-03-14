@@ -8,9 +8,9 @@ export default function AboutPage() {
       <Navigation />
       <div className="pt-24 pb-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-12 mb-8">
+          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-12 mb-8">
             <h1 className="text-4xl font-bold text-cyber-green mb-6 text-glow">About Sito</h1>
-            <div className="prose prose-lg max-w-none text-custom-text/90 space-y-6">
+            <div className="prose prose-lg max-w-none text-text-primary space-y-6">
               <p>
                 Sito represents the timeless relationship between master and student, mentor
                 and mentee. Our platform bridges the gap between industry experts and those seeking
@@ -28,7 +28,7 @@ export default function AboutPage() {
                 their career goals.
               </p>
               <h2 className="text-2xl font-bold text-custom-text mt-8 mb-4">How It Works</h2>
-              <ul className="list-disc list-inside space-y-2 text-custom-text/90">
+              <ul className="list-disc list-inside space-y-2 text-text-primary">
                 <li>Experts create profiles showcasing their expertise and experience</li>
                 <li>Users browse the directory to find mentors in their field</li>
                 <li>Direct messaging enables seamless communication</li>
@@ -37,9 +37,9 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-12">
+          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-12">
             <h2 className="text-3xl font-bold text-cyber-green mb-4 text-glow">Contact Us</h2>
-            <p className="text-custom-text/80 mb-6">
+            <p className="text-text-secondary mb-6">
               Have a question or feedback? We&apos;d love to hear from you!
             </p>
             <ContactForm />

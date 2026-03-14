@@ -89,7 +89,7 @@ function SuccessContent() {
         <div className="max-w-2xl mx-auto">
           {loading ? (
             <div className="text-center">
-              <div className="animate-pulse text-custom-text/60">
+              <div className="animate-pulse text-text-secondary">
                 Processing...
               </div>
             </div>
@@ -101,12 +101,12 @@ function SuccessContent() {
               <p className="text-red-300">{error}</p>
             </div>
           ) : (
-            <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
+            <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
               <div className="text-6xl mb-4">✓</div>
               <h1 className="text-3xl font-bold text-custom-text mb-4">
                 Payment Successful!
               </h1>
-              <p className="text-custom-text/80 mb-6">
+              <p className="text-text-secondary mb-6">
                 Thank you for your purchase. Your payment has been processed successfully.
                 {appointmentId && (
                   <span className="block mt-2 text-sm">
@@ -120,7 +120,7 @@ function SuccessContent() {
                 )}
               </p>
               {sessionId && (
-                <p className="text-sm text-custom-text/60 mb-6">
+                <p className="text-sm text-text-secondary mb-6">
                   Session ID: {sessionId}
                 </p>
               )}
@@ -128,21 +128,21 @@ function SuccessContent() {
                 {appointmentId ? (
                   <Link
                     href="/appointments/manage"
-                    className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                    className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                   >
                     Go to Manage Appointments
                   </Link>
                 ) : (
                   <Link
                     href="/courses/manage"
-                    className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                    className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
                   >
                     Go to Classroom
                   </Link>
                 )}
                 <Link
                   href="/dashboard"
-                  className="px-6 py-3 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors"
+                  className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
                 >
                   Go to Dashboard
                 </Link>
@@ -162,7 +162,7 @@ export default function CheckoutSuccessPage() {
         <Navigation />
         <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto text-center">
-            <div className="animate-pulse text-custom-text/60">Loading...</div>
+            <div className="animate-pulse text-text-secondary">Loading...</div>
           </div>
         </div>
       </div>

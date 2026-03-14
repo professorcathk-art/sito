@@ -258,7 +258,7 @@ export default function BlogFeedPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2">Sharing Feed</h1>
-            <p className="text-base sm:text-lg text-custom-text/80">
+            <p className="text-base sm:text-lg text-text-secondary">
               Discover insights from industry experts
             </p>
           </div>
@@ -266,19 +266,19 @@ export default function BlogFeedPage() {
           {loading ? (
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-32 bg-dark-green-800/30 rounded-lg animate-pulse"></div>
+                <div key={i} className="h-32 bg-surface rounded-lg animate-pulse"></div>
               ))}
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-custom-text/80 text-lg">No blog posts available yet.</p>
+              <p className="text-text-secondary text-lg">No blog posts available yet.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {posts.map((post) => (
                 <div
                   key={post.id}
-                  className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
+                  className="bg-surface border border-border-default rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
                   style={{ minHeight: "120px" }} // Flexible height
                 >
                   {post.has_access ? (
@@ -295,11 +295,11 @@ export default function BlogFeedPage() {
                               {post.expert_name}
                             </span>
                             {post.is_subscribed && (
-                              <span className="text-xs text-cyber-green bg-cyber-green/20 px-2 py-0.5 rounded">
+                              <span className="text-xs text-cyber-green bg-primary/20 px-2 py-0.5 rounded">
                                 Subscribed
                               </span>
                             )}
-                            <span className="text-xs text-custom-text/60">
+                            <span className="text-xs text-text-secondary">
                               {formatDate(post.published_at)}
                             </span>
                           </div>
@@ -307,13 +307,13 @@ export default function BlogFeedPage() {
                             {post.title}
                           </h3>
                           {post.description && (
-                            <p className="text-sm text-custom-text/70 line-clamp-2 mb-2">
+                            <p className="text-sm text-text-secondary line-clamp-2 mb-2">
                               {post.description}
                             </p>
                           )}
                           {post.content && !post.description && (
                             <div 
-                              className="text-sm text-custom-text/70 line-clamp-3 mb-2"
+                              className="text-sm text-text-secondary line-clamp-3 mb-2"
                               dangerouslySetInnerHTML={{ 
                                 __html: post.content.replace(/<[^>]*>/g, '').substring(0, 200) + '...' 
                               }}
@@ -322,7 +322,7 @@ export default function BlogFeedPage() {
                         </div>
 
                         {/* Footer */}
-                        <div className="flex items-center justify-between text-xs text-custom-text/60">
+                        <div className="flex items-center justify-between text-xs text-text-secondary">
                           <div className="flex items-center gap-4">
                             <span>{post.reading_time_minutes} min read</span>
                             <span>{post.view_count} views</span>
@@ -338,7 +338,7 @@ export default function BlogFeedPage() {
                               className={`p-1.5 rounded transition-colors ${
                                 post.is_liked
                                   ? "text-red-500 hover:bg-red-900/20"
-                                  : "text-custom-text/60 hover:bg-dark-green-800/50"
+                                  : "text-text-secondary hover:bg-surface"
                               }`}
                             >
                               ❤️ {post.like_count}
@@ -352,8 +352,8 @@ export default function BlogFeedPage() {
                               disabled={savingPost === post.id}
                               className={`p-1.5 rounded transition-colors ${
                                 post.is_saved
-                                  ? "text-cyber-green hover:bg-cyber-green/20"
-                                  : "text-custom-text/60 hover:bg-dark-green-800/50"
+                                  ? "text-cyber-green hover:bg-primary/20"
+                                  : "text-text-secondary hover:bg-surface"
                               }`}
                             >
                               {post.is_saved ? "✓ Saved" : "💾 Save"}
@@ -377,14 +377,14 @@ export default function BlogFeedPage() {
                       <div className="flex-1 p-4 flex flex-col justify-between min-w-0 w-full relative">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-semibold text-custom-text/60 truncate">
+                            <span className="text-sm font-semibold text-text-secondary truncate">
                               {post.expert_name}
                             </span>
-                            <span className="text-xs text-custom-text/60">
+                            <span className="text-xs text-text-secondary">
                               {formatDate(post.published_at)}
                             </span>
                           </div>
-                          <h3 className="text-lg font-bold text-custom-text/80 mb-1 line-clamp-2">
+                          <h3 className="text-lg font-bold text-text-secondary mb-1 line-clamp-2">
                             {post.title}
                           </h3>
                           <div className="relative">
@@ -392,7 +392,7 @@ export default function BlogFeedPage() {
                               {post.description || "This content is available to subscribers only. Subscribe to unlock this post and access exclusive content from this expert."}
                             </p>
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="bg-dark-green-900/80 backdrop-blur-sm border border-cyber-green/30 rounded-lg p-3 flex items-center gap-2">
+                              <div className="bg-dark-green-900/80 backdrop-blur-sm border border-border-default rounded-lg p-3 flex items-center gap-2">
                                 <span className="text-2xl">🔒</span>
                                 <span className="text-sm text-custom-text font-semibold">
                                   {!user ? "Sign in to view" : "Subscribe to view"}

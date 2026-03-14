@@ -453,11 +453,11 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8">
+        <div className="bg-surface border border-border-default rounded-xl shadow-lg shadow-black/20 p-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-dark-green-800/50 rounded w-1/3 mb-4"></div>
-            <div className="h-4 bg-dark-green-800/50 rounded w-1/2 mb-8"></div>
-            <div className="h-32 bg-dark-green-800/50 rounded"></div>
+            <div className="h-8 bg-surface/80 rounded w-1/3 mb-4"></div>
+            <div className="h-4 bg-surface/80 rounded w-1/2 mb-8"></div>
+            <div className="h-32 bg-surface/80 rounded"></div>
           </div>
         </div>
       </div>
@@ -467,8 +467,8 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
   if (!expert) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 text-center">
-          <p className="text-custom-text/80">Expert not found</p>
+        <div className="bg-surface border border-border-default rounded-xl shadow-lg shadow-black/20 p-8 text-center">
+          <p className="text-text-secondary">Expert not found</p>
         </div>
       </div>
     );
@@ -476,31 +476,31 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-      <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8">
+      <div className="bg-surface border border-border-default rounded-xl shadow-lg shadow-black/20 p-8">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-start gap-4 flex-1">
             {expert.avatar_url && (
               <img
                 src={expert.avatar_url}
                 alt={expert.name}
-                className="w-20 h-20 rounded-full object-cover border-2 border-cyber-green/50 flex-shrink-0"
+                className="w-20 h-20 rounded-full object-cover border-2 border-border-default flex-shrink-0"
               />
             )}
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-custom-text">{expert.name}</h1>
+                <h1 className="text-3xl font-bold text-text-primary">{expert.name}</h1>
                 {expert.verified && (
-                  <span className="text-cyber-green text-xl" title="Verified Expert">
+                  <span className="text-primary text-xl" title="Verified Expert">
                     ✓
                   </span>
                 )}
               </div>
             {(expert.tagline || expert.title) && (
-              <p className="text-base sm:text-xl text-custom-text/80 mb-2">{expert.tagline || expert.title}</p>
+              <p className="text-base sm:text-xl text-text-secondary mb-2">{expert.tagline || expert.title}</p>
             )}
-            <div className="flex items-center gap-4 text-custom-text/70">
+            <div className="flex items-center gap-4 text-text-secondary">
               {expert.category && (
-                <span className="text-xs text-cyber-green bg-dark-green-900/50 px-2 py-1 rounded-full border border-cyber-green/30">
+                <span className="text-xs text-primary bg-transparent px-2 py-1 rounded-full border border-primary">
                   {expert.category}
                 </span>
               )}
@@ -511,18 +511,18 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-custom-text mb-3">About</h2>
-          <p className="text-custom-text/90 leading-relaxed whitespace-pre-line">{expert.bio}</p>
+          <h2 className="text-xl font-bold text-text-primary mb-3">About</h2>
+          <p className="text-text-primary leading-relaxed whitespace-pre-line">{expert.bio}</p>
         </div>
 
         {/* 1-on-1 Timeslots Section - Show View Button Only if slots exist */}
         {appointmentSlots.length > 0 && user && user.id !== expert.id && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-custom-text">1-on-1 Appointments</h2>
+              <h2 className="text-xl font-bold text-text-primary">1-on-1 Appointments</h2>
               <Link
                 href={`/appointments/book/${expert.id}`}
-                className="px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition-colors"
               >
                 View Available Timeslots
               </Link>
@@ -532,14 +532,14 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
 
         {(expert.website || expert.linkedin || expert.instagram_url) && (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-3">Links</h2>
+            <h2 className="text-xl font-bold text-text-primary mb-3">Links</h2>
             <div className="flex flex-wrap gap-4">
               {expert.website && (
                 <a
                   href={expert.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-cyber-green hover:text-cyber-green-light underline transition-colors"
+                  className="text-primary hover:text-primary-hover underline transition-colors"
                 >
                   Website
                 </a>
@@ -549,7 +549,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                   href={expert.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-cyber-green hover:text-cyber-green-light underline transition-colors"
+                  className="text-primary hover:text-primary-hover underline transition-colors"
                 >
                   LinkedIn
                 </a>
@@ -559,7 +559,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                   href={expert.instagram_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-cyber-green hover:text-cyber-green-light underline transition-colors"
+                  className="text-primary hover:text-primary-hover underline transition-colors"
                 >
                   Instagram
                 </a>
@@ -571,7 +571,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
         {/* Blog Posts Section - Only show if blog posts exist */}
         {hasBlogPosts && (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-4">Blog Posts</h2>
+            <h2 className="text-xl font-bold text-text-primary mb-4">Blog Posts</h2>
             <BlogPostsList expertId={expertId} limit={6} />
           </div>
         )}
@@ -579,21 +579,21 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
         {/* Courses Section - Show only course products */}
         {loadingProducts ? (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-3">Courses</h2>
+            <h2 className="text-xl font-bold text-text-primary mb-3">Courses</h2>
             <div className="animate-pulse space-y-4">
-              <div className="h-24 bg-dark-green-800/50 rounded-xl"></div>
+              <div className="h-24 bg-surface/80 rounded-xl"></div>
             </div>
           </div>
         ) : products.filter(p => p.product_type === "e-learning").length > 0 ? (
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-custom-text mb-4">Secret Recipe</h2>
+            <h2 className="text-xl font-bold text-text-primary mb-4">Secret Recipe</h2>
             <div className="space-y-4">
               {products.filter(p => p.product_type === "e-learning").map((product) => {
                 const isExpanded = expandedProducts.has(product.id);
                 return (
                   <div
                     key={product.id}
-                    className="bg-dark-green-900/30 border border-cyber-green/30 rounded-xl p-6 relative"
+                    className="bg-surface border border-border-default rounded-xl p-6 relative"
                   >
                     {/* Eye-catching Live Webinar Label - Top on mobile, top-right on desktop */}
                     {product.e_learning_subtype === "live-webinar" && (
@@ -609,15 +609,15 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                       <div className="flex-1 pt-8 sm:pt-0">
                         <Link 
                           href={product.course_id ? `/courses/${product.course_id}` : '#'}
-                          className="block hover:text-cyber-green transition-colors"
+                          className="block hover:text-primary transition-colors"
                         >
-                          <h3 className="text-base sm:text-lg font-bold text-custom-text mb-2">{product.name}</h3>
+                          <h3 className="text-base sm:text-lg font-bold text-text-primary mb-2">{product.name}</h3>
                         </Link>
                         {/* Show webinar date/time for live webinars */}
                         {product.e_learning_subtype === "live-webinar" && product.webinar_date_time && (
-                          <div className="mb-3 p-3 bg-cyber-green/10 border border-cyber-green/30 rounded-lg">
-                            <p className="text-xs text-custom-text/70 mb-1">📅 Webinar Date & Time:</p>
-                            <p className="text-sm font-semibold text-cyber-green">
+                          <div className="mb-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+                            <p className="text-xs text-text-secondary mb-1">📅 Webinar Date & Time:</p>
+                            <p className="text-sm font-semibold text-primary">
                               {new Date(product.webinar_date_time).toLocaleString('en-US', {
                                 timeZone: 'Asia/Hong_Kong',
                                 weekday: 'short',
@@ -633,7 +633,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                         )}
                         {isExpanded && (
                           <div 
-                            className="text-custom-text/80 mb-3 product-preview"
+                            className="text-text-secondary mb-3 product-preview"
                             dangerouslySetInnerHTML={{ __html: product.description }}
                           />
                         )}
@@ -660,7 +660,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
         ) : !loadingProducts ? (
           <div className="mb-8">
             <h2 className="text-xl font-bold text-custom-text mb-4">Secret Recipe</h2>
-            <p className="text-custom-text/70">No e-learning products available yet.</p>
+            <p className="text-text-secondary">No e-learning products available yet.</p>
           </div>
         ) : null}
 
@@ -675,14 +675,14 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                 return (
                   <div
                     key={product.id}
-                    className="bg-dark-green-900/30 border border-cyber-green/30 rounded-xl p-6"
+                    className="bg-surface border border-border-default rounded-xl p-6"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-custom-text mb-2">{product.name}</h3>
                         {isExpanded && (
                           <div 
-                            className="text-custom-text/80 mb-3 product-preview"
+                            className="text-text-secondary mb-3 product-preview"
                             dangerouslySetInnerHTML={{ __html: product.description }}
                           />
                         )}
@@ -693,7 +693,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                               newExpanded.add(product.id);
                               setExpandedProducts(newExpanded);
                             }}
-                            className="text-cyber-green hover:text-cyber-green-light text-sm"
+                            className="text-cyber-green hover:text-primary-hover text-sm"
                           >
                             Show more
                           </button>
@@ -703,25 +703,25 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                     {user?.id !== expertId && (
                       <div className="mt-4">
                         {showInterestForm === product.id ? (
-                          <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-4 space-y-3">
+                          <div className="bg-surface border border-border-default rounded-lg p-4 space-y-3">
                             <h4 className="text-sm font-semibold text-custom-text">Register Interest</h4>
                             <div>
-                              <label className="block text-xs text-custom-text/70 mb-1">Country Code (Optional)</label>
+                              <label className="block text-xs text-text-secondary mb-1">Country Code (Optional)</label>
                               <input
                                 type="text"
                                 value={interestFormData.countryCode}
                                 onChange={(e) => setInterestFormData({ ...interestFormData, countryCode: e.target.value })}
-                                className="w-full px-3 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text text-sm"
+                                className="w-full px-3 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text text-sm"
                                 placeholder="+1"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs text-custom-text/70 mb-1">Phone Number (Optional)</label>
+                              <label className="block text-xs text-text-secondary mb-1">Phone Number (Optional)</label>
                               <input
                                 type="text"
                                 value={interestFormData.phoneNumber}
                                 onChange={(e) => setInterestFormData({ ...interestFormData, phoneNumber: e.target.value })}
-                                className="w-full px-3 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg text-custom-text text-sm"
+                                className="w-full px-3 py-2 bg-custom-bg border border-border-default rounded-lg text-custom-text text-sm"
                                 placeholder="1234567890"
                               />
                             </div>
@@ -729,7 +729,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                               <button
                                 onClick={() => handleSubmitInterest(product.id)}
                                 disabled={registeringInterest === product.id}
-                                className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm disabled:opacity-50"
+                                className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm disabled:opacity-50"
                               >
                                 {registeringInterest === product.id ? "Submitting..." : "Submit"}
                               </button>
@@ -738,7 +738,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                                   setShowInterestForm(null);
                                   setInterestFormData({ countryCode: "", phoneNumber: "" });
                                 }}
-                                className="px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors text-sm"
+                                className="px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors text-sm"
                               >
                                 Cancel
                               </button>
@@ -747,7 +747,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                         ) : (
                           <button
                             onClick={() => handleRegisterInterest(product.id)}
-                            className="px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                            className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm"
                           >
                             Register Interest
                           </button>
@@ -763,13 +763,13 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
 
         {/* Action Buttons - Subscribe, Send Message, Connect */}
         {user && user.id !== expert.id && (
-          <div className="flex items-center gap-3 pt-6 border-t border-cyber-green/30 flex-wrap">
+          <div className="flex items-center gap-3 pt-6 border-t border-border-default flex-wrap">
             <div className="flex items-center gap-2">
               <SubscribeButton expertId={expert.id} expertName={expert.name} />
             </div>
             <Link
               href={`/messages?expert=${expert.id}`}
-              className="px-4 py-2 bg-cyber-green text-custom-text rounded-lg font-semibold hover:bg-cyber-green-light transition-colors text-sm whitespace-nowrap"
+              className="px-4 py-2 bg-cyber-green text-custom-text rounded-lg font-semibold hover:bg-primary-hover transition-colors text-sm whitespace-nowrap"
             >
               Send Message
             </Link>
@@ -778,10 +778,10 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
               disabled={connecting || connectionStatus !== "none"}
               className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm whitespace-nowrap ${
                 connectionStatus === "pending"
-                  ? "border border-cyber-green/50 text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
+                  ? "border border-border-default text-cyber-green bg-surface cursor-not-allowed"
                   : connectionStatus === "accepted"
-                  ? "border border-cyber-green text-cyber-green bg-dark-green-900/30 cursor-not-allowed"
-                  : "border border-cyber-green/30 text-custom-text hover:bg-dark-green-800/50 hover:border-cyber-green"
+                  ? "border border-cyber-green text-cyber-green bg-surface cursor-not-allowed"
+                  : "border border-border-default text-custom-text hover:bg-surface hover:border-cyber-green"
               }`}
             >
               {connecting
@@ -799,7 +799,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
       {/* Questionnaire Form Modal for Appointments */}
       {showQuestionnaire && questionnaireId && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-dark-green-900 border border-cyber-green/30 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-dark-green-900 border border-border-default rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-custom-text">Register Interest</h2>
               <button
@@ -808,7 +808,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                   setQuestionnaireId(null);
                   setCurrentProductForInterest(null);
                 }}
-                className="text-custom-text/60 hover:text-custom-text transition-colors"
+                className="text-text-secondary hover:text-custom-text transition-colors"
               >
                 ✕
               </button>

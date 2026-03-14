@@ -7,10 +7,10 @@ export default function PrivacyPage() {
       <Navigation />
       <div className="pt-16 pb-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 rounded-2xl shadow-lg p-8 sm:p-12 mb-8">
+          <div className="bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-8 sm:p-12 mb-8">
             <h1 className="text-4xl font-bold text-cyber-green mb-6 text-glow">Privacy Policy</h1>
-            <div className="prose prose-lg max-w-none text-custom-text/90 space-y-6">
-              <p className="text-sm text-custom-text/70 mb-6">
+            <div className="prose prose-lg max-w-none text-text-primary space-y-6">
+              <p className="text-sm text-text-secondary mb-6">
                 <strong>Last Updated:</strong> {new Date().toLocaleDateString('en-HK', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
 

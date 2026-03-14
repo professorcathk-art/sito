@@ -261,19 +261,19 @@ export default function FeaturedCoursesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-custom-text mb-2">Secret Recipe</h1>
-            <p className="text-base sm:text-xl text-custom-text/80 mb-6">
+            <p className="text-base sm:text-xl text-text-secondary mb-6">
               Discover e-learning products from industry experts
             </p>
 
             {/* Search */}
-            <div className="bg-dark-green-800/30 backdrop-blur-sm border border-cyber-green/30 p-4 sm:p-6 rounded-xl mb-6">
+            <div className="bg-surface backdrop-blur-sm border border-border-default p-4 sm:p-6 rounded-xl mb-6">
               <label className="block text-sm font-medium text-custom-text mb-2">Search e-Learning Products</label>
               <input
                 type="text"
                 placeholder="Search by product name, description, expert, or category..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg focus:ring-2 focus:ring-cyber-green focus:border-cyber-green text-custom-text placeholder-custom-text/50 text-sm"
+                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-custom-text placeholder-custom-text/50 text-sm"
               />
             </div>
 
@@ -284,8 +284,8 @@ export default function FeaturedCoursesPage() {
                   onClick={() => setSelectedCategory(null)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     selectedCategory === null
-                      ? "bg-cyber-green text-dark-green-900"
-                      : "bg-dark-green-800/30 text-custom-text border border-cyber-green/30 hover:border-cyber-green"
+                      ? "bg-cyber-green text-white"
+                      : "bg-surface text-custom-text border border-border-default hover:border-cyber-green"
                   }`}
                 >
                   All Categories
@@ -296,8 +296,8 @@ export default function FeaturedCoursesPage() {
                     onClick={() => setSelectedCategory(cat)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       selectedCategory === cat
-                        ? "bg-cyber-green text-dark-green-900"
-                        : "bg-dark-green-800/30 text-custom-text border border-cyber-green/30 hover:border-cyber-green"
+                        ? "bg-cyber-green text-white"
+                        : "bg-surface text-custom-text border border-border-default hover:border-cyber-green"
                     }`}
                   >
                     {cat}
@@ -309,11 +309,11 @@ export default function FeaturedCoursesPage() {
 
           {loading ? (
             <div className="text-center py-12">
-              <p className="text-custom-text/80 animate-pulse">Loading e-learning products...</p>
+              <p className="text-text-secondary animate-pulse">Loading e-learning products...</p>
             </div>
           ) : courses.length === 0 && (!user || enrolledCourses.length === 0) ? (
             <div className="text-center py-12">
-              <p className="text-custom-text/80 text-lg">
+              <p className="text-text-secondary text-lg">
                 {searchQuery || selectedCategory ? "No courses found matching your criteria." : "No courses available yet."}
               </p>
             </div>
@@ -332,7 +332,7 @@ export default function FeaturedCoursesPage() {
                             href={`/courses/${course.id}`}
                             className="group flex-shrink-0 w-48 sm:w-56 md:w-64 transition-transform hover:scale-105"
                           >
-                            <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-dark-green-800/30 border border-cyber-green/30 group-hover:border-cyber-green transition-colors">
+                            <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-surface border border-border-default group-hover:border-cyber-green transition-colors">
                               {course.cover_image_url ? (
                                 <Image
                                   src={course.cover_image_url}
@@ -385,7 +385,7 @@ export default function FeaturedCoursesPage() {
                             href={`/courses/${course.id}`}
                             className="group flex-shrink-0 w-48 sm:w-56 md:w-64 transition-transform hover:scale-105"
                           >
-                            <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-dark-green-800/30 border border-cyber-green/30 group-hover:border-cyber-green transition-colors">
+                            <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-surface border border-border-default group-hover:border-cyber-green transition-colors">
                               {course.cover_image_url ? (
                                 <Image
                                   src={course.cover_image_url}
@@ -437,7 +437,7 @@ export default function FeaturedCoursesPage() {
                       >
                         <Link
                           href={`/courses/${course.id}`}
-                          className="block bg-transparent backdrop-blur-sm border border-cyber-green/20 rounded-xl overflow-hidden hover:bg-cyber-green/5 hover:border-cyber-green/50 hover:shadow-[0_0_20px_rgba(0,255,136,0.2)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
+                          className="block bg-transparent backdrop-blur-sm border border-border-default rounded-xl overflow-hidden hover:bg-cyber-green/5 hover:border-border-default hover:shadow-[0_0_20px_rgba(0,255,136,0.2)] transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.01] sm:hover:scale-[1.02] flex flex-col"
                         >
                           {/* Cover Image with 4:5 aspect ratio */}
                           <div className="relative w-full aspect-[4/5] overflow-hidden bg-transparent rounded-t-xl">
@@ -452,11 +452,11 @@ export default function FeaturedCoursesPage() {
                               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-dark-green-800/90 to-dark-green-900/90 p-4 overflow-y-auto">
                                 {course.description ? (
                                   <div 
-                                    className="text-xs sm:text-sm text-custom-text/90 line-clamp-6 product-preview"
+                                    className="text-xs sm:text-sm text-text-primary line-clamp-6 product-preview"
                                     dangerouslySetInnerHTML={{ __html: course.description }}
                                   />
                                 ) : (
-                                  <div className="text-center text-custom-text/60 text-sm">
+                                  <div className="text-center text-text-secondary text-sm">
                                     No description available
                                   </div>
                                 )}
@@ -465,7 +465,7 @@ export default function FeaturedCoursesPage() {
                             {/* E-learning subtype label */}
                             {course.e_learning_subtype && (
                               <div className="absolute top-2 right-2 z-10">
-                                <span className="bg-cyber-green/90 text-dark-green-900 text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
+                                <span className="bg-cyber-green/90 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
                                   {course.e_learning_subtype === "online-course" ? "Online Course" :
                                    course.e_learning_subtype === "ebook" ? "Ebook" :
                                    course.e_learning_subtype === "ai-prompt" ? "AI Prompt" :
@@ -485,15 +485,15 @@ export default function FeaturedCoursesPage() {
                                   alt={`${course.expert_name}'s avatar`}
                                   width={32}
                                   height={32}
-                                  className="rounded-full object-cover w-8 h-8 flex-shrink-0 border-2 border-cyber-green/50"
+                                  className="rounded-full object-cover w-8 h-8 flex-shrink-0 border-2 border-border-default"
                                 />
                               ) : (
-                                <div className="w-8 h-8 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-xs font-bold flex-shrink-0 border-2 border-cyber-green/50">
+                                <div className="w-8 h-8 rounded-full bg-dark-green-700 flex items-center justify-center text-custom-text text-xs font-bold flex-shrink-0 border-2 border-border-default">
                                   {course.expert_name.charAt(0).toUpperCase()}
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs text-custom-text/70 truncate">by {course.expert_name}</p>
+                                <p className="text-xs text-text-secondary truncate">by {course.expert_name}</p>
                               </div>
                             </div>
                             <h3 className="text-base sm:text-lg font-bold text-cyber-green group-hover:text-glow transition-all mb-3 line-clamp-2">
@@ -504,7 +504,7 @@ export default function FeaturedCoursesPage() {
                                 {course.price === 0 || !course.price ? "Free" : `USD $${course.price.toFixed(2)}`}
                               </span>
                               {course.category && (
-                                <span className="text-xs text-custom-text/60 bg-dark-green-900/50 px-2 py-1 rounded border border-cyber-green/30">
+                                <span className="text-xs text-text-secondary bg-custom-bg px-2 py-1 rounded border border-border-default">
                                   {course.category}
                                 </span>
                               )}
@@ -513,9 +513,9 @@ export default function FeaturedCoursesPage() {
                         </Link>
                         {/* Description appears below tile on hover */}
                         {course.description && (
-                          <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-20 bg-custom-bg/95 backdrop-blur-md border border-cyber-green/30 rounded-b-xl shadow-lg">
+                          <div className="mt-2 px-4 sm:px-5 opacity-0 max-h-0 overflow-hidden transition-all duration-300 ease-in-out group-hover:opacity-100 group-hover:max-h-48 absolute top-full left-0 right-0 z-20 bg-custom-bg/95 backdrop-blur-md border border-border-default rounded-b-xl shadow-lg">
                             <div 
-                              className="text-xs sm:text-sm text-custom-text/70 line-clamp-3 product-preview py-2"
+                              className="text-xs sm:text-sm text-text-secondary line-clamp-3 product-preview py-2"
                               dangerouslySetInnerHTML={{ __html: course.description }}
                             />
                           </div>

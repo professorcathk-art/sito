@@ -139,15 +139,15 @@ export default function WatchLaterPage() {
           {loading ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-32 bg-dark-green-800/30 rounded-lg animate-pulse"></div>
+                <div key={i} className="h-32 bg-surface rounded-lg animate-pulse"></div>
               ))}
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-custom-text/80 text-lg mb-4">Your watchlist is empty.</p>
+              <p className="text-text-secondary text-lg mb-4">Your watchlist is empty.</p>
               <Link
                 href="/blog"
-                className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 Browse Blogs
               </Link>
@@ -157,7 +157,7 @@ export default function WatchLaterPage() {
               {posts.map((post) => (
                 <div
                   key={post.id}
-                  className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
+                  className="bg-surface border border-border-default rounded-lg overflow-hidden hover:border-cyber-green transition-colors"
                   style={{ height: "160px" }}
                 >
                   <Link
@@ -204,20 +204,20 @@ export default function WatchLaterPage() {
                           <span className="text-sm font-semibold text-custom-text truncate">
                             {post.expert_name}
                           </span>
-                          <span className="text-xs text-custom-text/60">
+                          <span className="text-xs text-text-secondary">
                             {formatDate(post.published_at)}
                           </span>
                         </div>
                         <h3 className="text-lg font-bold text-custom-text mb-1 line-clamp-2">
                           {post.title}
                         </h3>
-                        <p className="text-sm text-custom-text/70 line-clamp-2 mb-2">
+                        <p className="text-sm text-text-secondary line-clamp-2 mb-2">
                           {post.description}
                         </p>
                       </div>
 
                       {/* Footer */}
-                      <div className="flex items-center justify-between text-xs text-custom-text/60">
+                      <div className="flex items-center justify-between text-xs text-text-secondary">
                         <div className="flex items-center gap-4">
                           <span>{post.reading_time_minutes} min read</span>
                           <span>{post.view_count} views</span>

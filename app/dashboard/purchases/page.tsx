@@ -211,19 +211,19 @@ export default function PurchasesPage() {
         <div className="p-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-custom-text mb-2">Purchase History</h1>
-            <p className="text-custom-text/70">View all your course purchases and enrollments</p>
+            <p className="text-text-secondary">View all your course purchases and enrollments</p>
           </div>
 
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-pulse text-custom-text/60">Loading purchases...</div>
+              <div className="animate-pulse text-text-secondary">Loading purchases...</div>
             </div>
           ) : purchases.length === 0 ? (
-            <div className="text-center py-12 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg">
-              <p className="text-custom-text/70 mb-4">No purchases found</p>
+            <div className="text-center py-12 bg-surface border border-border-default rounded-lg">
+              <p className="text-text-secondary mb-4">No purchases found</p>
               <Link
                 href="/courses"
-                className="inline-block px-6 py-3 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors"
               >
                 Browse Courses
               </Link>
@@ -233,7 +233,7 @@ export default function PurchasesPage() {
               {purchases.map((purchase) => (
                 <div
                   key={purchase.id}
-                  className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6 hover:bg-dark-green-800/50 transition-colors"
+                  className="bg-surface border border-border-default rounded-lg p-6 hover:bg-surface transition-colors"
                 >
                   <div className="flex gap-6">
                     {purchase.course_cover_image && (
@@ -248,12 +248,12 @@ export default function PurchasesPage() {
                         {purchase.type === "course" ? purchase.course_title : purchase.appointment_title}
                       </h3>
                       {purchase.course_description && (
-                        <p className="text-custom-text/70 mb-4 line-clamp-2">
+                        <p className="text-text-secondary mb-4 line-clamp-2">
                           {purchase.course_description}
                         </p>
                       )}
                       {purchase.type === "appointment" && (
-                        <div className="text-custom-text/70 mb-4 space-y-1">
+                        <div className="text-text-secondary mb-4 space-y-1">
                           <p>1-on-1 Appointment Session</p>
                           {purchase.start_time && purchase.end_time && (
                             <p className="text-sm">
@@ -267,7 +267,7 @@ export default function PurchasesPage() {
                           )}
                         </div>
                       )}
-                      <div className="flex items-center gap-6 text-sm text-custom-text/60">
+                      <div className="flex items-center gap-6 text-sm text-text-secondary">
                         <div>
                           <span className="font-medium">{purchase.type === "course" ? "Enrolled:" : "Booked:"}</span> {formatDate(purchase.enrolled_at)}
                         </div>
@@ -284,7 +284,7 @@ export default function PurchasesPage() {
                               href={`/api/stripe/invoice/${purchase.payment_intent_id}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-cyber-green hover:text-cyber-green-light text-sm underline"
+                              className="text-cyber-green hover:text-primary-hover text-sm underline"
                             >
                               View Receipt
                             </a>
@@ -296,13 +296,13 @@ export default function PurchasesPage() {
                           <>
                             <Link
                               href={`/courses/${purchase.course_id}`}
-                              className="inline-block px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                              className="inline-block px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm"
                             >
                               View Course
                             </Link>
                             <Link
                               href="/courses/manage"
-                              className="inline-block ml-3 px-4 py-2 border border-cyber-green/30 text-custom-text rounded-lg hover:bg-dark-green-800/50 transition-colors text-sm"
+                              className="inline-block ml-3 px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors text-sm"
                             >
                               Go to Classroom
                             </Link>
@@ -310,7 +310,7 @@ export default function PurchasesPage() {
                         ) : (
                           <Link
                             href="/appointments/manage?tab=my-bookings"
-                            className="inline-block px-4 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors text-sm"
+                            className="inline-block px-4 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors text-sm"
                           >
                             View Appointment
                           </Link>

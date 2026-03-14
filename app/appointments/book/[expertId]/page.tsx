@@ -422,7 +422,7 @@ export default function BookAppointmentPage() {
           <div className="max-w-4xl mx-auto">
             <Link
               href={`/expert/${expertId}`}
-              className="text-cyber-green hover:text-cyber-green-light mb-4 inline-block"
+              className="text-cyber-green hover:text-primary-hover mb-4 inline-block"
             >
               ← Back to Expert Profile
             </Link>
@@ -431,7 +431,7 @@ export default function BookAppointmentPage() {
               Book Appointment with {expert?.name || "Expert"}
             </h1>
             {expert?.title && (
-              <p className="text-custom-text/70 mb-8">{expert.title}</p>
+              <p className="text-text-secondary mb-8">{expert.title}</p>
             )}
 
             {!user && (
@@ -439,7 +439,7 @@ export default function BookAppointmentPage() {
                 <p className="text-yellow-200 mb-2">Please sign in to book an appointment</p>
                 <Link
                   href={`/login?redirect=/appointments/book/${expertId}`}
-                  className="text-cyber-green hover:text-cyber-green-light font-semibold"
+                  className="text-cyber-green hover:text-primary-hover font-semibold"
                 >
                   Sign In →
                 </Link>
@@ -449,17 +449,17 @@ export default function BookAppointmentPage() {
             {loading ? (
               <div className="animate-pulse space-y-4">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-24 bg-dark-green-800/50 rounded-lg"></div>
+                  <div key={i} className="h-24 bg-surface rounded-lg"></div>
                 ))}
               </div>
             ) : slots.length === 0 ? (
-              <div className="bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-8 text-center">
-                <p className="text-custom-text/80 mb-4">
+              <div className="bg-surface border border-border-default rounded-lg p-8 text-center">
+                <p className="text-text-secondary mb-4">
                   No available appointment slots at this time.
                 </p>
                 <Link
                   href={`/expert/${expertId}`}
-                  className="text-cyber-green hover:text-cyber-green-light"
+                  className="text-cyber-green hover:text-primary-hover"
                 >
                   Return to expert profile
                 </Link>
@@ -476,7 +476,7 @@ export default function BookAppointmentPage() {
                 
                 {/* Show slots for selected date with booking buttons */}
                 {selectedDate && slots.filter(s => new Date(s.start_time).toISOString().split("T")[0] === selectedDate).length > 0 && (
-                  <div className="mt-6 bg-dark-green-800/30 border border-cyber-green/30 rounded-lg p-6">
+                  <div className="mt-6 bg-surface border border-border-default rounded-lg p-6">
                     <h3 className="text-xl font-bold text-custom-text mb-4">
                       Available Timeslots for {new Date(selectedDate).toLocaleDateString("en-US", {
                         month: "long",
@@ -496,7 +496,7 @@ export default function BookAppointmentPage() {
                           return (
                             <div
                               key={slot.id}
-                              className="flex items-center justify-between p-4 bg-dark-green-900/50 border border-cyber-green/30 rounded-lg"
+                              className="flex items-center justify-between p-4 bg-custom-bg border border-border-default rounded-lg"
                             >
                               <div>
                                 <p className="text-custom-text font-semibold">
@@ -508,7 +508,7 @@ export default function BookAppointmentPage() {
                                     minute: "2-digit",
                                   })}
                                 </p>
-                                <p className="text-sm text-custom-text/70">
+                                <p className="text-sm text-text-secondary">
                                   ${slot.rate_per_hour}/hour • {duration} min • ${total.toFixed(2)} total
                                 </p>
                               </div>
@@ -516,14 +516,14 @@ export default function BookAppointmentPage() {
                                 <button
                                   onClick={() => handleBookAppointment(slot)}
                                   disabled={booking}
-                                  className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors disabled:opacity-50"
+                                  className="px-6 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
                                 >
                                   {booking ? "Booking..." : "Book Now"}
                                 </button>
                               ) : (
                                 <Link
                                   href={`/login?redirect=/appointments/book/${expertId}`}
-                                  className="px-6 py-2 bg-cyber-green text-dark-green-900 font-semibold rounded-lg hover:bg-cyber-green-light transition-colors inline-block text-center"
+                                  className="px-6 py-2 bg-cyber-green text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors inline-block text-center"
                                 >
                                   Sign In to Book
                                 </Link>
@@ -543,7 +543,7 @@ export default function BookAppointmentPage() {
       {/* Questionnaire Form Modal */}
       {showQuestionnaire && questionnaireId && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-dark-green-900 border border-cyber-green/30 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-dark-green-900 border border-border-default rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-custom-text">Booking Form</h2>
               <button
@@ -552,7 +552,7 @@ export default function BookAppointmentPage() {
                   setQuestionnaireId(null);
                   setSelectedSlot(null);
                 }}
-                className="text-custom-text/60 hover:text-custom-text transition-colors"
+                className="text-text-secondary hover:text-custom-text transition-colors"
               >
                 ✕
               </button>
