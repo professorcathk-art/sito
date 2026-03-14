@@ -96,8 +96,51 @@ export async function POST(request: NextRequest) {
      * 2. account.application.deauthorized - Account disconnected
      * 3. checkout.session.completed - Payment successful, enroll user in course
      * 4. charge.refunded - Refund processed, update enrollment/appointment status
+     * 5. customer.subscription.* - SaaS subscription events for Pro storefront features
      */
     const eventType = event.type;
+    
+    // Handle SaaS subscription events
+    if (eventType.startsWith("customer.subscription.")) {
+      const subscription = event.data.object as Stripe.Subscription;
+      const userId = subscription.metadata?.user_id;
+      
+      if (!userId) {
+        console.error("No user_id in subscription metadata");
+        return NextResponse.json({ received: true });
+      }
+      
+      const supabase = createServiceRoleClient();
+      
+      // Update or create subscription record
+      const subscriptionData = {
+        user_id: userId,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: subscription.customer as string,
+        plan_type: subscription.metadata?.plan_type || "pro",
+        status: subscription.status,
+        current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        cancel_at_period_end: subscription.cancel_at_period_end || false,
+        updated_at: new Date().toISOString(),
+      };
+      
+      // Upsert subscription
+      const { error: subError } = await supabase
+        .from("saas_subscriptions")
+        .upsert(subscriptionData, {
+          onConflict: "stripe_subscription_id",
+        });
+      
+      if (subError) {
+        console.error("Error upserting subscription:", subError);
+      } else {
+        console.log(`Subscription ${subscription.id} updated for user ${userId}`);
+      }
+      
+      // The trigger will automatically update is_pro_store in profiles table
+      return NextResponse.json({ received: true });
+    }
     
     if (eventType === "checkout.session.completed") {
       /**
@@ -105,13 +148,62 @@ export async function POST(request: NextRequest) {
        * 
        * This happens when:
        * - User completes payment for a course
+       * - User completes payment for a Pro subscription
        * 
        * We should:
-       * 1. Extract course_id and user_id from session metadata
-       * 2. Create enrollment in course_enrollments table
-       * 3. Store payment_intent_id for tracking
+       * 1. Check if it's a subscription (subscription_type in metadata)
+       * 2. If subscription, create/update saas_subscriptions record
+       * 3. If course, extract course_id and user_id from session metadata
+       * 4. Create enrollment in course_enrollments table
+       * 5. Store payment_intent_id for tracking
        */
       const session = event.data.object as Stripe.Checkout.Session;
+      
+      // Handle Pro subscription checkout
+      if (session.metadata?.subscription_type === "pro" && session.subscription) {
+        const subscriptionId = typeof session.subscription === "string" 
+          ? session.subscription 
+          : session.subscription.id;
+        
+        const userId = session.metadata?.user_id || session.client_reference_id;
+        
+        if (!userId) {
+          console.error("No user_id in subscription checkout session metadata");
+          return NextResponse.json({ received: true });
+        }
+        
+        // Fetch full subscription object
+        const subscription = await stripeClient.subscriptions.retrieve(subscriptionId);
+        
+        const supabase = createServiceRoleClient();
+        
+        const subscriptionData = {
+          user_id: userId,
+          stripe_subscription_id: subscription.id,
+          stripe_customer_id: subscription.customer as string,
+          plan_type: subscription.metadata?.plan_type || "pro",
+          status: subscription.status,
+          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          cancel_at_period_end: subscription.cancel_at_period_end || false,
+          updated_at: new Date().toISOString(),
+        };
+        
+        const { error: subError } = await supabase
+          .from("saas_subscriptions")
+          .upsert(subscriptionData, {
+            onConflict: "stripe_subscription_id",
+          });
+        
+        if (subError) {
+          console.error("Error creating subscription:", subError);
+        } else {
+          console.log(`✅ Pro subscription created: ${subscription.id} for user ${userId}`);
+        }
+        
+        // Return early - don't process as course enrollment
+        return NextResponse.json({ received: true });
+      }
       
       // Try to get metadata from session first, then from payment intent
       let courseId = session.metadata?.course_id;
@@ -411,7 +503,8 @@ export async function POST(request: NextRequest) {
     if (eventType !== "checkout.session.completed" && 
         eventType !== "account.updated" && 
         eventType !== "account.application.deauthorized" &&
-        eventType !== "charge.refunded") {
+        eventType !== "charge.refunded" &&
+        !eventType.startsWith("customer.subscription.")) {
       console.log(`Unhandled event type: ${event.type}`);
     }
 

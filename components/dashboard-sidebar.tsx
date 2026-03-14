@@ -135,6 +135,11 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       href: "/profile",
       icon: "👤",
     },
+    {
+      name: "Storefront Editor",
+      href: "/dashboard/storefront",
+      icon: "🎨",
+    },
     ...(isExpert && profileComplete
       ? [
           {
