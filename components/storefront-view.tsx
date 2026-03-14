@@ -209,7 +209,7 @@ export function StorefrontView({
                 );
               }
               if (block.type === "links") {
-                const items = (block.data.items as Array<{ title: string; url: string; icon?: string; order: number }>) || [];
+                const items = (block.data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string }>) || [];
                 const links = items.filter((l) => l.title && l.url).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                 if (links.length === 0) return null;
                 return (
@@ -220,22 +220,37 @@ export function StorefrontView({
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`${getButtonClasses()} block hover:opacity-90`}
-                        style={getButtonStyle()}
+                        className="flex items-center gap-4 bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-slate-600 transition-all"
                       >
-                        {link.title}
+                        {link.thumbnailUrl && (
+                          <div className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0">
+                            <Image src={link.thumbnailUrl} alt="" fill className="object-cover" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0 text-left">
+                          <span className="font-semibold block">{link.title}</span>
+                          {link.description && <span className="text-sm opacity-90 block mt-0.5 line-clamp-2">{link.description}</span>}
+                        </div>
+                        <span className="text-sm shrink-0">→</span>
                       </a>
                     ))}
                   </section>
                 );
               }
               if (block.type === "products") {
-                const show = (block.data.showProducts as boolean) !== false;
-                if (!show || products.length === 0) return null;
+                const selectedIds = block.data.selectedProductIds as string[] | undefined;
+                const legacyShow = (block.data.showProducts as boolean) !== false;
+                const displayedProducts =
+                  selectedIds !== undefined
+                    ? products.filter((p) => selectedIds.includes(p.id))
+                    : legacyShow
+                      ? products
+                      : [];
+                if (displayedProducts.length === 0) return null;
                 const cardClass = "flex flex-row items-center bg-slate-900 border border-slate-800 rounded-2xl p-4 gap-4 hover:border-slate-600 transition-all";
                 return (
                   <section key={block.id} className="flex flex-col gap-4">
-                    {products.map((product) => (
+                    {displayedProducts.map((product) => (
                       product.course_id && user ? (
                         <div key={product.id} className={cardClass}>
                           {product.cover_image_url && (
@@ -309,6 +324,7 @@ export function StorefrontView({
                 if (items.length === 0) return null;
                 return (
                   <section key={block.id} className="space-y-2">
+                    <h2 className="text-xl font-semibold text-slate-50 mb-4">FAQ</h2>
                     {items.map((item, idx) => (
                       <details key={idx} className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden group">
                         <summary className="px-4 py-3 cursor-pointer text-slate-50 font-medium list-none flex items-center justify-between">

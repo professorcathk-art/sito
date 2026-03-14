@@ -67,7 +67,7 @@ function BlocksPreview({
           );
         }
         if (block.type === "links") {
-          const items = (block.data.items as Array<{ title: string; url: string; icon?: string; order: number }>) || [];
+          const items = (block.data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string }>) || [];
           return (
             <div key={block.id} className="space-y-3">
               {items
@@ -79,22 +79,33 @@ function BlocksPreview({
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`${getButtonClasses()} block text-center hover:opacity-90`}
-                    style={getButtonStyle()}
+                    className="flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-xl p-3 hover:border-slate-600 transition-all"
                   >
-                    {link.title}
+                    {link.thumbnailUrl && (
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                        <Image src={link.thumbnailUrl} alt="" fill className="object-cover" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0 text-left">
+                      <span className="font-semibold block text-sm">{link.title}</span>
+                      {link.description && <span className="text-xs opacity-80 block mt-0.5 line-clamp-1">{link.description}</span>}
+                    </div>
+                    <span className="text-xs shrink-0">→</span>
                   </a>
                 ))}
             </div>
           );
         }
         if (block.type === "products") {
-          const show = (block.data.showProducts as boolean) !== false;
-          if (!show || products.length === 0) return null;
+          const selectedIds = block.data.selectedProductIds as string[] | undefined;
+          const legacyShow = (block.data.showProducts as boolean) !== false;
+          const displayed =
+            selectedIds !== undefined ? products.filter((p) => selectedIds.includes(p.id)) : legacyShow ? products : [];
+          if (displayed.length === 0) return null;
           return (
             <div key={block.id} className="space-y-3">
               <h2 className="text-lg font-semibold mb-3">Products</h2>
-              {products.slice(0, 3).map((product) => (
+              {displayed.slice(0, 3).map((product) => (
                 <div key={product.id} className={`${cardClass} p-4`}>
                   <div className="flex items-center justify-between">
                     <div className="flex-1">

@@ -45,7 +45,7 @@ const BLOCK_TYPES: { id: StorefrontBlock["type"]; name: string }[] = [
 
 const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown>> = {
   header: { name: "", tagline: "", bio: "", avatarUrl: "" },
-  links: { items: [{ title: "", url: "", icon: "", order: 0 }] },
+  links: { items: [{ title: "", url: "", icon: "", order: 0, description: "", thumbnailUrl: "" }] },
   products: { showProducts: true },
   image_text: { imageUrl: "", title: "", text: "", alignment: "left" },
   faq: { items: [{ question: "", answer: "" }] },
@@ -65,6 +65,7 @@ export function UnifiedStorefrontBuilder() {
   const [activeTab, setActiveTab] = useState<"profile" | "design" | "blocks">("profile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState("");
 
   // Profile data
@@ -345,6 +346,18 @@ export function UnifiedStorefrontBuilder() {
     }
   };
 
+  const handleImageUpload = async (file: File, pathPrefix: string): Promise<string> => {
+    if (!user) throw new Error("Not authenticated");
+    if (!file.type.startsWith("image/")) throw new Error("Please upload an image");
+    if (file.size > 5 * 1024 * 1024) throw new Error("Image must be under 5MB");
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${pathPrefix}/${user.id}-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("blog-resources").upload(path, file, { cacheControl: "3600", upsert: true });
+    if (error) throw error;
+    const { data } = supabase.storage.from("blog-resources").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   const handleThemeSelect = (theme: ThemePresetId) => {
     if (theme === "midnight-glass" && !isPro) {
       setShowUpgradeModal(true);
@@ -425,6 +438,8 @@ export function UnifiedStorefrontBuilder() {
 
       if (profileError) throw profileError;
       router.refresh();
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
@@ -437,9 +452,17 @@ export function UnifiedStorefrontBuilder() {
     .flatMap((b) => ((b.data.items as Array<{ title: string; url: string; icon?: string; order: number }>) || []))
     .map((item, i) => ({ ...item, order: item.order ?? i }));
 
-  const showProducts = storefrontBlocks.some((b) => b.type === "products")
-    ? (storefrontBlocks.find((b) => b.type === "products")?.data.showProducts as boolean) !== false
-    : true;
+  const productsBlock = storefrontBlocks.find((b) => b.type === "products");
+  const selectedProductIds = (productsBlock?.data?.selectedProductIds as string[] | undefined);
+  const showProducts = !!productsBlock;
+  const displayedProducts =
+    !showProducts
+      ? []
+      : selectedProductIds === undefined
+        ? products
+        : selectedProductIds.length > 0
+          ? products.filter((p) => selectedProductIds.includes(p.id))
+          : [];
 
   if (loading) {
     return (
@@ -554,6 +577,7 @@ export function UnifiedStorefrontBuilder() {
                     onRemoveBlock={handleRemoveBlock}
                     onMoveBlock={handleMoveBlock}
                     products={products}
+                    onImageUpload={handleImageUpload}
                   />
                 )}
               </div>
@@ -569,6 +593,7 @@ export function UnifiedStorefrontBuilder() {
               >
                 {saving ? "Saving..." : "Save All Changes"}
               </button>
+              {saveSuccess && <p className="text-green-400 text-sm mt-2">Changes saved successfully!</p>}
             </div>
 
             {/* Right - Sticky Mobile Preview */}
@@ -591,7 +616,7 @@ export function UnifiedStorefrontBuilder() {
                   expertBio={profileData.bio || ""}
                   expertAvatar={profileData.avatarUrl}
                   verified={false}
-                  products={products}
+                  products={displayedProducts}
                   storefrontBlocks={storefrontBlocks.length > 0 ? [...storefrontBlocks].sort((a, b) => a.order - b.order) : undefined}
                   profileData={profileData}
                 />
@@ -1081,6 +1106,7 @@ function BlocksTab({
   onRemoveBlock,
   onMoveBlock,
   products,
+  onImageUpload,
 }: {
   blocks: StorefrontBlock[];
   editingBlock: StorefrontBlock | null;
@@ -1090,6 +1116,7 @@ function BlocksTab({
   onRemoveBlock: (id: string) => void;
   onMoveBlock: (id: string, dir: "up" | "down") => void;
   products: Array<{ id: string; name: string; price: number; pricing_type: string }>;
+  onImageUpload: (file: File, pathPrefix: string) => Promise<string>;
 }) {
   return (
     <div className="space-y-4">
@@ -1145,7 +1172,13 @@ function BlocksTab({
               </div>
             </div>
             {editingBlock?.id === block.id && (
-              <BlockEditForm block={block} onUpdate={(d) => onUpdateBlock(block.id, d)} onClose={() => onEditBlock(null)} products={products} />
+              <BlockEditForm
+                block={block}
+                onUpdate={(d) => onUpdateBlock(block.id, d)}
+                onClose={() => onEditBlock(null)}
+                products={products}
+                onImageUpload={onImageUpload}
+              />
             )}
           </div>
           );
@@ -1161,115 +1194,209 @@ function BlockEditForm({
   onUpdate,
   onClose,
   products,
+  onImageUpload,
 }: {
   block: StorefrontBlock;
   onUpdate: (data: Record<string, unknown>) => void;
   onClose: () => void;
   products: Array<{ id: string; name: string; price: number; pricing_type: string }>;
+  onImageUpload: (file: File, pathPrefix: string) => Promise<string>;
 }) {
   const data = block.data;
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [imageTextUploading, setImageTextUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string>("");
+  const [uploadErrorIndex, setUploadErrorIndex] = useState<number | null>(null);
+
   if (block.type === "header") {
     return (
-      <div className="mt-4 space-y-2">
-        <input
-          type="text"
-          value={(data.name as string) || ""}
-          onChange={(e) => onUpdate({ ...data, name: e.target.value })}
-          placeholder="Name"
-          className={INPUT_CLASS}
-        />
-        <input
-          type="text"
-          value={(data.tagline as string) || ""}
-          onChange={(e) => onUpdate({ ...data, tagline: e.target.value })}
-          placeholder="Tagline"
-          className={INPUT_CLASS}
-        />
-        <textarea
-          value={(data.bio as string) || ""}
-          onChange={(e) => onUpdate({ ...data, bio: e.target.value })}
-          placeholder="Bio"
-          rows={3}
-          className={`${INPUT_CLASS} resize-none`}
-        />
-        <button type="button" onClick={onClose} className="text-slate-400 text-sm">Done</button>
+      <div className="mt-4">
+        <p className="text-slate-400 text-sm italic">
+          Header details (Name, Bio, Avatar) are managed in the &quot;Profile Info&quot; tab. Use the arrows above to reorder where your header appears.
+        </p>
       </div>
     );
   }
   if (block.type === "links") {
-    const items = (data.items as Array<{ title: string; url: string; icon?: string; order: number }>) || [];
+    const items = (data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string }>) || [];
     return (
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-4">
         {items.map((item, i) => (
-          <div key={i} className="flex gap-2">
+          <div key={i} className="bg-slate-900 border border-slate-700 p-4 rounded-lg">
             <input
               type="text"
-              value={item.title}
+              value={item.title || ""}
               onChange={(e) => {
                 const next = [...items];
                 next[i] = { ...next[i], title: e.target.value };
                 onUpdate({ ...data, items: next });
               }}
               placeholder="Title"
-              className={`${INPUT_CLASS} flex-1`}
+              className={`${INPUT_CLASS} mb-2`}
             />
             <input
               type="text"
-              value={item.url}
+              value={item.url || ""}
               onChange={(e) => {
                 const next = [...items];
                 next[i] = { ...next[i], url: e.target.value };
                 onUpdate({ ...data, items: next });
               }}
               placeholder="URL"
-              className={`${INPUT_CLASS} flex-1`}
+              className={`${INPUT_CLASS} mb-2`}
             />
+            <textarea
+              value={item.description || ""}
+              onChange={(e) => {
+                const next = [...items];
+                next[i] = { ...next[i], description: e.target.value };
+                onUpdate({ ...data, items: next });
+              }}
+              placeholder="Description (optional)"
+              rows={2}
+              className={`${INPUT_CLASS} mb-2 resize-none`}
+            />
+            <div className="flex items-center gap-2 mb-2">
+              {item.thumbnailUrl && (
+                <div className="relative w-16 h-16 rounded overflow-hidden flex-shrink-0">
+                  <Image src={item.thumbnailUrl} alt="" fill className="object-cover" />
+                </div>
+              )}
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  id={`link-thumb-${i}`}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploadingIndex(i);
+                    setUploadError("");
+                    setUploadErrorIndex(null);
+                    try {
+                      const url = await onImageUpload(file, "storefront/links");
+                      const next = [...items];
+                      next[i] = { ...next[i], thumbnailUrl: url };
+                      onUpdate({ ...data, items: next });
+                    } catch (err) {
+                      setUploadError(err instanceof Error ? err.message : "Upload failed");
+                      setUploadErrorIndex(i);
+                    } finally {
+                      setUploadingIndex(null);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+                <label
+                  htmlFor={`link-thumb-${i}`}
+                  className={`inline-block px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-slate-200 text-sm cursor-pointer hover:bg-slate-700 ${uploadingIndex === i ? "opacity-50 pointer-events-none" : ""}`}
+                >
+                  {uploadingIndex === i ? "Uploading..." : item.thumbnailUrl ? "Change thumbnail" : "Add thumbnail"}
+                </label>
+              </div>
+            </div>
+            {uploadErrorIndex === i && uploadError && <p className="text-red-400 text-xs mb-2">{uploadError}</p>}
             <button
               type="button"
               onClick={() => onUpdate({ ...data, items: items.filter((_, j) => j !== i) })}
               className="text-red-400 text-sm"
             >
-              ×
+              Remove link
             </button>
           </div>
         ))}
         <button
           type="button"
-          onClick={() => onUpdate({ ...data, items: [...items, { title: "", url: "", icon: "", order: items.length }] })}
+          onClick={() =>
+            onUpdate({
+              ...data,
+              items: [...items, { title: "", url: "", icon: "", order: items.length, description: "", thumbnailUrl: "" }],
+            })
+          }
           className="text-indigo-400 text-sm"
         >
           + Add link
         </button>
-        <button type="button" onClick={onClose} className="block mt-2 text-slate-400 text-sm">Done</button>
       </div>
     );
   }
   if (block.type === "products") {
+    const selectedIds = data.selectedProductIds as string[] | undefined;
+    const legacyShow = (data.showProducts as boolean) !== false;
+    const ids = selectedIds !== undefined ? selectedIds : legacyShow ? products.map((p) => p.id) : [];
     return (
-      <div className="mt-4">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={(data.showProducts as boolean) !== false}
-            onChange={(e) => onUpdate({ ...data, showProducts: e.target.checked })}
-            className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-indigo-500"
-          />
-          <span className="text-slate-200 text-sm">Show products</span>
-        </label>
-        <button type="button" onClick={onClose} className="block mt-2 text-slate-400 text-sm">Done</button>
+      <div className="mt-4 space-y-2">
+        <p className="text-slate-400 text-sm mb-3">Select which products to display:</p>
+        {products.length === 0 ? (
+          <p className="text-slate-500 text-sm italic">No products yet. Add products in your dashboard first.</p>
+        ) : (
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {products.map((p) => {
+              const checked = ids.includes(p.id);
+              return (
+                <label
+                  key={p.id}
+                  className="flex items-center gap-3 p-2 rounded-lg border border-slate-700 hover:bg-slate-800/50 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => {
+                      const next = e.target.checked ? [...ids, p.id] : ids.filter((id) => id !== p.id);
+                      onUpdate({ ...data, selectedProductIds: next });
+                    }}
+                    className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-indigo-500"
+                  />
+                  <span className="text-slate-200 text-sm flex-1">{p.name}</span>
+                  <span className="text-slate-500 text-xs">{p.price === 0 ? "Free" : `$${p.price}`}</span>
+                </label>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   }
   if (block.type === "image_text") {
     return (
       <div className="mt-4 space-y-2">
-        <input
-          type="text"
-          value={(data.imageUrl as string) || ""}
-          onChange={(e) => onUpdate({ ...data, imageUrl: e.target.value })}
-          placeholder="Image URL"
-          className={INPUT_CLASS}
-        />
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Image</label>
+          {(data.imageUrl as string) && (
+            <div className="relative w-full h-24 rounded-lg overflow-hidden mb-2">
+              <Image src={data.imageUrl as string} alt="" fill className="object-cover" />
+            </div>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            id="image-text-upload"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setImageTextUploading(true);
+              setUploadError("");
+              try {
+                const url = await onImageUpload(file, "storefront/image-text");
+                onUpdate({ ...data, imageUrl: url });
+              } catch (err) {
+                setUploadError(err instanceof Error ? err.message : "Upload failed");
+              } finally {
+                setImageTextUploading(false);
+                e.target.value = "";
+              }
+            }}
+          />
+          <label
+            htmlFor="image-text-upload"
+            className="inline-block px-3 py-2 bg-slate-800 border border-slate-700 rounded text-slate-200 text-sm cursor-pointer hover:bg-slate-700 disabled:opacity-50"
+          >
+            {imageTextUploading ? "Uploading..." : (data.imageUrl as string) ? "Change image" : "Upload image"}
+          </label>
+          {uploadError && <p className="text-red-400 text-xs mt-1">{uploadError}</p>}
+        </div>
         <input
           type="text"
           value={(data.title as string) || ""}
@@ -1284,7 +1411,6 @@ function BlockEditForm({
           rows={3}
           className={`${INPUT_CLASS} resize-none`}
         />
-        <button type="button" onClick={onClose} className="text-slate-400 text-sm">Done</button>
       </div>
     );
   }
@@ -1316,7 +1442,9 @@ function BlockEditForm({
               rows={2}
               className={`${INPUT_CLASS} resize-none`}
             />
-            <button type="button" onClick={() => onUpdate({ ...data, items: items.filter((_, j) => j !== i) })} className="text-red-400 text-sm">Remove</button>
+            <button type="button" onClick={() => onUpdate({ ...data, items: items.filter((_, j) => j !== i) })} className="text-red-400 text-sm">
+              Remove
+            </button>
           </div>
         ))}
         <button
@@ -1326,7 +1454,6 @@ function BlockEditForm({
         >
           + Add FAQ
         </button>
-        <button type="button" onClick={onClose} className="block mt-2 text-slate-400 text-sm">Done</button>
       </div>
     );
   }
@@ -1358,7 +1485,9 @@ function BlockEditForm({
               rows={2}
               className={`${INPUT_CLASS} resize-none`}
             />
-            <button type="button" onClick={() => onUpdate({ ...data, items: items.filter((_, j) => j !== i) })} className="text-red-400 text-sm">Remove</button>
+            <button type="button" onClick={() => onUpdate({ ...data, items: items.filter((_, j) => j !== i) })} className="text-red-400 text-sm">
+              Remove
+            </button>
           </div>
         ))}
         <button
@@ -1368,7 +1497,6 @@ function BlockEditForm({
         >
           + Add testimonial
         </button>
-        <button type="button" onClick={onClose} className="block mt-2 text-slate-400 text-sm">Done</button>
       </div>
     );
   }
