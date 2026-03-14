@@ -203,7 +203,7 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
   ];
 
   return (
-    <aside className="w-64 bg-[#0F131A] backdrop-blur-sm border-r border-border-default min-h-[calc(100vh-4rem)] pt-20 md:pt-8 pb-8 overflow-y-auto">
+    <aside className="w-64 bg-[#121212] border-r border-white/5 min-h-[calc(100vh-4rem)] pt-20 md:pt-8 pb-8 overflow-y-auto">
       <nav className="px-4 space-y-2">
         {menuItems.map((item) => {
           const isActive = pathname === item.href || (item.href === "/dashboard" && pathname === "/dashboard");
@@ -214,14 +214,14 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
               onClick={() => onClose?.()}
               className={`flex items-center gap-3 px-4 py-3 rounded-md transition-all text-sm md:text-base ${
                 isActive
-                  ? "bg-white/5 border border-white/10 text-primary font-semibold"
-                  : "text-white/80 hover:bg-surface/50 hover:text-text-primary border border-transparent"
+                  ? "bg-white/5 border border-white/10 text-white font-semibold"
+                  : "text-white/80 hover:bg-white/5 hover:text-white border border-transparent"
               }`}
             >
               <span className="text-xl flex-shrink-0">{item.icon}</span>
               <span className="flex-1 truncate">{item.name}</span>
               {item.badge && (
-                <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center flex-shrink-0">
+                <span className="bg-white text-black text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center flex-shrink-0">
                   {item.badge}
                 </span>
               )}

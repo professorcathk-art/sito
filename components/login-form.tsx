@@ -43,14 +43,14 @@ export function LoginForm({ redirect }: { redirect?: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-surface border border-border-default p-8 rounded-xl card-hover shadow-2xl">
+    <form onSubmit={handleSubmit} className="bg-[#121212] border border-white/5 p-8 rounded-xl card-hover shadow-2xl">
       {error && (
         <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 text-red-200 rounded-md">
           {error}
         </div>
       )}
       <div className="mb-4">
-        <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
+        <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
           Email
         </label>
         <input
@@ -59,12 +59,12 @@ export function LoginForm({ redirect }: { redirect?: string }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-text-primary placeholder-text-secondary"
+          className="w-full px-4 py-2 bg-[#121212] border border-white/5 rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-white placeholder-gray-500"
           placeholder="you@example.com"
         />
       </div>
       <div className="mb-6">
-        <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-2">
+        <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
           Password
         </label>
         <input
@@ -73,14 +73,14 @@ export function LoginForm({ redirect }: { redirect?: string }) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-text-primary placeholder-text-secondary"
+          className="w-full px-4 py-2 bg-[#121212] border border-white/5 rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-white placeholder-gray-500"
           placeholder="••••••••"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-primary text-white py-3 rounded-md font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+        className="w-full bg-white text-black py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >
         {loading ? "Signing in..." : "Sign In"}
       </button>
