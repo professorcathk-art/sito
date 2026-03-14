@@ -13,8 +13,7 @@ export function HeroSection() {
       ref={sectionRef}
       className="pt-24 pb-12 sm:pt-28 sm:pb-16 lg:pt-32 lg:pb-20 px-4 sm:px-6 lg:px-8 relative"
     >
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+      <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center max-w-7xl mx-auto px-2 sm:px-6 py-12 sm:py-20">
           {/* Left side - Content */}
           <div className="hero-content text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
             <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-slate-50 mb-4 sm:mb-6 leading-tight animate-fade-in-up tracking-tight">
@@ -39,49 +38,56 @@ export function HeroSection() {
             )}
           </div>
 
-          {/* Right side - Animated Product Story (Glassmorphic UI Cards) */}
-          <div className="relative w-full h-[400px] lg:h-[500px] hidden md:block">
-            {/* Card 1 - Expert Profile Mockup */}
-            <div
-              className="absolute top-10 right-10 z-10 w-64 bg-slate-900/80 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl animate-[float_6s_ease-in-out_infinite]"
-            >
-              <div className="flex flex-col items-center space-y-3">
-                <div className="w-16 h-16 rounded-full bg-slate-700/80" />
-                <div className="w-full space-y-2">
-                  <div className="h-3 bg-slate-700/60 rounded w-3/4 mx-auto" />
-                  <div className="h-2 bg-slate-700/40 rounded w-1/2 mx-auto" />
+          {/* Right side - Platform Preview Bento */}
+          <div className="relative w-full max-w-md mx-auto overflow-visible pb-16">
+            {/* Subtle glow behind composition */}
+            <div className="absolute inset-0 bg-indigo-600/20 blur-[100px] rounded-full -z-10 transform translate-x-10 translate-y-10 pointer-events-none" />
+
+            {/* Element A: Main Expert Card */}
+            <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 shadow-2xl relative z-10">
+              <div className="flex items-center gap-4">
+                <img
+                  src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=200&auto=format&fit=crop"
+                  alt="Expert"
+                  className="w-16 h-16 rounded-full object-cover border-2 border-indigo-500 shrink-0"
+                />
+                <div>
+                  <p className="text-white font-semibold">David Chen</p>
+                  <p className="text-slate-400 text-sm">VP of Engineering @ TechCorp</p>
                 </div>
-                <button className="w-full py-2 px-4 bg-indigo-600/80 text-white text-sm font-medium rounded-lg">
-                  Connect
-                </button>
+              </div>
+              <div className="w-full h-px bg-slate-800 my-5" />
+              <div className="flex flex-col gap-3">
+                <p className="text-slate-300 text-sm">💡 1-on-1 Mentorship & Career Guidance</p>
+                <p className="text-slate-300 text-sm">💻 Vibe Coding & System Architecture</p>
+              </div>
+              <button className="w-full mt-6 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition-all">
+                View Full Profile
+              </button>
+            </div>
+
+            {/* Element B: Live Availability Floating Pill - hidden on small screens to avoid overflow */}
+            <div className="absolute -top-6 -right-6 z-20 bg-slate-800 backdrop-blur-md border border-slate-600 rounded-2xl p-4 shadow-xl animate-bounce-slow hidden sm:block">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                <div className="text-sm">
+                  <p className="text-white font-semibold">Available Now</p>
+                  <p className="text-slate-400 text-xs">Replies in &lt; 5 mins</p>
+                </div>
               </div>
             </div>
 
-            {/* Card 2 - Mentorship / Booking Mockup */}
-            <div
-              className="absolute bottom-10 left-10 z-20 w-72 bg-slate-800/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-xl animate-[float_6s_ease-in-out_infinite]"
-              style={{ animationDelay: "2s" }}
-            >
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-600/80" />
-                  <div className="flex-1 space-y-1">
-                    <div className="h-2.5 bg-slate-600/60 rounded w-24" />
-                    <div className="h-2 bg-slate-600/40 rounded w-16" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-2 bg-slate-700/50 rounded w-full" />
-                  <div className="h-2 bg-slate-700/50 rounded w-4/5" />
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex-1 h-8 bg-slate-700/60 rounded-lg" />
-                  <div className="flex-1 h-8 bg-indigo-600/80 rounded-lg" />
+            {/* Element C: Success Metric Floating Card - hidden on small screens to avoid overflow */}
+            <div className="absolute -bottom-8 -left-8 z-20 bg-slate-800/90 backdrop-blur-md border border-slate-600 rounded-2xl p-4 shadow-xl hidden sm:block">
+              <div className="flex items-center gap-3">
+                <div className="bg-amber-500/20 text-amber-500 p-2 rounded-lg">⭐</div>
+                <div>
+                  <p className="text-white font-bold">5.0 Rating</p>
+                  <p className="text-slate-400 text-xs">From 120+ students</p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
       </div>
     </section>
   );

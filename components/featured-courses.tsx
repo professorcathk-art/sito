@@ -179,16 +179,16 @@ export function FeaturedCourses() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
           {featuredProducts.map((product, index) => (
             <div
               key={product.id}
-              className="animate-fade-in-up"
+              className="animate-fade-in-up h-full"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <Link
                 href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
-                className="block bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col"
+                className="block h-full bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] hover:scale-[1.02]"
               >
                 {/* Cover Image with 4:3 aspect ratio (shorter for landing page) */}
                 <div className="relative w-full aspect-[4/3] overflow-hidden bg-transparent rounded-t-xl">
@@ -227,8 +227,8 @@ export function FeaturedCourses() {
                     </div>
                   )}
                 </div>
-                {/* Content below image */}
-                <div className="p-6 flex flex-col flex-1">
+                {/* Content below image - fixed height for alignment */}
+                <div className="p-6 flex flex-col flex-1 min-h-[140px]">
                   <div className="flex items-center gap-3 mb-2">
                     {product.expert_avatar_url ? (
                       <Image
@@ -247,7 +247,7 @@ export function FeaturedCourses() {
                       <p className="text-xs text-text-secondary truncate">by {product.expert_name}</p>
                     </div>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-text-primary mb-3 line-clamp-2">
+                  <h3 className="text-base sm:text-lg font-bold text-text-primary mb-3 line-clamp-2 min-h-[2.5rem]">
                     {product.name}
                   </h3>
                   <div className="flex items-center justify-between mt-auto">

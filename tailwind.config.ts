@@ -49,6 +49,7 @@ const config: Config = {
         float: "float 6s ease-in-out infinite",
         "fade-in-up": "fadeInUp 0.6s ease-out forwards",
         "fade-in": "fadeIn 0.8s ease-out forwards",
+        "bounce-slow": "bounce 3s ease-in-out infinite",
       },
       keyframes: {
         float: {
