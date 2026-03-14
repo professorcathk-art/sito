@@ -131,11 +131,6 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
 
   const menuItems: SidebarItem[] = [
     {
-      name: "Profile",
-      href: "/profile",
-      icon: "👤",
-    },
-    {
       name: "Profile & Storefront",
       href: "/dashboard/storefront",
       icon: "🎨",
