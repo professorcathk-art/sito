@@ -208,7 +208,7 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
   ];
 
   return (
-    <aside className="w-64 bg-[#121212] border-r border-white/5 min-h-[calc(100vh-4rem)] pt-20 md:pt-8 pb-8 overflow-y-auto">
+    <aside className="w-64 bg-[#1C1C1E] border-r border-white/5 min-h-[calc(100vh-4rem)] pt-20 md:pt-8 pb-8 overflow-y-auto">
       <nav className="px-4 space-y-2">
         {menuItems.map((item) => {
           const isActive = pathname === item.href || (item.href === "/dashboard" && pathname === "/dashboard");

@@ -30,6 +30,7 @@ interface StorefrontViewProps {
     product_type?: string;
     course_id?: string;
     e_learning_subtype?: string;
+    cover_image_url?: string | null;
   }>;
   blogPosts: Array<{
     id: string;
@@ -73,51 +74,46 @@ export function StorefrontView({
 
   const getButtonClasses = () => {
     const base = "w-full py-4 px-6 font-semibold transition-all duration-300 text-center";
-    
     switch (buttonStyle) {
       case "rounded-full":
         return `${base} rounded-full`;
       case "rounded-md":
-        return `${base} rounded-md`;
+        return `${base} rounded-lg`;
       case "hard-edge":
         return `${base} rounded-none`;
       case "outline":
-        return `${base} rounded-md border-2 bg-transparent`;
+        return `${base} rounded-lg border-2 bg-transparent`;
       default:
-        return `${base} rounded-md`;
+        return `${base} rounded-lg`;
     }
   };
 
   const getThemeClasses = () => {
     switch (themePreset) {
       case "midnight-glass":
-        return "bg-[#0A0A0A] text-white min-h-screen";
+        return "bg-[#000000] text-white min-h-screen";
       case "minimal-light":
         return "bg-white text-black min-h-screen";
       case "bold-dark":
         return "bg-black text-white min-h-screen";
       default:
-        return "bg-[#0A0A0A] text-white min-h-screen";
+        return "bg-[#000000] text-white min-h-screen";
     }
   };
 
   const getButtonStyle = () => {
     if (!customBrandColor) return {};
-    
     if (buttonStyle === "outline") {
-      return {
-        borderColor: customBrandColor,
-        color: customBrandColor,
-      };
+      return { borderColor: customBrandColor, color: customBrandColor };
     }
-    
     return {
       backgroundColor: customBrandColor,
       color: themePreset === "minimal-light" ? "#000000" : "#FFFFFF",
     };
   };
 
-  // Combine custom links with social links
+  const primaryActionClasses = "bg-white text-black px-4 py-2 rounded-lg mt-4 w-full font-semibold hover:bg-gray-200 transition-all duration-300";
+
   const allLinks = [
     ...customLinks,
     ...(website ? [{ title: "Website", url: website, icon: "🌐", order: 1000 }] : []),
@@ -127,185 +123,191 @@ export function StorefrontView({
 
   return (
     <div className={`${getThemeClasses()} relative`} style={cssVars}>
-      {/* Background blur effect for glass theme */}
       {themePreset === "midnight-glass" && (
         <div className="fixed inset-0 -z-10">
-          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] ambient-glow opacity-30"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] ambient-glow opacity-20"></div>
+          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] ambient-glow opacity-30" />
+          <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] ambient-glow opacity-20" />
         </div>
       )}
 
-      {/* Mobile-first container - centered on desktop */}
-      <div className="max-w-md mx-auto px-4 py-8">
-        {/* Avatar Section */}
-        <div className="flex flex-col items-center space-y-4 mb-8">
-          {avatarUrl ? (
-            <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-white/10">
-              <Image
-                src={avatarUrl}
-                alt={expertName}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-28 h-28 rounded-full mesh-gradient border-2 border-white/5 flex items-center justify-center">
-              <svg className="w-14 h-14 text-gray-700 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-          )}
-          
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <h1 className="text-3xl font-bold">{expertName}</h1>
-              {verified && (
-                <span className="text-white" title="Verified Expert">✓</span>
-              )}
-            </div>
-            <p className="text-sm opacity-80 leading-relaxed">
-              {bioOverride || expertBio || "Welcome to my storefront"}
-            </p>
-          </div>
-        </div>
+      {/* Responsive layout: mobile stacked, desktop split */}
+      <div className="flex flex-col md:grid md:grid-cols-12 md:gap-12 max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+        {/* LEFT COLUMN - Sticky Sidebar (4 cols on desktop) */}
+        <aside className="md:col-span-4 md:sticky md:top-24 h-fit order-1 md:order-1">
+          <div className="flex flex-col items-center md:items-start">
+            {/* Avatar */}
+            {avatarUrl ? (
+              <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 border-white/10 flex-shrink-0">
+                <Image src={avatarUrl} alt={expertName} fill className="object-cover" />
+              </div>
+            ) : (
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full mesh-gradient border-2 border-white/5 flex items-center justify-center flex-shrink-0">
+                <svg className="w-16 h-16 md:w-20 md:h-20 text-gray-600 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+            )}
 
-        {/* Social Icons Row */}
-        {allLinks.length > 0 && (
-          <div className="flex justify-center gap-4 mb-6">
-            {allLinks.slice(0, 5).map((link, idx) => (
-              <a
-                key={idx}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all duration-300"
-              >
-                {link.icon ? (
-                  <span className="text-xl">{link.icon}</span>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                  </svg>
-                )}
-              </a>
-            ))}
-          </div>
-        )}
+            <div className="mt-6 text-center md:text-left w-full">
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{expertName}</h1>
+                {verified && <span className="text-white" title="Verified Expert">✓</span>}
+              </div>
+              <p className="text-gray-400 text-sm md:text-base leading-relaxed">
+                {bioOverride || expertBio || "Welcome to my storefront"}
+              </p>
+            </div>
 
-        {/* Custom Links */}
-        {allLinks.length > 0 && (
-          <div className="space-y-3 mb-6">
-            {allLinks.map((link, idx) => (
-              <a
-                key={idx}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${getButtonClasses()} block hover:opacity-90`}
+            {/* Social Links - circular translucent */}
+            {allLinks.length > 0 && (
+              <div className="flex justify-center md:justify-start gap-3 mt-6 flex-wrap">
+                {allLinks.slice(0, 6).map((link, idx) => (
+                  <a
+                    key={idx}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-11 h-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center hover:bg-white/15 transition-all duration-300"
+                  >
+                    {link.icon ? (
+                      <span className="text-lg">{link.icon}</span>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    )}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {/* Custom Links */}
+            {allLinks.length > 0 && (
+              <div className="flex flex-col gap-3 w-full mt-6">
+                {allLinks.map((link, idx) => (
+                  <a
+                    key={idx}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${getButtonClasses()} block hover:opacity-90`}
+                    style={getButtonStyle()}
+                  >
+                    {link.title}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {hasAppointments && (
+              <Link
+                href={`/appointments/book/${expertId}`}
+                className={`${getButtonClasses()} mt-4 block`}
                 style={getButtonStyle()}
               >
-                {link.title}
-              </a>
-            ))}
+                Book 1-on-1 Session
+              </Link>
+            )}
           </div>
-        )}
+        </aside>
 
-        {/* Products */}
-        {products.length > 0 && (
-          <div className="space-y-3 mb-6">
-            <h2 className="text-lg font-semibold mb-4">Products & Services</h2>
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-all duration-300 card-hover"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                    {product.description && (
-                      <p className="text-sm opacity-70 line-clamp-2 mb-3" dangerouslySetInnerHTML={{ __html: product.description }} />
-                    )}
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold">
-                        {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
-                      </span>
-                      {product.e_learning_subtype && (
-                        <span className="text-xs px-2 py-1 bg-white/10 rounded-full">
-                          {product.e_learning_subtype}
+        {/* RIGHT COLUMN - Scrollable Content (8 cols on desktop) */}
+        <main className="md:col-span-8 space-y-8 order-2 md:order-2">
+          {/* Products & Services */}
+          {products.length > 0 && (
+            <section>
+              <h2 className="text-xl font-semibold tracking-tight mb-6">Products & Services</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {products.map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-[#1C1C1E] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {/* 16:9 Thumbnail */}
+                    <div className="relative w-full aspect-video bg-[#2C2C2E]">
+                      {product.cover_image_url ? (
+                        <Image
+                          src={product.cover_image_url}
+                          alt={product.name}
+                          fill
+                          className="object-cover rounded-t-2xl"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center mesh-gradient">
+                          <svg className="w-16 h-16 text-gray-600 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-5 rounded-b-2xl">
+                      <h3 className="text-lg font-semibold tracking-tight mb-2">{product.name}</h3>
+                      {product.description && (
+                        <p className="text-gray-400 text-sm leading-relaxed line-clamp-2 mb-3" dangerouslySetInnerHTML={{ __html: product.description }} />
+                      )}
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-lg font-bold">
+                          {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
                         </span>
+                        {product.e_learning_subtype && (
+                          <span className="badge-glass">{product.e_learning_subtype}</span>
+                        )}
+                      </div>
+                      {product.course_id && user ? (
+                        <CourseEnrollment
+                          courseId={product.course_id}
+                          expertId={expertId}
+                          coursePrice={product.price}
+                          isFree={product.price === 0}
+                          currentUserId={user.id}
+                        />
+                      ) : (
+                        <Link
+                          href={`/expert/${expertId}`}
+                          className={primaryActionClasses}
+                          style={!customBrandColor ? {} : { backgroundColor: customBrandColor, color: themePreset === "minimal-light" ? "#000" : "#fff" }}
+                        >
+                          Learn More
+                        </Link>
                       )}
                     </div>
                   </div>
-                </div>
-                {product.course_id && user && (
-                  <div className="mt-4">
-                    <CourseEnrollment
-                      courseId={product.course_id}
-                      expertId={expertId}
-                      coursePrice={product.price}
-                      isFree={product.price === 0}
-                      currentUserId={user.id}
-                    />
-                  </div>
-                )}
-                {!product.course_id && (
-                  <Link
-                    href={`/expert/${expertId}`}
-                    className={`${getButtonClasses()} mt-4 inline-block`}
-                    style={getButtonStyle()}
-                  >
-                    Learn More
-                  </Link>
-                )}
+                ))}
               </div>
-            ))}
+            </section>
+          )}
+
+          {/* Blog Posts */}
+          {blogPosts.length > 0 && (
+            <section>
+              <h2 className="text-xl font-semibold tracking-tight mb-6">Latest Posts</h2>
+              <div className="space-y-3">
+                {blogPosts.map((post) => (
+                  <Link
+                    key={post.id}
+                    href={`/blog/${post.id}`}
+                    className="block bg-[#1C1C1E] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {post.featured_image_url && (
+                      <div className="relative w-full h-48">
+                        <Image src={post.featured_image_url} alt={post.title} fill className="object-cover" />
+                      </div>
+                    )}
+                    <div className="p-5">
+                      <h3 className="text-lg font-semibold tracking-tight mb-2">{post.title}</h3>
+                      {post.description && <p className="text-gray-400 text-sm leading-relaxed line-clamp-2">{post.description}</p>}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Footer */}
+          <div className="text-center pt-8 border-t border-white/5">
+            <p className="text-xs text-gray-500">Powered by Sito</p>
           </div>
-        )}
-
-        {/* Appointments CTA */}
-        {hasAppointments && (
-          <Link
-            href={`/appointments/book/${expertId}`}
-            className={`${getButtonClasses()} mb-6 block`}
-            style={getButtonStyle()}
-          >
-            Book 1-on-1 Session
-          </Link>
-        )}
-
-        {/* Blog Posts */}
-        {blogPosts.length > 0 && (
-          <div className="space-y-3 mb-6">
-            <h2 className="text-lg font-semibold mb-4">Latest Posts</h2>
-            {blogPosts.map((post) => (
-              <Link
-                key={post.id}
-                href={`/blog/${post.id}`}
-                className="block bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 transition-all duration-300 card-hover"
-              >
-                {post.featured_image_url && (
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden mb-3">
-                    <Image
-                      src={post.featured_image_url}
-                      alt={post.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-                <h3 className="font-semibold text-lg mb-2">{post.title}</h3>
-                {post.description && (
-                  <p className="text-sm opacity-70 line-clamp-2">{post.description}</p>
-                )}
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="text-center mt-12 pt-8 border-t border-white/5">
-          <p className="text-xs opacity-50">Powered by Sito</p>
-        </div>
+        </main>
       </div>
     </div>
   );

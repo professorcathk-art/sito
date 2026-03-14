@@ -144,7 +144,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                   </Link>
                   <Link
                     href="/register"
-                    className="bg-primary text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-md hover:bg-gray-200 transition-all duration-300 font-medium text-sm lg:text-base"
+                    className="bg-white text-black px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-300 text-sm lg:text-base"
                   >
                     Get Started
                   </Link>
@@ -317,7 +317,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                   <Link
                     href="/register"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block bg-primary text-white px-4 py-2 rounded-md hover:bg-gray-200 transition-all duration-300 text-center font-medium mt-2"
+                    className="block bg-white text-black px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-300 text-center mt-2"
                   >
                     Get Started
                   </Link>

@@ -188,7 +188,7 @@ export function FeaturedCourses() {
             >
               <Link
                 href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
-                className="block bg-surface border border-border-default rounded-xl card-hover overflow-hidden hover:border-primary transition-all duration-300 shadow-2xl flex flex-col"
+                className="block bg-[#1C1C1E] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-2xl flex flex-col"
               >
                 {/* Cover Image with 4:3 aspect ratio (shorter for landing page) */}
                 <div className="relative w-full aspect-[4/3] overflow-hidden bg-transparent rounded-t-xl">
@@ -216,7 +216,7 @@ export function FeaturedCourses() {
                   {/* E-learning subtype label */}
                   {product.e_learning_subtype && (
                     <div className="absolute top-2 right-2 z-10">
-                      <span className="bg-primary text-white text-xs font-semibold px-2 py-1 rounded-md shadow-lg">
+                      <span className="badge-glass font-semibold px-2 py-1">
                         {product.e_learning_subtype === "online-course" ? "Online Course" :
                          product.e_learning_subtype === "ebook" ? "Ebook" :
                          product.e_learning_subtype === "ai-prompt" ? "AI Prompt" :
@@ -251,7 +251,7 @@ export function FeaturedCourses() {
                     {product.name}
                   </h3>
                   <div className="flex items-center justify-between mt-auto">
-                    <span className="text-sm sm:text-base font-bold text-primary">
+                    <span className="text-sm sm:text-base font-bold text-white">
                       {product.price === 0 || !product.price ? (
                         "Free"
                       ) : (

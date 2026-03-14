@@ -47,18 +47,34 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
       notFound();
     }
 
-    // Fetch products if enabled
+    // Fetch products if enabled (with course cover image for thumbnails)
     let products: any[] = [];
     if (profile.storefront_show_products !== false) {
       const { data: productsData } = await supabase
         .from("products")
-        .select("id, name, description, price, pricing_type, product_type, course_id, e_learning_subtype")
+        .select(`
+          id,
+          name,
+          description,
+          price,
+          pricing_type,
+          product_type,
+          course_id,
+          e_learning_subtype,
+          courses(cover_image_url)
+        `)
         .eq("expert_id", profile.id)
         .order("created_at", { ascending: false })
         .limit(20);
 
       if (productsData) {
-        products = productsData;
+        products = productsData.map((p: any) => {
+          const { courses, ...rest } = p;
+          return {
+            ...rest,
+            cover_image_url: courses?.cover_image_url ?? null,
+          };
+        });
       }
     }
 

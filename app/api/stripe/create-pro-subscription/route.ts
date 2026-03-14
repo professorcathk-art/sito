@@ -43,15 +43,13 @@ export async function POST(request: Request) {
     }
 
     // Create checkout session for Pro subscription
-    // Note: You'll need to create a Pro product and price in Stripe Dashboard first
-    // Set STRIPE_PRO_PRICE_ID in your .env.local
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [
         {
-          price: process.env.STRIPE_PRO_PRICE_ID!, // Set this in your .env.local
+          price: process.env.STRIPE_PRO_PRICE_ID!,
           quantity: 1,
         },
       ],
@@ -60,6 +58,13 @@ export async function POST(request: Request) {
       metadata: {
         user_id: user.id,
         subscription_type: "pro",
+        plan_type: "pro",
+      },
+      subscription_data: {
+        metadata: {
+          user_id: user.id,
+          plan_type: "pro",
+        },
       },
     });
 

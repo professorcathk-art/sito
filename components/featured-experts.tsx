@@ -96,7 +96,7 @@ export function FeaturedExperts() {
           </div>
           <Link
             href="/directory"
-            className="text-text-primary hover:text-primary font-semibold transition-colors text-sm sm:text-base self-start sm:self-auto"
+            className="text-white hover:text-white/80 font-semibold transition-colors text-sm sm:text-base self-start sm:self-auto"
           >
             View All →
           </Link>
@@ -117,7 +117,7 @@ export function FeaturedExperts() {
               <Link
                 key={expert.id}
                 href={`/expert/${expert.id}`}
-                className="group bg-[#121212] border border-white/5 card-hover p-6 rounded-xl card-hover animate-fade-in-up"
+                className="group bg-[#1C1C1E] border border-white/5 card-hover p-6 rounded-2xl animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="flex items-start gap-4 mb-3">
@@ -148,7 +148,7 @@ export function FeaturedExperts() {
                 </div>
                 <p className="text-gray-500 text-xs sm:text-sm mb-3 line-clamp-2">{expert.bio}</p>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-white bg-transparent px-2 py-1 rounded-full border border-white/10 truncate">
+                  <span className="badge-glass truncate">
                     {expert.category}
                   </span>
                   <span className="text-xs text-gray-500 truncate">{expert.location}</span>
@@ -161,7 +161,7 @@ export function FeaturedExperts() {
         <div className="text-center mt-6 sm:mt-8">
           <Link
             href="/directory"
-            className="inline-block bg-white text-black px-5 sm:px-6 py-2.5 sm:py-3 rounded-md text-sm sm:text-base font-semibold hover:bg-gray-200 transition-all duration-300"
+            className="inline-block bg-white text-black px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-semibold hover:bg-gray-200 transition-all duration-300"
           >
             View All Experts
           </Link>

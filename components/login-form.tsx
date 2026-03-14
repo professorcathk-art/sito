@@ -43,7 +43,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-[#121212] border border-white/5 p-8 rounded-xl card-hover shadow-2xl">
+    <form onSubmit={handleSubmit} className="bg-[#1C1C1E] border border-white/5 p-8 rounded-2xl shadow-2xl">
       {error && (
         <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 text-red-200 rounded-md">
           {error}
@@ -59,7 +59,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full px-4 py-2 bg-[#121212] border border-white/5 rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-white placeholder-gray-500"
+          className="w-full px-4 py-2 bg-[#2C2C2E] border border-white/5 rounded-xl focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-white placeholder-gray-500"
           placeholder="you@example.com"
         />
       </div>
@@ -73,14 +73,14 @@ export function LoginForm({ redirect }: { redirect?: string }) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full px-4 py-2 bg-[#121212] border border-white/5 rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-white placeholder-gray-500"
+          className="w-full px-4 py-2 bg-[#2C2C2E] border border-white/5 rounded-xl focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-white placeholder-gray-500"
           placeholder="••••••••"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-white text-black py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+        className="w-full bg-white text-black py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
       >
         {loading ? "Signing in..." : "Sign In"}
       </button>
@@ -108,7 +108,7 @@ export function LoginForm({ redirect }: { redirect?: string }) {
             setError(error.message);
           }
         }}
-        className="w-full mt-4 flex items-center justify-center gap-3 bg-primary text-white py-3 rounded-md font-medium hover:bg-gray-200 transition-colors"
+        className="w-full mt-4 flex items-center justify-center gap-3 bg-white text-black py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path

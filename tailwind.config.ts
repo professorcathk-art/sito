@@ -11,11 +11,12 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        // Midnight Monochromatic & Ambient Glass Design System
-        "custom-bg": "#0A0A0A", // Near pitch-black app background
-        "custom-text": "#FFFFFF", // Pure white primary text
-        surface: "#121212", // Card/surface background
-        "border-default": "rgba(255, 255, 255, 0.05)", // Hyper-subtle borders
+        // Apple Dark Mode - Surface Hierarchy
+        "custom-bg": "#000000", // App background
+        "custom-text": "#FFFFFF", // Primary text
+        surface: "#1C1C1E", // Primary surface (cards, modals)
+        "surface-secondary": "#2C2C2E", // Secondary (inputs, hover)
+        "border-default": "rgba(255, 255, 255, 0.05)",
         // Legacy mappings for backward compatibility
         "text-primary": "#FFFFFF", // Pure white
         "text-secondary": "#6B7280", // Gray-500 for secondary text
@@ -45,14 +46,18 @@ const config: Config = {
         },
       },
       animation: {
-        float: "float 4s ease-in-out infinite",
+        float: "float 6s ease-in-out infinite",
         "fade-in-up": "fadeInUp 0.6s ease-out forwards",
         "fade-in": "fadeIn 0.8s ease-out forwards",
       },
       keyframes: {
         float: {
           "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-10px)" },
+          "50%": { transform: "translateY(-15px)" },
+        },
+        "float-slow": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-15px)" },
         },
         fadeInUp: {
           from: {
