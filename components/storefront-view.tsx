@@ -166,7 +166,7 @@ export function StorefrontView({
           </div>
         )}
         <div className="w-full min-h-screen flex flex-col items-center pb-12 relative z-0">
-          <main className="w-full max-w-2xl sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 flex flex-col gap-8">
+          <main className="w-full max-w-4xl sm:max-w-5xl md:max-w-6xl lg:max-w-7xl xl:max-w-7xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 flex flex-col gap-8">
             {sortedBlocks.map((block) => {
               if (block.type === "header") {
                 const d = block.data;
@@ -221,7 +221,7 @@ export function StorefrontView({
                 const linkDescClass = isFluidAura ? "text-xs text-slate-400 line-clamp-1" : "text-xs text-slate-500 line-clamp-1";
                 const linkIconBgClass = isFluidAura ? "w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-400 group-hover:text-slate-200 group-hover:bg-white/20 transition-colors" : "w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-slate-800 group-hover:bg-slate-100 transition-colors";
                 return (
-                  <section key={block.id} className="flex flex-col gap-3 w-full max-w-2xl">
+                  <section key={block.id} className="flex flex-col gap-3 w-full">
                     {links.map((link, idx) => (
                       <a
                         key={idx}
@@ -272,7 +272,7 @@ export function StorefrontView({
                   : "text-sm font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md w-fit";
                 const productBtnClass = "w-full bg-slate-900 text-white text-sm font-semibold py-2 rounded-xl hover:bg-slate-800 shadow-md transition-all";
                 return (
-                  <section key={block.id} className="flex flex-col gap-4 w-full max-w-2xl">
+                  <section key={block.id} className="flex flex-col gap-4 w-full">
                     {displayedProducts.map((product) =>
                       product.course_id && user ? (
                         <div key={product.id} className={productCardClass}>
@@ -396,7 +396,7 @@ export function StorefrontView({
                   ? "w-full bg-white/[0.06] backdrop-blur-md rounded-2xl p-6 border border-white/10 shadow-sm text-slate-300"
                   : "w-full bg-white/40 backdrop-blur-md rounded-2xl p-6 border border-white/60 shadow-sm text-slate-700";
                 return (
-                  <section key={block.id} className="w-full max-w-2xl">
+                  <section key={block.id} className="w-full">
                     <div className={cardClass}>
                       <div className={`${proseClass} text-[var(--store-text)]`} dangerouslySetInnerHTML={{ __html: content }} />
                     </div>
@@ -420,7 +420,7 @@ export function StorefrontView({
                   ? "w-full bg-white/[0.06] backdrop-blur-md rounded-2xl p-6 border border-white/10 shadow-sm text-slate-300 prose prose-sm"
                   : "w-full bg-white/40 backdrop-blur-md rounded-2xl p-6 border border-white/60 shadow-sm text-slate-700 prose prose-sm";
                 return (
-                  <section key={block.id} className="w-full max-w-2xl">
+                  <section key={block.id} className="w-full">
                     <div className={listCardClass}>
                       <ul className="space-y-2 list-none">
                         {items.map((item, idx) => (

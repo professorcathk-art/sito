@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import type { StorefrontBlock } from "@/types/storefront";
-import { FONT_FAMILIES, getCardCssVars } from "@/lib/storefront-theme-config";
+import { FONT_FAMILIES, getCardCssVars, THEME_PRESET_VALUES } from "@/lib/storefront-theme-config";
 
 export interface DesignState {
   backgroundColor: string;
@@ -271,19 +271,39 @@ export function StorefrontPreview({
   storefrontBlocks,
   profileData,
 }: StorefrontPreviewProps) {
+  const themePreset = designState.themePreset as string | undefined;
+  const isPearlSilk = themePreset === "pearl-silk" || themePreset === "soft-gradient";
+  const isFluidAura = themePreset === "fluid-aura";
+  const isMidnightGlass = themePreset === "midnight-glass";
+
   const cssVars = useMemo(() => {
-    const card = getCardCssVars(designState.cardStyle as "flat" | "glass" | "brutalist" | "soft-shadow");
-    const btnRadius = designState.buttonRadius === "pill" ? "9999px" : designState.buttonRadius === "sharp" ? "0" : "0.5rem";
+    const presetValues = themePreset && themePreset in THEME_PRESET_VALUES
+      ? THEME_PRESET_VALUES[themePreset as keyof typeof THEME_PRESET_VALUES]
+      : null;
+    const cardStyle = (presetValues?.cardStyle ?? designState.cardStyle) as "flat" | "glass" | "brutalist" | "soft-shadow";
+    const card = getCardCssVars(cardStyle);
+    const btnRadius = (presetValues?.buttonRadius ?? designState.buttonRadius) === "pill" ? "9999px" : designState.buttonRadius === "sharp" ? "0" : "0.5rem";
     return {
-      "--store-bg": designState.backgroundColor,
-      "--store-text": designState.textColor,
-      "--store-btn-bg": designState.buttonColor,
-      "--store-btn-text": designState.buttonTextColor,
+      "--store-bg": presetValues?.backgroundColor ?? designState.backgroundColor,
+      "--store-text": presetValues?.textColor ?? designState.textColor,
+      "--store-btn-bg": presetValues?.buttonColor ?? designState.buttonColor,
+      "--store-btn-text": presetValues?.buttonTextColor ?? designState.buttonTextColor,
       "--store-card-bg": card.bg,
       "--store-card-border": card.border,
       "--store-btn-radius": btnRadius,
     } as React.CSSProperties;
-  }, [designState]);
+  }, [designState, themePreset]);
+
+  const backgroundStyle = useMemo(() => {
+    if (isFluidAura) return "#050505";
+    if (isPearlSilk) return "conic-gradient(at top right, #fdf2f8 0%, #f8fafc 50%, #fffbeb 100%)";
+    if (isMidnightGlass) return "#0A0A0A";
+    if (themePreset === "minimal") return "#FAFAFA";
+    if (themePreset === "neo-brutalist") return "#FEF08A";
+    if (designState.backgroundColor.startsWith("linear") || designState.backgroundColor.startsWith("conic")) return designState.backgroundColor;
+    if (designState.backgroundColor.startsWith("#")) return designState.backgroundColor;
+    return "var(--store-bg)";
+  }, [designState.backgroundColor, isFluidAura, isPearlSilk, isMidnightGlass, themePreset]);
 
   const fontClass = FONT_FAMILIES.find((f) => f.id === designState.fontFamily)?.class || "font-store-inter";
   const fontVarMap: Record<string, string> = {
@@ -303,12 +323,19 @@ export function StorefrontPreview({
           className="relative w-full min-w-[343px] h-full rounded-[2rem] overflow-y-auto overflow-x-hidden"
           style={{
             ...cssVars,
-            background: designState.backgroundColor.startsWith("linear") ? designState.backgroundColor : "var(--store-bg)",
+            background: backgroundStyle,
             color: "var(--store-text)",
             fontFamily: fontFamilyStyle,
           }}
         >
-          {designState.glowElement && <div className={designState.glowElement} aria-hidden />}
+          {isFluidAura && (
+            <>
+              <div className="absolute top-0 -left-4 w-32 h-32 bg-fuchsia-600 rounded-full mix-blend-screen opacity-40 -z-10" style={{ filter: "blur(64px)" }} aria-hidden />
+              <div className="absolute top-0 -right-4 w-32 h-32 bg-cyan-600 rounded-full mix-blend-screen opacity-40 -z-10" style={{ filter: "blur(64px)" }} aria-hidden />
+              <div className="absolute -bottom-4 left-8 w-32 h-32 bg-violet-600 rounded-full mix-blend-screen opacity-40 -z-10" style={{ filter: "blur(64px)" }} aria-hidden />
+            </>
+          )}
+          {!isFluidAura && designState.glowElement && <div className={designState.glowElement} aria-hidden />}
           <div className={`p-6 space-y-6 ${fontClass}`} style={{ fontFamily: fontFamilyStyle }}>
             {storefrontBlocks && storefrontBlocks.length > 0 ? (
               <BlocksPreview

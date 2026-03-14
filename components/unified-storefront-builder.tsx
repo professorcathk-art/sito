@@ -215,9 +215,10 @@ export function UnifiedStorefrontBuilder() {
             default: "minimal",
             "minimal-light": "minimal",
             "bold-dark": "midnight-glass",
+            "soft-gradient": "pearl-silk",
           };
           const rawTheme = (p.storefront_theme_preset as string) || "default";
-          const themePreset = (THEME_PRESETS[rawTheme as ThemePresetId] ? rawTheme : themeMap[rawTheme] || "minimal") as ThemePresetId;
+          const themePreset = (themeMap[rawTheme] ?? (THEME_PRESETS[rawTheme as ThemePresetId] ? rawTheme : "minimal")) as ThemePresetId;
           const presetVals = THEME_PRESET_VALUES[themePreset] ?? THEME_PRESET_VALUES.minimal;
           const fontMap: Record<string, FontFamilyId> = {
             "font-sans": "inter",
@@ -387,10 +388,6 @@ export function UnifiedStorefrontBuilder() {
   };
 
   const handleThemeSelect = (theme: ThemePresetId) => {
-    if (theme === "midnight-glass" && !isPro) {
-      setShowUpgradeModal(true);
-      return;
-    }
     const preset = THEME_PRESET_VALUES[theme] ?? THEME_PRESET_VALUES.minimal;
     setDesignSettings((prev) => ({
       ...prev,
@@ -405,6 +402,7 @@ export function UnifiedStorefrontBuilder() {
   };
 
   const handleAddBlock = (type: StorefrontBlock["type"]) => {
+    if (type === "header" && storefrontBlocks.some((b) => b.type === "header")) return;
     const maxOrder = storefrontBlocks.length ? Math.max(...storefrontBlocks.map((b) => b.order)) : -1;
     const block: StorefrontBlock = {
       id: crypto.randomUUID(),
@@ -416,6 +414,10 @@ export function UnifiedStorefrontBuilder() {
     setShowAddBlockModal(false);
     setEditingBlock(block);
   };
+
+  const availableBlockTypes = BLOCK_TYPES.filter(
+    (t) => t.id !== "header" || !storefrontBlocks.some((b) => b.type === "header")
+  );
 
   const handleUpdateBlock = (id: string, data: Record<string, unknown>) => {
     setStorefrontBlocks((prev) =>
@@ -672,7 +674,7 @@ export function UnifiedStorefrontBuilder() {
 
       {showAddBlockModal && (
         <AddBlockModal
-          blockTypes={BLOCK_TYPES}
+          blockTypes={availableBlockTypes}
           onSelect={handleAddBlock}
           onClose={() => setShowAddBlockModal(false)}
         />
@@ -969,24 +971,24 @@ function DesignTab({
       <section>
         <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Theme</h3>
         <div className="grid grid-cols-2 gap-3">
-          {Object.values(THEME_PRESETS).map((preset) => {
+          {Object.values(THEME_PRESETS)
+            .filter((preset) => preset.id !== "soft-gradient")
+            .map((preset) => {
             const isSelected = designSettings.themePreset === preset.id;
-            const isLocked = preset.id === "midnight-glass" && !isPro;
             return (
               <button
                 key={preset.id}
                 type="button"
-                onClick={() => !isLocked && onThemeSelect(preset.id)}
-                className={`relative overflow-hidden rounded-xl border-2 transition-all text-left p-4 min-h-[88px] ${
+                onClick={() => onThemeSelect(preset.id)}
+                className={`relative overflow-hidden rounded-xl border-2 transition-all text-left p-4 min-h-[88px] cursor-pointer ${
                   isSelected ? "border-indigo-500 ring-2 ring-indigo-500/30" : "border-slate-700 hover:border-slate-600"
-                } ${isLocked ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}`}
+                }`}
               >
                 <div className={`absolute inset-0 ${preset.wrapper}`} />
                 <div className={`relative ${preset.card} p-2 mt-1`}>
                   <div className={`h-6 ${preset.button} rounded`} />
                 </div>
                 <span className="relative block mt-2 text-sm font-medium text-slate-200">{preset.name}</span>
-                {isLocked && <span className="absolute top-2 right-2 text-xs text-amber-400">PRO</span>}
               </button>
             );
           })}
