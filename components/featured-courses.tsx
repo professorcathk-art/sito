@@ -179,16 +179,16 @@ export function FeaturedCourses() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 overflow-visible">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {featuredProducts.map((product, index) => (
             <div
               key={product.id}
-              className="group animate-fade-in-up relative z-0 transition-all duration-300 ease-out overflow-visible group-hover:z-50"
+              className="animate-fade-in-up"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <Link
                 href={product.course_id ? `/courses/${product.course_id}` : `/expert/${product.expert_id}`}
-                className="block bg-slate-900 border border-slate-800 rounded-xl overflow-hidden transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] shadow-2xl flex flex-col"
+                className="block bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col"
               >
                 {/* Cover Image with 4:3 aspect ratio (shorter for landing page) */}
                 <div className="relative w-full aspect-[4/3] overflow-hidden bg-transparent rounded-t-xl">
@@ -247,7 +247,7 @@ export function FeaturedCourses() {
                       <p className="text-xs text-text-secondary truncate">by {product.expert_name}</p>
                     </div>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-text-primary group-hover:text-primary transition-all mb-3 line-clamp-2">
+                  <h3 className="text-base sm:text-lg font-bold text-text-primary mb-3 line-clamp-2">
                     {product.name}
                   </h3>
                   <div className="flex items-center justify-between mt-auto">
@@ -266,17 +266,6 @@ export function FeaturedCourses() {
                   </div>
                 </div>
               </Link>
-              {/* Description popover - absolute positioned to avoid grid overflow */}
-              {product.description && (
-                <div className="absolute top-full left-0 w-full pt-2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-300 ease-out z-50">
-                  <div className="px-4 py-4 bg-slate-800 border border-slate-700 rounded-b-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] backdrop-blur-md">
-                    <div 
-                      className="text-xs sm:text-sm text-slate-400 line-clamp-3 product-preview"
-                      dangerouslySetInnerHTML={{ __html: product.description }}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
           ))}
         </div>
