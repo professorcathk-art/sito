@@ -9,6 +9,16 @@ import { DashboardLayout } from "@/components/dashboard-layout";
 import { StorefrontPreview } from "@/components/storefront-preview";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import type { StorefrontBlock } from "@/types/storefront";
+import {
+  THEME_PRESETS,
+  FONT_FAMILIES,
+  CARD_STYLES,
+  BUTTON_STYLES,
+  type ThemePresetId,
+  type FontFamilyId,
+  type CardStyleId,
+  type ButtonStyleId,
+} from "@/lib/storefront-theme-config";
 
 const INPUT_CLASS =
   "w-full px-4 py-3 bg-slate-950 border border-slate-700 text-slate-100 rounded-md placeholder-slate-500 focus:border-[var(--brand)] focus:ring-1 focus:ring-[var(--brand)] outline-none transition-colors";
@@ -93,17 +103,25 @@ export function UnifiedStorefrontBuilder() {
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Design settings
+  // Design settings (Theme & Styling Engine)
   const [isPro, setIsPro] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [designSettings, setDesignSettings] = useState<{
-    themePreset: string;
+    themePreset: ThemePresetId;
+    fontFamily: FontFamilyId;
+    backgroundType: "solid" | "gradient" | "mesh";
+    backgroundColor?: string;
+    cardStyle: CardStyleId;
+    buttonStyle: ButtonStyleId;
     customBrandColor?: string;
-    buttonStyle: string;
   }>({
-    themePreset: "default",
-    customBrandColor: undefined,
+    themePreset: "minimal",
+    fontFamily: "font-sans",
+    backgroundType: "solid",
+    backgroundColor: undefined,
+    cardStyle: "flat",
     buttonStyle: "rounded-md",
+    customBrandColor: undefined,
   });
 
   // Storefront blocks (initialized with defaults so page is never blank)
@@ -145,6 +163,7 @@ export function UnifiedStorefrontBuilder() {
               name, tagline, bio, website, linkedin, instagram_url, listed_on_marketplace,
               category_id, country_id, language_supported, phone_number, avatar_url, custom_slug,
               is_pro_store, storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
+              storefront_font_family, storefront_background_type, storefront_background_color, storefront_card_style,
               storefront_blocks,
               categories!profiles_category_id_fkey(name),
               countries(name)
@@ -185,10 +204,20 @@ export function UnifiedStorefrontBuilder() {
           if (p.custom_slug) setSlugAvailable(true);
 
           setIsPro((p.is_pro_store as boolean) || false);
+          const themeMap: Record<string, ThemePresetId> = {
+            default: "minimal",
+            "minimal-light": "minimal",
+            "bold-dark": "midnight-glass",
+          };
+          const rawTheme = (p.storefront_theme_preset as string) || "default";
           setDesignSettings({
-            themePreset: (p.storefront_theme_preset as string) || "default",
+            themePreset: (THEME_PRESETS[rawTheme as ThemePresetId] ? rawTheme : themeMap[rawTheme] || "minimal") as ThemePresetId,
+            fontFamily: ((p.storefront_font_family as string) || "font-sans") as FontFamilyId,
+            backgroundType: ((p.storefront_background_type as string) || "solid") as "solid" | "gradient" | "mesh",
+            backgroundColor: (p.storefront_background_color as string) || undefined,
+            cardStyle: ((p.storefront_card_style as string) || "flat") as CardStyleId,
+            buttonStyle: ((p.storefront_button_style as string) === "hard-edge" ? "sharp" : ((p.storefront_button_style as string) || "rounded-md")) as ButtonStyleId,
             customBrandColor: (p.storefront_custom_brand_color as string) || undefined,
-            buttonStyle: (p.storefront_button_style as string) || "rounded-md",
           });
           const dbBlocks = (p.storefront_blocks as StorefrontBlock[]) || [];
           setStorefrontBlocks(
@@ -316,7 +345,7 @@ export function UnifiedStorefrontBuilder() {
     }
   };
 
-  const handleThemeSelect = (theme: string) => {
+  const handleThemeSelect = (theme: ThemePresetId) => {
     if (theme === "midnight-glass" && !isPro) {
       setShowUpgradeModal(true);
       return;
@@ -386,6 +415,10 @@ export function UnifiedStorefrontBuilder() {
           storefront_theme_preset: designSettings.themePreset,
           storefront_custom_brand_color: designSettings.customBrandColor || null,
           storefront_button_style: designSettings.buttonStyle,
+          storefront_font_family: designSettings.fontFamily,
+          storefront_background_type: designSettings.backgroundType,
+          storefront_background_color: designSettings.backgroundColor || null,
+          storefront_card_style: designSettings.cardStyle,
           storefront_blocks: storefrontBlocks,
           updated_at: new Date().toISOString(),
         }, { onConflict: "id" });
@@ -543,8 +576,12 @@ export function UnifiedStorefrontBuilder() {
               <div style={designSettings.customBrandColor ? { ["--brand-color" as string]: designSettings.customBrandColor } : undefined}>
                 <StorefrontPreview
                   themePreset={designSettings.themePreset}
-                  customBrandColor={designSettings.customBrandColor}
+                  fontFamily={designSettings.fontFamily}
+                  backgroundType={designSettings.backgroundType}
+                  backgroundColor={designSettings.backgroundColor}
+                  cardStyle={designSettings.cardStyle}
                   buttonStyle={designSettings.buttonStyle}
+                  customBrandColor={designSettings.customBrandColor}
                   customLinks={customLinks}
                   showProducts={showProducts}
                   showAppointments={true}
@@ -876,39 +913,145 @@ function DesignTab({
   onThemeSelect,
   onDesignChange,
 }: {
-  designSettings: { themePreset: string; customBrandColor?: string; buttonStyle: string };
+  designSettings: {
+    themePreset: ThemePresetId;
+    fontFamily: FontFamilyId;
+    backgroundType: "solid" | "gradient" | "mesh";
+    backgroundColor?: string;
+    cardStyle: CardStyleId;
+    buttonStyle: ButtonStyleId;
+    customBrandColor?: string;
+  };
   isPro: boolean;
-  onThemeSelect: (theme: string) => void;
-  onDesignChange: (updater: React.SetStateAction<{ themePreset: string; customBrandColor?: string; buttonStyle: string }>) => void;
+  onThemeSelect: (theme: ThemePresetId) => void;
+  onDesignChange: React.Dispatch<React.SetStateAction<typeof designSettings>>;
 }) {
-  const themes = [
-    { id: "default", name: "Default", pro: false },
-    { id: "midnight-glass", name: "Midnight Glass", pro: true },
-    { id: "minimal-light", name: "Minimal Light", pro: false },
-    { id: "bold-dark", name: "Bold Dark", pro: false },
-  ];
-  const buttonStyles = ["rounded-full", "rounded-md", "hard-edge", "outline"];
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-slate-50 mb-3">Theme</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {themes.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => onThemeSelect(t.id)}
-              className={`p-3 rounded-lg border-2 transition-all ${
-                designSettings.themePreset === t.id ? "border-indigo-500 bg-indigo-500/10" : "border-slate-700 hover:border-slate-600"
-              } ${t.pro && !isPro ? "opacity-60" : ""}`}
-            >
-              <span className="text-slate-50 font-medium">{t.name}</span>
-              {t.pro && <span className="block text-xs text-slate-400">⭐ PRO</span>}
-            </button>
-          ))}
+    <div className="space-y-8">
+      {/* Themes Section - Visual preview cards */}
+      <section>
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Theme</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {Object.values(THEME_PRESETS).map((preset) => {
+            const isSelected = designSettings.themePreset === preset.id;
+            const isLocked = preset.id === "midnight-glass" && !isPro;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => !isLocked && onThemeSelect(preset.id)}
+                className={`relative overflow-hidden rounded-xl border-2 transition-all text-left p-4 min-h-[88px] ${
+                  isSelected ? "border-indigo-500 ring-2 ring-indigo-500/30" : "border-slate-700 hover:border-slate-600"
+                } ${isLocked ? "opacity-70 cursor-not-allowed" : "cursor-pointer"}`}
+              >
+                <div className={`absolute inset-0 ${preset.wrapper}`} />
+                <div className={`relative ${preset.card} p-2 mt-1`}>
+                  <div className={`h-6 ${preset.button} rounded`} />
+                </div>
+                <span className="relative block mt-2 text-sm font-medium text-slate-200">{preset.name}</span>
+                {isLocked && <span className="absolute top-2 right-2 text-xs text-amber-400">PRO</span>}
+              </button>
+            );
+          })}
         </div>
-      </div>
-      <div>
-        <h3 className="text-lg font-semibold text-slate-50 mb-3">Brand Color</h3>
+      </section>
+
+      {/* Typography Section */}
+      <section>
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Typography</h3>
+        <select
+          value={designSettings.fontFamily}
+          onChange={(e) => onDesignChange((s) => ({ ...s, fontFamily: e.target.value as FontFamilyId }))}
+          className={`w-full ${INPUT_CLASS}`}
+        >
+          {FONT_FAMILIES.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.name}
+            </option>
+          ))}
+        </select>
+      </section>
+
+      {/* Backgrounds Section */}
+      <section>
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Background</h3>
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            {(["solid", "gradient", "mesh"] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => onDesignChange((s) => ({ ...s, backgroundType: t }))}
+                className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                  designSettings.backgroundType === t ? "border-indigo-500 bg-indigo-500/10 text-slate-50" : "border-slate-700 text-slate-400 hover:border-slate-600"
+                }`}
+              >
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={designSettings.backgroundColor || "#0A0A0A"}
+              onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value }))}
+              className="w-12 h-12 rounded-lg border border-slate-700 cursor-pointer flex-shrink-0"
+            />
+            <input
+              type="text"
+              value={designSettings.backgroundColor || ""}
+              onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value || undefined }))}
+              placeholder="Override hex (e.g. #0A0A0A)"
+              className={`flex-1 ${INPUT_CLASS} py-2`}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Shapes Section */}
+      <section>
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Shapes</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-slate-400 mb-2">Card Style</label>
+            <div className="flex flex-wrap gap-2">
+              {CARD_STYLES.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => onDesignChange((s) => ({ ...s, cardStyle: c.id }))}
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    designSettings.cardStyle === c.id ? "border-indigo-500 bg-indigo-500/10 text-slate-50" : "border-slate-700 text-slate-400 hover:border-slate-600"
+                  }`}
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm text-slate-400 mb-2">Button Radius</label>
+            <div className="flex flex-wrap gap-2">
+              {BUTTON_STYLES.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => onDesignChange((s) => ({ ...s, buttonStyle: b.id }))}
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    designSettings.buttonStyle === b.id ? "border-indigo-500 bg-indigo-500/10 text-slate-50" : "border-slate-700 text-slate-400 hover:border-slate-600"
+                  }`}
+                >
+                  {b.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Brand Color */}
+      <section>
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Brand Color</h3>
         <div className="flex items-center gap-4">
           <input
             type="color"
@@ -924,23 +1067,7 @@ function DesignTab({
             className={`flex-1 ${INPUT_CLASS} py-2`}
           />
         </div>
-      </div>
-      <div>
-        <h3 className="text-lg font-semibold text-slate-50 mb-3">Button Style</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {buttonStyles.map((s) => (
-            <button
-              key={s}
-              onClick={() => onDesignChange((prev) => ({ ...prev, buttonStyle: s }))}
-              className={`p-3 rounded-lg border-2 transition-all ${
-                designSettings.buttonStyle === s ? "border-indigo-500 bg-indigo-500/10" : "border-slate-700 hover:border-slate-600"
-              }`}
-            >
-              <span className="text-slate-50 text-sm capitalize">{s.replace("-", " ")}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

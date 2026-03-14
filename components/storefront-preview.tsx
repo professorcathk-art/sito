@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { StorefrontBlock } from "@/types/storefront";
+import { THEME_PRESETS, type ThemePresetId } from "@/lib/storefront-theme-config";
 
 function BlocksPreview({
   blocks,
@@ -12,9 +13,7 @@ function BlocksPreview({
   expertAvatar,
   verified,
   products,
-  customBrandColor,
-  buttonStyle,
-  themePreset,
+  cardClass,
   getButtonClasses,
   getButtonStyle,
 }: {
@@ -25,9 +24,7 @@ function BlocksPreview({
   expertAvatar?: string;
   verified: boolean;
   products: Array<{ id: string; name: string; price: number; pricing_type: string }>;
-  customBrandColor?: string;
-  buttonStyle: string;
-  themePreset: string;
+  cardClass: string;
   getButtonClasses: () => string;
   getButtonStyle: () => React.CSSProperties;
 }) {
@@ -82,7 +79,7 @@ function BlocksPreview({
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`${getButtonClasses()} block text-center border-white/10 hover:opacity-90`}
+                    className={`${getButtonClasses()} block text-center hover:opacity-90`}
                     style={getButtonStyle()}
                   >
                     {link.title}
@@ -98,7 +95,7 @@ function BlocksPreview({
             <div key={block.id} className="space-y-3">
               <h2 className="text-lg font-semibold mb-3">Products</h2>
               {products.slice(0, 3).map((product) => (
-                <div key={product.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                <div key={product.id} className={`${cardClass} p-4`}>
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <h3 className="font-semibold">{product.name}</h3>
@@ -138,7 +135,7 @@ function BlocksPreview({
             <div key={block.id} className="space-y-3">
               <h2 className="text-lg font-semibold mb-3">FAQ</h2>
               {items.filter((i) => i.question || i.answer).map((item, idx) => (
-                <div key={idx} className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                <div key={idx} className={`${cardClass} p-4`}>
                   {item.question && <h4 className="font-medium mb-2">{item.question}</h4>}
                   {item.answer && <p className="text-sm opacity-80">{item.answer}</p>}
                 </div>
@@ -152,7 +149,7 @@ function BlocksPreview({
             <div key={block.id} className="space-y-3">
               <h2 className="text-lg font-semibold mb-3">Testimonials</h2>
               {items.filter((i) => i.name || i.quote).map((item, idx) => (
-                <div key={idx} className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                <div key={idx} className={`${cardClass} p-4`}>
                   {item.quote && <p className="text-sm opacity-90 italic">&quot;{item.quote}&quot;</p>}
                   {item.name && <p className="text-sm font-medium mt-2">— {item.name}</p>}
                 </div>
@@ -167,9 +164,13 @@ function BlocksPreview({
 }
 
 interface StorefrontPreviewProps {
-  themePreset: string;
-  customBrandColor?: string;
+  themePreset: ThemePresetId;
+  fontFamily?: string;
+  backgroundType?: "solid" | "gradient" | "mesh";
+  backgroundColor?: string;
+  cardStyle?: string;
   buttonStyle: string;
+  customBrandColor?: string;
   customLinks: Array<{ title: string; url: string; icon?: string; order: number }>;
   showProducts: boolean;
   showAppointments: boolean;
@@ -194,8 +195,12 @@ interface StorefrontPreviewProps {
 
 export function StorefrontPreview({
   themePreset,
-  customBrandColor,
+  fontFamily = "font-sans",
+  backgroundType,
+  backgroundColor,
+  cardStyle,
   buttonStyle,
+  customBrandColor,
   customLinks,
   showProducts,
   showAppointments,
@@ -211,55 +216,33 @@ export function StorefrontPreview({
 }: StorefrontPreviewProps) {
   const [cssVars, setCssVars] = useState<Record<string, string>>({});
 
+  const preset = THEME_PRESETS[themePreset] ?? THEME_PRESETS.minimal;
+  const isLightTheme = themePreset === "minimal" || themePreset === "soft-gradient" || themePreset === "neo-brutalist";
+
   useEffect(() => {
     const vars: Record<string, string> = {};
-    if (customBrandColor) {
-      vars["--brand-color"] = customBrandColor;
-    }
+    if (customBrandColor) vars["--brand-color"] = customBrandColor;
+    if (backgroundColor) vars["--storefront-bg"] = backgroundColor;
     setCssVars(vars);
-  }, [customBrandColor]);
+  }, [customBrandColor, backgroundColor]);
 
   const getButtonClasses = () => {
     const base = "w-full py-3 px-4 font-semibold transition-all duration-300";
-    const brandColor = customBrandColor || "#FFFFFF";
-    
-    switch (buttonStyle) {
-      case "rounded-full":
-        return `${base} rounded-full`;
-      case "rounded-md":
-        return `${base} rounded-md`;
-      case "hard-edge":
-        return `${base} rounded-none`;
-      case "outline":
-        return `${base} rounded-md border-2 bg-transparent`;
-      default:
-        return `${base} rounded-md`;
-    }
-  };
-
-  const getThemeClasses = () => {
-    switch (themePreset) {
-      case "midnight-glass":
-        return "bg-slate-950 text-slate-50";
-      case "minimal-light":
-        return "bg-white text-slate-900";
-      case "bold-dark":
-        return "bg-slate-950 text-slate-50";
-      default:
-        return "bg-slate-950 text-slate-50";
-    }
+    const radius = buttonStyle === "rounded-full" ? "rounded-full" : buttonStyle === "sharp" ? "rounded-none" : "rounded-md";
+    return `${base} ${preset.button} ${radius}`;
   };
 
   const getButtonStyle = () => {
-    if (!customBrandColor) return {};
-    if (buttonStyle === "outline") {
-      return { borderColor: customBrandColor, color: customBrandColor };
+    if (customBrandColor) {
+      return {
+        backgroundColor: customBrandColor,
+        color: isLightTheme ? "#111827" : "#FFFFFF",
+      };
     }
-    return {
-      backgroundColor: customBrandColor,
-      color: themePreset === "minimal-light" ? "#000000" : "#FFFFFF",
-    };
+    return {};
   };
+
+  const wrapperClass = [preset.wrapper, fontFamily].filter(Boolean).join(" ");
 
   return (
     <div className="sticky top-4 flex justify-center">
@@ -269,10 +252,11 @@ export function StorefrontPreview({
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-b-2xl z-10"></div>
         
         {/* Screen Content */}
-        <div 
-          className={`w-full h-full rounded-[2rem] overflow-y-auto ${getThemeClasses()}`}
-          style={cssVars}
+        <div
+          className={`relative w-full h-full rounded-[2rem] overflow-y-auto ${wrapperClass}`}
+          style={{ ...cssVars, ...(backgroundColor && backgroundType === "solid" ? { backgroundColor } : {}) }}
         >
+          {preset.glowElement && <div className={preset.glowElement} aria-hidden />}
           {/* Storefront Content */}
           <div className="p-6 space-y-6">
             {storefrontBlocks && storefrontBlocks.length > 0 ? (
@@ -284,9 +268,7 @@ export function StorefrontPreview({
                 expertAvatar={expertAvatar}
                 verified={verified}
                 products={products}
-                customBrandColor={customBrandColor}
-                buttonStyle={buttonStyle}
-                themePreset={themePreset}
+                cardClass={preset.card}
                 getButtonClasses={getButtonClasses}
                 getButtonStyle={getButtonStyle}
               />
@@ -360,14 +342,8 @@ export function StorefrontPreview({
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`${getButtonClasses()} block text-center border-white/10 hover:opacity-90`}
-                      style={customBrandColor && buttonStyle === "outline" ? { 
-                        borderColor: customBrandColor,
-                        color: customBrandColor 
-                      } : customBrandColor ? {
-                        backgroundColor: customBrandColor,
-                        color: themePreset === "minimal-light" ? "#000000" : "#FFFFFF"
-                      } : {}}
+                      className={`${getButtonClasses()} block text-center hover:opacity-90`}
+                      style={getButtonStyle()}
                     >
                       {link.title}
                     </a>
@@ -380,10 +356,7 @@ export function StorefrontPreview({
               <div className="space-y-3">
                 <h2 className="text-lg font-semibold mb-3">Products</h2>
                 {products.slice(0, 3).map((product) => (
-                  <div
-                    key={product.id}
-                    className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-700 transition-all"
-                  >
+                  <div key={product.id} className={`${preset.card} p-4`}>
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold">{product.name}</h3>
@@ -391,10 +364,7 @@ export function StorefrontPreview({
                           {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
                         </p>
                       </div>
-                      <div className={`${getButtonClasses()} w-24 text-sm`} style={customBrandColor ? {
-                        backgroundColor: customBrandColor,
-                        color: themePreset === "minimal-light" ? "#000000" : "#FFFFFF"
-                      } : {}}>
+                      <div className={`${getButtonClasses()} w-24 text-sm`} style={getButtonStyle()}>
                         View
                       </div>
                     </div>
@@ -405,13 +375,7 @@ export function StorefrontPreview({
 
             {/* Appointments CTA */}
             {showAppointments && (
-              <button
-                className={`${getButtonClasses()} w-full`}
-                style={customBrandColor ? {
-                  backgroundColor: customBrandColor,
-                  color: themePreset === "minimal-light" ? "#000000" : "#FFFFFF"
-                } : {}}
-              >
+              <button className={`${getButtonClasses()} w-full`} style={getButtonStyle()}>
                 Book 1-on-1 Session
               </button>
             )}
@@ -420,7 +384,7 @@ export function StorefrontPreview({
             {showBlog && (
               <div className="space-y-3">
                 <h2 className="text-lg font-semibold mb-3">Latest Posts</h2>
-                <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                <div className={`${preset.card} p-4`}>
                   <div className="h-4 bg-slate-700 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-slate-700 rounded w-1/2"></div>
                 </div>

@@ -96,12 +96,16 @@ export function StorefrontView({
 
   const getThemeClasses = () => {
     switch (themePreset) {
-      case "midnight-glass":
-        return "bg-slate-950 text-slate-50 min-h-screen";
+      case "minimal":
       case "minimal-light":
-        return "bg-white text-slate-900 min-h-screen";
+        return "bg-[#FAFAFA] text-slate-900 min-h-screen";
+      case "midnight-glass":
       case "bold-dark":
-        return "bg-slate-950 text-slate-50 min-h-screen";
+        return "bg-[#0A0A0A] text-slate-50 min-h-screen relative overflow-hidden";
+      case "neo-brutalist":
+        return "bg-[#FEF08A] text-black min-h-screen";
+      case "soft-gradient":
+        return "bg-gradient-to-br from-rose-100 to-teal-100 text-slate-800 min-h-screen";
       default:
         return "bg-slate-950 text-slate-50 min-h-screen";
     }
@@ -119,7 +123,7 @@ export function StorefrontView({
 
   const getButtonStyle = () => {
     if (!customBrandColor) return {};
-    const useDarkText = isLightColor(customBrandColor) || themePreset === "minimal-light";
+    const useDarkText = isLightColor(customBrandColor) || ["minimal", "minimal-light", "soft-gradient", "neo-brutalist"].includes(themePreset);
     if (buttonStyle === "outline") {
       return { borderColor: customBrandColor, color: customBrandColor };
     }
@@ -187,7 +191,7 @@ export function StorefrontView({
                       {verified && <span className="text-indigo-400 shrink-0" title="Verified">✓</span>}
                     </div>
                     {tagline && <p className="text-slate-400 text-sm mt-1">{tagline}</p>}
-                    {bio && <p className="text-slate-400 text-sm mt-2 max-w-md">{bio}</p>}
+                    {bio && <p className="text-slate-400 text-sm mt-2 max-w-full">{bio}</p>}
                     {(website || linkedin || instagramUrl) && (
                       <div className="flex gap-3 mt-4">
                         {website && (
@@ -234,15 +238,9 @@ export function StorefrontView({
                     {products.map((product) => (
                       product.course_id && user ? (
                         <div key={product.id} className={cardClass}>
-                          {product.cover_image_url ? (
+                          {product.cover_image_url && (
                             <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
                               <Image src={product.cover_image_url} alt={product.name} fill className="object-cover" />
-                            </div>
-                          ) : (
-                            <div className="w-24 h-24 rounded-lg bg-slate-800 border border-slate-700 flex-shrink-0 flex items-center justify-center">
-                              <svg className="w-10 h-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
@@ -267,15 +265,9 @@ export function StorefrontView({
                           href={product.course_id ? `/courses/${product.course_id}` : `/expert/${expertId}`}
                           className={cardClass}
                         >
-                          {product.cover_image_url ? (
+                          {product.cover_image_url && (
                             <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
                               <Image src={product.cover_image_url} alt={product.name} fill className="object-cover" />
-                            </div>
-                          ) : (
-                            <div className="w-24 h-24 rounded-lg bg-slate-800 border border-slate-700 flex-shrink-0 flex items-center justify-center">
-                              <svg className="w-10 h-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
