@@ -501,7 +501,29 @@ export function CourseEnrollment({
   const enroll = async (questionnaireResponse?: any, guestFormResponses?: Record<string, unknown>) => {
     const isGuest = !user || !currentUserId;
     if (isGuest && isFree) {
-      router.push(`/register?redirect=${encodeURIComponent(window.location.pathname)}&message=Create an account to get free access`);
+      const guestEmail = guestFormResponses ? extractEmailFromResponses(guestFormResponses) : null;
+      if (!guestEmail) {
+        alert("Please provide your email to get free access.");
+        return;
+      }
+      try {
+        const res = await fetch("/api/pending-enrollment/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            courseId,
+            email: guestEmail,
+            questionnaireResponseId: questionnaireResponse?.id || null,
+          }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Failed to save");
+        }
+        router.push(`/register?email=${encodeURIComponent(guestEmail)}&from=payment&type=course&message=Create an account to access your free course`);
+      } catch (err: any) {
+        alert(err.message || "Failed to proceed. Please try again.");
+      }
       return;
     }
     if (!isGuest && (!user || !currentUserId)) return;

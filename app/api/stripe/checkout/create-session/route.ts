@@ -216,6 +216,16 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+      if (error.message?.includes("stripe_transfers") || error.message?.includes("stripe_balance")) {
+        return NextResponse.json(
+          { 
+            error: "Payment setup incomplete: The expert's Stripe account needs additional configuration. " +
+                   "Please ask the expert to complete their Stripe Connect setup in Dashboard > Stripe Connect, " +
+                   "or contact them to arrange payment directly."
+          },
+          { status: 400 }
+        );
+      }
       
       return NextResponse.json(
         { error: `Stripe error: ${error.message}` },
