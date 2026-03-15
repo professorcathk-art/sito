@@ -39,6 +39,8 @@ const BLOCK_TYPES: { id: StorefrontBlock["type"]; name: string }[] = [
   { id: "header", name: "Header" },
   { id: "links", name: "Links" },
   { id: "products", name: "Products" },
+  { id: "social_media", name: "Social Media" },
+  { id: "book_me", name: "Book Me" },
   { id: "image_text", name: "Image + Text" },
   { id: "faq", name: "FAQ" },
   { id: "testimonials", name: "Testimonials" },
@@ -49,8 +51,10 @@ const BLOCK_TYPES: { id: StorefrontBlock["type"]; name: string }[] = [
 
 const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown>> = {
   header: { name: "", tagline: "", bio: "", avatarUrl: "" },
-  links: { items: [{ title: "", url: "", icon: "", order: 0, description: "", thumbnailUrl: "" }] },
+  links: { items: [{ title: "", url: "", icon: "", order: 0, description: "", thumbnailUrl: "", emoji: "" }], textAlign: "left" as "left" | "center" | "right" },
   products: { showProducts: true },
+  social_media: { platforms: ["instagram", "linkedin", "tiktok", "twitter", "youtube"] },
+  book_me: {},
   image_text: { imageUrl: "", title: "", text: "", alignment: "left" },
   faq: { items: [{ question: "", answer: "" }] },
   testimonials: { items: [{ name: "", quote: "", avatarUrl: "" }] },
@@ -97,6 +101,10 @@ export function UnifiedStorefrontBuilder() {
     website: "",
     linkedin: "",
     instagramUrl: "",
+    tiktokUrl: "",
+    twitterUrl: "",
+    youtubeUrl: "",
+    storefrontBackgroundImageUrl: "",
     listedOnMarketplace: false,
     avatarUrl: "",
     customSlug: "",
@@ -106,10 +114,12 @@ export function UnifiedStorefrontBuilder() {
   const [slugError, setSlugError] = useState("");
   const [existingProfile, setExistingProfile] = useState<{ category_id?: string; bio?: string } | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingBackground, setUploadingBackground] = useState(false);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const backgroundFileInputRef = useRef<HTMLInputElement>(null);
 
   // Design settings (Theme & Styling Engine)
   const [isPro, setIsPro] = useState(false);
@@ -167,9 +177,10 @@ export function UnifiedStorefrontBuilder() {
           supabase
             .from("profiles")
             .select(`
-              name, tagline, bio, website, linkedin, instagram_url, listed_on_marketplace,
+              name, tagline, bio, website, linkedin, instagram_url, tiktok_url, twitter_url, youtube_url,
+              storefront_background_image_url, listed_on_marketplace,
               category_id, country_id, language_supported, phone_number, avatar_url, custom_slug,
-              is_pro_store,               storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
+              is_pro_store, storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
               storefront_font_family, storefront_background_type, storefront_background_color, storefront_card_style,
               storefront_text_color, storefront_button_text_color, storefront_blocks,
               categories!profiles_category_id_fkey(name),
@@ -202,6 +213,10 @@ export function UnifiedStorefrontBuilder() {
             website: (p.website as string) || "",
             linkedin: (p.linkedin as string) || "",
             instagramUrl: (p.instagram_url as string) || "",
+            tiktokUrl: (p.tiktok_url as string) || "",
+            twitterUrl: (p.twitter_url as string) || "",
+            youtubeUrl: (p.youtube_url as string) || "",
+            storefrontBackgroundImageUrl: (p.storefront_background_image_url as string) || "",
             listedOnMarketplace: (p.listed_on_marketplace as boolean) || false,
             avatarUrl: (p.avatar_url as string) || "",
             customSlug: (p.custom_slug as string) || "",
@@ -387,6 +402,30 @@ export function UnifiedStorefrontBuilder() {
     return data.publicUrl;
   };
 
+  const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Please upload an image");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be under 5MB");
+      return;
+    }
+    setUploadingBackground(true);
+    setError("");
+    try {
+      const url = await handleImageUpload(file, "storefront/background");
+      setProfileData({ ...profileData, storefrontBackgroundImageUrl: url });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploadingBackground(false);
+      e.target.value = "";
+    }
+  };
+
   const handleThemeSelect = (theme: ThemePresetId) => {
     const preset = THEME_PRESET_VALUES[theme] ?? THEME_PRESET_VALUES.minimal;
     setDesignSettings((prev) => ({
@@ -462,6 +501,10 @@ export function UnifiedStorefrontBuilder() {
           website: profileData.website || null,
           linkedin: profileData.linkedin || null,
           instagram_url: profileData.instagramUrl || null,
+          tiktok_url: profileData.tiktokUrl || null,
+          twitter_url: profileData.twitterUrl || null,
+          youtube_url: profileData.youtubeUrl || null,
+          storefront_background_image_url: profileData.storefrontBackgroundImageUrl || null,
           avatar_url: profileData.avatarUrl || null,
           listed_on_marketplace: profileData.listedOnMarketplace,
           custom_slug: profileData.customSlug.trim() || null,
@@ -597,6 +640,9 @@ export function UnifiedStorefrontBuilder() {
                     onCheckSlug={checkSlugAvailability}
                     onCreateCategory={handleCreateCategory}
                     onAvatarUpload={handleAvatarUpload}
+                    backgroundFileInputRef={backgroundFileInputRef}
+                    onBackgroundUpload={handleBackgroundUpload}
+                    uploadingBackground={uploadingBackground}
                   />
                 )}
 
@@ -620,6 +666,13 @@ export function UnifiedStorefrontBuilder() {
                     onMoveBlock={handleMoveBlock}
                     products={products}
                     onImageUpload={handleImageUpload}
+                    socialMediaUrls={{
+                      instagram: profileData.instagramUrl,
+                      tiktok: profileData.tiktokUrl,
+                      linkedin: profileData.linkedin,
+                      twitter: profileData.twitterUrl,
+                      youtube: profileData.youtubeUrl,
+                    }}
                   />
                 )}
               </div>
@@ -716,6 +769,9 @@ function ProfileTab({
   onCheckSlug,
   onCreateCategory,
   onAvatarUpload,
+  backgroundFileInputRef,
+  onBackgroundUpload,
+  uploadingBackground,
 }: {
   profileData: {
     name: string;
@@ -730,6 +786,10 @@ function ProfileTab({
     website: string;
     linkedin: string;
     instagramUrl: string;
+    tiktokUrl: string;
+    twitterUrl: string;
+    youtubeUrl: string;
+    storefrontBackgroundImageUrl: string;
     listedOnMarketplace: boolean;
     avatarUrl: string;
     customSlug: string;
@@ -765,6 +825,9 @@ function ProfileTab({
   onCheckSlug: (s: string) => void;
   onCreateCategory: () => void;
   onAvatarUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  backgroundFileInputRef: React.RefObject<HTMLInputElement>;
+  onBackgroundUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  uploadingBackground: boolean;
 }) {
   return (
     <div className="space-y-4">
@@ -907,6 +970,36 @@ function ProfileTab({
           placeholder="+1234567890"
           className={INPUT_CLASS}
         />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-2">Social Media Links</label>
+        <div className="space-y-2">
+          <input type="url" value={profileData.website} onChange={(e) => onProfileChange("website", e.target.value)} placeholder="Website" className={INPUT_CLASS} />
+          <input type="url" value={profileData.linkedin} onChange={(e) => onProfileChange("linkedin", e.target.value)} placeholder="LinkedIn URL" className={INPUT_CLASS} />
+          <input type="url" value={profileData.instagramUrl} onChange={(e) => onProfileChange("instagramUrl", e.target.value)} placeholder="Instagram URL" className={INPUT_CLASS} />
+          <input type="url" value={profileData.tiktokUrl} onChange={(e) => onProfileChange("tiktokUrl", e.target.value)} placeholder="TikTok URL" className={INPUT_CLASS} />
+          <input type="url" value={profileData.twitterUrl} onChange={(e) => onProfileChange("twitterUrl", e.target.value)} placeholder="Twitter/X URL" className={INPUT_CLASS} />
+          <input type="url" value={profileData.youtubeUrl} onChange={(e) => onProfileChange("youtubeUrl", e.target.value)} placeholder="YouTube URL" className={INPUT_CLASS} />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-200 mb-1">Storefront Background Image</label>
+        <div className="flex items-center gap-4">
+          {profileData.storefrontBackgroundImageUrl && (
+            <img src={profileData.storefrontBackgroundImageUrl} alt="Background" className="w-24 h-16 rounded object-cover border-2 border-slate-700" />
+          )}
+          <div>
+            <input ref={backgroundFileInputRef} type="file" accept="image/*" onChange={onBackgroundUpload} className="hidden" />
+            <button
+              type="button"
+              onClick={() => backgroundFileInputRef.current?.click()}
+              disabled={uploadingBackground}
+              className="px-4 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg text-sm hover:bg-slate-700 disabled:opacity-50"
+            >
+              {uploadingBackground ? "Uploading..." : profileData.storefrontBackgroundImageUrl ? "Change background" : "Upload background"}
+            </button>
+          </div>
+        </div>
       </div>
       <label className="flex items-center gap-2 cursor-pointer">
         <input
@@ -1148,6 +1241,7 @@ function BlocksTab({
   onMoveBlock,
   products,
   onImageUpload,
+  socialMediaUrls,
 }: {
   blocks: StorefrontBlock[];
   editingBlock: StorefrontBlock | null;
@@ -1158,6 +1252,7 @@ function BlocksTab({
   onMoveBlock: (id: string, dir: "up" | "down") => void;
   products: Array<{ id: string; name: string; price: number; pricing_type: string }>;
   onImageUpload: (file: File, pathPrefix: string) => Promise<string>;
+  socialMediaUrls?: { instagram?: string; tiktok?: string; linkedin?: string; twitter?: string; youtube?: string };
 }) {
   return (
     <div className="space-y-4">
@@ -1219,6 +1314,7 @@ function BlocksTab({
                 onClose={() => onEditBlock(null)}
                 products={products}
                 onImageUpload={onImageUpload}
+                socialMediaUrls={socialMediaUrls}
               />
             )}
           </div>
@@ -1236,12 +1332,14 @@ function BlockEditForm({
   onClose,
   products,
   onImageUpload,
+  socialMediaUrls,
 }: {
   block: StorefrontBlock;
   onUpdate: (data: Record<string, unknown>) => void;
   onClose: () => void;
   products: Array<{ id: string; name: string; price: number; pricing_type: string }>;
   onImageUpload: (file: File, pathPrefix: string) => Promise<string>;
+  socialMediaUrls?: { instagram?: string; tiktok?: string; linkedin?: string; twitter?: string; youtube?: string };
 }) {
   const data = block.data;
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
@@ -1259,9 +1357,23 @@ function BlockEditForm({
     );
   }
   if (block.type === "links") {
-    const items = (data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string }>) || [];
+    const items = (data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string; emoji?: string }>) || [];
+    const textAlign = (data.textAlign as "left" | "center" | "right") || "left";
     return (
       <div className="mt-4 space-y-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-slate-400 text-sm">Text alignment:</span>
+          {(["left", "center", "right"] as const).map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => onUpdate({ ...data, textAlign: a })}
+              className={`px-2 py-1 text-xs rounded ${textAlign === a ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}
+            >
+              {a}
+            </button>
+          ))}
+        </div>
         {items.map((item, i) => (
           <div key={i} className="bg-slate-900 border border-slate-700 p-4 rounded-lg">
             <input
@@ -1285,6 +1397,18 @@ function BlockEditForm({
               }}
               placeholder="URL"
               className={`${INPUT_CLASS} mb-2`}
+            />
+            <input
+              type="text"
+              value={item.emoji || ""}
+              onChange={(e) => {
+                const next = [...items];
+                next[i] = { ...next[i], emoji: e.target.value };
+                onUpdate({ ...data, items: next });
+              }}
+              placeholder="Emoji (e.g. 🔗)"
+              maxLength={4}
+              className={`${INPUT_CLASS} mb-2 w-20`}
             />
             <textarea
               value={item.description || ""}
@@ -1352,7 +1476,7 @@ function BlockEditForm({
           onClick={() =>
             onUpdate({
               ...data,
-              items: [...items, { title: "", url: "", icon: "", order: items.length, description: "", thumbnailUrl: "" }],
+              items: [...items, { title: "", url: "", icon: "", order: items.length, description: "", thumbnailUrl: "", emoji: "" }],
             })
           }
           className="text-indigo-400 text-sm"
@@ -1624,6 +1748,53 @@ function BlockEditForm({
         >
           + Add item
         </button>
+      </div>
+    );
+  }
+  if (block.type === "social_media") {
+    const platforms = (data.platforms as string[]) || ["instagram", "linkedin", "tiktok", "twitter", "youtube"];
+    const availablePlatforms = [
+      { id: "instagram", name: "Instagram", url: socialMediaUrls?.instagram },
+      { id: "tiktok", name: "TikTok", url: socialMediaUrls?.tiktok },
+      { id: "linkedin", name: "LinkedIn", url: socialMediaUrls?.linkedin },
+      { id: "twitter", name: "Twitter/X", url: socialMediaUrls?.twitter },
+      { id: "youtube", name: "YouTube", url: socialMediaUrls?.youtube },
+    ].filter((p) => p.url);
+    return (
+      <div className="mt-4 space-y-2">
+        <p className="text-slate-400 text-sm">Select which social links to show (only platforms with URLs in Profile):</p>
+        {availablePlatforms.length === 0 ? (
+          <p className="text-slate-500 text-sm italic">Add social media URLs in the Profile tab first.</p>
+        ) : (
+          <div className="space-y-2">
+            {availablePlatforms.map((p) => {
+              const checked = platforms.includes(p.id);
+              return (
+                <label key={p.id} className="flex items-center gap-3 p-2 rounded-lg border border-slate-700 hover:bg-slate-800/50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => {
+                      const next = e.target.checked ? [...platforms, p.id] : platforms.filter((id) => id !== p.id);
+                      onUpdate({ ...data, platforms: next });
+                    }}
+                    className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-indigo-500"
+                  />
+                  <span className="text-slate-200 text-sm">{p.name}</span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+  if (block.type === "book_me") {
+    return (
+      <div className="mt-4">
+        <p className="text-slate-400 text-sm italic">
+          This block links to your appointment booking page. No configuration needed.
+        </p>
       </div>
     );
   }

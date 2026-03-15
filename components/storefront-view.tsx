@@ -17,10 +17,17 @@ function getDomainFromUrl(url: string): string | null {
   }
 }
 
-function LinkThumbnail({ thumbnailUrl, url }: { thumbnailUrl?: string; url: string }) {
+function LinkThumbnail({ thumbnailUrl, url, emoji }: { thumbnailUrl?: string; url: string; emoji?: string }) {
   const [faviconFailed, setFaviconFailed] = useState(false);
   const domain = useMemo(() => getDomainFromUrl(url), [url]);
 
+  if (emoji?.trim()) {
+    return (
+      <div className="w-12 h-12 rounded-xl flex-shrink-0 bg-white/5 flex items-center justify-center text-2xl">
+        {emoji.trim()}
+      </div>
+    );
+  }
   if (thumbnailUrl) {
     return (
       <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
@@ -69,6 +76,10 @@ interface StorefrontViewProps {
   website?: string;
   linkedin?: string;
   instagramUrl?: string;
+  tiktokUrl?: string;
+  twitterUrl?: string;
+  youtubeUrl?: string;
+  storefrontBackgroundImageUrl?: string;
   products: Array<{
     id: string;
     name: string;
@@ -104,6 +115,10 @@ export function StorefrontView({
   website,
   linkedin,
   instagramUrl,
+  tiktokUrl,
+  twitterUrl,
+  youtubeUrl,
+  storefrontBackgroundImageUrl,
   products,
   blogPosts,
   hasAppointments,
@@ -148,6 +163,9 @@ export function StorefrontView({
     ...(website ? [{ title: "Website", url: website, icon: "🌐", order: 1000 }] : []),
     ...(linkedin ? [{ title: "LinkedIn", url: linkedin, icon: "💼", order: 1001 }] : []),
     ...(instagramUrl ? [{ title: "Instagram", url: instagramUrl, icon: "📷", order: 1002 }] : []),
+    ...(tiktokUrl ? [{ title: "TikTok", url: tiktokUrl, icon: "🎵", order: 1003 }] : []),
+    ...(twitterUrl ? [{ title: "X", url: twitterUrl, icon: "𝕏", order: 1004 }] : []),
+    ...(youtubeUrl ? [{ title: "YouTube", url: youtubeUrl, icon: "▶", order: 1005 }] : []),
   ].sort((a, b) => a.order - b.order);
 
   const blocksToRender: StorefrontBlock[] =
@@ -168,19 +186,28 @@ export function StorefrontView({
       ? "min-h-screen relative overflow-hidden bg-[#050505]"
       : "min-h-screen relative";
     const background =
-      isFluidAura
-        ? undefined
-        : isPearlSilk
-          ? "conic-gradient(at top right, #fdf2f8 0%, #f8fafc 50%, #fffbeb 100%)"
-          : designState.backgroundColor.startsWith("linear")
-            ? designState.backgroundColor
-            : "var(--store-bg)";
+      storefrontBackgroundImageUrl
+        ? `url(${storefrontBackgroundImageUrl})`
+        : isFluidAura
+          ? undefined
+          : isPearlSilk
+            ? "conic-gradient(at top right, #fdf2f8 0%, #f8fafc 50%, #fffbeb 100%)"
+            : designState.backgroundColor.startsWith("linear")
+              ? designState.backgroundColor
+              : "var(--store-bg)";
     return (
       <div
         className={`${wrapperClass} ${fontClass}`}
         style={{
           ...cssVars,
-          ...(background && { background }),
+          ...(background && {
+            background,
+            ...(storefrontBackgroundImageUrl && {
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }),
+          }),
           color: "var(--store-text)",
           fontFamily: fontFamilyStyle,
         }}
@@ -235,20 +262,25 @@ export function StorefrontView({
                     </div>
                     {tagline && <p className="text-[var(--store-text)] text-sm mt-1 opacity-80">{tagline}</p>}
                     {bio && <p className={bioClass}>{bio}</p>}
-                    {(website || linkedin || instagramUrl) && (
-                      <div className="flex gap-3 mt-4">
-                        {website && <a href={website} target="_blank" rel="noopener noreferrer" className="text-[var(--store-text)] opacity-70 hover:opacity-100 transition-colors">🌐</a>}
-                        {linkedin && <a href={linkedin} target="_blank" rel="noopener noreferrer" className="text-[var(--store-text)] opacity-70 hover:opacity-100 transition-colors">💼</a>}
-                        {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--store-text)] opacity-70 hover:opacity-100 transition-colors">📷</a>}
+                    {(website || linkedin || instagramUrl || tiktokUrl || twitterUrl || youtubeUrl) && (
+                      <div className="flex gap-3 mt-4 justify-center">
+                        {website && <a href={website} target="_blank" rel="noopener noreferrer" className="text-[var(--store-text)] opacity-70 hover:opacity-100 transition-colors" aria-label="Website">🌐</a>}
+                        {linkedin && <a href={linkedin} target="_blank" rel="noopener noreferrer" className="text-[var(--store-text)] opacity-70 hover:opacity-100 transition-colors" aria-label="LinkedIn">💼</a>}
+                        {instagramUrl && <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--store-text)] opacity-70 hover:opacity-100 transition-colors" aria-label="Instagram">📷</a>}
+                        {tiktokUrl && <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--store-text)] opacity-70 hover:opacity-100 transition-colors" aria-label="TikTok">🎵</a>}
+                        {twitterUrl && <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--store-text)] opacity-70 hover:opacity-100 transition-colors" aria-label="X">𝕏</a>}
+                        {youtubeUrl && <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--store-text)] opacity-70 hover:opacity-100 transition-colors" aria-label="YouTube">▶</a>}
                       </div>
                     )}
                   </section>
                 );
               }
               if (block.type === "links") {
-                const items = (block.data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string }>) || [];
+                const items = (block.data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string; emoji?: string }>) || [];
                 const links = items.filter((l) => l.title && l.url).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+                const textAlign = (block.data.textAlign as "left" | "center" | "right") || "left";
                 if (links.length === 0) return null;
+                const alignClass = textAlign === "center" ? "text-center" : textAlign === "right" ? "text-right" : "text-left";
                 const linkClass = isFluidAura
                   ? "group relative w-full flex items-center gap-4 p-3 bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] rounded-2xl hover:scale-[1.02] hover:bg-white/[0.06] transition-all duration-300"
                   : "group relative w-full flex items-center gap-4 p-3 bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-2xl hover:scale-[1.02] hover:bg-white transition-all duration-300";
@@ -265,8 +297,8 @@ export function StorefrontView({
                         rel="noopener noreferrer"
                         className={linkClass}
                       >
-                        <LinkThumbnail thumbnailUrl={link.thumbnailUrl} url={link.url} />
-                        <div className="flex flex-col flex-grow min-w-0">
+                        <LinkThumbnail thumbnailUrl={link.thumbnailUrl} url={link.url} emoji={link.emoji} />
+                        <div className={`flex flex-col flex-grow min-w-0 ${alignClass}`}>
                           <span className={linkTitleClass}>{link.title}</span>
                           {link.description && <span className={`mt-0.5 ${linkDescClass}`}>{link.description}</span>}
                         </div>
@@ -454,6 +486,77 @@ export function StorefrontView({
                         ))}
                       </ul>
                     </div>
+                  </section>
+                );
+              }
+              if (block.type === "social_media") {
+                const platforms = (block.data.platforms as string[]) || [];
+                const urls: Record<string, string> = {
+                  instagram: instagramUrl || "",
+                  tiktok: tiktokUrl || "",
+                  linkedin: linkedin || "",
+                  twitter: twitterUrl || "",
+                  youtube: youtubeUrl || "",
+                };
+                const toShow = platforms.filter((p) => urls[p]);
+                if (toShow.length === 0) return null;
+                const iconSize = 28;
+                const socialIcons: Record<string, JSX.Element> = {
+                  instagram: (
+                    <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="currentColor" aria-label="Instagram">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                    </svg>
+                  ),
+                  tiktok: (
+                    <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="currentColor" aria-label="TikTok">
+                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+                    </svg>
+                  ),
+                  linkedin: (
+                    <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="currentColor" aria-label="LinkedIn">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  ),
+                  twitter: (
+                    <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="currentColor" aria-label="X (Twitter)">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  ),
+                  youtube: (
+                    <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="currentColor" aria-label="YouTube">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                    </svg>
+                  ),
+                };
+                return (
+                  <section key={block.id} className="w-full flex justify-center">
+                    <div className="flex items-center justify-center gap-6">
+                      {toShow.map((p) => (
+                        <a
+                          key={p}
+                          href={urls[p]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="opacity-70 hover:opacity-100 transition-opacity"
+                          style={{ color: "var(--store-text)" }}
+                        >
+                          {socialIcons[p]}
+                        </a>
+                      ))}
+                    </div>
+                  </section>
+                );
+              }
+              if (block.type === "book_me") {
+                return (
+                  <section key={block.id} className="w-full flex justify-center">
+                    <Link
+                      href={`/appointments/book/${expertId}`}
+                      className={`py-4 px-8 font-semibold transition-all duration-300 text-center bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] ${isFluidAura ? "border border-white/20 hover:bg-white/20 backdrop-blur-md rounded-full" : isPearlSilk ? "hover:bg-[#2A2A2A] rounded-full shadow-lg" : "hover:opacity-90"}`}
+                      style={{ borderRadius: isFluidAura || isPearlSilk ? "9999px" : "var(--store-btn-radius)" }}
+                    >
+                      Book Me
+                    </Link>
                   </section>
                 );
               }

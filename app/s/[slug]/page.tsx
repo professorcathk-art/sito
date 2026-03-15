@@ -38,9 +38,13 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         storefront_show_blog,
         storefront_bio_override,
         storefront_blocks,
+        storefront_background_image_url,
         website,
         linkedin,
-        instagram_url
+        instagram_url,
+        tiktok_url,
+        twitter_url,
+        youtube_url
       `)
       .eq("custom_slug", slug.toLowerCase().trim())
       .eq("listed_on_marketplace", true)
@@ -136,6 +140,10 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         website={profile.website}
         linkedin={profile.linkedin}
         instagramUrl={profile.instagram_url}
+        tiktokUrl={profile.tiktok_url}
+        twitterUrl={profile.twitter_url}
+        youtubeUrl={profile.youtube_url}
+        storefrontBackgroundImageUrl={profile.storefront_background_image_url}
         products={products}
         blogPosts={blogPosts}
         hasAppointments={hasAppointments}

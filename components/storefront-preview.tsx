@@ -79,7 +79,9 @@ function BlocksPreview({
           );
         }
         if (block.type === "links") {
-          const items = (block.data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string }>) || [];
+          const items = (block.data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string; emoji?: string }>) || [];
+          const textAlign = (block.data.textAlign as "left" | "center" | "right") || "left";
+          const alignClass = textAlign === "center" ? "text-center" : textAlign === "right" ? "text-right" : "text-left";
           return (
             <div key={block.id} className="space-y-3">
               {items
@@ -93,7 +95,11 @@ function BlocksPreview({
                     rel="noopener noreferrer"
                     className="group flex items-center p-3 bg-[var(--store-card-bg)] border border-[var(--store-card-border)] rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer"
                   >
-                    {link.thumbnailUrl ? (
+                    {link.emoji?.trim() ? (
+                      <div className="w-12 h-12 rounded-xl flex-shrink-0 bg-[var(--store-card-border)]/30 flex items-center justify-center text-2xl">
+                        {link.emoji.trim()}
+                      </div>
+                    ) : link.thumbnailUrl ? (
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
                         <Image src={link.thumbnailUrl} alt="" fill className="object-cover" />
                       </div>
@@ -104,7 +110,7 @@ function BlocksPreview({
                         </svg>
                       </div>
                     )}
-                    <div className="flex-1 min-w-0 text-left ml-3">
+                    <div className={`flex-1 min-w-0 ml-3 ${alignClass}`}>
                       <span className="font-semibold block text-sm text-[var(--store-text)]">{link.title}</span>
                       {link.description && <span className="text-xs opacity-70 block mt-0.5 line-clamp-1 text-[var(--store-text)]">{link.description}</span>}
                     </div>
@@ -223,6 +229,28 @@ function BlocksPreview({
                   </li>
                 ))}
               </ul>
+            </div>
+          );
+        }
+        if (block.type === "social_media") {
+          const platforms = (block.data.platforms as string[]) || [];
+          if (platforms.length === 0) return null;
+          return (
+            <div key={block.id} className="w-full flex justify-center gap-4 py-2">
+              {platforms.slice(0, 5).map((p) => (
+                <div key={p} className="w-8 h-8 rounded-full bg-[var(--store-card-bg)] border border-[var(--store-card-border)] flex items-center justify-center">
+                  <span className="text-sm opacity-70">{p === "instagram" ? "📷" : p === "tiktok" ? "🎵" : p === "linkedin" ? "💼" : p === "twitter" ? "𝕏" : "▶"}</span>
+                </div>
+              ))}
+            </div>
+          );
+        }
+        if (block.type === "book_me") {
+          return (
+            <div key={block.id} className="w-full flex justify-center">
+              <div className="py-3 px-6 font-semibold bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] rounded-full text-sm">
+                Book Me
+              </div>
             </div>
           );
         }
