@@ -181,21 +181,29 @@ export function UnifiedStorefrontBuilder() {
     async function loadData() {
       if (!user) return;
       try {
-        const [profileRes, categoriesRes, countriesRes, productsRes] = await Promise.all([
-          supabase
-            .from("profiles")
-            .select(`
+        const baseProfileSelect = `
               name, tagline, bio, website, linkedin, instagram_url, tiktok_url, twitter_url, youtube_url,
               storefront_background_image_url, listed_on_marketplace,
               category_id, country_id, language_supported, phone_number, avatar_url, custom_slug,
               is_pro_store, storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
               storefront_font_family, storefront_background_type, storefront_background_color, storefront_card_style,
-              storefront_text_color, storefront_subheadline_color, storefront_button_text_color, storefront_button_variant, storefront_blocks,
+              storefront_text_color, storefront_button_text_color, storefront_button_variant, storefront_blocks,
               categories!profiles_category_id_fkey(name),
               countries(name)
-            `)
+            `;
+        let profileRes = await supabase
+          .from("profiles")
+          .select(`${baseProfileSelect}, storefront_subheadline_color`)
+          .eq("id", user.id)
+          .single();
+        if (profileRes.error) {
+          profileRes = await supabase
+            .from("profiles")
+            .select(baseProfileSelect)
             .eq("id", user.id)
-            .single(),
+            .single();
+        }
+        const [categoriesRes, countriesRes, productsRes] = await Promise.all([
           supabase.from("categories").select("id, name").order("name"),
           supabase.from("countries").select("id, name, code").order("name"),
           supabase.from("products").select("id, name, price, pricing_type").eq("expert_id", user.id).limit(10),
@@ -274,7 +282,7 @@ export function UnifiedStorefrontBuilder() {
             backgroundColor: (p.storefront_background_color as string) || presetVals.backgroundColor,
             backgroundImageUrl: (presetVals.backgroundImageUrl as string) || "",
             textColor: (p.storefront_text_color as string) || presetVals.textColor,
-            subheadlineColor: (p.storefront_subheadline_color as string) || (presetVals.subheadlineColor as string) || presetVals.textColor,
+            subheadlineColor: (p.storefront_subheadline_color as string) || (presetVals as { subheadlineColor?: string }).subheadlineColor || presetVals.textColor,
             buttonColor: (p.storefront_custom_brand_color as string) || presetVals.buttonColor,
             buttonTextColor: (p.storefront_button_text_color as string) || presetVals.buttonTextColor,
             cardStyle: ((p.storefront_card_style as string) || presetVals.cardStyle) as CardStyleId,
@@ -537,14 +545,52 @@ export function UnifiedStorefrontBuilder() {
           storefront_background_color: designSettings.backgroundColor || null,
           storefront_card_style: designSettings.cardStyle,
           storefront_text_color: designSettings.textColor || null,
-          storefront_subheadline_color: designSettings.subheadlineColor || null,
           storefront_button_text_color: designSettings.buttonTextColor || null,
           storefront_button_variant: designSettings.buttonStyle || "default",
+          storefront_subheadline_color: designSettings.subheadlineColor || null,
           storefront_blocks: storefrontBlocks,
           updated_at: new Date().toISOString(),
         }, { onConflict: "id" });
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        if (profileError.message?.includes("storefront_subheadline_color") || profileError.message?.includes("column")) {
+          const { error: retryError } = await supabase.from("profiles").upsert({
+            id: user.id,
+            name: profileData.name,
+            tagline: profileData.title,
+            category_id: profileData.categoryId || existingProfile?.category_id || null,
+            country_id: profileData.countryId,
+            language_supported: profileData.languagesSupported,
+            phone_number: profileData.phoneNumber || null,
+            bio: profileData.bio || existingProfile?.bio || null,
+            website: profileData.website || null,
+            linkedin: profileData.linkedin || null,
+            instagram_url: profileData.instagramUrl || null,
+            tiktok_url: profileData.tiktokUrl || null,
+            twitter_url: profileData.twitterUrl || null,
+            youtube_url: profileData.youtubeUrl || null,
+            storefront_background_image_url: profileData.storefrontBackgroundImageUrl || null,
+            avatar_url: profileData.avatarUrl || null,
+            listed_on_marketplace: profileData.listedOnMarketplace,
+            custom_slug: profileData.customSlug.trim() || null,
+            storefront_theme_preset: designSettings.themePreset,
+            storefront_custom_brand_color: designSettings.buttonColor || null,
+            storefront_button_style: designSettings.buttonRadius === "pill" ? "rounded-full" : designSettings.buttonRadius === "sharp" ? "sharp" : "rounded-md",
+            storefront_font_family: designSettings.fontFamily,
+            storefront_background_type: designSettings.backgroundType,
+            storefront_background_color: designSettings.backgroundColor || null,
+            storefront_card_style: designSettings.cardStyle,
+            storefront_text_color: designSettings.textColor || null,
+            storefront_button_text_color: designSettings.buttonTextColor || null,
+            storefront_button_variant: designSettings.buttonStyle || "default",
+            storefront_blocks: storefrontBlocks,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "id" });
+          if (retryError) throw retryError;
+        } else {
+          throw profileError;
+        }
+      }
       router.refresh();
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);

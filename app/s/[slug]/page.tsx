@@ -14,9 +14,7 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
   const supabase = await createClient();
 
   try {
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .select(`
+    const baseSelect = `
         id,
         name,
         bio,
@@ -31,7 +29,6 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         storefront_background_color,
         storefront_card_style,
         storefront_text_color,
-        storefront_subheadline_color,
         storefront_button_text_color,
         storefront_button_variant,
         storefront_custom_links,
@@ -47,20 +44,39 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         tiktok_url,
         twitter_url,
         youtube_url
-      `)
+      `;
+    let profile: Record<string, unknown> | null = null;
+    let error: { message: string } | null = null;
+
+    let result = await supabase
+      .from("profiles")
+      .select(`${baseSelect}, storefront_subheadline_color`)
       .eq("custom_slug", slug.toLowerCase().trim())
       .eq("listed_on_marketplace", true)
       .maybeSingle();
+
+    if (result.error) {
+      result = await supabase
+        .from("profiles")
+        .select(baseSelect)
+        .eq("custom_slug", slug.toLowerCase().trim())
+        .eq("listed_on_marketplace", true)
+        .maybeSingle();
+    }
+
+    profile = result.data as Record<string, unknown> | null;
+    error = result.error;
 
     if (error) {
       console.error("Error fetching profile by slug:", error);
       notFound();
     }
 
-    if (!profile || !profile.id) {
+    if (!profile || !(profile.id as string)) {
       notFound();
     }
 
+    const profileId = profile.id as string;
     // Fetch products if enabled (with course cover image for thumbnails)
     let products: any[] = [];
     if (profile.storefront_show_products !== false) {
@@ -77,7 +93,7 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
           e_learning_subtype,
           courses(cover_image_url)
         `)
-        .eq("expert_id", profile.id)
+        .eq("expert_id", profileId)
         .order("created_at", { ascending: false })
         .limit(20);
 
@@ -98,7 +114,7 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
       const { data: blogData } = await supabase
         .from("blog_posts")
         .select("id, title, description, featured_image_url, published_at")
-        .eq("expert_id", profile.id)
+        .eq("expert_id", profileId)
         .eq("access_level", "public")
         .not("published_at", "is", null)
         .order("published_at", { ascending: false })
@@ -115,7 +131,7 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
       const { count } = await supabase
         .from("appointment_slots")
         .select("*", { count: "exact", head: true })
-        .eq("expert_id", profile.id)
+        .eq("expert_id", profileId)
         .eq("is_available", true)
         .gte("start_time", new Date().toISOString());
 
@@ -128,24 +144,25 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
     const themeKey = rawTheme === "minimal-light" ? "minimal" : rawTheme === "bold-dark" ? "midnight-glass" : rawTheme;
     const glowElement = THEME_PRESET_VALUES[themeKey as keyof typeof THEME_PRESET_VALUES]?.glowElement;
 
+    const p = profile as Record<string, unknown>;
     return (
       <StorefrontView
-        expertId={profile.id}
-        expertName={profile.name || "Expert"}
-        expertBio={profile.bio || ""}
-        expertTagline={profile.tagline}
-        bioOverride={profile.storefront_bio_override}
-        avatarUrl={profile.avatar_url}
-        verified={profile.verified || false}
+        expertId={String(p.id)}
+        expertName={String(p.name || "Expert")}
+        expertBio={String(p.bio || "")}
+        expertTagline={p.tagline as string | undefined}
+        bioOverride={p.storefront_bio_override as string | undefined}
+        avatarUrl={p.avatar_url as string | undefined}
+        verified={!!p.verified}
         designState={{ ...designState, glowElement }}
-        customLinks={(profile.storefront_custom_links as any) || []}
-        website={profile.website}
-        linkedin={profile.linkedin}
-        instagramUrl={profile.instagram_url}
-        tiktokUrl={profile.tiktok_url}
-        twitterUrl={profile.twitter_url}
-        youtubeUrl={profile.youtube_url}
-        storefrontBackgroundImageUrl={profile.storefront_background_image_url}
+        customLinks={(p.storefront_custom_links as any) || []}
+        website={p.website as string | undefined}
+        linkedin={p.linkedin as string | undefined}
+        instagramUrl={p.instagram_url as string | undefined}
+        tiktokUrl={p.tiktok_url as string | undefined}
+        twitterUrl={p.twitter_url as string | undefined}
+        youtubeUrl={p.youtube_url as string | undefined}
+        storefrontBackgroundImageUrl={p.storefront_background_image_url as string | undefined}
         products={products}
         blogPosts={blogPosts}
         hasAppointments={hasAppointments}
