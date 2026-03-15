@@ -84,14 +84,17 @@ export async function PATCH(
           productWhatToExpect = product?.what_to_expect || null;
         }
 
-        const dateTime = new Date(appointment.start_time).toLocaleString("en-US", {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        });
+        const startDate = new Date(appointment.start_time);
+        const dateTime = !appointment.start_time || isNaN(startDate.getTime())
+          ? "To be confirmed"
+          : startDate.toLocaleString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            });
 
         await sendBookingConfirmedEmail(
           userEmail,

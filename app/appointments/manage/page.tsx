@@ -385,7 +385,9 @@ export default function ManageAppointmentsPage() {
   };
 
   const formatDateTime = (dateString: string) => {
+    if (!dateString) return "—";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "—";
     return date.toLocaleString("en-US", {
       month: "short",
       day: "numeric",
@@ -679,13 +681,16 @@ export default function ManageAppointmentsPage() {
                             ? "bg-slate-500/10 text-slate-400 border-slate-500/20"
                             : "bg-slate-500/10 text-slate-400 border-slate-500/20";
                     const startDate = new Date(appointment.start_time);
-                    const expertLocalTime = startDate.toLocaleString(undefined, {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    });
+                    const expertLocalTime =
+                      !appointment.start_time || isNaN(startDate.getTime())
+                        ? "—"
+                        : startDate.toLocaleString(undefined, {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit",
+                          });
                     return (
                       <div
                         key={appointment.id}
@@ -802,14 +807,17 @@ export default function ManageAppointmentsPage() {
                                       className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 text-sm w-64"
                                     />
                                     <button
+                                      type="button"
                                       onClick={async (e) => {
+                                        e.preventDefault();
                                         e.stopPropagation();
                                         const link =
                                           meetingLinkInput[appointment.id] ?? appointment.meeting_link;
-                                        if (!link) {
+                                        if (!link || !link.trim()) {
                                           alert("Enter a meeting link first");
                                           return;
                                         }
+                                        const linkToSave = link.trim();
                                         setActionLoading(appointment.id);
                                         try {
                                           const res = await fetch(`/api/appointments/${appointment.id}`, {
@@ -817,20 +825,23 @@ export default function ManageAppointmentsPage() {
                                             headers: { "Content-Type": "application/json" },
                                             body: JSON.stringify({
                                               action: "add_meeting_link",
-                                              meeting_link: link,
+                                              meeting_link: linkToSave,
                                             }),
                                           });
+                                          const data = await res.json();
                                           if (res.ok) {
-                                            fetchBookedAppointments();
+                                            await fetchBookedAppointments();
                                             setMeetingLinkInput((prev) => {
                                               const next = { ...prev };
                                               delete next[appointment.id];
                                               return next;
                                             });
+                                            alert("Meeting link saved successfully.");
                                           } else {
-                                            const err = await res.json();
-                                            alert(err.error || "Failed to save link");
+                                            alert(data?.error || "Failed to save link");
                                           }
+                                        } catch (err) {
+                                          alert("Failed to save link. Please try again.");
                                         } finally {
                                           setActionLoading(null);
                                         }

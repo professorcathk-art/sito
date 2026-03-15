@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
@@ -77,6 +77,8 @@ export function BookingModal({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [sessionHydrating, setSessionHydrating] = useState(false);
+  const hasAutoSubmittedRef = useRef(false);
+  const [restoreComplete, setRestoreComplete] = useState(false);
 
   useEffect(() => {
     if (!expertId) return;
@@ -106,28 +108,48 @@ export function BookingModal({
         }
         const productId = slot.product_id || savedData.productId || product?.id;
         if (productId) {
-          supabase
-            .from("questionnaires")
-            .select("id")
-            .eq("product_id", productId)
-            .maybeSingle()
-            .then(({ data: q }) => {
+          void (async () => {
+            try {
+              const { data: q } = await supabase
+                .from("questionnaires")
+                .select("id")
+                .eq("product_id", productId)
+                .maybeSingle();
               if (q?.id) {
-                supabase
+                const { data: fields } = await supabase
                   .from("questionnaire_fields")
                   .select("*")
                   .eq("questionnaire_id", q.id)
-                  .order("order_index", { ascending: true })
-                  .then(({ data: fields }) => {
-                    setQuestionnaireId(q.id);
-                    setQuestionnaireFields((fields || []) as QuestionnaireField[]);
-                  });
+                  .order("order_index", { ascending: true });
+                setQuestionnaireId(q.id);
+                setQuestionnaireFields((fields || []) as QuestionnaireField[]);
               }
-            });
+            } finally {
+              setRestoreComplete(true);
+            }
+          })();
+        } else {
+          setRestoreComplete(true);
         }
       }
     }
   }, [initialSlotId, slots, selectedSlot]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-submit saved form when user returns from login (no need to click again)
+  useEffect(() => {
+    if (
+      !user ||
+      authLoading ||
+      !selectedSlot ||
+      !isReturningFromLogin ||
+      !restoreComplete ||
+      hasAutoSubmittedRef.current ||
+      Object.keys(formData).length === 0
+    )
+      return;
+    hasAutoSubmittedRef.current = true;
+    handleProceedToPayment();
+  }, [user, authLoading, selectedSlot, isReturningFromLogin, restoreComplete, formData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSlotsAndProduct = async () => {
     setLoading(true);

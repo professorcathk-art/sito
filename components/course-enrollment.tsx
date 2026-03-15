@@ -915,9 +915,9 @@ export function CourseEnrollment({
 
   return (
     <>
-      {/* Offline Payment Info Modal */}
+      {/* Offline Payment Info Modal - z-[9999] ensures it appears above product tiles */}
       {showOfflinePaymentInfo && productContactEmail && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] p-4">
           <div className="bg-dark-green-800/95 border border-border-default rounded-md p-6 md:p-8 w-full max-w-md">
             <h3 className="text-2xl font-bold text-custom-text mb-4">Offline Payment</h3>
             <p className="text-text-secondary mb-4">
