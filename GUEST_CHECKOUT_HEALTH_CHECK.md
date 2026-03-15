@@ -109,3 +109,11 @@ Post-checkout flow for guests: **checkout → sign up/sign in → access course 
 
 9. **Email confirmation**
    - If Supabase requires email confirmation, user may need to confirm before fulfill runs. Consider testing with confirmation disabled for dev.
+
+### 7. Course Member List (Classroom)
+
+| Issue | Fix |
+|-------|-----|
+| Expert cannot see member names/emails | Fetch profiles separately (no FK from course_enrollments to profiles); use displayName/displayEmail |
+| Form/questionnaire data not shown | Fetch questionnaire_responses and questionnaire_fields; show in expandable "Form" column |
+| user_id null for email enrollments | Migration 054: allow user_id NULL, add expert INSERT policy |

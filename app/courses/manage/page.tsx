@@ -183,19 +183,69 @@ export default function ManageCoursePage() {
 
   const fetchEnrollments = async (courseId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data: enrollmentsData, error } = await supabase
         .from("course_enrollments")
-        .select(`
-          id,
-          user_id,
-          user_email,
-          enrolled_at,
-          profiles:user_id(name, email)
-        `)
+        .select("id, user_id, user_email, enrolled_at, questionnaire_response_id")
         .eq("course_id", courseId);
 
       if (error) throw error;
-      setEnrollments(data || []);
+
+      const rawEnrollments = enrollmentsData || [];
+      const userIds = Array.from(new Set(rawEnrollments.map((e: any) => e.user_id).filter(Boolean)));
+
+      let profileMap: Record<string, { name: string; email: string }> = {};
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, name, email")
+          .in("id", userIds);
+        profilesData?.forEach((p: any) => {
+          profileMap[p.id] = { name: p.name || "—", email: p.email || "—" };
+        });
+      }
+
+      const responseIds = Array.from(new Set(rawEnrollments.map((e: any) => e.questionnaire_response_id).filter(Boolean)));
+      let responsesMap: Record<string, any> = {};
+      let fieldsMap: Record<string, Record<string, string>> = {};
+      if (responseIds.length > 0) {
+        const { data: responsesData } = await supabase
+          .from("questionnaire_responses")
+          .select("id, questionnaire_id, responses")
+          .in("id", responseIds);
+        responsesData?.forEach((r: any) => { responsesMap[r.id] = r; });
+        const qIds = Array.from(new Set(responsesData?.map((r: any) => r.questionnaire_id).filter(Boolean) || []));
+        if (qIds.length > 0) {
+          const { data: fieldsData } = await supabase
+            .from("questionnaire_fields")
+            .select("id, questionnaire_id, label")
+            .in("questionnaire_id", qIds);
+          fieldsData?.forEach((f: any) => {
+            if (!fieldsMap[f.questionnaire_id]) fieldsMap[f.questionnaire_id] = {};
+            fieldsMap[f.questionnaire_id][f.id] = f.label;
+          });
+        }
+      }
+
+      const enriched = rawEnrollments.map((e: any) => {
+        const profile = e.user_id ? profileMap[e.user_id] : null;
+        const resp = e.questionnaire_response_id ? responsesMap[e.questionnaire_response_id] : null;
+        let intakeResponses: Record<string, string> = {};
+        if (resp?.responses && typeof resp.responses === "object") {
+          const qFields = resp.questionnaire_id ? fieldsMap[resp.questionnaire_id] : {};
+          Object.entries(resp.responses).forEach(([fieldId, value]) => {
+            intakeResponses[qFields?.[fieldId] || fieldId] = String(value ?? "");
+          });
+        }
+        return {
+          ...e,
+          profiles: profile || { name: "—", email: e.user_email || "—" },
+          displayName: profile?.name || "—",
+          displayEmail: profile?.email || e.user_email || "—",
+          intake_responses: Object.keys(intakeResponses).length > 0 ? intakeResponses : undefined,
+        };
+      });
+
+      setEnrollments(enriched);
     } catch (err) {
       console.error("Error fetching enrollments:", err);
     }
@@ -1007,6 +1057,7 @@ export default function ManageCoursePage() {
                               <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Name</th>
                               <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Email</th>
                               <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Enrolled</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-custom-text">Form</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1016,13 +1067,32 @@ export default function ManageCoursePage() {
                                 className="border-b border-cyber-green/10 hover:bg-surface transition-colors"
                               >
                                 <td className="px-4 py-3 text-sm text-custom-text">
-                                  {enrollment.profiles?.name || "N/A"}
+                                  {enrollment.displayName || enrollment.profiles?.name || "—"}
                                 </td>
                                 <td className="px-4 py-3 text-sm text-custom-text">
-                                  {enrollment.user_email || enrollment.profiles?.email || "N/A"}
+                                  {enrollment.displayEmail || enrollment.user_email || enrollment.profiles?.email || "—"}
                                 </td>
                                 <td className="px-4 py-3 text-sm text-text-secondary">
-                                  {new Date(enrollment.enrolled_at).toLocaleDateString()}
+                                  {enrollment.enrolled_at ? new Date(enrollment.enrolled_at).toLocaleDateString() : "—"}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-text-secondary max-w-xs">
+                                  {enrollment.intake_responses && Object.keys(enrollment.intake_responses).length > 0 ? (
+                                    <details className="cursor-pointer">
+                                      <summary className="text-cyber-green hover:underline">
+                                        {Object.keys(enrollment.intake_responses).length} field(s)
+                                      </summary>
+                                      <div className="mt-2 space-y-1 text-xs">
+                                        {Object.entries(enrollment.intake_responses).map(([label, value]) => (
+                                          <div key={label}>
+                                            <span className="text-text-secondary">{label}:</span>{" "}
+                                            <span className="text-custom-text">{String(value)}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </details>
+                                  ) : (
+                                    "—"
+                                  )}
                                 </td>
                               </tr>
                             ))}
