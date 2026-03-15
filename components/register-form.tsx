@@ -113,17 +113,27 @@ export function RegisterForm() {
 
         // Fulfill pending purchases (guest checkout)
         const fromPayment = searchParams.get("from") === "payment";
+        let fulfilledType: "course" | "appointment" | null = null;
         if (fromPayment) {
           try {
-            await fetch("/api/fulfill-pending-purchases", { method: "POST" });
+            const res = await fetch("/api/fulfill-pending-purchases", { method: "POST" });
+            const data = await res.json();
+            if (data?.fulfilled) {
+              if (data.fulfilled.appointments?.length > 0) fulfilledType = "appointment";
+              else if (data.fulfilled.courses?.length > 0) fulfilledType = "course";
+            }
           } catch (e) {
             console.warn("Fulfill pending failed:", e);
           }
         }
 
         const redirect = searchParams.get("redirect");
+        const typeParam = searchParams.get("type");
         if (fromPayment) {
-          router.push(redirect || "/courses/manage");
+          const dest = fulfilledType === "appointment" || typeParam === "appointment"
+            ? "/appointments/manage?tab=my-bookings"
+            : "/courses/manage";
+          router.push(redirect || dest);
         } else if (redirect) {
           router.push(redirect);
         } else {

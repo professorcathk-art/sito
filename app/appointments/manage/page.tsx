@@ -29,6 +29,7 @@ interface BookedAppointment {
   rate_per_hour: number;
   total_amount: number;
   status: string;
+  payment_intent_id?: string | null;
   meeting_link?: string | null;
   user_id?: string;
   questionnaire_response_id?: string | null;
@@ -164,6 +165,7 @@ export default function ManageAppointmentsPage() {
           rate_per_hour: apt.rate_per_hour,
           total_amount: apt.total_amount,
           status: apt.status,
+          payment_intent_id: apt.payment_intent_id,
           meeting_link: apt.meeting_link,
           user_id: apt.user_id,
           questionnaire_response_id: apt.questionnaire_response_id,
@@ -695,7 +697,7 @@ export default function ManageAppointmentsPage() {
                             setExpandedBookingId(isExpanded ? null : appointment.id)
                           }
                         >
-                          <div className="flex flex-wrap items-center justify-between gap-4">
+                            <div className="flex flex-wrap items-center justify-between gap-4">
                             <div>
                               <p className="text-lg font-semibold text-white mb-1">
                                 {appointment.profiles?.name || "Unknown"}
@@ -710,11 +712,18 @@ export default function ManageAppointmentsPage() {
                                 ${appointment.rate_per_hour}/hr • ${appointment.total_amount.toFixed(2)} total
                               </p>
                             </div>
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium border ${statusStyles}`}
-                            >
-                              {appointment.status}
-                            </span>
+                            <div className="flex flex-wrap items-center gap-2">
+                              {!appointment.payment_intent_id && appointment.total_amount > 0 && (
+                                <span className="px-3 py-1 rounded-full text-xs font-medium border bg-amber-500/10 text-amber-500 border-amber-500/20">
+                                  Payment not done
+                                </span>
+                              )}
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-medium border ${statusStyles}`}
+                              >
+                                {appointment.status}
+                              </span>
+                            </div>
                           </div>
                         </div>
                         {isExpanded && (

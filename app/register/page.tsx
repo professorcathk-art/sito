@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { RegisterForm } from "@/components/register-form";
+import { RegisterPageFooter } from "@/components/register-page-footer";
 
 export default function RegisterPage() {
   return (
@@ -16,12 +17,9 @@ export default function RegisterPage() {
         <Suspense fallback={<div className="animate-pulse text-text-secondary py-8">Loading...</div>}>
           <RegisterForm />
         </Suspense>
-        <p className="text-center mt-6 text-text-secondary">
-          Already have an account?{" "}
-          <Link href="/login" className="text-cyber-green font-semibold hover:text-white hover:underline">
-            Sign in
-          </Link>
-        </p>
+        <Suspense fallback={null}>
+          <RegisterPageFooter />
+        </Suspense>
       </div>
     </div>
   );

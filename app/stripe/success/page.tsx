@@ -42,7 +42,8 @@ function SuccessContent() {
           // Guest checkout - needs sign up
           if (verifyData.needsSignUp && verifyData.email) {
             setLoading(false);
-            router.push(`/register?email=${encodeURIComponent(verifyData.email)}&from=payment&message=Create an account to access your purchase`);
+            const type = verifyData.type === "appointment_guest" ? "appointment" : "course";
+            router.push(`/register?email=${encodeURIComponent(verifyData.email)}&from=payment&type=${type}&message=Create an account to access your purchase`);
             return null;
           }
 
