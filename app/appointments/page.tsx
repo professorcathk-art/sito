@@ -164,7 +164,7 @@ export default function AppointmentsPage() {
                       </div>
                       <Link
                         href={`/appointments/book/${slot.expert.id}?slot=${slot.id}`}
-                        className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                        className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                       >
                         Book Now
                       </Link>

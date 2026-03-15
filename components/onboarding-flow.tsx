@@ -474,7 +474,7 @@ export function OnboardingFlow() {
         <div className="mb-8">
           <div className="flex items-center justify-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step === "intention" ? "bg-cyber-green text-white" : 
+              step === "intention" ? "bg-cyber-green text-slate-900" : 
               step === "learner-details" || step === "expert-details" || step === "profile-completion" 
                 ? "bg-cyber-green/50 text-custom-text" : "bg-surface text-custom-text/50"
             }`}>
@@ -485,7 +485,7 @@ export function OnboardingFlow() {
                 ? "bg-cyber-green" : "bg-surface"
             }`}></div>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step === "learner-details" || step === "expert-details" ? "bg-cyber-green text-white" :
+              step === "learner-details" || step === "expert-details" ? "bg-cyber-green text-slate-900" :
               step === "profile-completion" ? "bg-cyber-green/50 text-custom-text" : "bg-surface text-custom-text/50"
             }`}>
               2
@@ -494,7 +494,7 @@ export function OnboardingFlow() {
               step === "profile-completion" ? "bg-cyber-green" : "bg-surface"
             }`}></div>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step === "profile-completion" ? "bg-cyber-green text-white" : "bg-surface text-custom-text/50"
+              step === "profile-completion" ? "bg-cyber-green text-slate-900" : "bg-surface text-custom-text/50"
             }`}>
               3
             </div>
@@ -568,7 +568,7 @@ export function OnboardingFlow() {
                     <button
                       type="button"
                       onClick={addLearningInterest}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200"
                     >
                       Add
                     </button>
@@ -672,7 +672,7 @@ export function OnboardingFlow() {
                   <button
                     onClick={handleLearnerSubmit}
                     disabled={loading}
-                    className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 disabled:opacity-50"
                   >
                     {loading ? "Saving..." : "Continue"}
                   </button>
@@ -749,7 +749,7 @@ export function OnboardingFlow() {
                     <button
                       type="button"
                       onClick={addTeachingInterest}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200"
                     >
                       Add
                     </button>
@@ -786,7 +786,7 @@ export function OnboardingFlow() {
                   <button
                     onClick={handleExpertSubmit}
                     disabled={loading}
-                    className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 disabled:opacity-50"
                   >
                     {loading ? "Saving..." : "Continue"}
                   </button>
@@ -877,7 +877,7 @@ export function OnboardingFlow() {
                   <button
                     onClick={handleProfileCompletion}
                     disabled={loading || !displayName.trim() || (tagline ? tagline.length > 100 : false)}
-                    className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 disabled:opacity-50"
                   >
                     {loading ? "Completing..." : "Complete Setup"}
                   </button>

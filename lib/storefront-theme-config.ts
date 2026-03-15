@@ -14,6 +14,7 @@ export interface ThemePresetValues {
   backgroundColor: string;
   backgroundImageUrl?: string;
   textColor: string;
+  subheadlineColor?: string;
   buttonColor: string;
   buttonTextColor: string;
   fontFamily?: FontFamilyId;
@@ -28,6 +29,7 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
   minimal: {
     backgroundColor: "#FAFAFA",
     textColor: "#111827",
+    subheadlineColor: "#6B7280",
     buttonColor: "#111827",
     buttonTextColor: "#FFFFFF",
     cardStyle: "flat",
@@ -36,6 +38,7 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
   "midnight-glass": {
     backgroundColor: "#0A0A0A",
     textColor: "#F9FAFB",
+    subheadlineColor: "rgba(249,250,251,0.75)",
     buttonColor: "#FFFFFF",
     buttonTextColor: "#000000",
     cardStyle: "glass",
@@ -45,6 +48,7 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
   "neo-brutalist": {
     backgroundColor: "#FEF08A",
     textColor: "#000000",
+    subheadlineColor: "#374151",
     buttonColor: "#4F46E5",
     buttonTextColor: "#FFFFFF",
     cardStyle: "brutalist",
@@ -53,6 +57,7 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
   "soft-gradient": {
     backgroundColor: "conic-gradient(at top right, var(--tw-gradient-stops))",
     textColor: "#1A1A1A",
+    subheadlineColor: "#4B5563",
     buttonColor: "#1A1A1A",
     buttonTextColor: "#FFFFFF",
     cardStyle: "soft-shadow",
@@ -61,6 +66,7 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
   "fluid-aura": {
     backgroundColor: "#050505",
     textColor: "#f1f5f9",
+    subheadlineColor: "rgba(241,245,249,0.7)",
     buttonColor: "rgba(255,255,255,0.1)",
     buttonTextColor: "#FFFFFF",
     cardStyle: "glass",
@@ -69,6 +75,7 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
   "pearl-silk": {
     backgroundColor: "conic-gradient(at top right, var(--tw-gradient-stops))",
     textColor: "#1A1A1A",
+    subheadlineColor: "#4B5563",
     buttonColor: "#1A1A1A",
     buttonTextColor: "#FFFFFF",
     cardStyle: "soft-shadow",
@@ -78,6 +85,7 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
     backgroundColor: "#8E8B7B",
     backgroundImageUrl: "",
     textColor: "#FAF8F5",
+    subheadlineColor: "rgba(250,248,245,0.85)",
     buttonColor: "#E8E4D9",
     buttonTextColor: "#2D2B26",
     fontFamily: "playfair",
@@ -89,6 +97,7 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
     backgroundColor: "#05010D",
     backgroundImageUrl: "https://images.unsplash.com/photo-1555680202-c86f0e12f086?q=80&w=1080&auto=format&fit=crop",
     textColor: "#FFFFFF",
+    subheadlineColor: "rgba(255,255,255,0.75)",
     buttonColor: "#FF4D00",
     buttonTextColor: "#FFFFFF",
     fontFamily: "jetbrains-mono",
@@ -100,6 +109,7 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
     backgroundColor: "#000000",
     backgroundImageUrl: "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?q=80&w=1080&auto=format&fit=crop",
     textColor: "#FFFFFF",
+    subheadlineColor: "rgba(255,255,255,0.75)",
     buttonColor: "rgba(255,255,255,0.2)",
     buttonTextColor: "#FFFFFF",
     fontFamily: "inter",
@@ -111,6 +121,7 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
     backgroundColor: "#000000",
     backgroundImageUrl: "https://images.unsplash.com/photo-1557672172-298e090bd0f1?q=80&w=1080&auto=format&fit=crop",
     textColor: "#FFFFFF",
+    subheadlineColor: "rgba(255,255,255,0.75)",
     buttonColor: "#F59E0B",
     buttonTextColor: "#000000",
     fontFamily: "inter",
@@ -267,7 +278,8 @@ export function getDesignStateFromProfile(profile: {
   storefront_card_style?: string;
   storefront_text_color?: string;
   storefront_button_text_color?: string;
-}): { backgroundColor: string; backgroundImageUrl?: string; textColor: string; buttonColor: string; buttonTextColor: string; fontFamily: string; cardStyle: string; buttonRadius: string; buttonStyle: string; themePreset: string } {
+  storefront_subheadline_color?: string;
+}): { backgroundColor: string; backgroundImageUrl?: string; textColor: string; subheadlineColor: string; buttonColor: string; buttonTextColor: string; fontFamily: string; cardStyle: string; buttonRadius: string; buttonStyle: string; themePreset: string } {
   const themeMap: Record<string, keyof typeof THEME_PRESET_VALUES> = {
     default: "minimal",
     "minimal-light": "minimal",
@@ -306,6 +318,7 @@ export function getDesignStateFromProfile(profile: {
     backgroundColor: profile.storefront_background_color || preset.backgroundColor,
     backgroundImageUrl: backgroundImageUrl || undefined,
     textColor: profile.storefront_text_color || preset.textColor,
+    subheadlineColor: profile.storefront_subheadline_color || preset.subheadlineColor || preset.textColor,
     buttonColor: profile.storefront_custom_brand_color || preset.buttonColor,
     buttonTextColor: profile.storefront_button_text_color || preset.buttonTextColor,
     fontFamily: fontMap[storedFont] || preset.fontFamily || "inter",

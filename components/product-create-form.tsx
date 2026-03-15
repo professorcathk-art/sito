@@ -223,7 +223,7 @@ export function ProductCreateForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+          className="w-full px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
         >
           {loading ? "Creating..." : "Create Product"}
         </button>

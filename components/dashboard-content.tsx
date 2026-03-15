@@ -196,7 +196,7 @@ export function DashboardContent() {
           </p>
           <Link
             href="/profile/setup"
-            className="inline-block bg-cyber-green text-custom-text px-4 sm:px-6 py-2 sm:py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl text-sm sm:text-base"
+            className="inline-block bg-cyber-green text-slate-900 px-4 sm:px-6 py-2 sm:py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl text-sm sm:text-base"
           >
             Set Up Profile
           </Link>
@@ -209,7 +209,7 @@ export function DashboardContent() {
           </p>
           <Link
             href="/profile/setup"
-            className="inline-block bg-cyber-green text-custom-text px-4 sm:px-6 py-2 sm:py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl text-sm sm:text-base"
+            className="inline-block bg-cyber-green text-slate-900 px-4 sm:px-6 py-2 sm:py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl text-sm sm:text-base"
           >
             Become an Expert
           </Link>

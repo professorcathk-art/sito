@@ -163,7 +163,7 @@ export default function StorefrontPage() {
                       <button
                         onClick={() => handlePurchase(product)}
                         disabled={purchasing === product.id}
-                        className="px-6 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                        className="px-6 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                       >
                         {purchasing === product.id ? "Processing..." : "Buy Now"}
                       </button>

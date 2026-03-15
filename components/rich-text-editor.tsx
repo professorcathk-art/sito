@@ -216,7 +216,7 @@ export function RichTextEditor({
           disabled={!editor.can().chain().focus().toggleBold().run()}
           className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
             editor.isActive("bold")
-              ? "bg-cyber-green text-white"
+              ? "bg-cyber-green text-slate-900"
               : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
           }`}
         >
@@ -228,7 +228,7 @@ export function RichTextEditor({
           disabled={!editor.can().chain().focus().toggleItalic().run()}
           className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
             editor.isActive("italic")
-              ? "bg-cyber-green text-white"
+              ? "bg-cyber-green text-slate-900"
               : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
           }`}
         >
@@ -240,7 +240,7 @@ export function RichTextEditor({
           disabled={!editor.can().chain().focus().toggleStrike().run()}
           className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
             editor.isActive("strike")
-              ? "bg-cyber-green text-white"
+              ? "bg-cyber-green text-slate-900"
               : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
           }`}
         >
@@ -254,7 +254,7 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("heading", { level: 1 })
-                ? "bg-cyber-green text-white"
+                ? "bg-cyber-green text-slate-900"
                 : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
@@ -265,7 +265,7 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("heading", { level: 2 })
-                ? "bg-cyber-green text-white"
+                ? "bg-cyber-green text-slate-900"
                 : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
@@ -276,7 +276,7 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("heading", { level: 3 })
-                ? "bg-cyber-green text-white"
+                ? "bg-cyber-green text-slate-900"
                 : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
@@ -291,7 +291,7 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("bulletList")
-                ? "bg-cyber-green text-white"
+                ? "bg-cyber-green text-slate-900"
                 : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
@@ -302,7 +302,7 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("orderedList")
-                ? "bg-cyber-green text-white"
+                ? "bg-cyber-green text-slate-900"
                 : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
@@ -318,7 +318,7 @@ export function RichTextEditor({
             disabled={!editor.can().chain().focus().toggleCode().run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("code")
-                ? "bg-cyber-green text-white"
+                ? "bg-cyber-green text-slate-900"
                 : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
@@ -329,7 +329,7 @@ export function RichTextEditor({
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("codeBlock")
-                ? "bg-cyber-green text-white"
+                ? "bg-cyber-green text-slate-900"
                 : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
@@ -391,7 +391,7 @@ export function RichTextEditor({
             }}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               editor.isActive("link")
-                ? "bg-cyber-green text-white"
+                ? "bg-cyber-green text-slate-900"
                 : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >
@@ -419,7 +419,7 @@ export function RichTextEditor({
             }}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               isRawHtmlMode
-                ? "bg-cyber-green text-white"
+                ? "bg-cyber-green text-slate-900"
                 : "bg-custom-bg text-custom-text hover:bg-dark-green-800"
             }`}
           >

@@ -120,7 +120,7 @@ export default function SubscriptionsPage() {
               <p className="text-text-secondary mb-4">You haven&apos;t subscribed to any experts yet.</p>
               <Link
                 href="/directory"
-                className="inline-block bg-cyber-green text-white px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors"
+                className="inline-block bg-cyber-green text-slate-900 px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors"
               >
                 Browse Experts
               </Link>

@@ -1512,10 +1512,10 @@ export function ProductsManagement() {
                 Your products will only be visible to you unless you list your profile on the marketplace. This allows other users to discover and purchase your products.
               </p>
               <a
-                href="/profile"
+                href="/dashboard/storefront"
                 className="text-xs text-yellow-400 underline hover:text-yellow-300"
               >
-                Go to Profile Settings →
+                Go to Profile & Storefront →
               </a>
             </div>
           </div>
@@ -1548,7 +1548,7 @@ export function ProductsManagement() {
                 webinarDateTime: "",
               });
             }}
-            className="bg-cyber-green text-custom-text px-4 py-2 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
+            className="bg-cyber-green text-slate-900 px-4 py-2 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
           >
             + Add Product
           </button>
@@ -1905,7 +1905,7 @@ export function ProductsManagement() {
             <div className="flex gap-4">
               <button
                 type="submit"
-                className="bg-cyber-green text-custom-text px-6 py-2 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
+                className="bg-cyber-green text-slate-900 px-6 py-2 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
               >
                 {editingProduct 
                   ? "Update Product" 
@@ -2130,7 +2130,7 @@ export function ProductsManagement() {
             <div className="flex gap-4">
               <button
                 type="submit"
-                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 Create Slots
               </button>
@@ -2433,7 +2433,7 @@ export function ProductsManagement() {
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                 >
                   {editingField ? "Update Field" : "Add Field"}
                 </button>
@@ -2591,7 +2591,7 @@ export function ProductsManagement() {
                   }
                   setShowFieldForm(true);
                 }}
-                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 + Add Custom Field
               </button>
@@ -2704,7 +2704,7 @@ export function ProductsManagement() {
                     alert(`Failed to publish course: ${err.message || "Please try again."}`);
                   }
                 }}
-                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 Publish Product
               </button>
@@ -2769,7 +2769,7 @@ export function ProductsManagement() {
                     alert(`Failed to set up appointment: ${err.message || "Please try again."}`);
                   }
                 }}
-                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 {editingProduct && editingProduct.product_type === "appointment" ? "Save Updates" : "Continue to Set Up Slots"}
               </button>
@@ -2873,7 +2873,7 @@ export function ProductsManagement() {
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                 >
                   {editingLesson ? "Update Lesson" : "Add Lesson"}
                 </button>
@@ -2896,7 +2896,7 @@ export function ProductsManagement() {
               <button
                 type="button"
                 onClick={() => setShowLessonForm(true)}
-                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 + Add Lesson
               </button>
@@ -3012,7 +3012,7 @@ export function ProductsManagement() {
                           sessionStorage.setItem("selectedCourseId", product.course_id);
                         }
                       }}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold border border-cyber-green rounded-md hover:bg-gray-200 transition-colors text-sm inline-block text-center w-full sm:w-auto"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold border border-cyber-green rounded-md hover:bg-gray-200 transition-colors text-sm inline-block text-center w-full sm:w-auto"
                     >
                       Set up e-Learnings
                     </Link>
@@ -3126,7 +3126,7 @@ export function ProductsManagement() {
                               link.click();
                               document.body.removeChild(link);
                             }}
-                            className="text-xs bg-cyber-green text-white px-3 py-1 rounded font-semibold hover:bg-gray-200 transition-colors"
+                            className="text-xs bg-cyber-green text-slate-900 px-3 py-1 rounded font-semibold hover:bg-gray-200 transition-colors"
                           >
                             Download CSV
                           </button>
@@ -3361,7 +3361,7 @@ export function ProductsManagement() {
             {interests.length > 0 && (
               <button
                 onClick={downloadInterestsCSV}
-                className="bg-cyber-green text-custom-text px-4 py-2 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl text-sm"
+                className="bg-cyber-green text-slate-900 px-4 py-2 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl text-sm"
               >
                 Download CSV
               </button>

@@ -516,14 +516,14 @@ export default function BookAppointmentPage() {
                                 <button
                                   onClick={() => handleBookAppointment(slot)}
                                   disabled={booking}
-                                  className="px-6 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                                  className="px-6 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                                 >
                                   {booking ? "Booking..." : "Book Now"}
                                 </button>
                               ) : (
                                 <Link
                                   href={`/login?redirect=/appointments/book/${expertId}`}
-                                  className="px-6 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors inline-block text-center"
+                                  className="px-6 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors inline-block text-center"
                                 >
                                   Sign In to Book
                                 </Link>

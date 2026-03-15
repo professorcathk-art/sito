@@ -240,7 +240,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
         {onCancel && (
           <button
             onClick={onCancel}
-            className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+            className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
           >
             Close
           </button>
@@ -350,7 +350,7 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
         <button
           type="submit"
           disabled={submitting}
-          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+          className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
         >
           {submitting ? "Submitting..." : "Submit"}
         </button>

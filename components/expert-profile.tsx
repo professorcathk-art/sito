@@ -522,7 +522,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
               <h2 className="text-xl font-bold text-text-primary">1-on-1 Appointments</h2>
               <Link
                 href={`/appointments/book/${expert.id}`}
-                className="px-6 py-3 bg-primary text-white font-medium rounded-md hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 bg-primary text-slate-900 font-medium rounded-md hover:bg-gray-200 transition-colors"
               >
                 View Available Timeslots
               </Link>
@@ -729,7 +729,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                               <button
                                 onClick={() => handleSubmitInterest(product.id)}
                                 disabled={registeringInterest === product.id}
-                                className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm disabled:opacity-50"
+                                className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm disabled:opacity-50"
                               >
                                 {registeringInterest === product.id ? "Submitting..." : "Submit"}
                               </button>
@@ -747,7 +747,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                         ) : (
                           <button
                             onClick={() => handleRegisterInterest(product.id)}
-                            className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
+                            className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
                           >
                             Register Interest
                           </button>
@@ -769,7 +769,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
             </div>
             <Link
               href={`/messages?expert=${expert.id}`}
-              className="px-4 py-2 bg-cyber-green text-custom-text rounded-md font-semibold hover:bg-gray-200 transition-colors text-sm whitespace-nowrap"
+              className="px-4 py-2 bg-cyber-green text-slate-900 rounded-md font-semibold hover:bg-gray-200 transition-colors text-sm whitespace-nowrap"
             >
               Send Message
             </Link>

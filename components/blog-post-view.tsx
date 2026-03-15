@@ -363,14 +363,14 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
           {blogPost.access_level === "subscriber" ? (
             <Link
               href={`/expert/${blogPost.expert_id}`}
-              className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+              className="inline-block px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
             >
               Subscribe to {blogPost.profiles?.name || "Expert"}
             </Link>
           ) : (
             <Link
               href={`/expert/${blogPost.expert_id}`}
-              className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+              className="inline-block px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
             >
               View Courses
             </Link>
@@ -554,7 +554,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link
                     href={`/login?redirect=/blog/${blogPost.id}`}
-                    className="px-6 py-3 bg-cyber-green text-white font-bold rounded-md hover:bg-gray-200 transition-all transform hover:scale-105 shadow-2xl"
+                    className="px-6 py-3 bg-cyber-green text-slate-900 font-bold rounded-md hover:bg-gray-200 transition-all transform hover:scale-105 shadow-2xl"
                   >
                     Sign In to Continue
                   </Link>
@@ -580,14 +580,14 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
             {blogPost.access_level === "subscriber" ? (
               <Link
                 href={`/expert/${blogPost.expert_id}`}
-                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 Subscribe to {blogPost.profiles?.name || "Expert"}
               </Link>
             ) : (
               <Link
                 href={`/expert/${blogPost.expert_id}`}
-                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 View Courses
               </Link>

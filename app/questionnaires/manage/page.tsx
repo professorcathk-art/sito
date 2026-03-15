@@ -309,7 +309,7 @@ export default function ManageQuestionnairesPage() {
                   {questionnaires.find(q => q.type === "appointment") ? (
                     <button
                       onClick={() => handleSelectQuestionnaire(questionnaires.find(q => q.type === "appointment")!)}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                     >
                       Edit Questionnaire
                     </button>
@@ -317,7 +317,7 @@ export default function ManageQuestionnairesPage() {
                     <button
                       onClick={() => handleCreateQuestionnaire("appointment")}
                       disabled={saving}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                     >
                       {saving ? "Creating..." : "Create Questionnaire"}
                     </button>
@@ -332,7 +332,7 @@ export default function ManageQuestionnairesPage() {
                   {questionnaires.find(q => q.type === "course_interest") ? (
                     <button
                       onClick={() => handleSelectQuestionnaire(questionnaires.find(q => q.type === "course_interest")!)}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                     >
                       Edit Questionnaire
                     </button>
@@ -340,7 +340,7 @@ export default function ManageQuestionnairesPage() {
                     <button
                       onClick={() => handleCreateQuestionnaire("course_interest")}
                       disabled={saving}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                     >
                       {saving ? "Creating..." : "Create Questionnaire"}
                     </button>
@@ -506,7 +506,7 @@ export default function ManageQuestionnairesPage() {
                       <div className="flex gap-4">
                         <button
                           type="submit"
-                          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                          className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                         >
                           {editingField ? "Update Field" : "Add Field"}
                         </button>
@@ -578,7 +578,7 @@ export default function ManageQuestionnairesPage() {
                       }
                     }}
                     disabled={savingThankYou}
-                    className="mt-4 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                    className="mt-4 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                   >
                     {savingThankYou ? "Saving..." : "Save Thank You Message"}
                   </button>

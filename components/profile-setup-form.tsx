@@ -917,7 +917,7 @@ export function ProfileSetupForm() {
                         alert("Shortlink copied to clipboard!");
                       }
                     }}
-                    className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm whitespace-nowrap"
+                    className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm whitespace-nowrap"
                   >
                     📋 Copy
                   </button>
@@ -935,7 +935,7 @@ export function ProfileSetupForm() {
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 bg-cyber-green text-custom-text py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
+          className="flex-1 bg-cyber-green text-slate-900 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl"
         >
           {loading ? "Saving..." : "Save Profile"}
         </button>

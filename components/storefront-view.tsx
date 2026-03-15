@@ -55,6 +55,7 @@ export interface StorefrontDesignState {
   backgroundColor: string;
   backgroundImageUrl?: string;
   textColor: string;
+  subheadlineColor?: string;
   buttonColor: string;
   buttonTextColor: string;
   fontFamily: string;
@@ -131,6 +132,7 @@ export function StorefrontView({
 
   const isFluidAura = designState.themePreset === "fluid-aura";
   const isPearlSilk = designState.themePreset === "pearl-silk" || designState.themePreset === "soft-gradient";
+  const isDarkTheme = ["neon-cyber", "glass-ocean", "liquid-velvet", "midnight-glass"].includes(designState.themePreset || "");
   const effectiveBgImage = storefrontBackgroundImageUrl || designState.backgroundImageUrl;
   const cssVars = useMemo(() => {
     let card = getCardCssVars(designState.cardStyle as "flat" | "glass" | "brutalist" | "soft-shadow");
@@ -145,6 +147,7 @@ export function StorefrontView({
       "--store-bg-image": effectiveBgImage ? `url(${effectiveBgImage})` : "none",
       "--store-bg": isFluidAura ? "#050505" : isPearlSilk ? undefined : designState.backgroundColor,
       "--store-text": isFluidAura ? "#f1f5f9" : isPearlSilk ? "#1A1A1A" : designState.textColor,
+      "--store-subheadline": designState.subheadlineColor || (isFluidAura ? "rgba(241,245,249,0.7)" : isPearlSilk ? "#4B5563" : designState.textColor),
       "--store-btn-bg": isFluidAura ? "rgba(255,255,255,0.1)" : isPearlSilk ? "#1A1A1A" : designState.buttonColor,
       "--store-btn-text": designState.buttonTextColor,
       "--store-card-bg": card.bg,
@@ -160,6 +163,7 @@ export function StorefrontView({
     playfair: "var(--font-playfair)",
     "space-grotesk": "var(--font-space-grotesk)",
     "dm-sans": "var(--font-dm-sans)",
+    "jetbrains-mono": "var(--font-jetbrains-mono)",
   };
   const fontFamilyStyle = fontVarMap[designState.fontFamily] || "var(--font-inter)";
 
@@ -235,7 +239,7 @@ export function StorefrontView({
           </>
         )}
         {!isFluidAura && designState.glowElement && <div className={designState.glowElement} aria-hidden />}
-        {!isFluidAura && (
+        {!isFluidAura && !["neon-cyber", "glass-ocean", "liquid-velvet", "midnight-glass"].includes(designState.themePreset || "") && (
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0" aria-hidden>
             <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[50%] rounded-full bg-indigo-100/50 blur-[120px] mix-blend-multiply" />
             <div className="absolute top-[20%] -right-[20%] w-[60%] h-[60%] rounded-full bg-rose-100/50 blur-[120px] mix-blend-multiply" />
@@ -275,7 +279,7 @@ export function StorefrontView({
                         </svg>
                       )}
                     </div>
-                    {tagline && <p className="text-[var(--store-text)] text-sm mt-1 opacity-80">{tagline}</p>}
+                    {tagline && <p className="text-[var(--store-subheadline)] text-sm mt-1">{tagline}</p>}
                     {bio && <p className={bioClass}>{bio}</p>}
                     {(website || linkedin || instagramUrl || tiktokUrl || twitterUrl || youtubeUrl) && (
                       <div className="flex gap-3 mt-4 justify-center">
@@ -298,10 +302,12 @@ export function StorefrontView({
                 const alignClass = textAlign === "center" ? "text-center" : textAlign === "right" ? "text-right" : "text-left";
                 const linkClass = isFluidAura
                   ? "group relative w-full flex items-center gap-4 p-3 bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] rounded-2xl hover:scale-[1.02] hover:bg-white/[0.06] transition-all duration-300"
-                  : "group relative w-full flex items-center gap-4 p-3 bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-2xl hover:scale-[1.02] hover:bg-white transition-all duration-300";
-                const linkTitleClass = isFluidAura ? "font-semibold text-slate-100" : "font-semibold text-slate-800";
-                const linkDescClass = isFluidAura ? "text-xs text-slate-400 line-clamp-1" : "text-xs text-slate-500 line-clamp-1";
-                const linkIconBgClass = isFluidAura ? "w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-400 group-hover:text-slate-200 group-hover:bg-white/20 transition-colors" : "w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-slate-800 group-hover:bg-slate-100 transition-colors";
+                  : isPearlSilk
+                    ? "group relative w-full flex items-center gap-4 p-3 bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-2xl hover:scale-[1.02] hover:bg-white transition-all duration-300"
+                    : "group relative w-full flex items-center gap-4 p-3 bg-[var(--store-card-bg)] backdrop-blur-xl border border-[var(--store-card-border)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] rounded-2xl hover:scale-[1.02] hover:opacity-90 transition-all duration-300";
+                const linkTitleClass = isFluidAura || isDarkTheme ? "font-semibold text-[var(--store-text)]" : isPearlSilk ? "font-semibold text-slate-800" : "font-semibold text-[var(--store-text)]";
+                const linkDescClass = "text-xs text-[var(--store-subheadline)] line-clamp-1";
+                const linkIconBgClass = isFluidAura || isDarkTheme ? "w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-400 group-hover:text-slate-200 group-hover:bg-white/20 transition-colors" : isPearlSilk ? "w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-slate-800 group-hover:bg-slate-100 transition-colors" : "w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[var(--store-text)] opacity-70 group-hover:opacity-100 transition-colors";
                 return (
                   <section key={block.id} className="flex flex-col gap-3 w-full">
                     {links.map((link, idx) => (
@@ -339,12 +345,14 @@ export function StorefrontView({
                 if (displayedProducts.length === 0) return null;
                 const productCardClass = isFluidAura
                   ? "w-full bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] rounded-2xl p-4 flex flex-col gap-3"
-                  : "w-full bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-2xl p-4 flex flex-col gap-3";
-                const productTitleClass = isFluidAura ? "font-bold text-slate-100 truncate" : "font-bold text-slate-800 truncate";
-                const productPriceClass = isFluidAura
+                  : isPearlSilk
+                    ? "w-full bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-2xl p-4 flex flex-col gap-3"
+                    : "w-full bg-[var(--store-card-bg)] backdrop-blur-xl border border-[var(--store-card-border)] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] rounded-2xl p-4 flex flex-col gap-3";
+                const productTitleClass = isFluidAura || isDarkTheme ? "font-bold text-[var(--store-text)] truncate" : isPearlSilk ? "font-bold text-slate-800 truncate" : "font-bold text-[var(--store-text)] truncate";
+                const productPriceClass = isFluidAura || isDarkTheme
                   ? "text-sm font-medium text-indigo-400 bg-indigo-500/20 px-2 py-0.5 rounded-md w-fit"
-                  : "text-sm font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md w-fit";
-                const productBtnClass = "w-full bg-slate-900 text-white text-sm font-semibold py-2 rounded-xl hover:bg-slate-800 shadow-md transition-all";
+                  : isPearlSilk ? "text-sm font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md w-fit" : "text-sm font-medium text-indigo-400 bg-indigo-500/20 px-2 py-0.5 rounded-md w-fit";
+                const productBtnClass = `w-full text-sm font-semibold py-2 rounded-xl shadow-md transition-all block text-center ${buttonStyleClass}`;
                 return (
                   <section key={block.id} className="flex flex-col gap-4 w-full">
                     {displayedProducts.map((product) =>
@@ -370,8 +378,8 @@ export function StorefrontView({
                               coursePrice={product.price}
                               isFree={product.price === 0}
                               currentUserId={user.id}
-                              customBrandColor="#1e293b"
-                              customButtonTextColor="#ffffff"
+                              customBrandColor={designState.buttonColor}
+                              customButtonTextColor={designState.buttonTextColor}
                               themePreset={designState.themePreset || "default"}
                             />
                           </div>
@@ -391,7 +399,7 @@ export function StorefrontView({
                               </span>
                             </div>
                           </div>
-                          <Link href={product.course_id ? `/courses/${product.course_id}` : `/expert/${expertId}`} className={productBtnClass + " block text-center"}>
+                          <Link href={product.course_id ? `/courses/${product.course_id}` : `/expert/${expertId}`} className={productBtnClass}>
                             Get it now
                           </Link>
                         </div>
@@ -416,7 +424,7 @@ export function StorefrontView({
                     )}
                     <div className="flex-1">
                       {title && <h3 className="text-lg font-semibold text-[var(--store-text)] mb-2">{title}</h3>}
-                      {text && <div className="text-[var(--store-text)] text-sm opacity-80 prose max-w-none" dangerouslySetInnerHTML={{ __html: text }} />}
+                      {text && <div className="text-[var(--store-subheadline)] text-sm prose max-w-none" dangerouslySetInnerHTML={{ __html: text }} />}
                     </div>
                   </section>
                 );
@@ -433,7 +441,7 @@ export function StorefrontView({
                           {item.question}
                           <span className="opacity-70 group-open:rotate-180 transition-transform">▼</span>
                         </summary>
-                        <div className="px-4 pb-3 text-[var(--store-text)] text-sm opacity-80 border-t border-[var(--store-card-border)] pt-2">{item.answer}</div>
+                        <div className="px-4 pb-3 text-[var(--store-subheadline)] text-sm border-t border-[var(--store-card-border)] pt-2">{item.answer}</div>
                       </details>
                     ))}
                   </section>
@@ -447,7 +455,7 @@ export function StorefrontView({
                     {items.map((item, idx) => (
                       <div key={idx} className="bg-[var(--store-card-bg)] border border-[var(--store-card-border)] rounded-xl p-4">
                         <p className="text-[var(--store-text)] text-sm italic opacity-90">&quot;{item.quote}&quot;</p>
-                        <p className="text-[var(--store-text)] text-xs mt-2 opacity-80">— {item.name}</p>
+                        <p className="text-[var(--store-subheadline)] text-xs mt-2">— {item.name}</p>
                       </div>
                     ))}
                   </section>
@@ -644,7 +652,7 @@ export function StorefrontView({
                     </svg>
                   )}
                 </div>
-                <p className="text-[var(--store-text)] text-sm md:text-base leading-relaxed opacity-80">{bioOverride || expertBio || "Welcome to my storefront"}</p>
+                <p className="text-[var(--store-subheadline)] text-sm md:text-base leading-relaxed">{bioOverride || expertBio || "Welcome to my storefront"}</p>
               </div>
               {allLinks.length > 0 && (
                 <div className="flex flex-col gap-3 w-full mt-6">
@@ -688,7 +696,7 @@ export function StorefrontView({
                       <div className="p-5">
                         <h3 className="text-lg font-semibold text-[var(--store-text)] tracking-tight mb-2">{product.name}</h3>
                         {product.description && (
-                          <div className="text-[var(--store-text)] text-sm leading-relaxed line-clamp-2 mb-3 product-preview opacity-80" dangerouslySetInnerHTML={{ __html: product.description }} />
+                          <div className="text-[var(--store-subheadline)] text-sm leading-relaxed line-clamp-2 mb-3 product-preview" dangerouslySetInnerHTML={{ __html: product.description }} />
                         )}
                         <div className="flex items-center gap-2 mb-4">
                           <span className="text-lg font-bold text-[var(--store-text)]">
@@ -734,14 +742,14 @@ export function StorefrontView({
                       )}
                       <div className="p-5">
                         <h3 className="text-lg font-semibold text-[var(--store-text)] tracking-tight mb-2">{post.title}</h3>
-                        {post.description && <p className="text-[var(--store-text)] text-sm leading-relaxed line-clamp-2 opacity-80">{post.description}</p>}
+                        {post.description && <p className="text-[var(--store-subheadline)] text-sm leading-relaxed line-clamp-2">{post.description}</p>}
                       </div>
                     </Link>
                   ))}
                 </div>
               </section>
             )}
-            <a href="https://www.sito.club" target="_blank" rel="noopener noreferrer" className="block text-center pt-8 border-t border-[var(--store-card-border)] text-[var(--store-text)] text-sm opacity-60 hover:opacity-80 pb-8">
+            <a href="https://www.sito.club" target="_blank" rel="noopener noreferrer" className="block text-center pt-8 border-t border-[var(--store-card-border)] text-[var(--store-subheadline)] text-sm hover:opacity-80 pb-8">
               ⚡️ Powered by Sito
             </a>
           </main>

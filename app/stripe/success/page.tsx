@@ -128,14 +128,14 @@ function SuccessContent() {
                 {appointmentId ? (
                   <Link
                     href="/appointments/manage"
-                    className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                    className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                   >
                     Go to Manage Appointments
                   </Link>
                 ) : (
                   <Link
                     href="/courses/manage"
-                    className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                    className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                   >
                     Go to Classroom
                   </Link>

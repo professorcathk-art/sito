@@ -223,7 +223,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     className="bg-surface border border-border-default rounded-md p-4"
                   >
                     <div className="flex items-start gap-4">
-                      <span className="flex-shrink-0 w-8 h-8 bg-cyber-green text-white rounded-full flex items-center justify-center font-bold">
+                      <span className="flex-shrink-0 w-8 h-8 bg-cyber-green text-slate-900 rounded-full flex items-center justify-center font-bold">
                         {index + 1}
                       </span>
                       <div className="flex-1">

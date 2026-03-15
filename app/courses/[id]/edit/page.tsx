@@ -202,7 +202,7 @@ export default function EditCoursePage() {
               {course && !course.published && (
                 <button
                   onClick={handlePublish}
-                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                 >
                   Publish Course
                 </button>
@@ -319,7 +319,7 @@ export default function EditCoursePage() {
                     <button
                       onClick={handleSaveLesson}
                       disabled={saving}
-                      className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                      className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                     >
                       {saving ? "Saving..." : editingLesson ? "Update Lesson" : "Add Lesson"}
                     </button>

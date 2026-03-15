@@ -222,7 +222,7 @@ export default function ProfilePage() {
               <p className="text-text-secondary text-lg mb-4">You haven&apos;t set up your profile yet.</p>
               <button
                 onClick={() => router.push("/profile/setup")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 <span>⚙️</span>
                 <span>Set Up Your Profile</span>
@@ -255,7 +255,7 @@ export default function ProfilePage() {
                   </div>
                   <button
                     onClick={() => router.push("/profile/setup")}
-                    className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-cyber-green text-white font-bold rounded-md hover:bg-gray-200 transition-all transform hover:scale-105 shadow-[0_0_25px_rgba(0,255,136,0.5)] text-base sm:text-lg whitespace-nowrap animate-pulse-glow"
+                    className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-cyber-green text-slate-900 font-bold rounded-md hover:bg-gray-200 transition-all transform hover:scale-105 shadow-[0_0_25px_rgba(0,255,136,0.5)] text-base sm:text-lg whitespace-nowrap animate-pulse-glow"
                   >
                     <span className="text-xl">⚙️</span>
                     <span>Set up Experts Profile</span>

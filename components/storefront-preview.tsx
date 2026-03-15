@@ -3,12 +3,13 @@
 import { useMemo } from "react";
 import Image from "next/image";
 import type { StorefrontBlock } from "@/types/storefront";
-import { FONT_FAMILIES, getCardCssVars, THEME_PRESET_VALUES } from "@/lib/storefront-theme-config";
+import { FONT_FAMILIES, getCardCssVars, getButtonStyleClasses, THEME_PRESET_VALUES } from "@/lib/storefront-theme-config";
 
 export interface DesignState {
   backgroundColor: string;
   backgroundImageUrl?: string;
   textColor: string;
+  subheadlineColor?: string;
   buttonColor: string;
   buttonTextColor: string;
   fontFamily: string;
@@ -28,6 +29,7 @@ function BlocksPreview({
   verified,
   products,
   fontClass,
+  buttonStyleClass,
 }: {
   blocks: StorefrontBlock[];
   profileData?: { name: string; title: string; bio: string; avatarUrl: string; website?: string; linkedin?: string; instagramUrl?: string };
@@ -37,6 +39,7 @@ function BlocksPreview({
   verified: boolean;
   products: Array<{ id: string; name: string; price: number; pricing_type: string }>;
   fontClass: string;
+  buttonStyleClass?: string;
 }) {
   const sortedBlocks = [...blocks].sort((a, b) => a.order - b.order);
   const name = profileData?.name || expertName;
@@ -74,8 +77,8 @@ function BlocksPreview({
                   </svg>
                 )}
                 </div>
-                {headerTagline && <p className="text-sm mt-1 opacity-80 text-[var(--store-text)]">{headerTagline}</p>}
-                <p className="text-sm mt-2 opacity-80 line-clamp-3 text-[var(--store-text)]">{headerBio || "Expert bio"}</p>
+                {headerTagline && <p className="text-sm mt-1 text-[var(--store-subheadline)]">{headerTagline}</p>}
+                <p className="text-sm mt-2 line-clamp-3 text-[var(--store-subheadline)]">{headerBio || "Expert bio"}</p>
               </div>
             </div>
           );
@@ -114,7 +117,7 @@ function BlocksPreview({
                     )}
                     <div className={`flex-1 min-w-0 ml-3 ${alignClass}`}>
                       <span className="font-semibold block text-sm text-[var(--store-text)]">{link.title}</span>
-                      {link.description && <span className="text-xs opacity-70 block mt-0.5 line-clamp-1 text-[var(--store-text)]">{link.description}</span>}
+                      {link.description && <span className="text-xs block mt-0.5 line-clamp-1 text-[var(--store-subheadline)]">{link.description}</span>}
                     </div>
                     <svg className="w-5 h-5 opacity-40 group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: "var(--store-text)" }}>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -142,7 +145,7 @@ function BlocksPreview({
                         {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
                       </p>
                     </div>
-                    <div className="bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] w-24 text-sm py-2 rounded-lg text-center font-semibold flex-shrink-0">
+                    <div className={`w-24 text-sm py-2 text-center font-semibold flex-shrink-0 ${buttonStyleClass || "bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] rounded-lg"}`}>
                       View
                     </div>
                   </div>
@@ -250,7 +253,7 @@ function BlocksPreview({
         if (block.type === "book_me") {
           return (
             <div key={block.id} className="w-full flex justify-center">
-              <div className="py-3 px-6 font-semibold bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] rounded-full text-sm">
+              <div className={`py-3 px-6 font-semibold text-sm ${buttonStyleClass || "bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] rounded-full"}`}>
                 Book Me
               </div>
             </div>
@@ -310,19 +313,30 @@ export function StorefrontPreview({
     const presetValues = themePreset && themePreset in THEME_PRESET_VALUES
       ? THEME_PRESET_VALUES[themePreset as keyof typeof THEME_PRESET_VALUES]
       : null;
-    const cardStyle = (presetValues?.cardStyle ?? designState.cardStyle) as "flat" | "glass" | "brutalist" | "soft-shadow";
+    const cardStyle = (designState.cardStyle || presetValues?.cardStyle || "flat") as "flat" | "glass" | "brutalist" | "soft-shadow";
     const card = getCardCssVars(cardStyle);
-    const btnRadius = (presetValues?.buttonRadius ?? designState.buttonRadius) === "pill" ? "9999px" : designState.buttonRadius === "sharp" ? "0" : "0.5rem";
+    const btnRadius = (designState.buttonRadius || presetValues?.buttonRadius || "rounded") === "pill" ? "9999px" : designState.buttonRadius === "sharp" ? "0" : "0.5rem";
     return {
-      "--store-bg": presetValues?.backgroundColor ?? designState.backgroundColor,
-      "--store-text": presetValues?.textColor ?? designState.textColor,
-      "--store-btn-bg": presetValues?.buttonColor ?? designState.buttonColor,
-      "--store-btn-text": presetValues?.buttonTextColor ?? designState.buttonTextColor,
+      "--store-bg": designState.backgroundColor || presetValues?.backgroundColor,
+      "--store-text": designState.textColor || presetValues?.textColor,
+      "--store-subheadline": designState.subheadlineColor || presetValues?.subheadlineColor || presetValues?.textColor || designState.textColor,
+      "--store-btn-bg": designState.buttonColor || presetValues?.buttonColor,
+      "--store-btn-text": designState.buttonTextColor || presetValues?.buttonTextColor,
       "--store-card-bg": card.bg,
       "--store-card-border": card.border,
       "--store-btn-radius": btnRadius,
     } as React.CSSProperties;
   }, [designState, themePreset]);
+
+  const buttonStyleClass = useMemo(() => {
+    const style = (designState.buttonStyle || "default") as "default" | "glass" | "neon" | "organic";
+    return getButtonStyleClasses(
+      style,
+      designState.buttonColor || "#111827",
+      designState.buttonTextColor || "#FFFFFF",
+      designState.buttonRadius || "rounded"
+    );
+  }, [designState.buttonStyle, designState.buttonColor, designState.buttonTextColor, designState.buttonRadius]);
 
   const backgroundStyle = useMemo(() => {
     const bgImage = (designState as { backgroundImageUrl?: string }).backgroundImageUrl;
@@ -385,6 +399,7 @@ export function StorefrontPreview({
                 verified={verified}
                 products={products}
                 fontClass={fontClass}
+                buttonStyleClass={buttonStyleClass}
               />
             ) : (
               <>
@@ -409,7 +424,7 @@ export function StorefrontPreview({
                       </svg>
                     )}
                     </div>
-                    <p className="text-sm mt-2 opacity-80 line-clamp-3 text-[var(--store-text)]">{bioOverride || expertBio || "Expert bio goes here"}</p>
+                    <p className="text-sm mt-2 line-clamp-3 text-[var(--store-subheadline)]">{bioOverride || expertBio || "Expert bio goes here"}</p>
                   </div>
                 </div>
                 {customLinks.length > 0 && (
@@ -439,8 +454,7 @@ export function StorefrontPreview({
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block text-center py-3 px-4 font-semibold rounded-lg bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] hover:opacity-90"
-                        style={{ borderRadius: "var(--store-btn-radius)" }}
+                        className={`block text-center py-3 px-4 font-semibold hover:opacity-90 ${buttonStyleClass}`}
                       >
                         {link.title}
                       </a>
@@ -455,11 +469,11 @@ export function StorefrontPreview({
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-[var(--store-text)] truncate">{product.name}</h3>
-                            <p className="text-sm opacity-70 mt-1 text-[var(--store-text)]">
+                            <p className="text-sm mt-1 text-[var(--store-subheadline)]">
                               {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
                             </p>
                           </div>
-                          <div className="bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] w-24 text-sm py-2 rounded-lg text-center font-semibold flex-shrink-0" style={{ borderRadius: "var(--store-btn-radius)" }}>
+                          <div className={`w-24 text-sm py-2 text-center font-semibold flex-shrink-0 ${buttonStyleClass}`}>
                             View
                           </div>
                         </div>
@@ -468,7 +482,7 @@ export function StorefrontPreview({
                   </div>
                 )}
                 {showAppointments && (
-                  <div className="py-3 px-4 font-semibold rounded-lg bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] text-center" style={{ borderRadius: "var(--store-btn-radius)" }}>
+                  <div className={`py-3 px-4 font-semibold text-center ${buttonStyleClass}`}>
                     Book 1-on-1 Session
                   </div>
                 )}

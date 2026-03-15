@@ -123,7 +123,7 @@ export function SubscribeButton({ expertId, expertName }: SubscribeButtonProps) 
         className={`px-4 py-2 rounded-md font-semibold transition-colors text-sm whitespace-nowrap ${
           isSubscribed
             ? "bg-surface border border-border-default text-cyber-green hover:bg-dark-green-800/70"
-            : "bg-cyber-green text-white hover:bg-gray-200"
+            : "bg-cyber-green text-slate-900 hover:bg-gray-200"
         } disabled:opacity-50 disabled:cursor-not-allowed`}
       >
         {subscribing

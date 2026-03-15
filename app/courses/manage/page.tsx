@@ -489,7 +489,7 @@ export default function ManageCoursePage() {
                     </button>
                     <Link
                       href="/products"
-                      className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                      className="inline-block px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                     >
                       Browse Courses
                     </Link>
@@ -543,7 +543,7 @@ export default function ManageCoursePage() {
                   {selectedCourse.expert_id === user?.id && !showDetailsEdit && (
                     <button
                       onClick={() => setShowDetailsEdit(true)}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
                     >
                       Update Course Details
                     </button>
@@ -611,7 +611,7 @@ export default function ManageCoursePage() {
                           setShowDetailsEdit(false);
                         }}
                         disabled={saving}
-                        className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                        className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
                       >
                         {saving ? "Saving..." : "Save Details"}
                       </button>
@@ -915,7 +915,7 @@ export default function ManageCoursePage() {
                           <div className="flex gap-4">
                             <button
                               type="submit"
-                              className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                              className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                             >
                               {editingLesson ? "Update Lesson" : "Add Lesson"}
                             </button>
@@ -961,7 +961,7 @@ export default function ManageCoursePage() {
                     <h2 className="text-2xl font-bold text-custom-text">Course Members</h2>
                     <button
                       onClick={() => setShowAddMemberForm(!showAddMemberForm)}
-                      className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
+                      className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
                     >
                       {showAddMemberForm ? "Cancel" : "+ Add Member"}
                     </button>
@@ -988,7 +988,7 @@ export default function ManageCoursePage() {
                       </div>
                       <button
                         type="submit"
-                        className="px-6 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                        className="px-6 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                       >
                         Add Member
                       </button>

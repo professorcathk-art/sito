@@ -136,14 +136,14 @@ export default function LearningRequestsPage() {
             {user ? (
               <button
                 onClick={() => setShowCreateForm(!showCreateForm)}
-                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 {showCreateForm ? "Cancel" : "+ Post Request"}
               </button>
             ) : (
               <button
                 onClick={() => router.push("/login?redirect=/learning-requests")}
-                className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 Sign In to Post a Learning Request
               </button>
@@ -200,7 +200,7 @@ export default function LearningRequestsPage() {
                 </div>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                 >
                   Post Request
                 </button>
@@ -220,7 +220,7 @@ export default function LearningRequestsPage() {
               {user && (
                 <button
                   onClick={() => setShowCreateForm(true)}
-                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                 >
                   Be the first to post!
                 </button>
@@ -272,7 +272,7 @@ export default function LearningRequestsPage() {
                     {user?.id !== request.user_id && (
                       <button
                         onClick={() => handleContact(request)}
-                        className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm whitespace-nowrap"
+                        className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm whitespace-nowrap"
                       >
                         {user ? "Connect & Message" : "Send Message"}
                       </button>

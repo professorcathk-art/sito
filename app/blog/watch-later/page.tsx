@@ -147,7 +147,7 @@ export default function WatchLaterPage() {
               <p className="text-text-secondary text-lg mb-4">Your watchlist is empty.</p>
               <Link
                 href="/blog"
-                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 Browse Blogs
               </Link>

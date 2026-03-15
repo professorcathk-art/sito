@@ -284,7 +284,7 @@ export default function FeaturedCoursesPage() {
                   onClick={() => setSelectedCategory(null)}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     selectedCategory === null
-                      ? "bg-cyber-green text-white"
+                      ? "bg-cyber-green text-slate-900"
                       : "bg-surface text-custom-text border border-border-default hover:border-cyber-green"
                   }`}
                 >
@@ -296,7 +296,7 @@ export default function FeaturedCoursesPage() {
                     onClick={() => setSelectedCategory(cat)}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       selectedCategory === cat
-                        ? "bg-cyber-green text-white"
+                        ? "bg-cyber-green text-slate-900"
                         : "bg-surface text-custom-text border border-border-default hover:border-cyber-green"
                     }`}
                   >
@@ -465,7 +465,7 @@ export default function FeaturedCoursesPage() {
                             {/* E-learning subtype label */}
                             {course.e_learning_subtype && (
                               <div className="absolute top-2 right-2 z-10">
-                                <span className="bg-cyber-green/90 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
+                                <span className="bg-cyber-green/90 text-slate-900 text-xs font-semibold px-2 py-1 rounded-md shadow-lg backdrop-blur-sm">
                                   {course.e_learning_subtype === "online-course" ? "Online Course" :
                                    course.e_learning_subtype === "ebook" ? "Ebook" :
                                    course.e_learning_subtype === "ai-prompt" ? "AI Prompt" :

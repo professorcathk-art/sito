@@ -91,7 +91,7 @@ export default function DashboardBlogPage() {
             <h1 className="text-4xl font-bold text-custom-text">My Blog Posts</h1>
             <button
               onClick={() => router.push("/blog/create")}
-              className="flex items-center gap-2 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+              className="flex items-center gap-2 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
             >
               <span className="text-xl">+</span>
               <span>Create Blog Post</span>
@@ -109,7 +109,7 @@ export default function DashboardBlogPage() {
               <p className="text-text-secondary text-lg mb-4">You haven&apos;t created any blog posts yet.</p>
               <button
                 onClick={() => router.push("/blog/create")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 <span className="text-xl">+</span>
                 <span>Create Your First Blog Post</span>

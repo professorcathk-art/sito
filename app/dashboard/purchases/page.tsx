@@ -223,7 +223,7 @@ export default function PurchasesPage() {
               <p className="text-text-secondary mb-4">No purchases found</p>
               <Link
                 href="/courses"
-                className="inline-block px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="inline-block px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 Browse Courses
               </Link>
@@ -296,7 +296,7 @@ export default function PurchasesPage() {
                           <>
                             <Link
                               href={`/courses/${purchase.course_id}`}
-                              className="inline-block px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
+                              className="inline-block px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
                             >
                               View Course
                             </Link>
@@ -310,7 +310,7 @@ export default function PurchasesPage() {
                         ) : (
                           <Link
                             href="/appointments/manage?tab=my-bookings"
-                            className="inline-block px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
+                            className="inline-block px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
                           >
                             View Appointment
                           </Link>

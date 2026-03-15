@@ -513,7 +513,7 @@ export function StripeConnectOnboarding() {
                 <button
                   onClick={handleCreateAccount}
                   disabled={creating || !selectedCountry || loading}
-                  className="flex-1 px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {creating ? "Creating Account..." : "Create New Account"}
                 </button>
@@ -522,7 +522,7 @@ export function StripeConnectOnboarding() {
               <button
                 onClick={handleCreateAccount}
                 disabled={creating || !selectedCountry}
-                className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {creating ? "Creating Account..." : "Create Stripe Account"}
               </button>
@@ -604,7 +604,7 @@ export function StripeConnectOnboarding() {
               <button
                 onClick={handleStartOnboarding}
                 disabled={onboarding}
-                className="w-full px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                className="w-full px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
               >
                 {onboarding
                   ? "Redirecting to Stripe..."

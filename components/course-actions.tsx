@@ -22,7 +22,7 @@ export function CourseActions({ courseId, expertId, currentUserId, coursePrice, 
       <div className="flex gap-4">
         <Link
           href="/courses/manage"
-          className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+          className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
         >
           Manage in Classroom
         </Link>

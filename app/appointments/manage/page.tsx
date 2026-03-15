@@ -371,7 +371,7 @@ export default function ManageAppointmentsPage() {
                   setSelectedProductId(products[0].id);
                 }
               }}
-              className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+              className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
             >
               Add Timeslots
             </button>
@@ -501,7 +501,7 @@ export default function ManageAppointmentsPage() {
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                  className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                 >
                   Create Slots
                 </button>
@@ -672,7 +672,7 @@ export default function ManageAppointmentsPage() {
                       fetchSlots();
                       fetchProducts();
                     }}
-                    className="px-4 py-2 bg-cyber-green text-white font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
+                    className="px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
                   >
                     Refresh
                   </button>
