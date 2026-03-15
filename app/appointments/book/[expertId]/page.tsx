@@ -474,12 +474,75 @@ export default function BookAppointmentPage() {
         }),
       });
 
+      const data = await response.json();
       if (!response.ok) {
-        const data = await response.json();
+        if (data.code === "STRIPE_SETUP_INCOMPLETE") {
+          const ok = window.confirm("Payment will be settled with the expert after they confirm your booking. Continue?");
+          if (!ok) {
+            setBooking(false);
+            return;
+          }
+          const { data: slotFull } = await supabase
+            .from("appointment_slots")
+            .select("id, expert_id, rate_per_hour, start_time, end_time")
+            .eq("id", slot.id)
+            .single();
+          if (!slotFull || !user) throw new Error("Slot or user not found");
+          const duration = Math.round((new Date(slotFull.end_time).getTime() - new Date(slotFull.start_time).getTime()) / (1000 * 60));
+          const totalAmount = (slotFull.rate_per_hour / 60) * duration;
+          const { data: appointment, error: aptErr } = await supabase
+            .from("appointments")
+            .insert({
+              expert_id: expertId,
+              user_id: user.id,
+              appointment_slot_id: slot.id,
+              start_time: slotFull.start_time,
+              end_time: slotFull.end_time,
+              duration_minutes: duration,
+              rate_per_hour: slotFull.rate_per_hour,
+              total_amount: totalAmount,
+              status: "pending",
+              payment_intent_id: null,
+              product_id: slotData?.product_id || null,
+              questionnaire_response_id: questionnaireResponse?.id || null,
+            })
+            .select()
+            .single();
+          if (aptErr) throw aptErr;
+          if (questionnaireResponse?.id && appointment?.id) {
+            await supabase.from("questionnaire_responses").update({ appointment_id: appointment.id }).eq("id", questionnaireResponse.id);
+          }
+          await supabase.from("appointment_slots").update({ is_available: false }).eq("id", slot.id);
+          const { data: expertProf } = await supabase.from("profiles").select("name, email").eq("id", expertId).single();
+          const { data: myProfile } = await supabase.from("profiles").select("name, email").eq("id", user.id).single();
+          if (expertProf?.email && myProfile?.name) {
+            const slotTime = new Date(slotFull.start_time).toLocaleString("en-US", {
+              weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
+            });
+            try {
+              await fetch("/api/booking/send-request", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  expertEmail: expertProf.email,
+                  expertName: expertProf.name || "Expert",
+                  userName: myProfile.name,
+                  userEmail: myProfile.email || user.email || "",
+                  slotTime,
+                }),
+              });
+            } catch (e) {
+              console.warn("Booking email failed:", e);
+            }
+          }
+          alert("Booking request sent! The expert will confirm and arrange payment with you.");
+          router.push("/appointments/manage?tab=my-bookings");
+          setBooking(false);
+          return;
+        }
         throw new Error(data.error || "Failed to create checkout session");
       }
 
-      const data = await response.json();
       if (data.url) {
         window.location.href = data.url;
       } else {

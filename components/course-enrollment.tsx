@@ -659,12 +659,44 @@ export function CourseEnrollment({
               }),
             });
 
+            const data = await response.json();
             if (!response.ok) {
-              const data = await response.json();
+              if (data.code === "STRIPE_SETUP_INCOMPLETE") {
+                const ok = window.confirm("Payment will be settled with the expert after they confirm. Continue with enrollment?");
+                if (!ok) {
+                  setProcessing(false);
+                  return;
+                }
+                if (isGuest) {
+                  const res = await fetch("/api/pending-enrollment/create", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      courseId,
+                      email: extractEmailFromResponses(guestFormResponses || {}),
+                      questionnaireResponseId: questionnaireResponseId || null,
+                    }),
+                  });
+                  if (!res.ok) throw new Error("Failed to save");
+                  router.push(`/register?email=${encodeURIComponent(extractEmailFromResponses(guestFormResponses || {}) || "")}&from=payment&type=course&message=Create an account to access your course`);
+                } else {
+                  const { error: enrollErr } = await supabase.from("course_enrollments").insert({
+                    course_id: courseId,
+                    user_id: currentUserId,
+                    payment_intent_id: null,
+                    questionnaire_response_id: questionnaireResponseId || null,
+                  });
+                  if (enrollErr) throw enrollErr;
+                  alert("Enrollment requested! The expert will confirm and arrange payment with you.");
+                  setIsEnrolled(true);
+                  router.push("/courses/manage");
+                }
+                setProcessing(false);
+                return;
+              }
               throw new Error(data.error || "Failed to create checkout session");
             }
 
-            const data = await response.json();
             if (data.url) {
               window.location.href = data.url;
             } else {

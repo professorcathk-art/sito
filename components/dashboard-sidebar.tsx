@@ -135,6 +135,11 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       href: "/dashboard/storefront",
       icon: "🎨",
     },
+    {
+      name: "Classroom",
+      href: "/courses/manage",
+      icon: "📚",
+    },
     ...(isExpert && profileComplete
       ? [
           {
@@ -146,11 +151,6 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
             name: "Sharing Posts",
             href: "/dashboard/blog",
             icon: "✍️",
-          },
-          {
-            name: "Classroom",
-            href: "/courses/manage",
-            icon: "📚",
           },
           {
             name: "Manage Appointments",
