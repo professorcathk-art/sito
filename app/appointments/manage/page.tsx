@@ -73,10 +73,13 @@ export default function ManageAppointmentsPage() {
     fetchMyBookings();
     fetchProducts();
     
-    // Check if we should show "My Bookings" tab (from success page redirect)
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("tab") === "my-bookings") {
-      setActiveTab("my-bookings");
+    // Check tab from URL (e.g. from notification center or success page)
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab === "my-bookings") setActiveTab("my-bookings");
+      else if (tab === "bookings") setActiveTab("bookings");
+      else if (tab === "slots") setActiveTab("slots");
     }
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -214,6 +217,7 @@ export default function ManageAppointmentsPage() {
 
       const appointments = (appointmentsData || []).map((apt: any) => ({
         id: apt.id,
+        expert_id: apt.expert_id,
         start_time: apt.start_time,
         end_time: apt.end_time,
         rate_per_hour: apt.rate_per_hour,
@@ -643,17 +647,35 @@ export default function ManageAppointmentsPage() {
                           <p className="text-text-secondary mb-3">
                             ${appointment.rate_per_hour}/hour • Total: ${appointment.total_amount.toFixed(2)} • Status: {appointment.status}
                           </p>
-                          {(appointment as any).meeting_link && (
-                            <a
-                              href={(appointment as any).meeting_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-cyber-green/20 text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors font-medium text-sm"
-                            >
-                              <span>🔗</span>
-                              Join Meeting
-                            </a>
-                          )}
+                          <div className="flex flex-wrap items-center gap-2 mt-3">
+                            {(appointment as any).meeting_link && (
+                              <a
+                                href={
+                                  (() => {
+                                    const link = String((appointment as any).meeting_link).trim();
+                                    if (!link) return "#";
+                                    if (link.startsWith("http://") || link.startsWith("https://")) return link;
+                                    return `https://${link}`;
+                                  })()
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-cyber-green/20 text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors font-medium text-sm"
+                              >
+                                <span>🔗</span>
+                                Join Meeting
+                              </a>
+                            )}
+                            {(appointment as any).expert_id && (
+                              <Link
+                                href={`/messages${(appointment as any).expert_id ? `?expert=${(appointment as any).expert_id}` : ""}`}
+                                className="inline-flex items-center gap-2 px-4 py-2 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors font-medium text-sm"
+                              >
+                                <span>✉️</span>
+                                Contact Expert
+                              </Link>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -811,7 +833,14 @@ export default function ManageAppointmentsPage() {
                                           {appointment.meeting_link}
                                         </span>
                                         <a
-                                          href={appointment.meeting_link}
+                                          href={
+                                            (() => {
+                                              const link = String(appointment.meeting_link).trim();
+                                              if (!link) return "#";
+                                              if (link.startsWith("http://") || link.startsWith("https://")) return link;
+                                              return `https://${link}`;
+                                            })()
+                                          }
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           onClick={(e) => e.stopPropagation()}
