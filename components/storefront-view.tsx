@@ -6,6 +6,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { CourseEnrollment } from "@/components/course-enrollment";
+import { BookingModal } from "@/components/booking-modal";
 import type { StorefrontBlock } from "@/types/storefront";
 import { FONT_FAMILIES, getCardCssVars, getButtonStyleClasses } from "@/lib/storefront-theme-config";
 
@@ -129,6 +130,7 @@ export function StorefrontView({
 }: StorefrontViewProps) {
   const { user } = useAuth();
   const supabase = createClient();
+  const [openBookingModal, setOpenBookingModal] = useState(false);
 
   const isFluidAura = designState.themePreset === "fluid-aura";
   const isPearlSilk = designState.themePreset === "pearl-silk" || designState.themePreset === "soft-gradient";
@@ -578,29 +580,18 @@ export function StorefrontView({
                     : `py-4 px-8 font-semibold transition-all duration-300 text-center ${buttonStyleClass}`;
                 return (
                   <section key={block.id} className="w-full flex justify-center">
-                    <Link href={`/appointments/book/${expertId}`} className={btnClass}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenBookingModal(true)}
+                      className={btnClass}
+                    >
                       Book Me
-                    </Link>
+                    </button>
                   </section>
                 );
               }
               return null;
             })}
-
-            {hasAppointments && (
-              <Link
-                href={`/appointments/book/${expertId}`}
-                className={
-                  isFluidAura
-                    ? "w-full py-4 px-6 font-semibold transition-all duration-300 text-center bg-white/10 text-white border border-white/20 hover:bg-white/20 backdrop-blur-md rounded-full"
-                    : isPearlSilk
-                      ? "w-full py-4 px-6 font-semibold transition-all duration-300 text-center bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] rounded-full shadow-lg"
-                      : `w-full py-4 px-6 font-semibold transition-all duration-300 text-center ${buttonStyleClass}`
-                }
-              >
-                Book 1-on-1 Session
-              </Link>
-            )}
 
             <a
               href="https://www.sito.club"
@@ -612,6 +603,14 @@ export function StorefrontView({
             </a>
           </main>
         </div>
+        {openBookingModal && hasAppointments && (
+          <BookingModal
+            expertId={expertId}
+            expertName={expertName}
+            product={null}
+            onClose={() => setOpenBookingModal(false)}
+          />
+        )}
       </div>
     );
   }
@@ -654,6 +653,16 @@ export function StorefrontView({
                 </div>
                 <p className="text-[var(--store-subheadline)] text-sm md:text-base leading-relaxed">{bioOverride || expertBio || "Welcome to my storefront"}</p>
               </div>
+              {hasAppointments && (
+                <button
+                  type="button"
+                  onClick={() => setOpenBookingModal(true)}
+                  className="w-full py-4 px-6 font-semibold transition-all text-center bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] hover:opacity-90 rounded-lg mt-6"
+                  style={{ borderRadius: "var(--store-btn-radius)" }}
+                >
+                  Book Me
+                </button>
+              )}
               {allLinks.length > 0 && (
                 <div className="flex flex-col gap-3 w-full mt-6">
                   {allLinks.map((link, idx) => (
@@ -669,15 +678,6 @@ export function StorefrontView({
                     </a>
                   ))}
                 </div>
-              )}
-              {hasAppointments && (
-                <Link
-                  href={`/appointments/book/${expertId}`}
-                  className="w-full py-4 px-6 font-semibold transition-all text-center bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] hover:opacity-90 rounded-lg mt-4 block"
-                  style={{ borderRadius: "var(--store-btn-radius)" }}
-                >
-                  Book 1-on-1 Session
-                </Link>
               )}
             </div>
           </aside>
@@ -755,6 +755,14 @@ export function StorefrontView({
           </main>
         </div>
       </div>
+      {openBookingModal && hasAppointments && (
+        <BookingModal
+          expertId={expertId}
+          expertName={expertName}
+          product={null}
+          onClose={() => setOpenBookingModal(false)}
+        />
+      )}
     </div>
   );
 }
