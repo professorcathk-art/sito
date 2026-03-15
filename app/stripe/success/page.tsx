@@ -39,11 +39,11 @@ function SuccessContent() {
             return null;
           }
 
-          // Guest checkout - needs sign up
+          // Guest checkout - needs sign up or sign in
           if (verifyData.needsSignUp && verifyData.email) {
             setLoading(false);
             const type = verifyData.type === "appointment_guest" ? "appointment" : "course";
-            router.push(`/register?email=${encodeURIComponent(verifyData.email)}&from=payment&type=${type}&message=Create an account to access your purchase`);
+            router.push(`/access-purchase?email=${encodeURIComponent(verifyData.email)}&type=${type}`);
             return null;
           }
 

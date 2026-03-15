@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-export function LoginForm({ redirect }: { redirect?: string }) {
+export function LoginForm({ redirect, email: initialEmail }: { redirect?: string; email?: string }) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail || "");
   const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    if (initialEmail) setEmail(initialEmail);
+  }, [initialEmail]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const supabase = createClient();

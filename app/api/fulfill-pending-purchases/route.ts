@@ -23,11 +23,11 @@ export async function POST(request: NextRequest) {
     const email = user.email;
     const fulfilled: { courses: string[]; appointments: string[] } = { courses: [], appointments: [] };
 
-    // Fulfill pending course enrollments
+    // Fulfill pending course enrollments (case-insensitive email match)
     const { data: pendingCourses } = await admin
       .from("pending_course_enrollments")
       .select("id, course_id, questionnaire_response_id, payment_intent_id")
-      .eq("email", email);
+      .ilike("email", email);
 
     if (pendingCourses?.length) {
       for (const p of pendingCourses) {
@@ -44,11 +44,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fulfill pending appointments
+    // Fulfill pending appointments (case-insensitive email match)
     const { data: pendingAppts } = await admin
       .from("pending_appointments")
       .select("*")
-      .eq("email", email);
+      .ilike("email", email);
 
     if (pendingAppts?.length) {
       for (const p of pendingAppts) {

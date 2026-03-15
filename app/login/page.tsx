@@ -8,6 +8,7 @@ import { LoginForm } from "@/components/login-form";
 function LoginPageContent() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect");
+  const email = searchParams.get("email");
 
   return (
     <div className="min-h-screen bg-custom-bg flex items-center justify-center px-4">
@@ -19,7 +20,7 @@ function LoginPageContent() {
           <h1 className="text-3xl font-bold text-custom-text mb-2">Welcome Back</h1>
           <p className="text-text-secondary">Sign in to your account to continue</p>
         </div>
-        <LoginForm redirect={redirect || undefined} />
+        <LoginForm redirect={redirect || undefined} email={email || undefined} />
         <p className="text-center mt-6 text-text-secondary">
           Don&apos;t have an account?{" "}
           <Link href="/register" className="text-cyber-green font-semibold hover:text-white hover:underline">

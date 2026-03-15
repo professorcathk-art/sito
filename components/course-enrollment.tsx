@@ -520,7 +520,7 @@ export function CourseEnrollment({
           const data = await res.json();
           throw new Error(data.error || "Failed to save");
         }
-        router.push(`/register?email=${encodeURIComponent(guestEmail)}&from=payment&type=course&message=Create an account to access your free course`);
+        router.push(`/access-purchase?email=${encodeURIComponent(guestEmail)}&type=course`);
       } catch (err: any) {
         alert(err.message || "Failed to proceed. Please try again.");
       }
@@ -678,7 +678,7 @@ export function CourseEnrollment({
                     }),
                   });
                   if (!res.ok) throw new Error("Failed to save");
-                  router.push(`/register?email=${encodeURIComponent(extractEmailFromResponses(guestFormResponses || {}) || "")}&from=payment&type=course&message=Create an account to access your course`);
+                  router.push(`/access-purchase?email=${encodeURIComponent(extractEmailFromResponses(guestFormResponses || {}) || "")}&type=course`);
                 } else {
                   const { error: enrollErr } = await supabase.from("course_enrollments").insert({
                     course_id: courseId,

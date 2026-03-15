@@ -235,10 +235,18 @@ export function RegisterForm() {
       <button
         type="button"
         onClick={async () => {
+          const fromPayment = searchParams.get("from") === "payment";
+          const typeParam = searchParams.get("type");
+          const dest = fromPayment
+            ? (typeParam === "appointment" ? "/appointments/manage?tab=my-bookings" : "/courses/manage")
+            : "/onboarding";
+          const oauthRedirect = fromPayment
+            ? `/complete-purchase?dest=${encodeURIComponent(dest)}`
+            : dest;
           const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-              redirectTo: `${window.location.origin}/onboarding`,
+              redirectTo: `${window.location.origin}${oauthRedirect}`,
             },
           });
           if (error) {
