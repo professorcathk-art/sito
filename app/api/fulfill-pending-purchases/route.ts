@@ -23,6 +23,13 @@ export async function POST(request: NextRequest) {
     const email = user.email;
     const fulfilled: { courses: string[]; appointments: string[] } = { courses: [], appointments: [] };
 
+    // Link user_id to any email-based enrollments (e.g. from guest free/paid checkout)
+    await admin
+      .from("course_enrollments")
+      .update({ user_id: user.id })
+      .is("user_id", null)
+      .ilike("user_email", email);
+
     // Fulfill pending course enrollments (case-insensitive email match)
     const { data: pendingCourses } = await admin
       .from("pending_course_enrollments")

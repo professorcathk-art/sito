@@ -96,34 +96,40 @@ export async function POST(request: NextRequest) {
     console.log("  Slot Start:", finalSlotStartTime);
     console.log("  Slot End:", finalSlotEndTime);
 
-    // Handle course enrollment (for guest with no account: create pending)
+    // Handle course enrollment (for guest with no account: create enrollment by email)
     if (finalCourseId) {
       if (!finalUserId || finalUserId === "guest") {
-        // Guest paid but has no account - create pending enrollment
-        const email = guestEmail || (session.customer_details as any)?.email;
+        // Guest paid - add course to account by email immediately
+        const email = (guestEmail || (session.customer_details as any)?.email)?.trim()?.toLowerCase();
         if (!email) {
           return NextResponse.json({
             success: false,
             message: "Guest email not found in session",
           });
         }
-        const { data: pending, error: pendingErr } = await supabase
-          .from("pending_course_enrollments")
-          .insert({
-            course_id: finalCourseId,
-            email,
-            payment_intent_id: paymentIntentId || null,
-            questionnaire_response_id: finalQuestionnaireResponseId || null,
-          })
+        const { data: existingByEmail } = await supabase
+          .from("course_enrollments")
           .select("id")
-          .single();
-
-        if (pendingErr) {
-          console.error("Error creating pending enrollment:", pendingErr);
-          return NextResponse.json({
-            success: false,
-            error: pendingErr.message,
-          });
+          .eq("course_id", finalCourseId)
+          .eq("user_email", email)
+          .maybeSingle();
+        if (!existingByEmail) {
+          const { error: enrollErr } = await supabase
+            .from("course_enrollments")
+            .insert({
+              course_id: finalCourseId,
+              user_email: email,
+              user_id: null,
+              payment_intent_id: paymentIntentId || null,
+              questionnaire_response_id: finalQuestionnaireResponseId || null,
+            });
+          if (enrollErr) {
+            console.error("Error creating enrollment by email:", enrollErr);
+            return NextResponse.json({
+              success: false,
+              error: enrollErr.message,
+            });
+          }
         }
         return NextResponse.json({
           success: true,
@@ -131,7 +137,6 @@ export async function POST(request: NextRequest) {
           courseId: finalCourseId,
           needsSignUp: true,
           email,
-          pendingId: pending?.id,
         });
       }
     }

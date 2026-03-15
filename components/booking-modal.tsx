@@ -36,6 +36,8 @@ interface BookingModalProps {
   } | null;
   onClose: () => void;
   initialSlotId?: string | null;
+  /** True when modal opened after returning from login (openBooking=1) - delays redirect to allow session to hydrate */
+  isReturningFromLogin?: boolean;
 }
 
 function calculateDuration(start: string, end: string): number {
@@ -57,6 +59,7 @@ export function BookingModal({
   product: initialProduct,
   onClose,
   initialSlotId,
+  isReturningFromLogin = false,
 }: BookingModalProps) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -73,6 +76,7 @@ export function BookingModal({
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [sessionHydrating, setSessionHydrating] = useState(false);
 
   useEffect(() => {
     if (!expertId) return;
@@ -87,17 +91,39 @@ export function BookingModal({
         const d = new Date(slot.start_time);
         setSelectedDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
         setStep(2);
+        let savedData: { formData?: Record<string, string>; productId?: string } = {};
         if (typeof window !== "undefined") {
           try {
             const saved = sessionStorage.getItem(PENDING_BOOKING_KEY);
             if (saved) {
-              const data = JSON.parse(saved);
-              if (data.formData) setFormData(data.formData);
+              savedData = JSON.parse(saved);
+              if (savedData.formData) setFormData(savedData.formData);
               sessionStorage.removeItem(PENDING_BOOKING_KEY);
             }
           } catch {
             /* ignore */
           }
+        }
+        const productId = slot.product_id || savedData.productId || product?.id;
+        if (productId) {
+          supabase
+            .from("questionnaires")
+            .select("id")
+            .eq("product_id", productId)
+            .maybeSingle()
+            .then(({ data: q }) => {
+              if (q?.id) {
+                supabase
+                  .from("questionnaire_fields")
+                  .select("*")
+                  .eq("questionnaire_id", q.id)
+                  .order("order_index", { ascending: true })
+                  .then(({ data: fields }) => {
+                    setQuestionnaireId(q.id);
+                    setQuestionnaireFields((fields || []) as QuestionnaireField[]);
+                  });
+              }
+            });
         }
       }
     }
@@ -244,6 +270,12 @@ export function BookingModal({
 
       if (totalAmount <= 0) {
         if (!authLoading && !user) {
+          if (isReturningFromLogin && !sessionHydrating) {
+            setSessionHydrating(true);
+            setTimeout(() => setSessionHydrating(false), 2500);
+            setSubmitting(false);
+            return;
+          }
           sessionStorage.setItem(
             PENDING_BOOKING_KEY,
             JSON.stringify({ expertId, slotId: selectedSlot.id, slotStart: selectedSlot.start_time, slotEnd: selectedSlot.end_time, productId, formData })
@@ -252,7 +284,7 @@ export function BookingModal({
           setSubmitting(false);
           return;
         }
-        if (authLoading || !user) {
+        if (authLoading || !user || sessionHydrating) {
           setSubmitting(false);
           return;
         }
@@ -316,6 +348,12 @@ export function BookingModal({
       const connectedAccountId = expertProfile?.stripe_connect_account_id;
       if (!connectedAccountId) {
         if (!authLoading && !user) {
+          if (isReturningFromLogin && !sessionHydrating) {
+            setSessionHydrating(true);
+            setTimeout(() => setSessionHydrating(false), 2500);
+            setSubmitting(false);
+            return;
+          }
           sessionStorage.setItem(
             PENDING_BOOKING_KEY,
             JSON.stringify({ expertId, slotId: selectedSlot.id, slotStart: selectedSlot.start_time, slotEnd: selectedSlot.end_time, productId, formData, questionnaireResponseId })
@@ -324,7 +362,7 @@ export function BookingModal({
           setSubmitting(false);
           return;
         }
-        if (authLoading || !user) {
+        if (authLoading || !user || sessionHydrating) {
           setSubmitting(false);
           return;
         }
@@ -436,6 +474,12 @@ export function BookingModal({
         window.location.href = data.url;
       } else if (data.code === "STRIPE_SETUP_INCOMPLETE") {
         if (!authLoading && !user) {
+          if (isReturningFromLogin && !sessionHydrating) {
+            setSessionHydrating(true);
+            setTimeout(() => setSessionHydrating(false), 2500);
+            setSubmitting(false);
+            return;
+          }
           sessionStorage.setItem(
             PENDING_BOOKING_KEY,
             JSON.stringify({ expertId, slotId: selectedSlot.id, slotStart: selectedSlot.start_time, slotEnd: selectedSlot.end_time, productId, formData, questionnaireResponseId })
@@ -444,7 +488,7 @@ export function BookingModal({
           setSubmitting(false);
           return;
         }
-        if (authLoading || !user) {
+        if (authLoading || !user || sessionHydrating) {
           setSubmitting(false);
           return;
         }
@@ -718,10 +762,10 @@ export function BookingModal({
               )}
               <button
                 onClick={handleProceedToPayment}
-                disabled={submitting}
+                disabled={submitting || sessionHydrating}
                 className="w-full py-4 mt-6 bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] rounded-xl font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-60"
               >
-                {submitting ? "Processing…" : "Proceed to Payment"}
+                {submitting ? "Processing…" : sessionHydrating ? "Preparing your session…" : "Proceed to Payment"}
               </button>
             </div>
           )}

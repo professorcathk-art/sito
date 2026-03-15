@@ -135,9 +135,11 @@ export function StorefrontView({
   const searchParams = useSearchParams();
   const [openBookingModal, setOpenBookingModal] = useState(false);
   const [initialSlotId, setInitialSlotId] = useState<string | null>(null);
+  const [isReturningFromLogin, setIsReturningFromLogin] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("openBooking") === "1") {
+      setIsReturningFromLogin(true);
       try {
         const saved = typeof window !== "undefined" ? sessionStorage.getItem("sito_pending_booking") : null;
         if (saved) {
@@ -632,8 +634,9 @@ export function StorefrontView({
             expertId={expertId}
             expertName={expertName}
             product={null}
-            onClose={() => { setOpenBookingModal(false); setInitialSlotId(null); }}
+            onClose={() => { setOpenBookingModal(false); setInitialSlotId(null); setIsReturningFromLogin(false); }}
             initialSlotId={initialSlotId}
+            isReturningFromLogin={isReturningFromLogin}
           />
         )}
       </div>
@@ -783,14 +786,15 @@ export function StorefrontView({
         </div>
       </div>
       {openBookingModal && hasAppointments && (
-        <BookingModal
-          expertId={expertId}
-          expertName={expertName}
-          product={null}
-          onClose={() => { setOpenBookingModal(false); setInitialSlotId(null); }}
-          initialSlotId={initialSlotId}
-        />
-      )}
+          <BookingModal
+            expertId={expertId}
+            expertName={expertName}
+            product={null}
+            onClose={() => { setOpenBookingModal(false); setInitialSlotId(null); setIsReturningFromLogin(false); }}
+            initialSlotId={initialSlotId}
+            isReturningFromLogin={isReturningFromLogin}
+          />
+        )}
     </div>
   );
 }
