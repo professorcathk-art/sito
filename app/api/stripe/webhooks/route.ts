@@ -245,8 +245,9 @@ export async function POST(request: NextRequest) {
       const slotStartTime = session.metadata?.slot_start_time || paymentIntentMetadata?.slot_start_time;
       const slotEndTime = session.metadata?.slot_end_time || paymentIntentMetadata?.slot_end_time;
       const questionnaireResponseId = session.metadata?.questionnaire_response_id || paymentIntentMetadata?.questionnaire_response_id || null;
+      const productId = session.metadata?.product_id || paymentIntentMetadata?.product_id || null;
 
-      console.log(`Webhook metadata - courseId: ${courseId}, userId: ${userId}, appointmentId: ${appointmentId}, paymentIntentId: ${paymentIntentId}, questionnaireResponseId: ${questionnaireResponseId}`);
+      console.log(`Webhook metadata - courseId: ${courseId}, userId: ${userId}, appointmentId: ${appointmentId}, paymentIntentId: ${paymentIntentId}, questionnaireResponseId: ${questionnaireResponseId}, productId: ${productId}`);
 
       // Use service role client to bypass RLS for webhook operations
       const supabase = createServiceRoleClient();
@@ -318,7 +319,7 @@ export async function POST(request: NextRequest) {
             .insert({
               expert_id: slotData.expert_id,
               user_id: userId,
-              appointment_slot_id: appointmentId, // Link to the slot
+              appointment_slot_id: appointmentId,
               start_time: slotStartTime,
               end_time: slotEndTime,
               duration_minutes: durationMinutes,
@@ -326,6 +327,8 @@ export async function POST(request: NextRequest) {
               total_amount: totalAmount,
               status: "confirmed",
               payment_intent_id: paymentIntentId || null,
+              product_id: productId || null,
+              questionnaire_response_id: questionnaireResponseId || null,
             })
             .select()
             .single();
@@ -340,6 +343,58 @@ export async function POST(request: NextRequest) {
             .from("appointment_slots")
             .update({ is_available: false })
             .eq("id", appointmentId);
+
+          // Link questionnaire response to appointment
+          if (questionnaireResponseId && appointment?.id) {
+            await supabase
+              .from("questionnaire_responses")
+              .update({ appointment_id: appointment.id })
+              .eq("id", questionnaireResponseId);
+          }
+
+          // Send confirmation email for paid booking
+          try {
+            const { sendBookingConfirmedEmail } = await import("@/lib/resend-booking-emails");
+            const { data: userProfile } = await supabase
+              .from("profiles")
+              .select("name, email")
+              .eq("id", userId)
+              .single();
+            const { data: expertProfile } = await supabase
+              .from("profiles")
+              .select("name")
+              .eq("id", slotData.expert_id)
+              .single();
+            let whatToExpect: string | null = null;
+            if (productId) {
+              const { data: product } = await supabase
+                .from("products")
+                .select("what_to_expect")
+                .eq("id", productId)
+                .single();
+              whatToExpect = product?.what_to_expect || null;
+            }
+            const dateTime = new Date(slotStartTime).toLocaleString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            });
+            if (userProfile?.email) {
+              await sendBookingConfirmedEmail(
+                userProfile.email,
+                userProfile.name || "there",
+                expertProfile?.name || "Expert",
+                dateTime,
+                "To be provided",
+                whatToExpect
+              );
+            }
+          } catch (emailErr) {
+            console.warn("Failed to send booking confirmation email:", emailErr);
+          }
 
           console.log(`✅ Appointment created successfully for user ${userId}`);
           console.log(`Appointment ID: ${appointment?.id}`);

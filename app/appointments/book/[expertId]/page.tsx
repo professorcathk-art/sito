@@ -210,29 +210,83 @@ export default function BookAppointmentPage() {
 
       setBooking(true);
       try {
-        // Create appointment
+        let productId = slot.product_id;
+        if (!productId) {
+          const { data: ap } = await supabase
+            .from("products")
+            .select("id")
+            .eq("expert_id", expertId)
+            .eq("product_type", "appointment")
+            .maybeSingle();
+          productId = ap?.id || null;
+        }
+
         const { data: appointment, error: appointmentError } = await supabase
           .from("appointments")
           .insert({
             expert_id: expertId,
             user_id: user.id,
+            appointment_slot_id: slot.id,
             start_time: slot.start_time,
             end_time: slot.end_time,
             duration_minutes: duration,
             rate_per_hour: slot.rate_per_hour,
             total_amount: totalAmount,
             status: "pending",
+            product_id: productId,
+            questionnaire_response_id: questionnaireResponse?.id || null,
           })
           .select()
           .single();
 
         if (appointmentError) throw appointmentError;
 
-        // Mark slot as unavailable
+        if (questionnaireResponse?.id) {
+          await supabase
+            .from("questionnaire_responses")
+            .update({ appointment_id: appointment.id })
+            .eq("id", questionnaireResponse.id);
+        }
+
         await supabase
           .from("appointment_slots")
           .update({ is_available: false })
           .eq("id", slot.id);
+
+        const slotTime = new Date(slot.start_time).toLocaleString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        });
+        try {
+          const { data: expertProfile } = await supabase
+            .from("profiles")
+            .select("name, email")
+            .eq("id", expertId)
+            .single();
+          const { data: myProfile } = await supabase
+            .from("profiles")
+            .select("name, email")
+            .eq("id", user.id)
+            .single();
+          if (expertProfile?.email && myProfile?.name) {
+            await fetch("/api/booking/send-request", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                expertEmail: expertProfile.email,
+                expertName: expertProfile.name || "Expert",
+                userName: myProfile.name,
+                userEmail: myProfile.email || user.email || "",
+                slotTime,
+              }),
+            });
+          }
+        } catch (emailErr) {
+          console.warn("Booking request email failed:", emailErr);
+        }
 
         alert("Appointment booked successfully! The expert will be notified.");
         router.push("/dashboard");
@@ -354,6 +408,7 @@ export default function BookAppointmentPage() {
           slotStartTime: slot.start_time,
           slotEndTime: slot.end_time,
           questionnaireResponseId: questionnaireResponse?.id || null,
+          productId: slot.product_id || null,
         }),
       });
 

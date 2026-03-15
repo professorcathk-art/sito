@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripeClient } from "@/lib/stripe/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { sendBookingConfirmedEmail } from "@/lib/resend-booking-emails";
 import Stripe from "stripe";
 
 export async function POST(request: NextRequest) {
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
     const slotStartTime = session.metadata?.slot_start_time;
     const slotEndTime = session.metadata?.slot_end_time;
     const questionnaireResponseId = session.metadata?.questionnaire_response_id || null;
+    const productId = session.metadata?.product_id || null;
 
     const paymentIntentId = typeof session.payment_intent === "string" 
       ? session.payment_intent 
@@ -74,6 +76,7 @@ export async function POST(request: NextRequest) {
     const finalSlotStartTime = slotStartTime || paymentIntentMetadata?.slot_start_time;
     const finalSlotEndTime = slotEndTime || paymentIntentMetadata?.slot_end_time;
     const finalQuestionnaireResponseId = questionnaireResponseId || paymentIntentMetadata?.questionnaire_response_id || null;
+    const finalProductId = productId || paymentIntentMetadata?.product_id || null;
 
     console.log("Verify Payment - Extracted Data:");
     console.log("  Course ID:", finalCourseId);
@@ -196,6 +199,8 @@ export async function POST(request: NextRequest) {
             total_amount: totalAmount,
             status: "confirmed",
             payment_intent_id: paymentIntentId || null,
+            product_id: finalProductId || null,
+            questionnaire_response_id: finalQuestionnaireResponseId || null,
           })
           .select()
           .single();
@@ -215,6 +220,57 @@ export async function POST(request: NextRequest) {
           .from("appointment_slots")
           .update({ is_available: false })
           .eq("id", finalAppointmentId);
+
+        // Link questionnaire response to appointment if present
+        if (finalQuestionnaireResponseId && appointment?.id) {
+          await supabase
+            .from("questionnaire_responses")
+            .update({ appointment_id: appointment.id })
+            .eq("id", finalQuestionnaireResponseId);
+        }
+
+        // Send confirmation email for paid booking
+        try {
+          const { data: userProfile } = await supabase
+            .from("profiles")
+            .select("name, email")
+            .eq("id", finalUserId)
+            .single();
+          const { data: expertProfile } = await supabase
+            .from("profiles")
+            .select("name")
+            .eq("id", slotData.expert_id)
+            .single();
+          let whatToExpect: string | null = null;
+          if (finalProductId) {
+            const { data: product } = await supabase
+              .from("products")
+              .select("what_to_expect")
+              .eq("id", finalProductId)
+              .single();
+            whatToExpect = product?.what_to_expect || null;
+          }
+          const dateTime = new Date(finalSlotStartTime).toLocaleString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          });
+          if (userProfile?.email) {
+            await sendBookingConfirmedEmail(
+              userProfile.email,
+              userProfile.name || "there",
+              expertProfile?.name || "Expert",
+              dateTime,
+              "To be provided",
+              whatToExpect
+            );
+          }
+        } catch (emailErr) {
+          console.warn("Failed to send booking confirmation email:", emailErr);
+        }
 
         console.log(`✅ Appointment created: ${appointment?.id} for user ${finalUserId}`);
         return NextResponse.json({

@@ -14,6 +14,8 @@ interface Product {
   price: number;
   pricing_type: "one-off" | "hourly";
   product_type?: "service" | "e-learning" | "appointment";
+  what_to_expect?: string | null;
+  meeting_location?: string | null;
   e_learning_subtype?: "online-course" | "ebook" | "ai-prompt" | "live-webinar" | "other" | null;
   course_id?: string;
   appointment_slot_id?: string;
@@ -87,6 +89,8 @@ export function ProductsManagement() {
     enrollmentOnRequest: false,
     webinarExpiryDate: "",
     webinarDateTime: "",
+    whatToExpect: "",
+    meetingLocation: "",
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
@@ -835,6 +839,12 @@ export function ProductsManagement() {
           }
         }
 
+        // Update appointment-specific fields
+        if (editingProduct.product_type === "appointment") {
+          productData.what_to_expect = formData.whatToExpect || null;
+          productData.meeting_location = formData.meetingLocation || null;
+        }
+
         // Update Stripe product if price changed and product is paid
         if (newPrice > 0 && editingProduct.price !== newPrice && stripeAccountId && editingProduct.stripe_product_id) {
           // Price changed for paid product - update Stripe product
@@ -944,6 +954,8 @@ export function ProductsManagement() {
           enrollmentOnRequest: false,
           webinarExpiryDate: "",
           webinarDateTime: "",
+          whatToExpect: "",
+          meetingLocation: "",
         });
         setShowAddForm(false);
         setEditingProduct(null);
@@ -1140,6 +1152,8 @@ export function ProductsManagement() {
               product_type: "appointment",
               payment_method: formData.payment_method || "stripe",
               contact_email: formData.payment_method === "offline" ? (formData.contact_type === "url" ? formData.contact_url : formData.contact_email) : null,
+              what_to_expect: formData.whatToExpect || null,
+              meeting_location: formData.meetingLocation || null,
             })
             .select()
             .single();
@@ -1193,26 +1207,31 @@ export function ProductsManagement() {
 
           const hasNameField = existingFields?.some(f => f.label.toLowerCase().includes("name"));
           const hasEmailField = existingFields?.some(f => f.label.toLowerCase().includes("email"));
+          const hasGoalField = existingFields?.some(f => f.label.toLowerCase().includes("main goal"));
+          const hasLinksField = existingFields?.some(f => f.label.toLowerCase().includes("relevant links"));
 
-          // Only create mandatory fields if they don't exist
-          if (!hasNameField || !hasEmailField) {
-            const defaultFields = [];
-            if (!hasNameField) {
-              defaultFields.push({ questionnaire_id: questionnaireId, field_type: "text", label: "Name", placeholder: "Enter your name", required: true, order_index: 0 });
-            }
-            if (!hasEmailField) {
-              defaultFields.push({ questionnaire_id: questionnaireId, field_type: "email", label: "Email", placeholder: "Enter your email", required: true, order_index: 1 });
-            }
+          const defaultFields = [];
+          if (!hasNameField) {
+            defaultFields.push({ questionnaire_id: questionnaireId, field_type: "text", label: "Name", placeholder: "Enter your name", required: true, order_index: 0 });
+          }
+          if (!hasEmailField) {
+            defaultFields.push({ questionnaire_id: questionnaireId, field_type: "email", label: "Email", placeholder: "Enter your email", required: true, order_index: 1 });
+          }
+          if (!hasGoalField) {
+            defaultFields.push({ questionnaire_id: questionnaireId, field_type: "textarea", label: "What is your main goal for this session?", placeholder: "Describe what you hope to achieve...", required: false, order_index: 2 });
+          }
+          if (!hasLinksField) {
+            defaultFields.push({ questionnaire_id: questionnaireId, field_type: "text", label: "Any relevant links? (LinkedIn, Portfolio, etc.)", placeholder: "Paste links here...", required: false, order_index: 3 });
+          }
 
-            if (defaultFields.length > 0) {
-              const { error: fieldsError } = await supabase
-                .from("questionnaire_fields")
-                .insert(defaultFields);
+          if (defaultFields.length > 0) {
+            const { error: fieldsError } = await supabase
+              .from("questionnaire_fields")
+              .insert(defaultFields);
 
-              if (fieldsError) {
-                console.error("Error creating questionnaire fields:", fieldsError);
-                throw new Error(`Failed to create form fields: ${fieldsError.message || "Please try again."}`);
-              }
+            if (fieldsError) {
+              console.error("Error creating questionnaire fields:", fieldsError);
+              throw new Error(`Failed to create form fields: ${fieldsError.message || "Please try again."}`);
             }
           }
 
@@ -1275,6 +1294,8 @@ export function ProductsManagement() {
         enrollmentOnRequest: false,
         webinarExpiryDate: "",
         webinarDateTime: "",
+        whatToExpect: "",
+        meetingLocation: "",
       });
       setShowAddForm(false);
       setEditingProduct(null);
@@ -1348,6 +1369,8 @@ export function ProductsManagement() {
       webinarDateTime: product.webinar_date_time 
         ? new Date(product.webinar_date_time).toISOString().slice(0, 16) // Format for datetime-local input
         : "",
+      whatToExpect: (product as Product).what_to_expect || "",
+      meetingLocation: (product as Product).meeting_location || "",
     });
     setShowAddForm(true);
   };
@@ -1546,6 +1569,8 @@ export function ProductsManagement() {
                 enrollmentOnRequest: false,
                 webinarExpiryDate: "",
                 webinarDateTime: "",
+                whatToExpect: "",
+                meetingLocation: "",
               });
             }}
             className="bg-cyber-green text-slate-900 px-4 py-2 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
@@ -1734,6 +1759,36 @@ export function ProductsManagement() {
                     </div>
                   )}
                   <p className="text-xs text-text-secondary mt-1">Upload a cover image for your course (max 5MB)</p>
+                </div>
+              </>
+            )}
+
+            {/* Appointment-specific: What to Expect & Meeting Location */}
+            {formData.product_type === "appointment" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    What to Expect
+                  </label>
+                  <RichTextEditor
+                    content={formData.whatToExpect}
+                    onChange={(html) => setFormData({ ...formData, whatToExpect: html })}
+                    placeholder="Describe what will happen on the call (agenda, topics, outcomes)..."
+                  />
+                  <p className="text-xs text-text-secondary mt-1">Tell clients exactly what to expect during the session</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-custom-text mb-2">
+                    Meeting Location
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.meetingLocation}
+                    onChange={(e) => setFormData({ ...formData, meetingLocation: e.target.value })}
+                    className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text"
+                    placeholder="e.g., Zoom Link, Google Meet, or To be provided"
+                  />
+                  <p className="text-xs text-text-secondary mt-1">Where the meeting will take place (link or placeholder)</p>
                 </div>
               </>
             )}
@@ -1943,6 +1998,8 @@ export function ProductsManagement() {
                     enrollmentOnRequest: false,
                     webinarExpiryDate: "",
                     webinarDateTime: "",
+                    whatToExpect: "",
+                    meetingLocation: "",
                   });
                 }}
                 className="px-6 py-2 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
@@ -2696,6 +2753,8 @@ export function ProductsManagement() {
                       enrollmentOnRequest: false,
                       webinarExpiryDate: "",
                       webinarDateTime: "",
+                      whatToExpect: "",
+                      meetingLocation: "",
                     });
                     fetchProducts();
                     alert("Course published successfully! Your course is now live.");

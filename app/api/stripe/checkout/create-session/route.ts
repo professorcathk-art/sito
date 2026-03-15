@@ -47,10 +47,11 @@ export async function POST(request: NextRequest) {
       connectedAccountId,
       applicationFeePercent = defaultPlatformFee, // Default from env var or 10%
       courseId,
-      appointmentId, // Can be camelCase from frontend
+      appointmentId, // Can be camelCase from frontend (actually slot id)
       slotStartTime, // Can be camelCase from frontend
       slotEndTime, // Can be camelCase from frontend
       questionnaireResponseId, // Can be camelCase from frontend
+      productId, // For appointment - product_id from slot
     } = body;
 
     // Validate required fields
@@ -140,6 +141,7 @@ export async function POST(request: NextRequest) {
       slot_start_time: slotStartTime || "",
       slot_end_time: slotEndTime || "",
       questionnaire_response_id: questionnaireResponseId || "",
+      product_id: productId || "",
     };
     
     console.log("Creating checkout session with metadata:", JSON.stringify(sessionMetadata, null, 2));

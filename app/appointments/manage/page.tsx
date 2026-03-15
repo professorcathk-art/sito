@@ -29,10 +29,14 @@ interface BookedAppointment {
   rate_per_hour: number;
   total_amount: number;
   status: string;
+  meeting_link?: string | null;
+  user_id?: string;
+  questionnaire_response_id?: string | null;
   profiles: {
     name: string;
     email: string;
   };
+  intake_responses?: Record<string, string>;
 }
 
 export default function ManageAppointmentsPage() {
@@ -57,6 +61,9 @@ export default function ManageAppointmentsPage() {
     ratePerHour: "100",
     productId: "",
   });
+  const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
+  const [meetingLinkInput, setMeetingLinkInput] = useState<Record<string, string>>({});
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -101,36 +108,69 @@ export default function ManageAppointmentsPage() {
 
       if (error) throw error;
 
-      // Fetch profiles separately
-      const userIds = Array.from(new Set((data || []).map((apt: any) => apt.user_id)));
+      const userIds = Array.from(new Set((data || []).map((apt: any) => apt.user_id).filter(Boolean)));
       let profileMap: { [key: string]: { name: string; email: string } } = {};
-      
       if (userIds.length > 0) {
         const { data: profilesData } = await supabase
           .from("profiles")
           .select("id, name, email")
           .in("id", userIds);
-        
-        if (profilesData) {
-          profilesData.forEach((profile: any) => {
-            profileMap[profile.id] = {
-              name: profile.name || "Unknown",
-              email: profile.email || "N/A",
-            };
+        profilesData?.forEach((profile: any) => {
+          profileMap[profile.id] = { name: profile.name || "Unknown", email: profile.email || "N/A" };
+        });
+      }
+
+      const responseIds = Array.from(
+        new Set((data || []).map((a: any) => a.questionnaire_response_id).filter(Boolean))
+      );
+      let responsesMap: Record<string, any> = {};
+      let fieldsMap: Record<string, Record<string, string>> = {};
+      if (responseIds.length > 0) {
+        const { data: responsesData } = await supabase
+          .from("questionnaire_responses")
+          .select("id, questionnaire_id, responses")
+          .in("id", responseIds);
+        responsesData?.forEach((r: any) => {
+          responsesMap[r.id] = r;
+        });
+        const qIds = Array.from(new Set(responsesData?.map((r: any) => r.questionnaire_id).filter(Boolean) || []));
+        if (qIds.length > 0) {
+          const { data: fieldsData } = await supabase
+            .from("questionnaire_fields")
+            .select("id, questionnaire_id, label")
+            .in("questionnaire_id", qIds);
+          fieldsData?.forEach((f: any) => {
+            if (!fieldsMap[f.questionnaire_id]) fieldsMap[f.questionnaire_id] = {};
+            fieldsMap[f.questionnaire_id][f.id] = f.label;
           });
         }
       }
 
-      const appointments = (data || []).map((apt: any) => ({
-        id: apt.id,
-        start_time: apt.start_time,
-        end_time: apt.end_time,
-        rate_per_hour: apt.rate_per_hour,
-        total_amount: apt.total_amount,
-        status: apt.status,
-        payment_intent_id: apt.payment_intent_id,
-        profiles: profileMap[apt.user_id] || { name: "Unknown", email: "N/A" },
-      }));
+      const appointments = (data || []).map((apt: any) => {
+        const resp = apt.questionnaire_response_id ? responsesMap[apt.questionnaire_response_id] : null;
+        const qId = resp?.questionnaire_id;
+        const fieldLabels = qId ? fieldsMap[qId] : {};
+        let intake_responses: Record<string, string> = {};
+        if (resp?.responses && typeof resp.responses === "object") {
+          Object.entries(resp.responses).forEach(([fieldId, value]) => {
+            const label = fieldLabels[fieldId] || fieldId;
+            intake_responses[label] = String(value ?? "");
+          });
+        }
+        return {
+          id: apt.id,
+          start_time: apt.start_time,
+          end_time: apt.end_time,
+          rate_per_hour: apt.rate_per_hour,
+          total_amount: apt.total_amount,
+          status: apt.status,
+          meeting_link: apt.meeting_link,
+          user_id: apt.user_id,
+          questionnaire_response_id: apt.questionnaire_response_id,
+          profiles: profileMap[apt.user_id] || { name: "Unknown", email: "N/A" },
+          intake_responses: Object.keys(intake_responses).length > 0 ? intake_responses : undefined,
+        };
+      });
 
       setBookedAppointments(appointments);
     } catch (err) {
@@ -607,47 +647,235 @@ export default function ManageAppointmentsPage() {
             </div>
           )}
 
-          {/* Booked Appointments Section */}
+          {/* Booked Appointments Section - Booking Control Center */}
           {activeTab === "bookings" && (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-custom-text mb-6">Booked Appointments</h2>
-            {loadingBookings ? (
-              <div className="animate-pulse space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-20 bg-surface rounded-md"></div>
-                ))}
-              </div>
-            ) : bookedAppointments.length === 0 ? (
-              <div className="bg-surface border border-border-default rounded-md p-8 text-center">
-                <p className="text-text-secondary mb-4">No appointments booked yet.</p>
-                <p className="text-text-secondary text-sm">
-                  Users will see your available slots and book them here.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {bookedAppointments.map((appointment) => (
-                  <div
-                    key={appointment.id}
-                    className="bg-surface border border-border-default rounded-md p-6"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-lg font-semibold text-custom-text mb-2">
-                          {formatDateTime(appointment.start_time)} - {formatDateTime(appointment.end_time)}
-                        </p>
-                        <p className="text-text-secondary mb-1">
-                          Booked by: {appointment.profiles?.name || "N/A"} ({appointment.profiles?.email || "N/A"})
-                        </p>
-                        <p className="text-text-secondary">
-                          ${appointment.rate_per_hour}/hour • Total: ${appointment.total_amount.toFixed(2)} • Status: {appointment.status}
-                        </p>
+              <h2 className="text-2xl font-bold text-custom-text mb-6">Booking Control Center</h2>
+              {loadingBookings ? (
+                <div className="animate-pulse space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-28 bg-slate-900 border border-slate-800 rounded-xl"></div>
+                  ))}
+                </div>
+              ) : bookedAppointments.length === 0 ? (
+                <div className="bg-[#0B0F19] border border-slate-800 rounded-xl p-8 text-center">
+                  <p className="text-slate-400 mb-4">No appointments booked yet.</p>
+                  <p className="text-slate-500 text-sm">
+                    Users will see your available slots and book them here.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {bookedAppointments.map((appointment) => {
+                    const isExpanded = expandedBookingId === appointment.id;
+                    const statusStyles =
+                      appointment.status === "pending"
+                        ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        : appointment.status === "confirmed"
+                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                          : appointment.status === "completed"
+                            ? "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                            : "bg-slate-500/10 text-slate-400 border-slate-500/20";
+                    const startDate = new Date(appointment.start_time);
+                    const expertLocalTime = startDate.toLocaleString(undefined, {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    });
+                    return (
+                      <div
+                        key={appointment.id}
+                        className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden"
+                      >
+                        <div
+                          className="p-6 cursor-pointer"
+                          onClick={() =>
+                            setExpandedBookingId(isExpanded ? null : appointment.id)
+                          }
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-4">
+                            <div>
+                              <p className="text-lg font-semibold text-white mb-1">
+                                {appointment.profiles?.name || "Unknown"}
+                              </p>
+                              <p className="text-slate-400 text-sm mb-2">
+                                {appointment.profiles?.email || "N/A"}
+                              </p>
+                              <p className="text-slate-300">
+                                {formatDateTime(appointment.start_time)} — {formatDateTime(appointment.end_time)}
+                              </p>
+                              <p className="text-slate-500 text-sm mt-1">
+                                ${appointment.rate_per_hour}/hr • ${appointment.total_amount.toFixed(2)} total
+                              </p>
+                            </div>
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium border ${statusStyles}`}
+                            >
+                              {appointment.status}
+                            </span>
+                          </div>
+                        </div>
+                        {isExpanded && (
+                          <div className="border-t border-slate-800 bg-[#0B0F19]/50 px-6 py-4 space-y-4">
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-300 mb-2">Local times</h4>
+                              <p className="text-slate-400 text-sm">
+                                Your time: {expertLocalTime}
+                              </p>
+                              <p className="text-slate-400 text-sm">
+                                Client time: {expertLocalTime} (same timezone displayed)
+                              </p>
+                            </div>
+                            {appointment.intake_responses &&
+                              Object.keys(appointment.intake_responses).length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-medium text-slate-300 mb-2">
+                                    Intake form answers
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {Object.entries(appointment.intake_responses).map(
+                                      ([label, value]) =>
+                                        value && (
+                                          <div key={label} className="text-sm">
+                                            <span className="text-slate-500">{label}:</span>{" "}
+                                            <span className="text-slate-300">{value}</span>
+                                          </div>
+                                        )
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            <div className="flex flex-wrap gap-2 pt-2">
+                              {appointment.status === "pending" && (
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    setActionLoading(appointment.id);
+                                    try {
+                                      const res = await fetch(`/api/appointments/${appointment.id}`, {
+                                        method: "PATCH",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ action: "approve" }),
+                                      });
+                                      if (res.ok) {
+                                        fetchBookedAppointments();
+                                        setExpandedBookingId(null);
+                                      } else {
+                                        const err = await res.json();
+                                        alert(err.error || "Failed to approve");
+                                      }
+                                    } finally {
+                                      setActionLoading(null);
+                                    }
+                                  }}
+                                  disabled={!!actionLoading}
+                                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg disabled:opacity-50"
+                                >
+                                  {actionLoading === appointment.id ? "..." : "Approve Booking"}
+                                </button>
+                              )}
+                              {appointment.status !== "completed" && (
+                                <>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="url"
+                                      placeholder="Paste Zoom/Meet link..."
+                                      value={meetingLinkInput[appointment.id] ?? appointment.meeting_link ?? ""}
+                                      onChange={(e) =>
+                                        setMeetingLinkInput({
+                                          ...meetingLinkInput,
+                                          [appointment.id]: e.target.value,
+                                        })
+                                      }
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 text-sm w-64"
+                                    />
+                                    <button
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        const link =
+                                          meetingLinkInput[appointment.id] ?? appointment.meeting_link;
+                                        if (!link) {
+                                          alert("Enter a meeting link first");
+                                          return;
+                                        }
+                                        setActionLoading(appointment.id);
+                                        try {
+                                          const res = await fetch(`/api/appointments/${appointment.id}`, {
+                                            method: "PATCH",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({
+                                              action: "add_meeting_link",
+                                              meeting_link: link,
+                                            }),
+                                          });
+                                          if (res.ok) {
+                                            fetchBookedAppointments();
+                                            setMeetingLinkInput((prev) => {
+                                              const next = { ...prev };
+                                              delete next[appointment.id];
+                                              return next;
+                                            });
+                                          } else {
+                                            const err = await res.json();
+                                            alert(err.error || "Failed to save link");
+                                          }
+                                        } finally {
+                                          setActionLoading(null);
+                                        }
+                                      }}
+                                      disabled={!!actionLoading}
+                                      className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg disabled:opacity-50"
+                                    >
+                                      Add Meeting Link
+                                    </button>
+                                  </div>
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (!confirm("Mark this appointment as completed?")) return;
+                                      setActionLoading(appointment.id);
+                                      try {
+                                        const res = await fetch(`/api/appointments/${appointment.id}`, {
+                                          method: "PATCH",
+                                          headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ action: "mark_completed" }),
+                                        });
+                                        if (res.ok) {
+                                          fetchBookedAppointments();
+                                          setExpandedBookingId(null);
+                                        } else {
+                                          const err = await res.json();
+                                          alert(err.error || "Failed to mark completed");
+                                        }
+                                      } finally {
+                                        setActionLoading(null);
+                                      }
+                                    }}
+                                    disabled={!!actionLoading}
+                                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg disabled:opacity-50"
+                                  >
+                                    Mark as Completed
+                                  </button>
+                                </>
+                              )}
+                              <Link
+                                href={`/messages${appointment.user_id ? `?expert=${appointment.user_id}` : ""}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg"
+                              >
+                                Message Client
+                              </Link>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
