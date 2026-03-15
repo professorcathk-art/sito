@@ -133,6 +133,7 @@ export function UnifiedStorefrontBuilder() {
     backgroundColor: string;
     backgroundImageUrl: string;
     textColor: string;
+    subheadlineColor: string;
     buttonColor: string;
     buttonTextColor: string;
     cardStyle: CardStyleId;
@@ -145,6 +146,7 @@ export function UnifiedStorefrontBuilder() {
     backgroundImageUrl: "",
     buttonStyle: "default",
     ...THEME_PRESET_VALUES.minimal,
+    subheadlineColor: THEME_PRESET_VALUES.minimal.subheadlineColor ?? THEME_PRESET_VALUES.minimal.textColor,
   });
 
   // Storefront blocks (initialized with defaults so page is never blank)
@@ -188,7 +190,7 @@ export function UnifiedStorefrontBuilder() {
               category_id, country_id, language_supported, phone_number, avatar_url, custom_slug,
               is_pro_store, storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
               storefront_font_family, storefront_background_type, storefront_background_color, storefront_card_style,
-              storefront_text_color, storefront_button_text_color, storefront_button_variant, storefront_blocks,
+              storefront_text_color, storefront_subheadline_color, storefront_button_text_color, storefront_button_variant, storefront_blocks,
               categories!profiles_category_id_fkey(name),
               countries(name)
             `)
@@ -272,6 +274,7 @@ export function UnifiedStorefrontBuilder() {
             backgroundColor: (p.storefront_background_color as string) || presetVals.backgroundColor,
             backgroundImageUrl: (presetVals.backgroundImageUrl as string) || "",
             textColor: (p.storefront_text_color as string) || presetVals.textColor,
+            subheadlineColor: (p.storefront_subheadline_color as string) || (presetVals.subheadlineColor as string) || presetVals.textColor,
             buttonColor: (p.storefront_custom_brand_color as string) || presetVals.buttonColor,
             buttonTextColor: (p.storefront_button_text_color as string) || presetVals.buttonTextColor,
             cardStyle: ((p.storefront_card_style as string) || presetVals.cardStyle) as CardStyleId,
@@ -448,6 +451,7 @@ export function UnifiedStorefrontBuilder() {
       backgroundColor: preset.backgroundColor,
       backgroundImageUrl: (preset.backgroundImageUrl as string) || "",
       textColor: preset.textColor,
+      subheadlineColor: (preset.subheadlineColor as string) || preset.textColor,
       buttonColor: preset.buttonColor,
       buttonTextColor: preset.buttonTextColor,
       fontFamily: (preset.fontFamily as FontFamilyId) || prev.fontFamily,
@@ -533,6 +537,7 @@ export function UnifiedStorefrontBuilder() {
           storefront_background_color: designSettings.backgroundColor || null,
           storefront_card_style: designSettings.cardStyle,
           storefront_text_color: designSettings.textColor || null,
+          storefront_subheadline_color: designSettings.subheadlineColor || null,
           storefront_button_text_color: designSettings.buttonTextColor || null,
           storefront_button_variant: designSettings.buttonStyle || "default",
           storefront_blocks: storefrontBlocks,
@@ -720,6 +725,7 @@ export function UnifiedStorefrontBuilder() {
                     backgroundColor: designSettings.backgroundColor,
                     backgroundImageUrl: designSettings.backgroundImageUrl || profileData.storefrontBackgroundImageUrl,
                     textColor: designSettings.textColor,
+                    subheadlineColor: designSettings.subheadlineColor,
                     buttonColor: designSettings.buttonColor,
                     buttonTextColor: designSettings.buttonTextColor,
                     fontFamily: designSettings.fontFamily,
@@ -1078,6 +1084,7 @@ function DesignTab({
     backgroundColor: string;
     backgroundImageUrl: string;
     textColor: string;
+    subheadlineColor: string;
     buttonColor: string;
     buttonTextColor: string;
     cardStyle: CardStyleId;
@@ -1094,26 +1101,86 @@ function DesignTab({
 }) {
   return (
     <div className="space-y-8">
-      {/* Themes Section - Visual preview cards */}
+      {/* Themes Section - Mini phone previews */}
       <section>
         <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Theme</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {Object.values(THEME_PRESETS).map((preset) => {
-            const isSelected = designSettings.themePreset === preset.id;
+            const themeKey = preset.id;
+            const theme = THEME_PRESET_VALUES[themeKey];
+            const isSelected = designSettings.themePreset === themeKey;
+            const bgStyle =
+              theme.backgroundColor.startsWith("conic") || theme.backgroundColor.startsWith("linear")
+                ? {
+                    background:
+                      themeKey === "pearl-silk" || themeKey === "soft-gradient"
+                        ? "conic-gradient(at top right, #fdf2f8 0%, #f8fafc 50%, #fffbeb 100%)"
+                        : theme.backgroundColor,
+                    backgroundImage: theme.backgroundImageUrl ? `url(${theme.backgroundImageUrl})` : "none",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }
+                : {
+                    backgroundColor: theme.backgroundColor,
+                    backgroundImage: theme.backgroundImageUrl ? `url(${theme.backgroundImageUrl})` : "none",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  };
+            const btnRadius =
+              theme.buttonRadius === "pill" ? "999px" : theme.buttonRadius === "rounded" ? "4px" : "0";
+            const btnStyle =
+              theme.buttonStyle === "glass"
+                ? {
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    backdropFilter: "blur(4px)",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    borderRadius: btnRadius,
+                    boxShadow: "none",
+                  }
+                : theme.buttonStyle === "neon"
+                  ? {
+                      backgroundColor: theme.buttonColor,
+                      borderRadius: btnRadius,
+                      boxShadow: `0 0 4px ${theme.buttonColor}`,
+                    }
+                  : {
+                      backgroundColor: theme.buttonColor,
+                      borderRadius: btnRadius,
+                      boxShadow: "none",
+                    };
             return (
               <button
-                key={preset.id}
+                key={themeKey}
                 type="button"
-                onClick={() => onThemeSelect(preset.id)}
-                className={`relative overflow-hidden rounded-xl border-2 transition-all text-left p-4 min-h-[88px] cursor-pointer ${
-                  isSelected ? "border-indigo-500 ring-2 ring-indigo-500/30" : "border-slate-700 hover:border-slate-600"
+                onClick={() => onThemeSelect(themeKey)}
+                className={`relative flex flex-col items-center p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                  isSelected ? "border-indigo-500 bg-indigo-500/10" : "border-slate-800 bg-slate-900/50 hover:border-slate-600"
                 }`}
               >
-                <div className={`absolute inset-0 ${preset.wrapper}`} />
-                <div className={`relative ${preset.card} p-2 mt-1`}>
-                  <div className={`h-6 ${preset.button} rounded`} />
+                <div
+                  className="w-full aspect-[1/2] rounded-lg overflow-hidden relative shadow-inner mb-3 border border-slate-700/50 flex flex-col items-center py-4 px-2 gap-2"
+                  style={bgStyle}
+                >
+                  {themeKey === "fluid-aura" && (
+                    <div className="absolute inset-0 bg-fuchsia-500/30 blur-xl mix-blend-screen pointer-events-none" aria-hidden />
+                  )}
+                  {themeKey === "midnight-glass" && (
+                    <div className="absolute inset-0 bg-indigo-900/20 blur-xl pointer-events-none -z-10" aria-hidden />
+                  )}
+                  <div className="w-6 h-6 rounded-full bg-black/20 backdrop-blur-sm border border-white/20 z-10 shrink-0" />
+                  <div
+                    className="w-12 h-1 rounded-full shrink-0 z-10"
+                    style={{ backgroundColor: theme.textColor, opacity: 0.6 }}
+                  />
+                  <div
+                    className="w-8 h-1 rounded-full shrink-0 mb-2 z-10"
+                    style={{ backgroundColor: theme.textColor, opacity: 0.4 }}
+                  />
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="w-full h-4 z-10 shrink-0" style={btnStyle} />
+                  ))}
                 </div>
-                <span className="relative block mt-2 text-sm font-medium text-slate-200">{preset.name}</span>
+                <span className="text-sm font-medium text-slate-200">{preset.name}</span>
               </button>
             );
           })}
@@ -1248,7 +1315,7 @@ function DesignTab({
             <div className="flex items-center gap-2">
               <input
                 type="color"
-                value={designSettings.textColor || "#111827"}
+                value={designSettings.textColor?.startsWith("#") ? designSettings.textColor : "#111827"}
                 onChange={(e) => onDesignChange((s) => ({ ...s, textColor: e.target.value }))}
                 className="w-10 h-10 rounded border border-slate-700 cursor-pointer flex-shrink-0"
               />
@@ -1257,6 +1324,24 @@ function DesignTab({
                 value={designSettings.textColor || ""}
                 onChange={(e) => onDesignChange((s) => ({ ...s, textColor: e.target.value }))}
                 placeholder="#111827"
+                className={`flex-1 ${INPUT_CLASS} py-2`}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Subheadline Color (tagline, link descriptions)</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={designSettings.subheadlineColor?.startsWith("#") ? designSettings.subheadlineColor : "#6B7280"}
+                onChange={(e) => onDesignChange((s) => ({ ...s, subheadlineColor: e.target.value }))}
+                className="w-10 h-10 rounded border border-slate-700 cursor-pointer flex-shrink-0"
+              />
+              <input
+                type="text"
+                value={designSettings.subheadlineColor || ""}
+                onChange={(e) => onDesignChange((s) => ({ ...s, subheadlineColor: e.target.value }))}
+                placeholder="#6B7280 or rgba(...)"
                 className={`flex-1 ${INPUT_CLASS} py-2`}
               />
             </div>
