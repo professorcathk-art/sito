@@ -146,7 +146,7 @@ export function UnifiedStorefrontBuilder() {
     backgroundImageUrl: "",
     buttonStyle: "default",
     ...THEME_PRESET_VALUES.minimal,
-    subheadlineColor: THEME_PRESET_VALUES.minimal.subheadlineColor ?? THEME_PRESET_VALUES.minimal.textColor,
+    subheadlineColor: (THEME_PRESET_VALUES.minimal as { subheadlineColor?: string }).subheadlineColor ?? THEME_PRESET_VALUES.minimal.textColor,
   });
 
   // Storefront blocks (initialized with defaults so page is never blank)
