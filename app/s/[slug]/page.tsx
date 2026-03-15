@@ -98,13 +98,15 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         .limit(20);
 
       if (productsData) {
-        products = productsData.map((p: any) => {
-          const { courses, ...rest } = p;
-          return {
-            ...rest,
-            cover_image_url: courses?.cover_image_url ?? null,
-          };
-        });
+        products = productsData
+          .filter((p: any) => p.product_type !== "appointment")
+          .map((p: any) => {
+            const { courses, ...rest } = p;
+            return {
+              ...rest,
+              cover_image_url: courses?.cover_image_url ?? null,
+            };
+          });
       }
     }
 

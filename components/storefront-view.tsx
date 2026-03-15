@@ -383,6 +383,8 @@ export function StorefrontView({
                               customBrandColor={designState.buttonColor}
                               customButtonTextColor={designState.buttonTextColor}
                               themePreset={designState.themePreset || "default"}
+                              productName={product.name}
+                              productDescription={product.description || undefined}
                             />
                           </div>
                         </div>
@@ -713,6 +715,8 @@ export function StorefrontView({
                             customBrandColor={designState.buttonColor}
                             customButtonTextColor={designState.buttonTextColor}
                             themePreset={designState.themePreset || "default"}
+                            productName={product.name}
+                            productDescription={product.description || undefined}
                           />
                         ) : (
                           <Link

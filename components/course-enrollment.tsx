@@ -790,7 +790,7 @@ export function CourseEnrollment({
           </div>
           <div className="overflow-y-auto flex-1 min-h-0 space-y-4">
             {(productName || productDescription) && (
-              <div className="pb-4 border-b border-border-default">
+              <div className="pb-4 border-b border-border-default shrink-0">
                 {productName && <h4 className="text-lg font-semibold text-custom-text mb-2">{productName}</h4>}
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-cyber-green font-semibold">
@@ -799,7 +799,7 @@ export function CourseEnrollment({
                 </div>
                 {productDescription && (
                   <div
-                    className="text-text-secondary text-sm product-preview max-h-32 overflow-y-auto"
+                    className="text-text-secondary text-sm product-preview max-h-48 overflow-y-auto overflow-x-hidden pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-600"
                     dangerouslySetInnerHTML={{ __html: productDescription }}
                   />
                 )}

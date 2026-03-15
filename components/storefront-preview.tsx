@@ -481,11 +481,6 @@ export function StorefrontPreview({
                     ))}
                   </div>
                 )}
-                {showAppointments && (
-                  <div className={`py-3 px-4 font-semibold text-center ${buttonStyleClass}`}>
-                    Book 1-on-1 Session
-                  </div>
-                )}
                 {showBlog && (
                   <div className="space-y-3">
                     <h2 className="text-lg font-semibold mb-3 text-[var(--store-text)]">Latest Posts</h2>

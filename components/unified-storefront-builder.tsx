@@ -69,6 +69,7 @@ const DEFAULT_BLOCKS: StorefrontBlock[] = [
   { id: "default-header", type: "header", order: 0, data: { ...DEFAULT_BLOCK_DATA.header } },
   { id: "default-links", type: "links", order: 1, data: { ...DEFAULT_BLOCK_DATA.links } },
   { id: "default-products", type: "products", order: 2, data: { ...DEFAULT_BLOCK_DATA.products } },
+  { id: "default-book-me", type: "book_me", order: 3, data: {} },
 ];
 
 export function UnifiedStorefrontBuilder() {
@@ -206,7 +207,7 @@ export function UnifiedStorefrontBuilder() {
         const [categoriesRes, countriesRes, productsRes] = await Promise.all([
           supabase.from("categories").select("id, name").order("name"),
           supabase.from("countries").select("id, name, code").order("name"),
-          supabase.from("products").select("id, name, price, pricing_type").eq("expert_id", user.id).limit(10),
+          supabase.from("products").select("id, name, price, pricing_type, product_type").eq("expert_id", user.id).limit(10),
         ]);
 
         if (profileRes.data) {
@@ -299,7 +300,7 @@ export function UnifiedStorefrontBuilder() {
 
         if (categoriesRes.data) setCategories(categoriesRes.data);
         if (countriesRes.data) setCountries(countriesRes.data);
-        if (productsRes.data) setProducts(productsRes.data);
+        if (productsRes.data) setProducts(productsRes.data.filter((p: { product_type?: string }) => p.product_type !== "appointment"));
       } catch (err) {
         console.error("Error loading data:", err);
       } finally {
