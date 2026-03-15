@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { CourseEnrollment } from "@/components/course-enrollment";
 import type { StorefrontBlock } from "@/types/storefront";
-import { FONT_FAMILIES, getCardCssVars } from "@/lib/storefront-theme-config";
+import { FONT_FAMILIES, getCardCssVars, getButtonStyleClasses } from "@/lib/storefront-theme-config";
 
 function getDomainFromUrl(url: string): string | null {
   try {
@@ -53,12 +53,14 @@ function LinkThumbnail({ thumbnailUrl, url, emoji }: { thumbnailUrl?: string; ur
 
 export interface StorefrontDesignState {
   backgroundColor: string;
+  backgroundImageUrl?: string;
   textColor: string;
   buttonColor: string;
   buttonTextColor: string;
   fontFamily: string;
   cardStyle: string;
   buttonRadius: string;
+  buttonStyle?: string;
   themePreset?: string;
   glowElement?: string;
 }
@@ -129,6 +131,7 @@ export function StorefrontView({
 
   const isFluidAura = designState.themePreset === "fluid-aura";
   const isPearlSilk = designState.themePreset === "pearl-silk" || designState.themePreset === "soft-gradient";
+  const effectiveBgImage = storefrontBackgroundImageUrl || designState.backgroundImageUrl;
   const cssVars = useMemo(() => {
     let card = getCardCssVars(designState.cardStyle as "flat" | "glass" | "brutalist" | "soft-shadow");
     if (isFluidAura) {
@@ -138,6 +141,8 @@ export function StorefrontView({
     }
     const btnRadius = designState.buttonRadius === "pill" ? "9999px" : designState.buttonRadius === "sharp" ? "0" : "0.5rem";
     return {
+      "--store-bg-color": isFluidAura ? "#050505" : isPearlSilk ? undefined : designState.backgroundColor,
+      "--store-bg-image": effectiveBgImage ? `url(${effectiveBgImage})` : "none",
       "--store-bg": isFluidAura ? "#050505" : isPearlSilk ? undefined : designState.backgroundColor,
       "--store-text": isFluidAura ? "#f1f5f9" : isPearlSilk ? "#1A1A1A" : designState.textColor,
       "--store-btn-bg": isFluidAura ? "rgba(255,255,255,0.1)" : isPearlSilk ? "#1A1A1A" : designState.buttonColor,
@@ -146,7 +151,7 @@ export function StorefrontView({
       "--store-card-border": card.border,
       "--store-btn-radius": btnRadius,
     } as React.CSSProperties;
-  }, [designState, isFluidAura, isPearlSilk]);
+  }, [designState, isFluidAura, isPearlSilk, effectiveBgImage]);
 
   const fontClass = FONT_FAMILIES.find((f) => f.id === designState.fontFamily)?.class || "font-store-inter";
   const fontVarMap: Record<string, string> = {
@@ -185,27 +190,37 @@ export function StorefrontView({
     const wrapperClass = isFluidAura
       ? "min-h-screen relative overflow-hidden bg-[#050505]"
       : "min-h-screen relative";
+    const hasBgImage = !!effectiveBgImage;
     const background =
-      storefrontBackgroundImageUrl
-        ? `url(${storefrontBackgroundImageUrl})`
+      hasBgImage
+        ? `url(${effectiveBgImage})`
         : isFluidAura
           ? undefined
           : isPearlSilk
             ? "conic-gradient(at top right, #fdf2f8 0%, #f8fafc 50%, #fffbeb 100%)"
             : designState.backgroundColor.startsWith("linear")
               ? designState.backgroundColor
-              : "var(--store-bg)";
+              : designState.backgroundColor.startsWith("conic")
+                ? designState.backgroundColor
+                : "var(--store-bg-color, var(--store-bg))";
+    const buttonStyleClass = getButtonStyleClasses(
+      (designState.buttonStyle as "default" | "glass" | "neon" | "organic") || "default",
+      designState.buttonColor,
+      designState.buttonTextColor,
+      designState.buttonRadius
+    );
     return (
       <div
-        className={`${wrapperClass} ${fontClass}`}
+        className={`${wrapperClass} ${fontClass} ${hasBgImage ? "bg-cover bg-center bg-fixed bg-no-repeat" : ""}`}
         style={{
           ...cssVars,
           ...(background && {
             background,
-            ...(storefrontBackgroundImageUrl && {
+            ...(hasBgImage && {
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
+              backgroundAttachment: "fixed",
             }),
           }),
           color: "var(--store-text)",
@@ -548,13 +563,14 @@ export function StorefrontView({
                 );
               }
               if (block.type === "book_me") {
+                const btnClass = isFluidAura
+                  ? "py-4 px-8 font-semibold transition-all duration-300 text-center bg-white/10 text-white border border-white/20 hover:bg-white/20 backdrop-blur-md rounded-full"
+                  : isPearlSilk
+                    ? "py-4 px-8 font-semibold transition-all duration-300 text-center bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] rounded-full shadow-lg"
+                    : `py-4 px-8 font-semibold transition-all duration-300 text-center ${buttonStyleClass}`;
                 return (
                   <section key={block.id} className="w-full flex justify-center">
-                    <Link
-                      href={`/appointments/book/${expertId}`}
-                      className={`py-4 px-8 font-semibold transition-all duration-300 text-center bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] ${isFluidAura ? "border border-white/20 hover:bg-white/20 backdrop-blur-md rounded-full" : isPearlSilk ? "hover:bg-[#2A2A2A] rounded-full shadow-lg" : "hover:opacity-90"}`}
-                      style={{ borderRadius: isFluidAura || isPearlSilk ? "9999px" : "var(--store-btn-radius)" }}
-                    >
+                    <Link href={`/appointments/book/${expertId}`} className={btnClass}>
                       Book Me
                     </Link>
                   </section>
@@ -566,8 +582,13 @@ export function StorefrontView({
             {hasAppointments && (
               <Link
                 href={`/appointments/book/${expertId}`}
-                className={`w-full py-4 px-6 font-semibold transition-all duration-300 text-center bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] ${isFluidAura ? "border border-white/20 hover:bg-white/20 backdrop-blur-md rounded-full" : isPearlSilk ? "hover:bg-[#2A2A2A] rounded-full shadow-lg" : "hover:opacity-90"}`}
-                style={{ borderRadius: isFluidAura || isPearlSilk ? "9999px" : "var(--store-btn-radius)" }}
+                className={
+                  isFluidAura
+                    ? "w-full py-4 px-6 font-semibold transition-all duration-300 text-center bg-white/10 text-white border border-white/20 hover:bg-white/20 backdrop-blur-md rounded-full"
+                    : isPearlSilk
+                      ? "w-full py-4 px-6 font-semibold transition-all duration-300 text-center bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] rounded-full shadow-lg"
+                      : `w-full py-4 px-6 font-semibold transition-all duration-300 text-center ${buttonStyleClass}`
+                }
               >
                 Book 1-on-1 Session
               </Link>

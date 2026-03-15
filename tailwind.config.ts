@@ -16,6 +16,7 @@ const config: Config = {
         "store-playfair": ["var(--font-playfair)", "serif"],
         "store-space-grotesk": ["var(--font-space-grotesk)", "sans-serif"],
         "store-dm-sans": ["var(--font-dm-sans)", "sans-serif"],
+        "store-jetbrains-mono": ["var(--font-jetbrains-mono)", "monospace"],
       },
       colors: {
         background: "var(--background)",

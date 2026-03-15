@@ -3,19 +3,23 @@
  * Themes act as presets that overwrite granular state.
  */
 
-export type ThemePresetId = "minimal" | "midnight-glass" | "neo-brutalist" | "soft-gradient" | "fluid-aura" | "pearl-silk";
-export type FontFamilyId = "inter" | "roboto" | "playfair" | "space-grotesk" | "dm-sans";
+export type ThemePresetId = "minimal" | "midnight-glass" | "neo-brutalist" | "soft-gradient" | "fluid-aura" | "pearl-silk" | "organic-earth" | "neon-cyber" | "glass-ocean" | "liquid-velvet";
+export type FontFamilyId = "inter" | "roboto" | "playfair" | "space-grotesk" | "dm-sans" | "jetbrains-mono";
 export type BackgroundType = "solid" | "gradient" | "mesh";
 export type CardStyleId = "flat" | "glass" | "brutalist" | "soft-shadow";
 export type ButtonRadiusId = "pill" | "rounded" | "sharp";
+export type ButtonStyleId = "default" | "glass" | "neon" | "organic";
 
 export interface ThemePresetValues {
   backgroundColor: string;
+  backgroundImageUrl?: string;
   textColor: string;
   buttonColor: string;
   buttonTextColor: string;
+  fontFamily?: FontFamilyId;
   cardStyle: CardStyleId;
   buttonRadius: ButtonRadiusId;
+  buttonStyle?: ButtonStyleId;
   glowElement?: string;
 }
 
@@ -70,6 +74,50 @@ export const THEME_PRESET_VALUES: Record<ThemePresetId, ThemePresetValues> = {
     cardStyle: "soft-shadow",
     buttonRadius: "pill",
   },
+  "organic-earth": {
+    backgroundColor: "#8E8B7B",
+    backgroundImageUrl: "",
+    textColor: "#FAF8F5",
+    buttonColor: "#E8E4D9",
+    buttonTextColor: "#2D2B26",
+    fontFamily: "playfair",
+    buttonStyle: "organic",
+    buttonRadius: "pill",
+    cardStyle: "flat",
+  },
+  "neon-cyber": {
+    backgroundColor: "#05010D",
+    backgroundImageUrl: "https://images.unsplash.com/photo-1555680202-c86f0e12f086?q=80&w=1080&auto=format&fit=crop",
+    textColor: "#FFFFFF",
+    buttonColor: "#FF4D00",
+    buttonTextColor: "#FFFFFF",
+    fontFamily: "jetbrains-mono",
+    buttonStyle: "neon",
+    buttonRadius: "rounded",
+    cardStyle: "glass",
+  },
+  "glass-ocean": {
+    backgroundColor: "#000000",
+    backgroundImageUrl: "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?q=80&w=1080&auto=format&fit=crop",
+    textColor: "#FFFFFF",
+    buttonColor: "rgba(255,255,255,0.2)",
+    buttonTextColor: "#FFFFFF",
+    fontFamily: "inter",
+    buttonStyle: "glass",
+    buttonRadius: "pill",
+    cardStyle: "glass",
+  },
+  "liquid-velvet": {
+    backgroundColor: "#000000",
+    backgroundImageUrl: "https://images.unsplash.com/photo-1557672172-298e090bd0f1?q=80&w=1080&auto=format&fit=crop",
+    textColor: "#FFFFFF",
+    buttonColor: "#F59E0B",
+    buttonTextColor: "#000000",
+    fontFamily: "inter",
+    buttonStyle: "glass",
+    buttonRadius: "pill",
+    cardStyle: "glass",
+  },
 };
 
 /** Legacy wrapper classes for theme preview cards in Design tab */
@@ -98,7 +146,7 @@ export const THEME_PRESETS: Record<ThemePresetId, { id: ThemePresetId; name: str
   },
   "soft-gradient": {
     id: "soft-gradient",
-    name: "Pearl Silk",
+    name: "Soft Gradient",
     wrapper: "bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-rose-50 via-slate-50 to-amber-50 text-[#1A1A1A]",
     card: "bg-white/40 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl",
     button: "bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] rounded-full shadow-lg",
@@ -117,6 +165,34 @@ export const THEME_PRESETS: Record<ThemePresetId, { id: ThemePresetId; name: str
     card: "bg-white/40 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl",
     button: "bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] rounded-full shadow-lg",
   },
+  "organic-earth": {
+    id: "organic-earth",
+    name: "Organic Earth",
+    wrapper: "bg-[#8E8B7B] text-[#FAF8F5]",
+    card: "bg-white/90 border border-black/10 rounded-2xl shadow-sm",
+    button: "bg-[#E8E4D9] text-[#2D2B26] rounded-full border-b-4 border-r-4 border-black/20",
+  },
+  "neon-cyber": {
+    id: "neon-cyber",
+    name: "Neon Cyber",
+    wrapper: "bg-[#05010D] text-white relative overflow-hidden",
+    card: "bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl",
+    button: "bg-[#FF4D00] text-white shadow-[0_0_20px_#FF4D00] border border-white/20 rounded-lg",
+  },
+  "glass-ocean": {
+    id: "glass-ocean",
+    name: "Glass Ocean",
+    wrapper: "bg-[#000000] text-white relative overflow-hidden",
+    card: "bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl",
+    button: "bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full shadow-lg",
+  },
+  "liquid-velvet": {
+    id: "liquid-velvet",
+    name: "Liquid Velvet",
+    wrapper: "bg-[#000000] text-white relative overflow-hidden",
+    card: "bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl",
+    button: "bg-[#F59E0B] text-black rounded-full shadow-lg",
+  },
 };
 
 export const FONT_FAMILIES: { id: FontFamilyId; name: string; class: string }[] = [
@@ -125,6 +201,14 @@ export const FONT_FAMILIES: { id: FontFamilyId; name: string; class: string }[] 
   { id: "playfair", name: "Playfair Display", class: "font-store-playfair" },
   { id: "space-grotesk", name: "Space Grotesk", class: "font-store-space-grotesk" },
   { id: "dm-sans", name: "DM Sans", class: "font-store-dm-sans" },
+  { id: "jetbrains-mono", name: "JetBrains Mono", class: "font-store-jetbrains-mono" },
+];
+
+export const BUTTON_STYLE_OPTIONS: { id: ButtonStyleId; name: string }[] = [
+  { id: "default", name: "Default" },
+  { id: "glass", name: "Glass" },
+  { id: "neon", name: "Neon" },
+  { id: "organic", name: "Organic" },
 ];
 
 export const CARD_STYLES: { id: CardStyleId; name: string }[] = [
@@ -139,6 +223,22 @@ export const BUTTON_RADIUS_OPTIONS: { id: ButtonRadiusId; name: string }[] = [
   { id: "rounded", name: "Rounded" },
   { id: "sharp", name: "Sharp" },
 ];
+
+/** Map button style to Tailwind classes for link/CTA buttons */
+export function getButtonStyleClasses(buttonStyle: ButtonStyleId, buttonColor: string, buttonTextColor: string, buttonRadius: string): string {
+  const radiusClass = buttonRadius === "pill" ? "rounded-full" : buttonRadius === "sharp" ? "rounded-none" : "rounded-xl";
+  switch (buttonStyle) {
+    case "glass":
+      return "bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-lg " + radiusClass;
+    case "neon":
+      return `bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] shadow-[0_0_20px_var(--store-btn-bg)] border border-white/20 ${radiusClass}`;
+    case "organic":
+      return `bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] rounded-3xl border-b-4 border-r-4 border-black/20`;
+    case "default":
+    default:
+      return `bg-[var(--store-btn-bg)] text-[var(--store-btn-text)] ${radiusClass}`;
+  }
+}
 
 /** Map card style to CSS variable values */
 export function getCardCssVars(cardStyle: CardStyleId): { bg: string; border: string } {
@@ -160,17 +260,23 @@ export function getDesignStateFromProfile(profile: {
   storefront_theme_preset?: string;
   storefront_custom_brand_color?: string;
   storefront_button_style?: string;
+  storefront_button_variant?: string;
   storefront_font_family?: string;
   storefront_background_color?: string;
+  storefront_background_image_url?: string;
   storefront_card_style?: string;
   storefront_text_color?: string;
   storefront_button_text_color?: string;
-}): { backgroundColor: string; textColor: string; buttonColor: string; buttonTextColor: string; fontFamily: string; cardStyle: string; buttonRadius: string; themePreset: string } {
+}): { backgroundColor: string; backgroundImageUrl?: string; textColor: string; buttonColor: string; buttonTextColor: string; fontFamily: string; cardStyle: string; buttonRadius: string; buttonStyle: string; themePreset: string } {
   const themeMap: Record<string, keyof typeof THEME_PRESET_VALUES> = {
     default: "minimal",
     "minimal-light": "minimal",
     "bold-dark": "midnight-glass",
     "pearl-silk": "pearl-silk",
+    "organic-earth": "organic-earth",
+    "neon-cyber": "neon-cyber",
+    "glass-ocean": "glass-ocean",
+    "liquid-velvet": "liquid-velvet",
   };
   const rawTheme = profile.storefront_theme_preset || "default";
   const themePreset = (themeMap[rawTheme] || rawTheme) as keyof typeof THEME_PRESET_VALUES;
@@ -178,11 +284,13 @@ export function getDesignStateFromProfile(profile: {
   const fontMap: Record<string, string> = {
     "font-sans": "inter",
     "font-serif": "playfair",
+    "font-mono": "jetbrains-mono",
     inter: "inter",
     roboto: "roboto",
     playfair: "playfair",
     "space-grotesk": "space-grotesk",
     "dm-sans": "dm-sans",
+    "jetbrains-mono": "jetbrains-mono",
   };
   const btnMap: Record<string, string> = {
     "rounded-full": "pill",
@@ -192,14 +300,18 @@ export function getDesignStateFromProfile(profile: {
   };
   const storedFont = profile.storefront_font_family || "font-sans";
   const storedBtn = profile.storefront_button_style || "rounded-md";
+  const buttonStyle = profile.storefront_button_variant || preset.buttonStyle || "default";
+  const backgroundImageUrl = profile.storefront_background_image_url || preset.backgroundImageUrl;
   return {
     backgroundColor: profile.storefront_background_color || preset.backgroundColor,
+    backgroundImageUrl: backgroundImageUrl || undefined,
     textColor: profile.storefront_text_color || preset.textColor,
     buttonColor: profile.storefront_custom_brand_color || preset.buttonColor,
     buttonTextColor: profile.storefront_button_text_color || preset.buttonTextColor,
-    fontFamily: fontMap[storedFont] || "inter",
+    fontFamily: fontMap[storedFont] || preset.fontFamily || "inter",
     cardStyle: profile.storefront_card_style || preset.cardStyle,
-    buttonRadius: btnMap[storedBtn] || "rounded",
+    buttonRadius: btnMap[storedBtn] || preset.buttonRadius || "rounded",
+    buttonStyle: ["default", "glass", "neon", "organic"].includes(buttonStyle) ? buttonStyle : (preset.buttonStyle || "default"),
     themePreset: themePreset in THEME_PRESET_VALUES ? themePreset : "minimal",
   };
 }

@@ -15,10 +15,12 @@ import {
   FONT_FAMILIES,
   CARD_STYLES,
   BUTTON_RADIUS_OPTIONS,
+  BUTTON_STYLE_OPTIONS,
   type ThemePresetId,
   type FontFamilyId,
   type CardStyleId,
   type ButtonRadiusId,
+  type ButtonStyleId,
 } from "@/lib/storefront-theme-config";
 
 const INPUT_CLASS =
@@ -129,15 +131,19 @@ export function UnifiedStorefrontBuilder() {
     fontFamily: FontFamilyId;
     backgroundType: "solid" | "gradient" | "mesh";
     backgroundColor: string;
+    backgroundImageUrl: string;
     textColor: string;
     buttonColor: string;
     buttonTextColor: string;
     cardStyle: CardStyleId;
     buttonRadius: ButtonRadiusId;
+    buttonStyle: ButtonStyleId;
   }>({
     themePreset: "minimal",
     fontFamily: "inter",
     backgroundType: "solid",
+    backgroundImageUrl: "",
+    buttonStyle: "default",
     ...THEME_PRESET_VALUES.minimal,
   });
 
@@ -182,7 +188,7 @@ export function UnifiedStorefrontBuilder() {
               category_id, country_id, language_supported, phone_number, avatar_url, custom_slug,
               is_pro_store, storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
               storefront_font_family, storefront_background_type, storefront_background_color, storefront_card_style,
-              storefront_text_color, storefront_button_text_color, storefront_blocks,
+              storefront_text_color, storefront_button_text_color, storefront_button_variant, storefront_blocks,
               categories!profiles_category_id_fkey(name),
               countries(name)
             `)
@@ -231,6 +237,10 @@ export function UnifiedStorefrontBuilder() {
             "minimal-light": "minimal",
             "bold-dark": "midnight-glass",
             "soft-gradient": "pearl-silk",
+            "organic-earth": "organic-earth",
+            "neon-cyber": "neon-cyber",
+            "glass-ocean": "glass-ocean",
+            "liquid-velvet": "liquid-velvet",
           };
           const rawTheme = (p.storefront_theme_preset as string) || "default";
           const themePreset = (themeMap[rawTheme] ?? (THEME_PRESETS[rawTheme as ThemePresetId] ? rawTheme : "minimal")) as ThemePresetId;
@@ -238,12 +248,13 @@ export function UnifiedStorefrontBuilder() {
           const fontMap: Record<string, FontFamilyId> = {
             "font-sans": "inter",
             "font-serif": "playfair",
-            "font-mono": "inter",
+            "font-mono": "jetbrains-mono",
             inter: "inter",
             roboto: "roboto",
             playfair: "playfair",
             "space-grotesk": "space-grotesk",
             "dm-sans": "dm-sans",
+            "jetbrains-mono": "jetbrains-mono",
           };
           const btnStyleToRadius: Record<string, ButtonRadiusId> = {
             "rounded-full": "pill",
@@ -253,16 +264,19 @@ export function UnifiedStorefrontBuilder() {
           };
           const storedFont = (p.storefront_font_family as string) || "font-sans";
           const storedBtn = (p.storefront_button_style as string) || "rounded-md";
+          const storedBtnVariant = (p.storefront_button_variant as string) || presetVals.buttonStyle || "default";
           setDesignSettings({
             themePreset,
-            fontFamily: (fontMap[storedFont] || "inter") as FontFamilyId,
+            fontFamily: (fontMap[storedFont] || presetVals.fontFamily || "inter") as FontFamilyId,
             backgroundType: ((p.storefront_background_type as string) || "solid") as "solid" | "gradient" | "mesh",
             backgroundColor: (p.storefront_background_color as string) || presetVals.backgroundColor,
+            backgroundImageUrl: (presetVals.backgroundImageUrl as string) || "",
             textColor: (p.storefront_text_color as string) || presetVals.textColor,
             buttonColor: (p.storefront_custom_brand_color as string) || presetVals.buttonColor,
             buttonTextColor: (p.storefront_button_text_color as string) || presetVals.buttonTextColor,
             cardStyle: ((p.storefront_card_style as string) || presetVals.cardStyle) as CardStyleId,
-            buttonRadius: (btnStyleToRadius[storedBtn] || "rounded") as ButtonRadiusId,
+            buttonRadius: (btnStyleToRadius[storedBtn] || presetVals.buttonRadius || "rounded") as ButtonRadiusId,
+            buttonStyle: (["default", "glass", "neon", "organic"].includes(storedBtnVariant) ? storedBtnVariant : presetVals.buttonStyle || "default") as ButtonStyleId,
           });
           const dbBlocks = (p.storefront_blocks as StorefrontBlock[]) || [];
           setStorefrontBlocks(
@@ -432,11 +446,14 @@ export function UnifiedStorefrontBuilder() {
       ...prev,
       themePreset: theme,
       backgroundColor: preset.backgroundColor,
+      backgroundImageUrl: (preset.backgroundImageUrl as string) || "",
       textColor: preset.textColor,
       buttonColor: preset.buttonColor,
       buttonTextColor: preset.buttonTextColor,
+      fontFamily: (preset.fontFamily as FontFamilyId) || prev.fontFamily,
       cardStyle: preset.cardStyle,
       buttonRadius: preset.buttonRadius,
+      buttonStyle: (preset.buttonStyle as ButtonStyleId) || "default",
     }));
   };
 
@@ -517,6 +534,7 @@ export function UnifiedStorefrontBuilder() {
           storefront_card_style: designSettings.cardStyle,
           storefront_text_color: designSettings.textColor || null,
           storefront_button_text_color: designSettings.buttonTextColor || null,
+          storefront_button_variant: designSettings.buttonStyle || "default",
           storefront_blocks: storefrontBlocks,
           updated_at: new Date().toISOString(),
         }, { onConflict: "id" });
@@ -652,6 +670,10 @@ export function UnifiedStorefrontBuilder() {
                     isPro={isPro}
                     onThemeSelect={handleThemeSelect}
                     onDesignChange={setDesignSettings}
+                    onBackgroundUpload={handleBackgroundUpload}
+                    uploadingBackground={uploadingBackground}
+                    backgroundImageUrl={profileData.storefrontBackgroundImageUrl}
+                    backgroundFileInputRef={backgroundFileInputRef}
                   />
                 )}
 
@@ -696,12 +718,14 @@ export function UnifiedStorefrontBuilder() {
               <StorefrontPreview
                   designState={{
                     backgroundColor: designSettings.backgroundColor,
+                    backgroundImageUrl: designSettings.backgroundImageUrl || profileData.storefrontBackgroundImageUrl,
                     textColor: designSettings.textColor,
                     buttonColor: designSettings.buttonColor,
                     buttonTextColor: designSettings.buttonTextColor,
                     fontFamily: designSettings.fontFamily,
                     cardStyle: designSettings.cardStyle,
                     buttonRadius: designSettings.buttonRadius,
+                    buttonStyle: designSettings.buttonStyle,
                     themePreset: designSettings.themePreset,
                     glowElement: THEME_PRESET_VALUES[designSettings.themePreset]?.glowElement,
                   }}
@@ -1042,21 +1066,31 @@ function DesignTab({
   isPro,
   onThemeSelect,
   onDesignChange,
+  onBackgroundUpload,
+  uploadingBackground,
+  backgroundImageUrl,
+  backgroundFileInputRef,
 }: {
   designSettings: {
     themePreset: ThemePresetId;
     fontFamily: FontFamilyId;
     backgroundType: "solid" | "gradient" | "mesh";
     backgroundColor: string;
+    backgroundImageUrl: string;
     textColor: string;
     buttonColor: string;
     buttonTextColor: string;
     cardStyle: CardStyleId;
     buttonRadius: ButtonRadiusId;
+    buttonStyle: ButtonStyleId;
   };
   isPro: boolean;
   onThemeSelect: (theme: ThemePresetId) => void;
   onDesignChange: React.Dispatch<React.SetStateAction<typeof designSettings>>;
+  onBackgroundUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  uploadingBackground?: boolean;
+  backgroundImageUrl?: string;
+  backgroundFileInputRef?: React.RefObject<HTMLInputElement>;
 }) {
   return (
     <div className="space-y-8">
@@ -1064,9 +1098,7 @@ function DesignTab({
       <section>
         <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Theme</h3>
         <div className="grid grid-cols-2 gap-3">
-          {Object.values(THEME_PRESETS)
-            .filter((preset) => preset.id !== "soft-gradient")
-            .map((preset) => {
+          {Object.values(THEME_PRESETS).map((preset) => {
             const isSelected = designSettings.themePreset === preset.id;
             return (
               <button
@@ -1107,22 +1139,45 @@ function DesignTab({
       {/* Background Section */}
       <section>
         <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Background</h3>
-        <div className="flex items-center gap-3">
-          {designSettings.backgroundColor?.startsWith("#") && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            {designSettings.backgroundColor?.startsWith("#") && (
+              <input
+                type="color"
+                value={designSettings.backgroundColor || "#FAFAFA"}
+                onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value }))}
+                className="w-12 h-12 rounded-lg border border-slate-700 cursor-pointer flex-shrink-0"
+              />
+            )}
             <input
-              type="color"
-              value={designSettings.backgroundColor || "#FAFAFA"}
-              onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value }))}
-              className="w-12 h-12 rounded-lg border border-slate-700 cursor-pointer flex-shrink-0"
+              type="text"
+              value={designSettings.backgroundColor || ""}
+              onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value || THEME_PRESET_VALUES.minimal.backgroundColor }))}
+              placeholder="#FAFAFA or linear-gradient(...)"
+              className={`flex-1 ${INPUT_CLASS} py-2`}
             />
-          )}
-          <input
-            type="text"
-            value={designSettings.backgroundColor || ""}
-            onChange={(e) => onDesignChange((s) => ({ ...s, backgroundColor: e.target.value || THEME_PRESET_VALUES.minimal.backgroundColor }))}
-            placeholder="#FAFAFA or linear-gradient(...)"
-            className={`flex-1 ${INPUT_CLASS} py-2`}
-          />
+          </div>
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Upload Background Image</label>
+            <div className="flex items-center gap-4">
+              {backgroundImageUrl && (
+                <img src={backgroundImageUrl} alt="Background" className="w-24 h-16 rounded object-cover border-2 border-slate-700" />
+              )}
+              {onBackgroundUpload && backgroundFileInputRef && (
+                <div>
+                  <input ref={backgroundFileInputRef} type="file" accept="image/*" onChange={onBackgroundUpload} className="hidden" />
+                  <button
+                    type="button"
+                    onClick={() => backgroundFileInputRef.current?.click()}
+                    disabled={uploadingBackground}
+                    className="px-4 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg text-sm hover:bg-slate-700 disabled:opacity-50"
+                  >
+                    {uploadingBackground ? "Uploading..." : backgroundImageUrl ? "Change" : "Upload"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1157,6 +1212,23 @@ function DesignTab({
                   onClick={() => onDesignChange((s) => ({ ...s, buttonRadius: b.id }))}
                   className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
                     designSettings.buttonRadius === b.id ? "border-indigo-500 bg-indigo-500/10 text-slate-50" : "border-slate-700 text-slate-400 hover:border-slate-600"
+                  }`}
+                >
+                  {b.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm text-slate-400 mb-2">Button Style</label>
+            <div className="flex flex-wrap gap-2">
+              {BUTTON_STYLE_OPTIONS.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => onDesignChange((s) => ({ ...s, buttonStyle: b.id }))}
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    designSettings.buttonStyle === b.id ? "border-indigo-500 bg-indigo-500/10 text-slate-50" : "border-slate-700 text-slate-400 hover:border-slate-600"
                   }`}
                 >
                   {b.name}

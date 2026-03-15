@@ -7,12 +7,14 @@ import { FONT_FAMILIES, getCardCssVars, THEME_PRESET_VALUES } from "@/lib/storef
 
 export interface DesignState {
   backgroundColor: string;
+  backgroundImageUrl?: string;
   textColor: string;
   buttonColor: string;
   buttonTextColor: string;
   fontFamily: string;
   cardStyle: string;
   buttonRadius: string;
+  buttonStyle?: string;
   themePreset?: string;
   glowElement?: string;
 }
@@ -323,15 +325,20 @@ export function StorefrontPreview({
   }, [designState, themePreset]);
 
   const backgroundStyle = useMemo(() => {
+    const bgImage = (designState as { backgroundImageUrl?: string }).backgroundImageUrl;
+    if (bgImage) return `url(${bgImage})`;
     if (isFluidAura) return "#050505";
     if (isPearlSilk) return "conic-gradient(at top right, #fdf2f8 0%, #f8fafc 50%, #fffbeb 100%)";
     if (isMidnightGlass) return "#0A0A0A";
     if (themePreset === "minimal") return "#FAFAFA";
     if (themePreset === "neo-brutalist") return "#FEF08A";
+    if (themePreset === "organic-earth") return "#8E8B7B";
+    if (themePreset === "neon-cyber") return "#05010D";
+    if (themePreset === "glass-ocean" || themePreset === "liquid-velvet") return "#000000";
     if (designState.backgroundColor.startsWith("linear") || designState.backgroundColor.startsWith("conic")) return designState.backgroundColor;
     if (designState.backgroundColor.startsWith("#")) return designState.backgroundColor;
     return "var(--store-bg)";
-  }, [designState.backgroundColor, isFluidAura, isPearlSilk, isMidnightGlass, themePreset]);
+  }, [designState, isFluidAura, isPearlSilk, isMidnightGlass, themePreset]);
 
   const fontClass = FONT_FAMILIES.find((f) => f.id === designState.fontFamily)?.class || "font-store-inter";
   const fontVarMap: Record<string, string> = {
@@ -340,6 +347,7 @@ export function StorefrontPreview({
     playfair: "var(--font-playfair)",
     "space-grotesk": "var(--font-space-grotesk)",
     "dm-sans": "var(--font-dm-sans)",
+    "jetbrains-mono": "var(--font-jetbrains-mono)",
   };
   const fontFamilyStyle = fontVarMap[designState.fontFamily] || "var(--font-inter)";
 
@@ -352,6 +360,8 @@ export function StorefrontPreview({
           style={{
             ...cssVars,
             background: backgroundStyle,
+            backgroundSize: (designState as { backgroundImageUrl?: string }).backgroundImageUrl ? "cover" : undefined,
+            backgroundPosition: (designState as { backgroundImageUrl?: string }).backgroundImageUrl ? "center" : undefined,
             color: "var(--store-text)",
             fontFamily: fontFamilyStyle,
           }}

@@ -32,6 +32,7 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         storefront_card_style,
         storefront_text_color,
         storefront_button_text_color,
+        storefront_button_variant,
         storefront_custom_links,
         storefront_show_products,
         storefront_show_appointments,

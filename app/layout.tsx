@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, Roboto, Space_Grotesk, DM_Sans } from "next/font/google";
+import { Inter, Playfair_Display, Roboto, Space_Grotesk, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProviderWrapper } from "@/components/auth-provider-wrapper";
 
@@ -34,6 +34,12 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Sito - Global Industry Experts Directory",
   description: "Find industry experts to guide your career path, solve problems, and provide professional advice",
@@ -52,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${spaceGrotesk.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${spaceGrotesk.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
         <AuthProviderWrapper>{children}</AuthProviderWrapper>
       </body>
