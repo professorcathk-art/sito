@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -20,7 +21,31 @@ export function RegisterForm() {
   }, [searchParams]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailExists, setEmailExists] = useState<boolean | null>(null);
   const supabase = createClient();
+
+  const checkEmailExists = async (emailToCheck: string) => {
+    if (!emailToCheck || !emailToCheck.includes("@")) {
+      setEmailExists(null);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/check-email?email=${encodeURIComponent(emailToCheck)}`);
+      const data = await res.json();
+      setEmailExists(!!data.exists);
+    } catch {
+      setEmailExists(null);
+    }
+  };
+
+  useEffect(() => {
+    if (formData.email) {
+      const t = setTimeout(() => checkEmailExists(formData.email), 500);
+      return () => clearTimeout(t);
+    } else {
+      setEmailExists(null);
+    }
+  }, [formData.email]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -32,6 +57,11 @@ export function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (emailExists) {
+      setError("An account with this email already exists. Please sign in instead.");
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
@@ -184,6 +214,17 @@ export function RegisterForm() {
           className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:border-white/20 focus:ring-1 focus:ring-white/20 outline-none transition-all text-text-primary placeholder-text-secondary"
           placeholder="you@example.com"
         />
+        {emailExists && (
+          <p className="mt-2 text-sm text-amber-400">
+            An account with this email already exists.{" "}
+            <Link
+              href={`/login?redirect=${encodeURIComponent(searchParams.get("redirect") || "/dashboard")}&email=${encodeURIComponent(formData.email)}`}
+              className="text-cyber-green font-semibold hover:underline"
+            >
+              Sign in instead
+            </Link>
+          </p>
+        )}
       </div>
       <div className="mb-4">
         <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-2">
@@ -237,16 +278,20 @@ export function RegisterForm() {
         onClick={async () => {
           const fromPayment = searchParams.get("from") === "payment";
           const typeParam = searchParams.get("type");
-          const dest = fromPayment
-            ? (typeParam === "appointment" ? "/appointments/manage?tab=my-bookings" : "/courses/manage")
-            : "/onboarding";
-          const oauthRedirect = fromPayment
-            ? `/complete-purchase?dest=${encodeURIComponent(dest)}`
-            : dest;
+          const redirectParam = searchParams.get("redirect");
+          let oauthRedirect: string;
+          if (redirectParam) {
+            oauthRedirect = redirectParam;
+          } else if (fromPayment) {
+            const dest = typeParam === "appointment" ? "/appointments/manage?tab=my-bookings" : "/courses/manage";
+            oauthRedirect = `/complete-purchase?dest=${encodeURIComponent(dest)}`;
+          } else {
+            oauthRedirect = "/onboarding";
+          }
           const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-              redirectTo: `${window.location.origin}${oauthRedirect}`,
+              redirectTo: `${window.location.origin}${oauthRedirect.startsWith("/") ? oauthRedirect : `/${oauthRedirect}`}`,
             },
           });
           if (error) {

@@ -35,6 +35,7 @@ interface BookingModalProps {
     pricing_type?: string;
   } | null;
   onClose: () => void;
+  initialSlotId?: string | null;
 }
 
 function calculateDuration(start: string, end: string): number {
@@ -48,14 +49,17 @@ function calculateTotal(ratePerHour: number, durationMinutes: number): number {
   return (ratePerHour / 60) * durationMinutes;
 }
 
+const PENDING_BOOKING_KEY = "sito_pending_booking";
+
 export function BookingModal({
   expertId,
   expertName,
   product: initialProduct,
   onClose,
+  initialSlotId,
 }: BookingModalProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const supabase = createClient();
 
   const [step, setStep] = useState<1 | 2>(1);
@@ -74,6 +78,30 @@ export function BookingModal({
     if (!expertId) return;
     fetchSlotsAndProduct();
   }, [expertId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (initialSlotId && slots.length > 0 && !selectedSlot) {
+      const slot = slots.find((s) => s.id === initialSlotId);
+      if (slot) {
+        setSelectedSlot(slot);
+        const d = new Date(slot.start_time);
+        setSelectedDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+        setStep(2);
+        if (typeof window !== "undefined") {
+          try {
+            const saved = sessionStorage.getItem(PENDING_BOOKING_KEY);
+            if (saved) {
+              const data = JSON.parse(saved);
+              if (data.formData) setFormData(data.formData);
+              sessionStorage.removeItem(PENDING_BOOKING_KEY);
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    }
+  }, [initialSlotId, slots, selectedSlot]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSlotsAndProduct = async () => {
     setLoading(true);
@@ -215,9 +243,16 @@ export function BookingModal({
       }
 
       if (totalAmount <= 0) {
-        if (!user) {
-          alert("Please create an account to complete your free booking.");
-          router.push(`/register?redirect=${encodeURIComponent(window.location.pathname)}`);
+        if (!authLoading && !user) {
+          sessionStorage.setItem(
+            PENDING_BOOKING_KEY,
+            JSON.stringify({ expertId, slotId: selectedSlot.id, slotStart: selectedSlot.start_time, slotEnd: selectedSlot.end_time, productId, formData })
+          );
+          router.push(`/login?redirect=${encodeURIComponent(`${window.location.pathname}?openBooking=1`)}`);
+          setSubmitting(false);
+          return;
+        }
+        if (authLoading || !user) {
           setSubmitting(false);
           return;
         }
@@ -280,9 +315,16 @@ export function BookingModal({
       const { data: expertProfile } = await supabase.from("profiles").select("stripe_connect_account_id, name, email").eq("id", expertId).single();
       const connectedAccountId = expertProfile?.stripe_connect_account_id;
       if (!connectedAccountId) {
-        if (!user) {
-          alert("Please create an account to complete your booking. Payment will be settled with the expert after they confirm.");
-          router.push(`/register?redirect=${encodeURIComponent(window.location.pathname)}`);
+        if (!authLoading && !user) {
+          sessionStorage.setItem(
+            PENDING_BOOKING_KEY,
+            JSON.stringify({ expertId, slotId: selectedSlot.id, slotStart: selectedSlot.start_time, slotEnd: selectedSlot.end_time, productId, formData, questionnaireResponseId })
+          );
+          router.push(`/login?redirect=${encodeURIComponent(`${window.location.pathname}?openBooking=1`)}`);
+          setSubmitting(false);
+          return;
+        }
+        if (authLoading || !user) {
           setSubmitting(false);
           return;
         }
@@ -393,9 +435,16 @@ export function BookingModal({
       if (data.url) {
         window.location.href = data.url;
       } else if (data.code === "STRIPE_SETUP_INCOMPLETE") {
-        if (!user) {
-          alert("Please create an account to complete your booking. Payment will be settled with the expert after they confirm.");
-          router.push(`/register?redirect=${encodeURIComponent(window.location.pathname)}`);
+        if (!authLoading && !user) {
+          sessionStorage.setItem(
+            PENDING_BOOKING_KEY,
+            JSON.stringify({ expertId, slotId: selectedSlot.id, slotStart: selectedSlot.start_time, slotEnd: selectedSlot.end_time, productId, formData, questionnaireResponseId })
+          );
+          router.push(`/login?redirect=${encodeURIComponent(`${window.location.pathname}?openBooking=1`)}`);
+          setSubmitting(false);
+          return;
+        }
+        if (authLoading || !user) {
           setSubmitting(false);
           return;
         }

@@ -86,14 +86,26 @@ Post-checkout flow for guests: **checkout → sign up/sign in → access course 
 1. **New user, course purchase**
    - Guest pays for course → access-purchase → create account → see course in classroom
 
-2. **Existing user, course purchase**
+2. **Existing user, course purchase (email + password)**
    - Guest pays for course → access-purchase → sign in → see course in classroom
 
-3. **New user, appointment purchase**
+3. **Existing user, course purchase (Google Sign In)**
+   - Guest pays for course → access-purchase → Sign In → Google OAuth → complete-purchase → fulfill → see course in classroom
+
+4. **New user, appointment purchase**
    - Guest pays for appointment → access-purchase → create account → see booking in My Bookings
 
-4. **Free course guest**
+5. **Free course guest**
    - Guest enrolls in free course → access-purchase → create account → see course in classroom
 
-5. **Email confirmation**
+6. **Booking modal – logged-in user**
+   - User with account selects slot → Proceed to Payment → should NOT see "create account" (expert without Stripe: confirm dialog)
+
+7. **Booking modal – guest, state preserved**
+   - Guest selects slot → Proceed to Payment → redirect to login (not register) → sign in → return with slot/form restored
+
+8. **Register – existing email**
+   - User enters email that has account → "Sign in instead" shown → prevented from signing up
+
+9. **Email confirmation**
    - If Supabase requires email confirmation, user may need to confirm before fulfill runs. Consider testing with confirmation disabled for dev.

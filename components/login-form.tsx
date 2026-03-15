@@ -102,10 +102,12 @@ export function LoginForm({ redirect, email: initialEmail }: { redirect?: string
         type="button"
         onClick={async () => {
           const supabaseClient = createClient();
+          const redirectUrl = redirect ? decodeURIComponent(redirect) : "/dashboard";
+          const fullRedirect = redirectUrl.startsWith("http") ? redirectUrl : `${window.location.origin}${redirectUrl.startsWith("/") ? "" : "/"}${redirectUrl}`;
           const { error } = await supabaseClient.auth.signInWithOAuth({
             provider: "google",
             options: {
-              redirectTo: `${window.location.origin}/dashboard`,
+              redirectTo: fullRedirect,
             },
           });
           if (error) {

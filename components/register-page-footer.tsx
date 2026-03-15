@@ -7,13 +7,19 @@ export function RegisterPageFooter() {
   const searchParams = useSearchParams();
   const fromPayment = searchParams.get("from") === "payment";
   const type = searchParams.get("type");
+  const redirect = searchParams.get("redirect");
+  const email = searchParams.get("email");
   const loginRedirect =
-    fromPayment && type === "appointment"
-      ? "/appointments/manage?tab=my-bookings"
-      : fromPayment && type === "course"
-        ? "/courses/manage"
-        : undefined;
-  const loginHref = loginRedirect ? `/login?redirect=${encodeURIComponent(loginRedirect)}` : "/login";
+    redirect
+      ? redirect
+      : fromPayment && type === "appointment"
+        ? "/appointments/manage?tab=my-bookings"
+        : fromPayment && type === "course"
+          ? "/courses/manage"
+          : undefined;
+  const loginHref = loginRedirect
+    ? `/login?redirect=${encodeURIComponent(loginRedirect)}${email ? `&email=${encodeURIComponent(email)}` : ""}`
+    : "/login";
 
   return (
     <p className="text-center mt-6 text-text-secondary">

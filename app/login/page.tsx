@@ -23,7 +23,10 @@ function LoginPageContent() {
         <LoginForm redirect={redirect || undefined} email={email || undefined} />
         <p className="text-center mt-6 text-text-secondary">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-cyber-green font-semibold hover:text-white hover:underline">
+          <Link
+            href={redirect ? `/register?redirect=${encodeURIComponent(redirect)}${email ? `&email=${encodeURIComponent(email)}` : ""}` : "/register"}
+            className="text-cyber-green font-semibold hover:text-white hover:underline"
+          >
             Sign up
           </Link>
         </p>

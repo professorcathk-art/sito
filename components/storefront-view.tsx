@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
@@ -130,7 +131,28 @@ export function StorefrontView({
 }: StorefrontViewProps) {
   const { user } = useAuth();
   const supabase = createClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [openBookingModal, setOpenBookingModal] = useState(false);
+  const [initialSlotId, setInitialSlotId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get("openBooking") === "1") {
+      try {
+        const saved = typeof window !== "undefined" ? sessionStorage.getItem("sito_pending_booking") : null;
+        if (saved) {
+          const data = JSON.parse(saved);
+          if (data.slotId && data.expertId === expertId) {
+            setInitialSlotId(data.slotId);
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      setOpenBookingModal(true);
+      router.replace(window.location.pathname, { scroll: false });
+    }
+  }, [searchParams, expertId, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isFluidAura = designState.themePreset === "fluid-aura";
   const isPearlSilk = designState.themePreset === "pearl-silk" || designState.themePreset === "soft-gradient";
@@ -610,7 +632,8 @@ export function StorefrontView({
             expertId={expertId}
             expertName={expertName}
             product={null}
-            onClose={() => setOpenBookingModal(false)}
+            onClose={() => { setOpenBookingModal(false); setInitialSlotId(null); }}
+            initialSlotId={initialSlotId}
           />
         )}
       </div>
@@ -764,7 +787,8 @@ export function StorefrontView({
           expertId={expertId}
           expertName={expertName}
           product={null}
-          onClose={() => setOpenBookingModal(false)}
+          onClose={() => { setOpenBookingModal(false); setInitialSlotId(null); }}
+          initialSlotId={initialSlotId}
         />
       )}
     </div>
