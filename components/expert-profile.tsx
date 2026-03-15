@@ -67,6 +67,7 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [questionnaireId, setQuestionnaireId] = useState<string | null>(null);
   const [currentProductForInterest, setCurrentProductForInterest] = useState<string | null>(null);
+  const [openQuestionnaireProductId, setOpenQuestionnaireProductId] = useState<string | null>(null);
   const [hasBlogPosts, setHasBlogPosts] = useState<boolean | null>(null);
   const supabase = createClient();
   const { user } = useAuth();
@@ -649,6 +650,12 @@ export function ExpertProfile({ expertId }: { expertId: string }) {
                           currentUserId={user?.id}
                           enrollmentOnRequest={product.enrollment_on_request === true}
                           returnUrl={typeof window !== 'undefined' ? window.location.pathname + window.location.search : undefined}
+                          productId={product.id}
+                          openQuestionnaireProductId={openQuestionnaireProductId}
+                          onRequestOpenQuestionnaire={setOpenQuestionnaireProductId}
+                          onCloseQuestionnaire={() => setOpenQuestionnaireProductId(null)}
+                          productName={product.name}
+                          productDescription={product.description}
                         />
                       </div>
                     )}

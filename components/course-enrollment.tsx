@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,18 @@ interface CourseEnrollmentProps {
   /** When used in storefront: button text color from design */
   customButtonTextColor?: string;
   themePreset?: string;
+  /** When in multi-product context: product id for single-modal control */
+  productId?: string;
+  /** Parent-controlled: which product's questionnaire is open (only that one shows) */
+  openQuestionnaireProductId?: string | null;
+  /** Called when user requests to open questionnaire - parent should set openQuestionnaireProductId */
+  onRequestOpenQuestionnaire?: (productId: string) => void;
+  /** Called when questionnaire modal closes */
+  onCloseQuestionnaire?: () => void;
+  /** Product name to show above form in modal */
+  productName?: string;
+  /** Product description (HTML) to show above form in modal */
+  productDescription?: string;
 }
 
 function isLightColor(hex: string): boolean {
@@ -42,6 +55,12 @@ export function CourseEnrollment({
   customBrandColor,
   customButtonTextColor,
   themePreset,
+  productId,
+  openQuestionnaireProductId,
+  onRequestOpenQuestionnaire,
+  onCloseQuestionnaire,
+  productName,
+  productDescription,
 }: CourseEnrollmentProps) {
   // Ensure boolean value
   const isEnrollmentOnRequest = enrollmentOnRequest === true;
@@ -174,6 +193,11 @@ export function CourseEnrollment({
       if (!product?.id) {
         alert("Product not found for this course. Please contact the expert.");
         return;
+      }
+
+      // Single-modal: claim modal for this product before async (prevents stacking)
+      if (onRequestOpenQuestionnaire) {
+        onRequestOpenQuestionnaire(product.id);
       }
 
       // Check if questionnaire exists for this product (linked by product_id)
@@ -347,6 +371,7 @@ export function CourseEnrollment({
     } finally {
       setProcessing(false);
       setShowQuestionnaire(false);
+      onCloseQuestionnaire?.();
     }
   };
 
@@ -409,6 +434,11 @@ export function CourseEnrollment({
         alert("Product not found for this course. Please contact the expert.");
         setProcessing(false);
         return;
+      }
+
+      // Single-modal: claim modal for this product before async (prevents stacking)
+      if (productId && onRequestOpenQuestionnaire) {
+        onRequestOpenQuestionnaire(productId);
       }
 
       // Check if questionnaire exists for this product (linked by product_id)
@@ -651,6 +681,7 @@ export function CourseEnrollment({
     } finally {
       setProcessing(false);
       setShowQuestionnaire(false);
+      onCloseQuestionnaire?.();
     }
   };
 
@@ -727,38 +758,70 @@ export function CourseEnrollment({
     );
   }
 
-  // Show questionnaire form as modal overlay
-  if (showQuestionnaire && questionnaireId) {
-    return (
-      <>
-        {/* Modal Overlay */}
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-dark-green-800/95 border border-border-default rounded-md p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-custom-text">
-                {questionnaireType === "interest" ? "Register Interest" : "Get it now"}
-              </h3>
-              <button
-                onClick={() => setShowQuestionnaire(false)}
-                className="text-text-secondary hover:text-custom-text transition-colors"
-                aria-label="Close"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+  // Only show modal if we're the active one (when parent controls) or always (single-product)
+  const effectiveShow =
+    showQuestionnaire &&
+    questionnaireId &&
+    (!openQuestionnaireProductId || openQuestionnaireProductId === productId);
+
+  const handleCloseModal = () => {
+    setShowQuestionnaire(false);
+    onCloseQuestionnaire?.();
+  };
+
+  // Show questionnaire form as modal overlay - use portal + high z-index so it's above product tiles
+  if (effectiveShow && questionnaireId) {
+    const modalContent = (
+      <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-[9999] p-4">
+        <div className="bg-dark-green-800/95 border border-border-default rounded-md p-6 md:p-8 w-full max-w-2xl max-h-[90vh] flex flex-col">
+          <div className="flex items-center justify-between mb-4 shrink-0">
+            <h3 className="text-2xl font-bold text-custom-text">
+              {questionnaireType === "interest" ? "Register Interest" : "Get it now"}
+            </h3>
+            <button
+              onClick={handleCloseModal}
+              className="text-text-secondary hover:text-custom-text transition-colors"
+              aria-label="Close"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="overflow-y-auto flex-1 min-h-0 space-y-4">
+            {(productName || productDescription) && (
+              <div className="pb-4 border-b border-border-default">
+                {productName && <h4 className="text-lg font-semibold text-custom-text mb-2">{productName}</h4>}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-cyber-green font-semibold">
+                    {isFree ? "Free" : `$${coursePrice}`}
+                  </span>
+                </div>
+                {productDescription && (
+                  <div
+                    className="text-text-secondary text-sm product-preview max-h-32 overflow-y-auto"
+                    dangerouslySetInnerHTML={{ __html: productDescription }}
+                  />
+                )}
+              </div>
+            )}
             <QuestionnaireForm
               questionnaireId={questionnaireId}
               onSubmit={handleQuestionnaireSubmit}
               onCancel={() => {
-                setShowQuestionnaire(false);
+                handleCloseModal();
                 setThankYouMessage(null);
               }}
               thankYouMessage={thankYouMessage}
             />
           </div>
         </div>
+      </div>
+    );
+    const modal = typeof document !== "undefined" ? createPortal(modalContent, document.body) : modalContent;
+    return (
+      <>
+        {modal}
         {/* Keep the buttons visible but disabled */}
         <div className="flex gap-4 opacity-50 pointer-events-none">
           {!hasRegisteredInterest && (
