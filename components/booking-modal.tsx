@@ -175,11 +175,7 @@ export function BookingModal({
   };
 
   const handleProceedToPayment = async () => {
-    if (!user) {
-      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-    if (user.id === expertId) {
+    if (user?.id === expertId) {
       alert("You cannot book an appointment with yourself");
       return;
     }
@@ -194,19 +190,37 @@ export function BookingModal({
       let questionnaireResponseId: string | null = null;
 
       if (questionnaireId && questionnaireFields.length > 0 && Object.keys(formData).length > 0) {
-        const { data: resp, error } = await supabase
-          .from("questionnaire_responses")
-          .insert({
-            questionnaire_id: questionnaireId,
-            user_id: user.id,
-            responses: formData,
-          })
-          .select("id")
-          .single();
-        if (!error && resp) questionnaireResponseId = resp.id;
+        const isGuest = !user;
+        if (isGuest) {
+          const guestEmail = formData.email || Object.values(formData).find((v) => typeof v === "string" && (v as string).includes("@"));
+          const res = await fetch("/api/questionnaire/guest-response", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ questionnaireId, responses: formData, guestEmail }),
+          });
+          const data = await res.json();
+          if (res.ok && data.id) questionnaireResponseId = data.id;
+        } else {
+          const { data: resp, error } = await supabase
+            .from("questionnaire_responses")
+            .insert({
+              questionnaire_id: questionnaireId,
+              user_id: user.id,
+              responses: formData,
+            })
+            .select("id")
+            .single();
+          if (!error && resp) questionnaireResponseId = resp.id;
+        }
       }
 
       if (totalAmount <= 0) {
+        if (!user) {
+          alert("Please create an account to complete your free booking.");
+          router.push(`/register?redirect=${encodeURIComponent(window.location.pathname)}`);
+          setSubmitting(false);
+          return;
+        }
         const { data: appointment, error } = await supabase
           .from("appointments")
           .insert({
@@ -284,6 +298,10 @@ export function BookingModal({
       }
 
       const priceInCents = Math.round(totalAmount * 100);
+      const customerEmail = !user
+        ? (formData.email || Object.values(formData).find((v) => typeof v === "string" && (v as string).includes("@"))) as string | undefined
+        : undefined;
+
       const res = await fetch("/api/stripe/checkout/create-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -303,6 +321,7 @@ export function BookingModal({
           slotEndTime: selectedSlot.end_time,
           questionnaireResponseId,
           productId: productId || undefined,
+          customerEmail: customerEmail || undefined,
         }),
       });
 

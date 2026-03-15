@@ -358,7 +358,7 @@ export function StorefrontView({
                 return (
                   <section key={block.id} className="flex flex-col gap-4 w-full">
                     {displayedProducts.map((product) =>
-                      product.course_id && user ? (
+                      product.course_id ? (
                         <div key={product.id} className={productCardClass}>
                           <div className="flex items-start gap-4">
                             {product.cover_image_url && (
@@ -379,7 +379,7 @@ export function StorefrontView({
                               expertId={expertId}
                               coursePrice={product.price}
                               isFree={product.price === 0}
-                              currentUserId={user.id}
+                              currentUserId={user?.id}
                               customBrandColor={designState.buttonColor}
                               customButtonTextColor={designState.buttonTextColor}
                               themePreset={designState.themePreset || "default"}
@@ -705,13 +705,13 @@ export function StorefrontView({
                             {product.price === 0 ? "Free" : `$${product.price} ${product.pricing_type === "hourly" ? "/hr" : ""}`}
                           </span>
                         </div>
-                        {product.course_id && user ? (
+                        {product.course_id ? (
                           <CourseEnrollment
                             courseId={product.course_id}
                             expertId={expertId}
                             coursePrice={product.price}
                             isFree={product.price === 0}
-                            currentUserId={user.id}
+                            currentUserId={user?.id}
                             customBrandColor={designState.buttonColor}
                             customButtonTextColor={designState.buttonTextColor}
                             themePreset={designState.themePreset || "default"}

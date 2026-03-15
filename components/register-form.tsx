@@ -1,17 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    const email = searchParams.get("email");
+    if (email) setFormData((f) => ({ ...f, email }));
+  }, [searchParams]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
@@ -103,11 +109,26 @@ export function RegisterForm() {
           }),
         }).catch((err) => {
           console.error("Failed to send registration email:", err);
-          // Don't block user flow if email fails
         });
 
-        // Redirect to onboarding
-        router.push("/onboarding");
+        // Fulfill pending purchases (guest checkout)
+        const fromPayment = searchParams.get("from") === "payment";
+        if (fromPayment) {
+          try {
+            await fetch("/api/fulfill-pending-purchases", { method: "POST" });
+          } catch (e) {
+            console.warn("Fulfill pending failed:", e);
+          }
+        }
+
+        const redirect = searchParams.get("redirect");
+        if (fromPayment) {
+          router.push(redirect || "/courses/manage");
+        } else if (redirect) {
+          router.push(redirect);
+        } else {
+          router.push("/onboarding");
+        }
         router.refresh();
       }
     } catch (err) {

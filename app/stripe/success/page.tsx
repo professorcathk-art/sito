@@ -29,14 +29,7 @@ function SuccessContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId }),
       })
-        .then(async (res) => {
-          if (!res.ok) {
-            const err = await res.json();
-            console.error("Payment verification failed:", err);
-            throw new Error(err.error || err.message || "Payment verification failed");
-          }
-          return res.json();
-        })
+        .then((res) => res.json())
         .then(async (verifyData: any) => {
           console.log("Payment verification result:", verifyData);
           
@@ -45,29 +38,40 @@ function SuccessContent() {
             setLoading(false);
             return null;
           }
-          
-          // Then fetch session details for redirect
-          const sessionRes = await fetch(`/api/stripe/checkout/session?session_id=${sessionId}`);
-          if (!sessionRes.ok) {
-            throw new Error("Failed to fetch session details");
+
+          // Guest checkout - needs sign up
+          if (verifyData.needsSignUp && verifyData.email) {
+            setLoading(false);
+            router.push(`/register?email=${encodeURIComponent(verifyData.email)}&from=payment&message=Create an account to access your purchase`);
+            return null;
           }
+
+          // Use verifyData for redirect when available
+          if (verifyData.appointmentId) {
+            setAppointmentId(verifyData.appointmentId);
+            setTimeout(() => router.push("/appointments/manage?tab=my-bookings"), 3000);
+            setLoading(false);
+            return null;
+          }
+          if (verifyData.courseId) {
+            setCourseId(verifyData.courseId);
+            setTimeout(() => router.push("/courses/manage"), 3000);
+            setLoading(false);
+            return null;
+          }
+          
+          const sessionRes = await fetch(`/api/stripe/checkout/session?session_id=${sessionId}`);
+          if (!sessionRes.ok) throw new Error("Failed to fetch session details");
           return sessionRes.json();
         })
         .then((data: any) => {
-          if (!data) return; // Early return if verification failed
-          
+          if (!data) return;
           if (data.appointment_id) {
             setAppointmentId(data.appointment_id);
-            // Redirect to My Bookings after a short delay
-            setTimeout(() => {
-              router.push("/appointments/manage?tab=my-bookings");
-            }, 3000);
+            setTimeout(() => router.push("/appointments/manage?tab=my-bookings"), 3000);
           } else if (data.course_id) {
             setCourseId(data.course_id);
-            // Redirect to classroom after a short delay
-            setTimeout(() => {
-              router.push("/courses/manage");
-            }, 3000);
+            setTimeout(() => router.push("/courses/manage"), 3000);
           }
           setLoading(false);
         })

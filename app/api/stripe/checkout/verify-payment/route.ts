@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
 
     // Extract metadata
     const courseId = session.metadata?.course_id;
-    const userId = session.metadata?.user_id;
+    let userId = session.metadata?.user_id;
+    const guestEmail = session.metadata?.guest_email || (session.customer_details as any)?.email;
     const appointmentId = session.metadata?.appointment_id;
     const slotStartTime = session.metadata?.slot_start_time;
     const slotEndTime = session.metadata?.slot_end_time;
@@ -71,7 +72,17 @@ export async function POST(request: NextRequest) {
 
     // Use payment intent metadata as fallback
     const finalCourseId = courseId || paymentIntentMetadata?.course_id;
-    const finalUserId = userId || paymentIntentMetadata?.user_id || null;
+    let finalUserId = userId || paymentIntentMetadata?.user_id || null;
+
+    // Resolve guest: lookup user by email when userId is "guest"
+    if ((!finalUserId || finalUserId === "guest") && guestEmail) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", guestEmail)
+        .maybeSingle();
+      if (profile) finalUserId = profile.id;
+    }
     const finalAppointmentId = appointmentId || paymentIntentMetadata?.appointment_id;
     const finalSlotStartTime = slotStartTime || paymentIntentMetadata?.slot_start_time;
     const finalSlotEndTime = slotEndTime || paymentIntentMetadata?.slot_end_time;
@@ -85,17 +96,47 @@ export async function POST(request: NextRequest) {
     console.log("  Slot Start:", finalSlotStartTime);
     console.log("  Slot End:", finalSlotEndTime);
 
-    if (!finalUserId || finalUserId === "guest") {
-      console.error("User ID not found in session metadata");
-      return NextResponse.json({
-        success: false,
-        message: "User ID not found in session",
-        session_metadata: session.metadata,
-        payment_intent_metadata: paymentIntentMetadata,
-      });
+    // Handle course enrollment (for guest with no account: create pending)
+    if (finalCourseId) {
+      if (!finalUserId || finalUserId === "guest") {
+        // Guest paid but has no account - create pending enrollment
+        const email = guestEmail || (session.customer_details as any)?.email;
+        if (!email) {
+          return NextResponse.json({
+            success: false,
+            message: "Guest email not found in session",
+          });
+        }
+        const { data: pending, error: pendingErr } = await supabase
+          .from("pending_course_enrollments")
+          .insert({
+            course_id: finalCourseId,
+            email,
+            payment_intent_id: paymentIntentId || null,
+            questionnaire_response_id: finalQuestionnaireResponseId || null,
+          })
+          .select("id")
+          .single();
+
+        if (pendingErr) {
+          console.error("Error creating pending enrollment:", pendingErr);
+          return NextResponse.json({
+            success: false,
+            error: pendingErr.message,
+          });
+        }
+        return NextResponse.json({
+          success: true,
+          type: "course_guest",
+          courseId: finalCourseId,
+          needsSignUp: true,
+          email,
+          pendingId: pending?.id,
+        });
+      }
     }
 
-    // Handle course enrollment
+    // Handle course enrollment (logged-in or resolved guest)
     if (finalCourseId) {
       // Check if enrollment already exists
       const { data: existingEnrollment } = await supabase
@@ -146,8 +187,58 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle appointment booking
+    // Handle appointment booking (for guest with no account: create pending)
     if (finalAppointmentId && finalSlotStartTime && finalSlotEndTime) {
+      if (!finalUserId || finalUserId === "guest") {
+        const email = guestEmail || (session.customer_details as any)?.email;
+        if (!email) {
+          return NextResponse.json({
+            success: false,
+            message: "Guest email not found in session",
+          });
+        }
+        const { data: slotData, error: slotErr } = await supabase
+          .from("appointment_slots")
+          .select("id, expert_id, rate_per_hour")
+          .eq("id", finalAppointmentId)
+          .single();
+        if (slotErr || !slotData) {
+          return NextResponse.json({ success: false, error: "Slot not found" });
+        }
+        const startDate = new Date(finalSlotStartTime);
+        const endDate = new Date(finalSlotEndTime);
+        const durationMinutes = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+        const totalAmount = (slotData.rate_per_hour / 60) * durationMinutes;
+        const { data: pending, error: pendingErr } = await supabase
+          .from("pending_appointments")
+          .insert({
+            appointment_slot_id: finalAppointmentId,
+            expert_id: slotData.expert_id,
+            email,
+            slot_start_time: finalSlotStartTime,
+            slot_end_time: finalSlotEndTime,
+            duration_minutes: durationMinutes,
+            rate_per_hour: slotData.rate_per_hour,
+            total_amount: totalAmount,
+            payment_intent_id: paymentIntentId || null,
+            questionnaire_response_id: finalQuestionnaireResponseId || null,
+            product_id: finalProductId || null,
+          })
+          .select("id")
+          .single();
+        if (pendingErr) {
+          return NextResponse.json({ success: false, error: pendingErr.message });
+        }
+        await supabase.from("appointment_slots").update({ is_available: false }).eq("id", finalAppointmentId);
+        return NextResponse.json({
+          success: true,
+          type: "appointment_guest",
+          needsSignUp: true,
+          email,
+          pendingId: pending?.id,
+        });
+      }
+
       // Check if appointment already exists
       const { data: existingAppointment } = await supabase
         .from("appointments")

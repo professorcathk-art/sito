@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
       slotEndTime, // Can be camelCase from frontend
       questionnaireResponseId, // Can be camelCase from frontend
       productId, // For appointment - product_id from slot
+      customerEmail, // For guest checkout - email from form
     } = body;
 
     // Validate required fields
@@ -132,10 +133,12 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
     // Log metadata being sent for debugging
-    const sessionMetadata = {
+    const effectiveUserId = user?.id || "guest";
+    const guestEmail = !user && customerEmail ? customerEmail : undefined;
+    const sessionMetadata: Record<string, string> = {
       connected_account_id: connectedAccountId,
       application_fee_percent: applicationFeePercent.toString(),
-      user_id: user?.id || "guest",
+      user_id: effectiveUserId,
       course_id: courseId || "",
       appointment_id: appointmentId || "",
       slot_start_time: slotStartTime || "",
@@ -143,6 +146,7 @@ export async function POST(request: NextRequest) {
       questionnaire_response_id: questionnaireResponseId || "",
       product_id: productId || "",
     };
+    if (guestEmail) sessionMetadata.guest_email = guestEmail;
     
     console.log("Creating checkout session with metadata:", JSON.stringify(sessionMetadata, null, 2));
     console.log("Connected Account ID:", connectedAccountId);
@@ -181,8 +185,8 @@ export async function POST(request: NextRequest) {
       // Cancel URL - redirect here if user cancels
       cancel_url: `${baseUrl}/stripe/cancel`,
 
-      // Customer email (if user is logged in)
-      customer_email: user?.email || undefined,
+      // Customer email (logged-in user or guest from form)
+      customer_email: user?.email || customerEmail || undefined,
 
       // Set locale to English for checkout page and emails
       locale: "en",

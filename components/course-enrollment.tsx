@@ -167,15 +167,8 @@ export function CourseEnrollment({
   };
 
   const handleRegisterInterest = async () => {
-    if (!user || !currentUserId) {
-      // Capture current page URL to redirect back after login
-      const currentUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/courses/${courseId}`;
-      const redirectUrl = encodeURIComponent(currentUrl);
-      router.push(`/login?redirect=${redirectUrl}`);
-      return;
-    }
-
-    // Check for questionnaire - create default if doesn't exist
+    // Same flow for guests - show form first (no login redirect)
+    // Check for questionnaire
     try {
       let questionnaireId: string | null = null;
       
@@ -376,45 +369,39 @@ export function CourseEnrollment({
   };
 
   const handleEnroll = async () => {
-    if (!user || !currentUserId) {
-      // Capture current page URL to redirect back after login
-      const currentUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/courses/${courseId}`;
-      const redirectUrl = encodeURIComponent(currentUrl);
-      router.push(`/login?redirect=${redirectUrl}`);
-      return;
-    }
-
-    if (isEnrolled) {
+    if (isEnrolled && user) {
       router.push("/courses/manage");
       return;
     }
 
-    // Check if user has already registered interest with questionnaire data
-    try {
-      const { data: product } = await supabase
-        .from("products")
-        .select("id")
-        .eq("course_id", courseId)
-        .maybeSingle();
-      
-      if (product) {
-        const { data: existingInterest } = await supabase
-          .from("product_interests")
-          .select("questionnaire_response_id")
-          .eq("product_id", product.id)
-          .eq("user_id", currentUserId)
+    // Check if user has already registered interest with questionnaire data (logged-in only)
+    if (user && currentUserId) {
+      try {
+        const { data: product } = await supabase
+          .from("products")
+          .select("id")
+          .eq("course_id", courseId)
           .maybeSingle();
         
-        if (existingInterest?.questionnaire_response_id) {
-          // User already filled form when registering interest - skip form and enroll directly
-          console.log("Reusing questionnaire from interest registration");
-          await enroll(); // This will use the existing questionnaire_response_id
-          return;
+        if (product) {
+          const { data: existingInterest } = await supabase
+            .from("product_interests")
+            .select("questionnaire_response_id")
+            .eq("product_id", product.id)
+            .eq("user_id", currentUserId)
+            .maybeSingle();
+          
+          if (existingInterest?.questionnaire_response_id) {
+            // User already filled form when registering interest - skip form and enroll directly
+            console.log("Reusing questionnaire from interest registration");
+            await enroll(); // This will use the existing questionnaire_response_id
+            return;
+          }
         }
+      } catch (err) {
+        console.error("Error checking existing interest:", err);
+        // Continue to show questionnaire form
       }
-    } catch (err) {
-      console.error("Error checking existing interest:", err);
-      // Continue to show questionnaire form
     }
 
     // Check for questionnaire - query by product_id (linked to product, not expert)
@@ -511,15 +498,19 @@ export function CourseEnrollment({
     }
   };
 
-  const enroll = async (questionnaireResponse?: any) => {
-    if (!user || !currentUserId) return;
+  const enroll = async (questionnaireResponse?: any, guestFormResponses?: Record<string, unknown>) => {
+    const isGuest = !user || !currentUserId;
+    if (isGuest && isFree) {
+      router.push(`/register?redirect=${encodeURIComponent(window.location.pathname)}&message=Create an account to get free access`);
+      return;
+    }
+    if (!isGuest && (!user || !currentUserId)) return;
 
     setProcessing(true);
     try {
-      // Check if user has registered interest with questionnaire data
       let questionnaireResponseId = questionnaireResponse?.id;
       
-      if (!questionnaireResponseId) {
+      if (!questionnaireResponseId && !isGuest) {
         // Try to get questionnaire_response_id from existing interest
         const { data: product } = await supabase
           .from("products")
@@ -543,7 +534,7 @@ export function CourseEnrollment({
       }
       
       if (isFree) {
-        // Free course - enroll directly
+        // Free course - enroll directly (guest handled above)
         const enrollmentData: any = {
           course_id: courseId,
           user_id: currentUserId,
@@ -561,7 +552,6 @@ export function CourseEnrollment({
 
         alert("Successfully enrolled in course!");
         setIsEnrolled(true);
-        // Redirect back to returnUrl if provided, otherwise to courses/manage
         if (returnUrl) {
           router.push(returnUrl);
         } else {
@@ -603,7 +593,6 @@ export function CourseEnrollment({
 
         // Stripe payment - check if Stripe IDs exist
         if (product?.stripe_product_id && product?.stripe_price_id) {
-          // Get connected account ID from expert's profile separately
           const { data: expertProfile } = await supabase
             .from("profiles")
             .select("stripe_connect_account_id")
@@ -618,8 +607,7 @@ export function CourseEnrollment({
             return;
           }
 
-          // Check if user has registered interest with questionnaire data
-          if (!questionnaireResponseId) {
+          if (!questionnaireResponseId && !isGuest) {
             const { data: existingInterest } = await supabase
               .from("product_interests")
               .select("questionnaire_response_id")
@@ -629,11 +617,13 @@ export function CourseEnrollment({
             
             if (existingInterest?.questionnaire_response_id) {
               questionnaireResponseId = existingInterest.questionnaire_response_id;
-              console.log("Reusing questionnaire from interest:", questionnaireResponseId);
             }
           }
+
+          const customerEmail = isGuest && guestFormResponses
+            ? (extractEmailFromResponses(guestFormResponses) || undefined)
+            : undefined;
           
-          // Redirect to Stripe checkout
           try {
             const response = await fetch("/api/stripe/checkout/create-session", {
               method: "POST",
@@ -643,6 +633,7 @@ export function CourseEnrollment({
                 connectedAccountId: connectedAccountId,
                 courseId: courseId,
                 questionnaireResponseId: questionnaireResponseId || null,
+                customerEmail: customerEmail || undefined,
               }),
             });
 
@@ -685,6 +676,13 @@ export function CourseEnrollment({
     }
   };
 
+  const extractEmailFromResponses = (r: Record<string, unknown>): string | null => {
+    for (const val of Object.values(r)) {
+      if (typeof val === "string" && val.includes("@") && val.includes(".")) return val;
+    }
+    return null;
+  };
+
   const handleQuestionnaireSubmit = async (responses: any) => {
     if (!questionnaireId || !questionnaireType) {
       console.error("Missing questionnaireId or questionnaireType");
@@ -698,37 +696,55 @@ export function CourseEnrollment({
 
     try {
       let response: any = null;
-      
+      const isGuest = !user || !currentUserId;
+
       // Only save questionnaire response if we have a valid questionnaire ID (not temp)
       if (!questionnaireId.startsWith("temp-")) {
-        const { data: responseData, error: responseError } = await supabase
-          .from("questionnaire_responses")
-          .insert({
-            questionnaire_id: questionnaireId,
-            user_id: currentUserId,
-            responses: responses,
-          })
-          .select()
-          .single();
-
-        if (responseError) {
-          console.error("Error inserting questionnaire response:", responseError);
-          // Continue anyway - we can register interest without response ID
+        if (isGuest) {
+          const guestEmail = extractEmailFromResponses(responses);
+          if (!guestEmail) {
+            alert("Please provide your email address.");
+            return;
+          }
+          const res = await fetch("/api/questionnaire/guest-response", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ questionnaireId, responses, guestEmail }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Failed to save response");
+          response = { id: data.id };
         } else {
-          response = responseData;
+          const { data: responseData, error: responseError } = await supabase
+            .from("questionnaire_responses")
+            .insert({
+              questionnaire_id: questionnaireId,
+              user_id: currentUserId,
+              responses: responses,
+            })
+            .select()
+            .single();
+
+          if (responseError) {
+            console.error("Error inserting questionnaire response:", responseError);
+          } else {
+            response = responseData;
+          }
         }
       } else {
-        // For temp questionnaires, cannot create - only experts can create questionnaires
         console.error("Cannot create questionnaire - only experts can create them");
         alert("Registration form is not yet set up by the expert. Please contact them directly.");
         return;
       }
 
-
       if (questionnaireType === "interest") {
+        if (isGuest) {
+          alert("Please create an account to register your interest. You can sign up after completing your purchase.");
+          return;
+        }
         await registerInterest(response);
       } else {
-        await enroll(response);
+        await enroll(response, isGuest ? responses : undefined);
       }
     } catch (err: any) {
       console.error("Error submitting questionnaire:", err);

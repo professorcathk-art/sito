@@ -246,20 +246,32 @@ export async function POST(request: NextRequest) {
       const slotEndTime = session.metadata?.slot_end_time || paymentIntentMetadata?.slot_end_time;
       const questionnaireResponseId = session.metadata?.questionnaire_response_id || paymentIntentMetadata?.questionnaire_response_id || null;
       const productId = session.metadata?.product_id || paymentIntentMetadata?.product_id || null;
+      const guestEmail = session.metadata?.guest_email || (session.customer_details as any)?.email;
 
-      console.log(`Webhook metadata - courseId: ${courseId}, userId: ${userId}, appointmentId: ${appointmentId}, paymentIntentId: ${paymentIntentId}, questionnaireResponseId: ${questionnaireResponseId}, productId: ${productId}`);
-
-      // Use service role client to bypass RLS for webhook operations
+      // Use service role client for webhook operations
       const supabase = createServiceRoleClient();
 
-      // Handle course enrollment
-      if (courseId && userId && userId !== "guest") {
+      // Resolve guest: lookup user by email
+      let resolvedUserId = userId;
+      if ((!userId || userId === "guest") && guestEmail) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", guestEmail)
+          .maybeSingle();
+        if (profile) resolvedUserId = profile.id;
+      }
+
+      console.log(`Webhook metadata - courseId: ${courseId}, userId: ${userId}, resolvedUserId: ${resolvedUserId}, appointmentId: ${appointmentId}, paymentIntentId: ${paymentIntentId}, questionnaireResponseId: ${questionnaireResponseId}, productId: ${productId}`);
+
+      // Handle course enrollment (skip if guest with no account - verify-payment will create pending)
+      if (courseId && resolvedUserId && resolvedUserId !== "guest") {
         // Check if enrollment already exists
         const { data: existingEnrollment } = await supabase
           .from("course_enrollments")
           .select("id")
           .eq("course_id", courseId)
-          .eq("user_id", userId)
+          .eq("user_id", resolvedUserId)
           .maybeSingle();
 
         if (!existingEnrollment) {
@@ -268,7 +280,7 @@ export async function POST(request: NextRequest) {
             .from("course_enrollments")
             .insert({
               course_id: courseId,
-              user_id: userId,
+              user_id: resolvedUserId,
               payment_intent_id: paymentIntentId || null,
               questionnaire_response_id: questionnaireResponseId || null,
             })
@@ -279,16 +291,25 @@ export async function POST(request: NextRequest) {
             console.error("Error creating enrollment from webhook:", enrollError);
             console.error("Enrollment error details:", JSON.stringify(enrollError, null, 2));
           } else {
-            console.log(`✅ Enrollment created successfully for user ${userId} in course ${courseId}`);
+            console.log(`✅ Enrollment created successfully for user ${resolvedUserId} in course ${courseId}`);
             console.log(`Enrollment ID: ${newEnrollment?.id}`);
           }
         } else {
-          console.log(`ℹ️ Enrollment already exists for user ${userId} in course ${courseId}`);
+          console.log(`ℹ️ Enrollment already exists for user ${resolvedUserId} in course ${courseId}`);
         }
+      } else if (courseId && (!resolvedUserId || resolvedUserId === "guest") && guestEmail) {
+        // Guest paid for course but has no account - create pending (webhook runs before verify-payment)
+        await supabase.from("pending_course_enrollments").insert({
+          course_id: courseId,
+          email: guestEmail,
+          payment_intent_id: paymentIntentId || null,
+          questionnaire_response_id: questionnaireResponseId || null,
+        });
+        console.log(`✅ Pending course enrollment created for guest ${guestEmail}`);
       }
 
       // Handle appointment booking
-      if (appointmentId && slotStartTime && slotEndTime && userId && userId !== "guest") {
+      if (appointmentId && slotStartTime && slotEndTime && resolvedUserId && resolvedUserId !== "guest") {
         try {
           // Fetch slot details
           const { data: slotData, error: slotError } = await supabase
@@ -318,7 +339,7 @@ export async function POST(request: NextRequest) {
             .from("appointments")
             .insert({
               expert_id: slotData.expert_id,
-              user_id: userId,
+              user_id: resolvedUserId,
               appointment_slot_id: appointmentId,
               start_time: slotStartTime,
               end_time: slotEndTime,
@@ -396,10 +417,42 @@ export async function POST(request: NextRequest) {
             console.warn("Failed to send booking confirmation email:", emailErr);
           }
 
-          console.log(`✅ Appointment created successfully for user ${userId}`);
+          console.log(`✅ Appointment created successfully for user ${resolvedUserId}`);
           console.log(`Appointment ID: ${appointment?.id}`);
         } catch (err: any) {
           console.error("Error processing appointment booking:", err);
+        }
+      } else if (appointmentId && slotStartTime && slotEndTime && (!resolvedUserId || resolvedUserId === "guest") && guestEmail) {
+        // Guest paid for appointment but has no account - create pending
+        try {
+          const { data: slotData } = await supabase
+            .from("appointment_slots")
+            .select("id, expert_id, rate_per_hour")
+            .eq("id", appointmentId)
+            .single();
+          if (slotData) {
+            const startDate = new Date(slotStartTime);
+            const endDate = new Date(slotEndTime);
+            const durationMinutes = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+            const totalAmount = (slotData.rate_per_hour / 60) * durationMinutes;
+            await supabase.from("pending_appointments").insert({
+              appointment_slot_id: appointmentId,
+              expert_id: slotData.expert_id,
+              email: guestEmail,
+              slot_start_time: slotStartTime,
+              slot_end_time: slotEndTime,
+              duration_minutes: durationMinutes,
+              rate_per_hour: slotData.rate_per_hour,
+              total_amount: totalAmount,
+              payment_intent_id: paymentIntentId || null,
+              questionnaire_response_id: questionnaireResponseId || null,
+              product_id: productId || null,
+            });
+            await supabase.from("appointment_slots").update({ is_available: false }).eq("id", appointmentId);
+            console.log(`✅ Pending appointment created for guest ${guestEmail}`);
+          }
+        } catch (err: any) {
+          console.error("Error creating pending appointment:", err);
         }
       }
 
