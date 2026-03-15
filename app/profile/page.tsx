@@ -6,507 +6,321 @@ import { useAuth } from "@/contexts/auth-context";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { ProtectedRoute } from "@/components/protected-route";
 import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { ConnectionsContent } from "@/components/connections-content";
 
-interface Profile {
+interface NotificationItem {
   id: string;
-  name: string;
-  title: string | null;
-  bio: string | null;
-  avatar_url: string | null;
-  website: string | null;
-  linkedin: string | null;
-  instagram_url: string | null;
-  verified: boolean;
-  listed_on_marketplace: boolean;
-  category_name: string | null;
-  country_name: string | null;
-}
-
-interface Stats {
-  blogPosts: number;
-  courses: number;
-  subscribers: number;
-  products: number;
+  type: "booking" | "enrollment" | "message";
+  title: string;
+  description: string;
+  timeAgo: string;
+  href: string;
+  isNew?: boolean;
+  meta?: string;
+  sortTime: string;
 }
 
 export default function ProfilePage() {
-  const router = useRouter();
   const supabase = createClient();
   const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [stats, setStats] = useState<Stats>({
-    blogPosts: 0,
-    courses: 0,
-    subscribers: 0,
-    products: 0,
-  });
-  const [recentMessages, setRecentMessages] = useState<any[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [activeTab, setActiveTab] = useState<"profile" | "messages" | "connections">("profile");
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      fetchProfile();
-      fetchStats();
-      fetchRecentMessages();
-    }
+    if (user) fetchNotifications();
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const fetchRecentMessages = async () => {
-    if (!user) return;
-    try {
-      const { data: messagesData, error: messagesError } = await supabase
-        .from("messages")
-        .select("id, from_id, subject, content, read, created_at")
-        .eq("to_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      if (messagesError) {
-        console.error("Error fetching messages:", messagesError);
-      } else if (messagesData && messagesData.length > 0) {
-        const fromIds = messagesData.map((msg: any) => msg.from_id);
-        const { data: senderProfiles } = await supabase
-          .from("profiles")
-          .select("id, name")
-          .in("id", fromIds);
-
-        const senderMap = new Map(senderProfiles?.map((p: any) => [p.id, p.name]) || []);
-
-        const messages = messagesData.map((msg: any) => ({
-          id: msg.id,
-          from_id: msg.from_id,
-          from_name: senderMap.get(msg.from_id) || "Unknown",
-          subject: msg.subject,
-          content: msg.content,
-          read: msg.read,
-          created_at: msg.created_at,
-        }));
-        setRecentMessages(messages);
-        setUnreadCount(messages.filter((m) => !m.read).length);
-      } else {
-        setRecentMessages([]);
-        setUnreadCount(0);
-      }
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  };
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) return "Just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
     return date.toLocaleDateString();
   };
 
-  const fetchProfile = async () => {
+  const fetchNotifications = async () => {
     if (!user) return;
+    setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(`
-          id,
-          name,
-          title,
-          bio,
-          avatar_url,
-          website,
-          linkedin,
-          instagram_url,
-          verified,
-          listed_on_marketplace,
-          categories!profiles_category_id_fkey(name),
-          countries(name)
-        `)
-        .eq("id", user.id)
-        .single();
+      const items: NotificationItem[] = [];
 
-      if (error) throw error;
+      // 1. Pending bookings (as expert - need approval)
+      const { data: pendingAppointments } = await supabase
+        .from("appointments")
+        .select("id, user_id, start_time, created_at")
+        .eq("expert_id", user.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(10);
 
-      if (data) {
-        setProfile({
-          id: data.id,
-          name: data.name || "Your Name",
-          title: data.title,
-          bio: data.bio,
-          avatar_url: data.avatar_url,
-          website: data.website,
-          linkedin: data.linkedin,
-          instagram_url: data.instagram_url,
-          verified: data.verified || false,
-          listed_on_marketplace: data.listed_on_marketplace || false,
-          category_name: (data.categories as any)?.name || null,
-          country_name: (data.countries as any)?.name || null,
+      const userIds = Array.from(new Set((pendingAppointments || []).map((a: any) => a.user_id)));
+      let clientNames: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, name")
+          .in("id", userIds);
+        profiles?.forEach((p: any) => { clientNames[p.id] = p.name || "Client"; });
+      }
+
+      (pendingAppointments || []).forEach((apt: any) => {
+        const startDate = apt.start_time ? new Date(apt.start_time) : null;
+        const dateStr = startDate && !isNaN(startDate.getTime())
+          ? startDate.toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
+          : "—";
+        items.push({
+          id: `booking-${apt.id}`,
+          type: "booking",
+          title: "New booking request",
+          description: `${clientNames[apt.user_id] || "Someone"} requested a session`,
+          timeAgo: formatTimeAgo(apt.created_at),
+          href: "/appointments/manage?tab=bookings",
+          isNew: true,
+          meta: dateStr,
+          sortTime: apt.created_at,
+        });
+      });
+
+      // 2. Upcoming confirmed bookings (as expert - next 7 days)
+      const weekFromNow = new Date();
+      weekFromNow.setDate(weekFromNow.getDate() + 7);
+      const { data: upcomingAppointments } = await supabase
+        .from("appointments")
+        .select("id, user_id, start_time, created_at")
+        .eq("expert_id", user.id)
+        .eq("status", "confirmed")
+        .gte("start_time", new Date().toISOString())
+        .lte("start_time", weekFromNow.toISOString())
+        .order("start_time", { ascending: true })
+        .limit(5);
+
+      const upcomingUserIds = Array.from(new Set((upcomingAppointments || []).map((a: any) => a.user_id)));
+      let upcomingNames: Record<string, string> = {};
+      if (upcomingUserIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, name")
+          .in("id", upcomingUserIds);
+        profiles?.forEach((p: any) => { upcomingNames[p.id] = p.name || "Client"; });
+      }
+
+      (upcomingAppointments || []).forEach((apt: any) => {
+        const startDate = apt.start_time ? new Date(apt.start_time) : null;
+        const dateStr = startDate && !isNaN(startDate.getTime())
+          ? startDate.toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
+          : "—";
+        items.push({
+          id: `upcoming-${apt.id}`,
+          type: "booking",
+          title: "Upcoming session",
+          description: `With ${upcomingNames[apt.user_id] || "client"}`,
+          timeAgo: formatTimeAgo(apt.start_time),
+          href: "/appointments/manage?tab=bookings",
+          meta: dateStr,
+          sortTime: apt.start_time,
+        });
+      });
+
+      // 3. New course enrollments (as expert - last 7 days)
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      const { data: myCourses } = await supabase
+        .from("courses")
+        .select("id")
+        .eq("expert_id", user.id);
+      const courseIds = (myCourses || []).map((c: any) => c.id);
+
+      if (courseIds.length > 0) {
+        const { data: enrollments } = await supabase
+          .from("course_enrollments")
+          .select("id, course_id, user_id, user_email, enrolled_at, courses(title)")
+          .in("course_id", courseIds)
+          .gte("enrolled_at", weekAgo.toISOString())
+          .order("enrolled_at", { ascending: false })
+          .limit(10);
+
+        const enrollUserIds = Array.from(new Set((enrollments || []).map((e: any) => e.user_id).filter(Boolean)));
+        let enrollNames: Record<string, string> = {};
+        if (enrollUserIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, name")
+            .in("id", enrollUserIds);
+          profiles?.forEach((p: any) => { enrollNames[p.id] = p.name || "Learner"; });
+        }
+
+        (enrollments || []).forEach((e: any) => {
+          const name = e.user_id ? enrollNames[e.user_id] : (e.user_email || "Someone");
+          const courseTitle = (e.courses as any)?.title || "your course";
+          items.push({
+            id: `enrollment-${e.id}`,
+            type: "enrollment",
+            title: "New enrollment",
+            description: `${name} enrolled in ${courseTitle}`,
+            timeAgo: formatTimeAgo(e.enrolled_at),
+            href: "/courses/manage",
+            isNew: true,
+            sortTime: e.enrolled_at,
+          });
         });
       }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
+
+      // 4. Unread messages
+      const { data: unreadMessages } = await supabase
+        .from("messages")
+        .select("id, from_id, subject, created_at")
+        .eq("to_id", user.id)
+        .eq("read", false)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      const msgFromIds = Array.from(new Set((unreadMessages || []).map((m: any) => m.from_id)));
+      let msgNames: Record<string, string> = {};
+      if (msgFromIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, name")
+          .in("id", msgFromIds);
+        profiles?.forEach((p: any) => { msgNames[p.id] = p.name || "Someone"; });
+      }
+
+      (unreadMessages || []).forEach((m: any) => {
+        items.push({
+          id: `msg-${m.id}`,
+          type: "message",
+          title: "New message",
+          description: `From ${msgNames[m.from_id] || "someone"}: ${(m.subject || "").slice(0, 40)}${(m.subject || "").length > 40 ? "…" : ""}`,
+          timeAgo: formatTimeAgo(m.created_at),
+          href: "/messages",
+          isNew: true,
+          sortTime: m.created_at,
+        });
+      });
+
+      // Sort by time (most recent first)
+      items.sort((a, b) => new Date(b.sortTime).getTime() - new Date(a.sortTime).getTime());
+      setNotifications(items.slice(0, 20));
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchStats = async () => {
-    if (!user) return;
-    try {
-      // Fetch blog posts count
-      const { count: blogCount } = await supabase
-        .from("blog_posts")
-        .select("*", { count: "exact", head: true })
-        .eq("expert_id", user.id);
-
-      // Fetch courses count
-      const { count: courseCount } = await supabase
-        .from("courses")
-        .select("*", { count: "exact", head: true })
-        .eq("expert_id", user.id);
-
-      // Fetch subscribers count
-      const { count: subscriberCount } = await supabase
-        .from("subscriptions")
-        .select("*", { count: "exact", head: true })
-        .eq("expert_id", user.id);
-
-      // Fetch products count
-      const { count: productCount } = await supabase
-        .from("products")
-        .select("*", { count: "exact", head: true })
-        .eq("expert_id", user.id);
-
-      setStats({
-        blogPosts: blogCount || 0,
-        courses: courseCount || 0,
-        subscribers: subscriberCount || 0,
-        products: productCount || 0,
-      });
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    }
+  const typeConfig = {
+    booking: { icon: "📅", color: "bg-indigo-500/20 text-indigo-400", label: "Booking" },
+    enrollment: { icon: "📚", color: "bg-emerald-500/20 text-emerald-400", label: "Enrollment" },
+    message: { icon: "💬", color: "bg-amber-500/20 text-amber-400", label: "Message" },
   };
-
-  if (loading) {
-    return (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <div className="px-4 sm:px-6 lg:px-8 py-8">
-            <div className="animate-pulse">
-              <div className="h-32 bg-surface rounded-md mb-8"></div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-20 bg-surface rounded-md"></div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </DashboardLayout>
-      </ProtectedRoute>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <ProtectedRoute>
-        <DashboardLayout>
-          <div className="px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center py-12 bg-surface border border-border-default rounded-md">
-              <p className="text-text-secondary text-lg mb-4">You haven&apos;t set up your profile yet.</p>
-              <button
-                onClick={() => router.push("/profile/setup")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
-              >
-                <span>⚙️</span>
-                <span>Set Up Your Profile</span>
-              </button>
-            </div>
-          </div>
-        </DashboardLayout>
-      </ProtectedRoute>
-    );
-  }
 
   return (
     <ProtectedRoute>
       <DashboardLayout>
         <div className="px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6 mb-6">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-custom-text">Profile</h1>
-              {/* Prominent Setup CTA */}
-              <div className="bg-gradient-to-r from-cyber-green/20 to-cyber-green/10 border-2 border-border-default rounded-xl card-hover p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                  <div className="flex-1">
-                    <p className="text-base sm:text-lg font-semibold text-custom-text mb-1">
-                      🚀 Start sharing your knowledge and expertise Now
-                    </p>
-                    <p className="text-sm text-text-secondary">
-                      Complete your expert profile to unlock all features and connect with learners worldwide
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => router.push("/profile/setup")}
-                    className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-cyber-green text-slate-900 font-bold rounded-md hover:bg-gray-200 transition-all transform hover:scale-105 shadow-[0_0_25px_rgba(0,255,136,0.5)] text-base sm:text-lg whitespace-nowrap animate-pulse-glow"
-                  >
-                    <span className="text-xl">⚙️</span>
-                    <span>Set up Experts Profile</span>
-                    <span className="text-lg">→</span>
-                  </button>
-                </div>
+          <div className="max-w-3xl mx-auto">
+            <h1 className="text-2xl sm:text-3xl font-bold text-custom-text mb-2">Notifications</h1>
+            <p className="text-text-secondary mb-8">
+              Upcoming bookings, new enrollments, and messages
+            </p>
+
+            {loading ? (
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-20 bg-surface rounded-xl animate-pulse" />
+                ))}
               </div>
-            </div>
-          </div>
-
-          {/* Profile Header */}
-          <div className="bg-surface border border-border-default rounded-md p-8 mb-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-              {/* Avatar */}
-              <div className="flex-shrink-0">
-                {profile.avatar_url ? (
-                  <Image
-                    src={profile.avatar_url}
-                    alt={profile.name}
-                    width={120}
-                    height={120}
-                    className="rounded-full border-4 border-border-default"
-                  />
-                ) : (
-                  <div className="w-30 h-30 rounded-full bg-dark-green-700 border-4 border-border-default flex items-center justify-center">
-                    <span className="text-4xl text-cyber-green font-bold">
-                      {profile.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Profile Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-2">
-                  <h2 className="text-3xl font-bold text-custom-text">{profile.name}</h2>
-                  {profile.verified && (
-                    <span className="text-cyber-green text-2xl" title="Verified Expert">
-                      ✓
-                    </span>
-                  )}
-                </div>
-                {profile.title && (
-                  <p className="text-xl text-text-secondary mb-2">{profile.title}</p>
-                )}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary mb-3">
-                  {profile.category_name && (
-                    <span className="text-xs text-cyber-green bg-custom-bg px-2 py-1 rounded-full border border-border-default">
-                      {profile.category_name}
-                    </span>
-                  )}
-                  {profile.country_name && <span>{profile.country_name}</span>}
-                  {profile.listed_on_marketplace ? (
-                    <span className="text-green-400">✓ Listed on Marketplace</span>
-                  ) : (
-                    <span className="text-yellow-400">Private Profile</span>
-                  )}
-                </div>
-                {profile.bio && (
-                  <p className="text-text-primary mb-4">{profile.bio}</p>
-                )}
-                {(profile.website || profile.linkedin || profile.instagram_url) && (
-                  <div className="flex flex-wrap gap-4">
-                    {profile.website && (
-                      <a
-                        href={profile.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-cyber-green hover:text-white underline text-sm"
-                      >
-                        Website
-                      </a>
-                    )}
-                    {profile.linkedin && (
-                      <a
-                        href={profile.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-cyber-green hover:text-white underline text-sm"
-                      >
-                        LinkedIn
-                      </a>
-                    )}
-                    {profile.instagram_url && (
-                      <a
-                        href={profile.instagram_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-cyber-green hover:text-white underline text-sm"
-                      >
-                        Instagram
-                      </a>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-surface border border-border-default rounded-md p-6 text-center">
-              <div className="text-3xl font-bold text-cyber-green mb-1">{stats.blogPosts}</div>
-              <div className="text-sm text-text-secondary">Blog Posts</div>
-            </div>
-            <div className="bg-surface border border-border-default rounded-md p-6 text-center">
-              <div className="text-3xl font-bold text-cyber-green mb-1">{stats.courses}</div>
-              <div className="text-sm text-text-secondary">Courses</div>
-            </div>
-            <div className="bg-surface border border-border-default rounded-md p-6 text-center">
-              <div className="text-3xl font-bold text-cyber-green mb-1">{stats.subscribers}</div>
-              <div className="text-sm text-text-secondary">Subscribers</div>
-            </div>
-            <div className="bg-surface border border-border-default rounded-md p-6 text-center">
-              <div className="text-3xl font-bold text-cyber-green mb-1">{stats.products}</div>
-              <div className="text-sm text-text-secondary">Products</div>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 mb-6 border-b border-border-default scrollbar-hide">
-            <div className="flex gap-3 sm:gap-6 min-w-max pb-1">
-              <button
-                onClick={() => setActiveTab("profile")}
-                className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === "profile"
-                    ? "text-cyber-green border-b-2 border-cyber-green"
-                    : "text-text-secondary hover:text-custom-text"
-                }`}
-              >
-                Profile
-              </button>
-              <button
-                onClick={() => setActiveTab("messages")}
-                className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base flex items-center gap-1.5 sm:gap-2 ${
-                  activeTab === "messages"
-                    ? "text-cyber-green border-b-2 border-cyber-green"
-                    : "text-text-secondary hover:text-custom-text"
-                }`}
-              >
-                <span>Recent Messages</span>
-                {unreadCount > 0 && (
-                  <span className="bg-cyber-green text-dark-green-950 text-xs font-bold px-2 py-0.5 rounded-full min-w-[1.5rem] text-center">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab("connections")}
-                className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
-                  activeTab === "connections"
-                    ? "text-cyber-green border-b-2 border-cyber-green"
-                    : "text-text-secondary hover:text-custom-text"
-                }`}
-              >
-                Connections
-              </button>
-            </div>
-          </div>
-
-          {/* Tab Content */}
-          {activeTab === "profile" && (
-            <>
-              {/* Quick Links */}
-              <div className="bg-surface border border-border-default rounded-md p-6 mb-8">
-                <h3 className="text-xl font-bold text-custom-text mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ) : notifications.length === 0 ? (
+              <div className="bg-surface border border-border-default rounded-xl p-12 text-center">
+                <p className="text-4xl mb-4">🔔</p>
+                <p className="text-text-secondary text-lg mb-2">No notifications yet</p>
+                <p className="text-text-secondary text-sm mb-6">
+                  When you get new bookings, enrollments, or messages, they&apos;ll appear here.
+                </p>
+                <div className="flex flex-wrap justify-center gap-4">
                   <Link
-                    href="/dashboard/blog"
-                    className="p-4 border border-border-default rounded-md hover:border-cyber-green hover:bg-surface transition-all"
+                    href="/appointments/manage"
+                    className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
                   >
-                    <div className="font-semibold text-custom-text mb-1">Manage Blog Posts</div>
-                    <div className="text-sm text-text-secondary">View and edit your blog posts</div>
+                    Manage Appointments
                   </Link>
                   <Link
                     href="/courses/manage"
-                    className="p-4 border border-border-default rounded-md hover:border-cyber-green hover:bg-surface transition-all"
+                    className="px-6 py-3 border border-border-default text-custom-text rounded-lg hover:bg-surface transition-colors"
                   >
-                    <div className="font-semibold text-custom-text mb-1">Manage Courses</div>
-                    <div className="text-sm text-text-secondary">View and edit your courses</div>
-                  </Link>
-                  <Link
-                    href="/products"
-                    className="p-4 border border-border-default rounded-md hover:border-cyber-green hover:bg-surface transition-all"
-                  >
-                    <div className="font-semibold text-custom-text mb-1">Manage Products</div>
-                    <div className="text-sm text-text-secondary">View and edit your products</div>
-                  </Link>
-                  <Link
-                    href={`/expert/${user?.id}`}
-                    className="p-4 border border-border-default rounded-md hover:border-cyber-green hover:bg-surface transition-all"
-                  >
-                    <div className="font-semibold text-custom-text mb-1">View Public Profile</div>
-                    <div className="text-sm text-text-secondary">See how others see your profile</div>
+                    Classroom
                   </Link>
                 </div>
               </div>
-            </>
-          )}
-
-          {activeTab === "messages" && (
-            <div className="bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-8 mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-custom-text">Recent Messages</h2>
-                <Link
-                  href="/messages"
-                  className="text-cyber-green hover:text-white font-semibold hover:underline"
-                >
-                  View All →
-                </Link>
-              </div>
-              {recentMessages.length > 0 ? (
-                <div className="space-y-4">
-                  {recentMessages.map((message) => (
+            ) : (
+              <div className="space-y-3">
+                {notifications.map((item) => {
+                  const config = typeConfig[item.type];
+                  return (
                     <Link
-                      key={message.id}
-                      href={`/messages`}
-                      className="block bg-surface border border-border-default rounded-md p-4 hover:bg-custom-bg hover:border-cyber-green/40 transition-all"
+                      key={item.id}
+                      href={item.href}
+                      className="block bg-surface border border-border-default rounded-xl p-4 sm:p-5 hover:border-cyber-green/40 hover:bg-surface/80 transition-all group"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`font-semibold ${message.read ? "text-text-secondary" : "text-custom-text"}`}>
-                              {message.from_name}
-                            </span>
-                            {!message.read && (
-                              <span className="h-2 w-2 bg-cyber-green rounded-full"></span>
-                            )}
-                          </div>
-                          <p className={`text-sm ${message.read ? "text-text-secondary" : "text-custom-text font-medium"}`}>
-                            {message.subject}
-                          </p>
-                          <p className="text-xs text-text-secondary mt-1 line-clamp-1">{message.content}</p>
+                      <div className="flex items-start gap-4">
+                        <div
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${config.color}`}
+                        >
+                          <span className="text-lg">{config.icon}</span>
                         </div>
-                        <span className="text-xs text-text-secondary ml-4">{formatTimeAgo(message.created_at)}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="font-semibold text-custom-text group-hover:text-cyber-green transition-colors">
+                                {item.title}
+                              </p>
+                              <p className="text-sm text-text-secondary mt-0.5">{item.description}</p>
+                              {item.meta && (
+                                <p className="text-xs text-text-secondary mt-1">{item.meta}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {item.isNew && (
+                                <span className="w-2 h-2 bg-cyber-green rounded-full" title="New" />
+                              )}
+                              <span className="text-xs text-text-secondary whitespace-nowrap">
+                                {item.timeAgo}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-slate-500 group-hover:text-cyber-green transition-colors">
+                          →
+                        </span>
                       </div>
                     </Link>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-text-secondary text-center py-4">No messages yet</p>
-              )}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            )}
 
-          {activeTab === "connections" && (
-            <ConnectionsContent />
-          )}
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link
+                href="/profile/setup"
+                className="text-cyber-green hover:text-white font-medium transition-colors"
+              >
+                Set up profile →
+              </Link>
+              <Link
+                href="/dashboard/storefront"
+                className="text-cyber-green hover:text-white font-medium transition-colors"
+              >
+                Storefront →
+              </Link>
+            </div>
+          </div>
         </div>
       </DashboardLayout>
     </ProtectedRoute>
   );
 }
-

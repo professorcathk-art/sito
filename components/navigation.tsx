@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter, usePathname } from "next/navigation";
+import { useDashboardBadge } from "@/hooks/use-dashboard-badge";
 
 export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }) {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const hasNewActivity = useDashboardBadge();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dashboardMenuOpen, setDashboardMenuOpen] = useState(false);
   
@@ -122,6 +124,12 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                     href="/profile"
                     className="text-white/90 hover:text-text-primary transition-all duration-300 relative group text-sm lg:text-base"
                   >
+                    {hasNewActivity && (
+                      <span
+                        className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full animate-pulse"
+                        aria-label="New activity"
+                      />
+                    )}
                     Dashboard
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
                   </Link>
@@ -203,9 +211,12 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                           <Link
                             href="/profile"
                             onClick={() => setDashboardMenuOpen(false)}
-                            className="block px-4 py-3 text-white/90 hover:text-primary hover:bg-surface/80 transition-colors text-sm font-medium border-t border-border-default mt-1 pt-3"
+                            className="flex items-center gap-2 px-4 py-3 text-white/90 hover:text-primary hover:bg-surface/80 transition-colors text-sm font-medium border-t border-border-default mt-1 pt-3"
                           >
                             Dashboard
+                            {hasNewActivity && (
+                              <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" aria-label="New activity" />
+                            )}
                           </Link>
                           <button
                             onClick={() => {
@@ -291,9 +302,12 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                   <Link
                     href="/profile"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block text-white/90 hover:text-primary transition-colors py-2"
+                    className="flex items-center gap-2 text-white/90 hover:text-primary transition-colors py-2"
                   >
                     Dashboard
+                    {hasNewActivity && (
+                      <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" aria-label="New activity" />
+                    )}
                   </Link>
                   <button
                     onClick={() => {

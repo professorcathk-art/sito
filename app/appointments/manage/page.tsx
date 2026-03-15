@@ -220,6 +220,7 @@ export default function ManageAppointmentsPage() {
         total_amount: apt.total_amount,
         status: apt.status,
         payment_intent_id: apt.payment_intent_id,
+        meeting_link: apt.meeting_link,
         profiles: profilesMap[apt.expert_id] ? {
           name: profilesMap[apt.expert_id].name || "Unknown Expert",
           email: profilesMap[apt.expert_id].email || "N/A",
@@ -631,17 +632,28 @@ export default function ManageAppointmentsPage() {
                       key={appointment.id}
                       className="bg-surface border border-border-default rounded-md p-6"
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex-1 min-w-0">
                           <p className="text-lg font-semibold text-custom-text mb-2">
-                            {formatDateTime(appointment.start_time)} - {formatDateTime(appointment.end_time)}
+                            {formatDateTime(appointment.start_time)} — {formatDateTime(appointment.end_time)}
                           </p>
                           <p className="text-text-secondary mb-1">
                             Expert: {appointment.profiles?.name || "Unknown Expert"} ({appointment.profiles?.email || "N/A"})
                           </p>
-                          <p className="text-text-secondary">
+                          <p className="text-text-secondary mb-3">
                             ${appointment.rate_per_hour}/hour • Total: ${appointment.total_amount.toFixed(2)} • Status: {appointment.status}
                           </p>
+                          {(appointment as any).meeting_link && (
+                            <a
+                              href={(appointment as any).meeting_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-cyber-green/20 text-cyber-green rounded-lg hover:bg-cyber-green/30 transition-colors font-medium text-sm"
+                            >
+                              <span>🔗</span>
+                              Join Meeting
+                            </a>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -792,65 +804,86 @@ export default function ManageAppointmentsPage() {
                               )}
                               {appointment.status !== "completed" && (
                                 <>
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      type="url"
-                                      placeholder="Paste Zoom/Meet link..."
-                                      value={meetingLinkInput[appointment.id] ?? appointment.meeting_link ?? ""}
-                                      onChange={(e) =>
-                                        setMeetingLinkInput({
-                                          ...meetingLinkInput,
-                                          [appointment.id]: e.target.value,
-                                        })
-                                      }
-                                      onClick={(e) => e.stopPropagation()}
-                                      className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 text-sm w-64"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={async (e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        const link =
-                                          meetingLinkInput[appointment.id] ?? appointment.meeting_link;
-                                        if (!link || !link.trim()) {
-                                          alert("Enter a meeting link first");
-                                          return;
+                                  <div className="space-y-2">
+                                    {appointment.meeting_link && (
+                                      <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                                        <span className="text-emerald-400 text-sm font-medium truncate flex-1 min-w-0">
+                                          {appointment.meeting_link}
+                                        </span>
+                                        <a
+                                          href={appointment.meeting_link}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="text-emerald-400 hover:text-emerald-300 text-sm font-medium shrink-0"
+                                        >
+                                          Open →
+                                        </a>
+                                      </div>
+                                    )}
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <input
+                                        type="url"
+                                        placeholder={appointment.meeting_link ? "Paste new link to update..." : "Paste Zoom/Meet link..."}
+                                        value={meetingLinkInput[appointment.id] ?? ""}
+                                        onChange={(e) =>
+                                          setMeetingLinkInput({
+                                            ...meetingLinkInput,
+                                            [appointment.id]: e.target.value,
+                                          })
                                         }
-                                        const linkToSave = link.trim();
-                                        setActionLoading(appointment.id);
-                                        try {
-                                          const res = await fetch(`/api/appointments/${appointment.id}`, {
-                                            method: "PATCH",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({
-                                              action: "add_meeting_link",
-                                              meeting_link: linkToSave,
-                                            }),
-                                          });
-                                          const data = await res.json();
-                                          if (res.ok) {
-                                            await fetchBookedAppointments();
-                                            setMeetingLinkInput((prev) => {
-                                              const next = { ...prev };
-                                              delete next[appointment.id];
-                                              return next;
-                                            });
-                                            alert("Meeting link saved successfully.");
-                                          } else {
-                                            alert(data?.error || "Failed to save link");
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 text-sm min-w-[200px] flex-1 max-w-md"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={async (e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          const link =
+                                            meetingLinkInput[appointment.id] || appointment.meeting_link;
+                                          if (!link || !link.trim()) {
+                                            alert("Enter a meeting link first");
+                                            return;
                                           }
-                                        } catch (err) {
-                                          alert("Failed to save link. Please try again.");
-                                        } finally {
-                                          setActionLoading(null);
-                                        }
-                                      }}
-                                      disabled={!!actionLoading}
-                                      className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg disabled:opacity-50"
-                                    >
-                                      Add Meeting Link
-                                    </button>
+                                          const linkToSave = link.trim();
+                                          setActionLoading(appointment.id);
+                                          try {
+                                            const res = await fetch(`/api/appointments/${appointment.id}`, {
+                                              method: "PATCH",
+                                              headers: { "Content-Type": "application/json" },
+                                              body: JSON.stringify({
+                                                action: "add_meeting_link",
+                                                meeting_link: linkToSave,
+                                              }),
+                                            });
+                                            const data = await res.json();
+                                            if (res.ok) {
+                                              await fetchBookedAppointments();
+                                              setMeetingLinkInput((prev) => {
+                                                const next = { ...prev };
+                                                delete next[appointment.id];
+                                                return next;
+                                              });
+                                            } else {
+                                              alert(data?.error || "Failed to save link");
+                                            }
+                                          } catch (err) {
+                                            alert("Failed to save link. Please try again.");
+                                          } finally {
+                                            setActionLoading(null);
+                                          }
+                                        }}
+                                        disabled={!!actionLoading}
+                                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg disabled:opacity-50 shrink-0"
+                                      >
+                                        {actionLoading === appointment.id
+                                          ? "..."
+                                          : appointment.meeting_link
+                                            ? "Update Link"
+                                            : "Add Meeting Link"}
+                                      </button>
+                                    </div>
                                   </div>
                                   <button
                                     onClick={async (e) => {
