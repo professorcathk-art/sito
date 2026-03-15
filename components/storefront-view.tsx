@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -8,6 +8,41 @@ import { useAuth } from "@/contexts/auth-context";
 import { CourseEnrollment } from "@/components/course-enrollment";
 import type { StorefrontBlock } from "@/types/storefront";
 import { FONT_FAMILIES, getCardCssVars } from "@/lib/storefront-theme-config";
+
+function getDomainFromUrl(url: string): string | null {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return null;
+  }
+}
+
+function LinkThumbnail({ thumbnailUrl, url }: { thumbnailUrl?: string; url: string }) {
+  const [faviconFailed, setFaviconFailed] = useState(false);
+  const domain = useMemo(() => getDomainFromUrl(url), [url]);
+
+  if (thumbnailUrl) {
+    return (
+      <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
+        <Image src={thumbnailUrl} alt="" fill className="object-cover" />
+      </div>
+    );
+  }
+  if (domain && !faviconFailed) {
+    return (
+      <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-white/5 flex items-center justify-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+          alt=""
+          className="w-8 h-8 object-contain"
+          onError={() => setFaviconFailed(true)}
+        />
+      </div>
+    );
+  }
+  return null;
+}
 
 export interface StorefrontDesignState {
   backgroundColor: string;
@@ -215,8 +250,8 @@ export function StorefrontView({
                 const links = items.filter((l) => l.title && l.url).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                 if (links.length === 0) return null;
                 const linkClass = isFluidAura
-                  ? "group relative w-full flex items-center p-3 bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] rounded-2xl hover:scale-[1.02] hover:bg-white/[0.06] transition-all duration-300"
-                  : "group relative w-full flex items-center p-3 bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-2xl hover:scale-[1.02] hover:bg-white transition-all duration-300";
+                  ? "group relative w-full flex items-center gap-4 p-3 bg-white/[0.03] backdrop-blur-3xl border border-white/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] rounded-2xl hover:scale-[1.02] hover:bg-white/[0.06] transition-all duration-300"
+                  : "group relative w-full flex items-center gap-4 p-3 bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-2xl hover:scale-[1.02] hover:bg-white transition-all duration-300";
                 const linkTitleClass = isFluidAura ? "font-semibold text-slate-100" : "font-semibold text-slate-800";
                 const linkDescClass = isFluidAura ? "text-xs text-slate-400 line-clamp-1" : "text-xs text-slate-500 line-clamp-1";
                 const linkIconBgClass = isFluidAura ? "w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-slate-400 group-hover:text-slate-200 group-hover:bg-white/20 transition-colors" : "w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-slate-800 group-hover:bg-slate-100 transition-colors";
@@ -230,16 +265,8 @@ export function StorefrontView({
                         rel="noopener noreferrer"
                         className={linkClass}
                       >
-                        {link.thumbnailUrl ? (
-                          <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-                            <Image src={link.thumbnailUrl} alt="" fill className="object-cover" />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0 flex items-center justify-center shadow-inner">
-                            <span className="text-white font-bold text-lg">{link.title.charAt(0).toUpperCase()}</span>
-                          </div>
-                        )}
-                        <div className="flex flex-col ml-4 flex-grow min-w-0">
+                        <LinkThumbnail thumbnailUrl={link.thumbnailUrl} url={link.url} />
+                        <div className="flex flex-col flex-grow min-w-0">
                           <span className={linkTitleClass}>{link.title}</span>
                           {link.description && <span className={`mt-0.5 ${linkDescClass}`}>{link.description}</span>}
                         </div>
@@ -277,13 +304,9 @@ export function StorefrontView({
                       product.course_id && user ? (
                         <div key={product.id} className={productCardClass}>
                           <div className="flex items-start gap-4">
-                            {product.cover_image_url ? (
+                            {product.cover_image_url && (
                               <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                                 <Image src={product.cover_image_url} alt={product.name} fill className="object-cover" />
-                              </div>
-                            ) : (
-                              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0 flex items-center justify-center shadow-inner">
-                                <span className="text-white font-bold text-xl">{product.name.charAt(0).toUpperCase()}</span>
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
@@ -309,13 +332,9 @@ export function StorefrontView({
                       ) : (
                         <div key={product.id} className={productCardClass}>
                           <div className="flex items-start gap-4">
-                            {product.cover_image_url ? (
+                            {product.cover_image_url && (
                               <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                                 <Image src={product.cover_image_url} alt={product.name} fill className="object-cover" />
-                              </div>
-                            ) : (
-                              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex-shrink-0 flex items-center justify-center shadow-inner">
-                                <span className="text-white font-bold text-xl">{product.name.charAt(0).toUpperCase()}</span>
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
