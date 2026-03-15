@@ -271,12 +271,14 @@ body {
   color: #FFFFFF;
 }
 
-/* White/light accent buttons: ensure dark text for visibility */
+/* White/light accent buttons: ensure dark text for visibility (fixes mobile white-box bug) */
 button.bg-cyber-green,
 a.bg-cyber-green,
 button.bg-primary,
-a.bg-primary {
-  color: #0f172a;
+a.bg-primary,
+button.bg-white,
+a.bg-white {
+  color: #0f172a !important;
 }
 
 /* Primary buttons - Indigo accent */
@@ -412,6 +414,16 @@ select:focus {
 }
 
 .scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for horizontal tab overflow (mobile) */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
 

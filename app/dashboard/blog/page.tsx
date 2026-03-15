@@ -87,11 +87,11 @@ export default function DashboardBlogPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <div className="px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-4xl font-bold text-custom-text">My Blog Posts</h1>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-4xl font-bold text-custom-text">My Blog Posts</h1>
             <button
               onClick={() => router.push("/blog/create")}
-              className="flex items-center gap-2 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
             >
               <span className="text-xl">+</span>
               <span>Create Blog Post</span>
@@ -109,7 +109,7 @@ export default function DashboardBlogPage() {
               <p className="text-text-secondary text-lg mb-4">You haven&apos;t created any blog posts yet.</p>
               <button
                 onClick={() => router.push("/blog/create")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
               >
                 <span className="text-xl">+</span>
                 <span>Create Your First Blog Post</span>

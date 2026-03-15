@@ -24,7 +24,7 @@ import {
 } from "@/lib/storefront-theme-config";
 
 const INPUT_CLASS =
-  "w-full px-4 py-3 bg-slate-950 border border-slate-700 text-slate-100 rounded-md placeholder-slate-500 focus:border-[var(--brand)] focus:ring-1 focus:ring-[var(--brand)] outline-none transition-colors";
+  "w-full min-h-[44px] px-4 py-3 sm:py-2 text-base bg-slate-950 border border-slate-700 text-slate-100 rounded-md placeholder-slate-500 focus:border-[var(--brand)] focus:ring-1 focus:ring-[var(--brand)] outline-none transition-colors";
 
 interface Category {
   id: string;
@@ -635,7 +635,7 @@ export function UnifiedStorefrontBuilder() {
   return (
     <DashboardLayout>
       <div
-        className="p-4 sm:p-6 lg:p-8"
+        className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8"
         style={
           designSettings.buttonColor
             ? { "--brand": designSettings.buttonColor, "--brand-color": designSettings.buttonColor } as React.CSSProperties
@@ -643,8 +643,9 @@ export function UnifiedStorefrontBuilder() {
         }
       >
         <div className="max-w-7xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-slate-50 mb-2">Storefront Builder</h1>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-50 mb-2">Storefront Builder</h1>
             <p className="text-slate-400">
               Edit your profile and customize your storefront.{" "}
               {profileData.customSlug && (
@@ -656,12 +657,14 @@ export function UnifiedStorefrontBuilder() {
                 </span>
               )}
             </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left - Editor Controls (2 cols) */}
             <div className="lg:col-span-2 space-y-4">
-              <div className="flex gap-2 border-b border-slate-700 pb-2">
+              <div className="w-full overflow-x-auto overflow-y-hidden hide-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div className="flex whitespace-nowrap gap-2 border-b border-slate-700 pb-2 min-w-max">
                 {(["profile", "design", "blocks"] as const).map((tab) => (
                   <button
                     key={tab}
@@ -673,6 +676,7 @@ export function UnifiedStorefrontBuilder() {
                     {tab === "profile" ? "Profile Info" : tab === "design" ? "Design" : "Storefront Blocks"}
                   </button>
                 ))}
+                </div>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 max-h-[calc(100vh-16rem)] overflow-y-auto">
@@ -941,7 +945,7 @@ function ProfileTab({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingAvatar}
-              className="px-4 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg text-sm hover:bg-slate-700 disabled:opacity-50"
+              className="min-h-[44px] px-4 py-3 sm:py-2 text-base bg-slate-800 border border-slate-700 text-slate-100 rounded-lg hover:bg-slate-700 disabled:opacity-50"
             >
               {uploadingAvatar ? "Uploading..." : profileData.avatarUrl ? "Change" : "Upload"}
             </button>
@@ -1071,7 +1075,7 @@ function ProfileTab({
               type="button"
               onClick={() => backgroundFileInputRef.current?.click()}
               disabled={uploadingBackground}
-              className="px-4 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg text-sm hover:bg-slate-700 disabled:opacity-50"
+              className="min-h-[44px] px-4 py-3 sm:py-2 text-base bg-slate-800 border border-slate-700 text-slate-100 rounded-lg hover:bg-slate-700 disabled:opacity-50"
             >
               {uploadingBackground ? "Uploading..." : profileData.storefrontBackgroundImageUrl ? "Change background" : "Upload background"}
             </button>
@@ -1284,7 +1288,7 @@ function DesignTab({
                     type="button"
                     onClick={() => backgroundFileInputRef.current?.click()}
                     disabled={uploadingBackground}
-                    className="px-4 py-2 bg-slate-800 border border-slate-700 text-slate-100 rounded-lg text-sm hover:bg-slate-700 disabled:opacity-50"
+                    className="min-h-[44px] px-4 py-3 sm:py-2 text-base bg-slate-800 border border-slate-700 text-slate-100 rounded-lg hover:bg-slate-700 disabled:opacity-50"
                   >
                     {uploadingBackground ? "Uploading..." : backgroundImageUrl ? "Change" : "Upload"}
                   </button>

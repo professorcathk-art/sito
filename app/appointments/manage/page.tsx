@@ -406,8 +406,8 @@ export default function ManageAppointmentsPage() {
     <ProtectedRoute>
       <DashboardLayout>
         <div className="px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-4xl font-bold text-custom-text">Manage Appointments</h1>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-4xl font-bold text-custom-text">Manage Appointments</h1>
             <button
               onClick={() => {
                 if (products.length === 0) {
@@ -420,7 +420,7 @@ export default function ManageAppointmentsPage() {
                   setSelectedProductId(products[0].id);
                 }
               }}
-              className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
+              className="w-full sm:w-auto px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
             >
               Add Timeslots
             </button>
@@ -577,8 +577,8 @@ export default function ManageAppointmentsPage() {
           )}
 
           {/* Tabs */}
-          <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 border-b border-border-default mb-6 scrollbar-hide">
-            <div className="flex gap-3 sm:gap-6 min-w-max pb-1">
+          <div className="w-full overflow-x-auto overflow-y-hidden hide-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 mb-6">
+            <div className="flex whitespace-nowrap gap-6 border-b border-border-default pb-1 min-w-max">
               <button
                 onClick={() => setActiveTab("my-bookings")}
                 className={`px-4 sm:px-6 py-2.5 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
