@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { ProtectedRoute } from "@/components/protected-route";
 import { RichTextEditor } from "@/components/rich-text-editor";
+import { CourseLessonTreeEditor } from "@/components/course-lesson-tree-editor";
 import Link from "next/link";
 
 interface Course {
@@ -819,188 +820,48 @@ export default function ManageCoursePage() {
                 )}
               </div>
 
-              {/* Lessons - View/Edit based on ownership */}
-              <div className="bg-surface border border-border-default rounded-md p-6">
-                <h2 className="text-2xl font-bold text-custom-text mb-6">Lessons</h2>
-                {lessons.length === 0 ? (
-                  <p className="text-text-secondary mb-4">No lessons added yet.</p>
+              {/* Lessons - drag-and-drop builder for owners, read-only for students */}
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
+                <div className="mb-6 flex items-center justify-between gap-3">
+                  <h2 className="text-2xl font-bold text-slate-50">Lessons</h2>
+                  {selectedCourse.expert_id === user?.id && (
+                    <Link
+                      href={`/courses/${selectedCourse.id}/edit`}
+                      className="text-sm font-medium text-sky-400 hover:text-sky-300"
+                    >
+                      Open full builder →
+                    </Link>
+                  )}
+                </div>
+                {selectedCourse.expert_id === user?.id ? (
+                  <CourseLessonTreeEditor
+                    courseId={selectedCourse.id}
+                    lessons={lessons}
+                    onLessonsChange={setLessons}
+                  />
+                ) : lessons.length === 0 ? (
+                  <p className="text-slate-400">No lessons added yet.</p>
                 ) : (
-                  <div className="space-y-4 mb-6">
+                  <div className="space-y-3">
                     {lessons.map((lesson, index) => (
-                      <div
-                        key={lesson.id}
-                        className="bg-custom-bg border border-border-default rounded-md p-4"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p className="text-lg font-semibold text-custom-text mb-1">
-                              {index + 1}. {lesson.title}
-                            </p>
-                            {lesson.description && (
-                              <p className="text-text-secondary text-sm mb-2">{lesson.description}</p>
-                            )}
-                            {lesson.video_url && (
-                              <a
-                                href={lesson.video_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-cyber-green hover:text-white text-sm"
-                              >
-                                Watch Video →
-                              </a>
-                            )}
-                            {lesson.content && (
-                              <div 
-                                className="prose prose-invert prose-sm max-w-none blog-content text-text-secondary mt-2"
-                                dangerouslySetInnerHTML={{ __html: lesson.content }}
-                              />
-                            )}
-                          </div>
-                          {/* Only show edit/delete buttons for course owner */}
-                          {selectedCourse.expert_id === user?.id && (
-                            <div className="flex gap-2 ml-4">
-                              <button
-                                onClick={() => handleEditLesson(lesson)}
-                                className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-md hover:bg-blue-900/70 transition-colors text-sm"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteLesson(lesson.id)}
-                                className="px-3 py-1 bg-red-900/50 text-red-300 rounded-md hover:bg-red-900/70 transition-colors text-sm"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                      <div key={lesson.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+                        <p className="font-semibold text-slate-100">
+                          {index + 1}. {lesson.title}
+                        </p>
+                        {lesson.description && <p className="mt-1 text-sm text-slate-400">{lesson.description}</p>}
+                        {lesson.video_url && (
+                          <a
+                            href={lesson.video_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-block text-sm text-sky-400 hover:text-sky-300"
+                          >
+                            Watch video →
+                          </a>
+                        )}
                       </div>
                     ))}
                   </div>
-                )}
-
-                {/* Add/Edit Lesson Form - Only show for course owner */}
-                {selectedCourse.expert_id === user?.id && (
-                  <>
-                    {showLessonForm && (
-                      <div className="bg-custom-bg border border-border-default rounded-md p-6 mt-6">
-                        <h3 className="text-xl font-bold text-custom-text mb-4">
-                          {editingLesson ? "Edit Lesson" : "Add New Lesson"}
-                        </h3>
-                        <form onSubmit={editingLesson ? handleUpdateLesson : handleAddLesson} className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-custom-text mb-2">Title</label>
-                            <input
-                              type="text"
-                              value={lessonForm.title}
-                              onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
-                              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-custom-text mb-2">Description</label>
-                            <textarea
-                              value={lessonForm.description}
-                              onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
-                              rows={3}
-                              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
-                            ></textarea>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-custom-text mb-2">Video URL (YouTube/Vimeo)</label>
-                            <input
-                              type="text"
-                              value={lessonForm.videoUrl}
-                              onChange={(e) => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
-                              className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
-                              placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                            />
-                          </div>
-                          {lessonForm.videoUrl && (
-                            <div>
-                              <label className="block text-sm font-medium text-custom-text mb-2">Video Type</label>
-                              <select
-                                value={lessonForm.videoType}
-                                onChange={(e) => setLessonForm({ ...lessonForm, videoType: e.target.value as "youtube" | "vimeo" })}
-                                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
-                              >
-                                <option value="youtube">YouTube</option>
-                                <option value="vimeo">Vimeo</option>
-                              </select>
-                            </div>
-                          )}
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <label className="block text-sm font-medium text-custom-text">
-                                Lesson Content <span className="text-xs text-text-secondary">(Rich Text)</span>
-                              </label>
-                              <button
-                                type="button"
-                                onClick={() => setIsRichTextMode(!isRichTextMode)}
-                                className="px-3 py-1 text-xs font-medium bg-surface border border-border-default rounded-md text-custom-text hover:bg-dark-green-800 hover:border-cyber-green transition-colors"
-                              >
-                                {isRichTextMode ? "Plain Text" : "Rich Text"}
-                              </button>
-                            </div>
-                            {isRichTextMode ? (
-                              <RichTextEditor
-                                content={lessonForm.content}
-                                onChange={(newContent) => setLessonForm({ ...lessonForm, content: newContent })}
-                                onFileUpload={(fileUrl, fileName, fileType, fileSize) => {
-                                  console.log("File uploaded:", { fileUrl, fileName, fileType, fileSize });
-                                  // File is already inserted into content by RichTextEditor
-                                }}
-                              />
-                            ) : (
-                              <textarea
-                                value={lessonForm.content}
-                                onChange={(e) => setLessonForm({ ...lessonForm, content: e.target.value })}
-                                rows={6}
-                                className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md text-custom-text"
-                                placeholder="Enter lesson content (plain text)"
-                              ></textarea>
-                            )}
-                          </div>
-                          <div className="flex gap-4">
-                            <button
-                              type="submit"
-                              className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
-                            >
-                              {editingLesson ? "Update Lesson" : "Add Lesson"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setShowLessonForm(false);
-                                setEditingLesson(null);
-                                setLessonForm({
-                                  title: "",
-                                  description: "",
-                                  videoUrl: "",
-                                  videoType: "youtube",
-                                  content: "",
-                                });
-                              }}
-                              className="px-6 py-3 border border-border-default text-custom-text font-semibold rounded-md hover:bg-surface transition-colors"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    )}
-
-                    {/* Add Lesson Button - Only show for course owner */}
-                    {!showLessonForm && (
-                      <button
-                        onClick={() => setShowLessonForm(true)}
-                        className="w-full px-6 py-4 bg-surface border-2 border-dashed border-border-default text-custom-text font-semibold rounded-md hover:bg-dark-green-800/70 hover:border-cyber-green transition-colors"
-                      >
-                        + Add Lesson
-                      </button>
-                    )}
-                  </>
                 )}
               </div>
 

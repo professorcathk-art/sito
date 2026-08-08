@@ -9,6 +9,22 @@ interface StorefrontPageProps {
   }>;
 }
 
+function durationLabelForProduct(product: {
+  product_type?: string | null;
+  e_learning_subtype?: string | null;
+  pricing_type?: string | null;
+}): string | null {
+  if (product.product_type === "appointment") {
+    return product.pricing_type === "hourly" ? "1-on-1 · Hourly" : "1-on-1 Session";
+  }
+  const subtype = (product.e_learning_subtype || "").toLowerCase();
+  if (subtype.includes("webinar")) return "Live webinar";
+  if (subtype.includes("course")) return "Self-paced course";
+  if (subtype.includes("ebook")) return "Instant download";
+  if (subtype.includes("prompt")) return "AI prompt pack";
+  return null;
+}
+
 export default async function StorefrontPage({ params }: StorefrontPageProps) {
   const { slug } = await params;
   const supabase = await createClient();
@@ -77,7 +93,6 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
     }
 
     const profileId = profile.id as string;
-    // Fetch products if enabled (with course cover image for thumbnails)
     let products: any[] = [];
     if (profile.storefront_show_products !== false) {
       const { data: productsData } = await supabase
@@ -95,22 +110,20 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         `)
         .eq("expert_id", profileId)
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(24);
 
       if (productsData) {
-        products = productsData
-          .filter((p: any) => p.product_type !== "appointment")
-          .map((p: any) => {
-            const { courses, ...rest } = p;
-            return {
-              ...rest,
-              cover_image_url: courses?.cover_image_url ?? null,
-            };
-          });
+        products = productsData.map((p: any) => {
+          const { courses, ...rest } = p;
+          return {
+            ...rest,
+            cover_image_url: courses?.cover_image_url ?? null,
+            duration_label: durationLabelForProduct(rest),
+          };
+        });
       }
     }
 
-    // Fetch blog posts if enabled
     let blogPosts: any[] = [];
     if (profile.storefront_show_blog !== false) {
       const { data: blogData } = await supabase
@@ -127,7 +140,6 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
       }
     }
 
-    // Check for appointment slots if enabled
     let hasAppointments = false;
     if (profile.storefront_show_appointments !== false) {
       const { count } = await supabase

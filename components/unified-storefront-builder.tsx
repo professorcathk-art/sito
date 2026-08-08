@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
@@ -38,7 +38,9 @@ interface Country {
 }
 
 const BLOCK_TYPES: { id: StorefrontBlock["type"]; name: string }[] = [
+  { id: "hero", name: "Hero Banner" },
   { id: "header", name: "Header" },
+  { id: "lead_magnet", name: "Lead Magnet" },
   { id: "links", name: "Links" },
   { id: "products", name: "Products" },
   { id: "social_media", name: "Social Media" },
@@ -52,7 +54,15 @@ const BLOCK_TYPES: { id: StorefrontBlock["type"]; name: string }[] = [
 ];
 
 const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown>> = {
+  hero: { imageUrl: "", overlayOpacity: 45, overlayColor: "#0f172a", avatarPosition: "left" },
   header: { name: "", tagline: "", bio: "", avatarUrl: "" },
+  lead_magnet: {
+    title: "Get my free guide",
+    subtitle: "Join my list for exclusive tips and updates.",
+    ctaText: "Send me the freebie",
+    placeholder: "Enter your email",
+    successMessage: "You're in! Check your inbox soon.",
+  },
   links: { items: [{ title: "", url: "", icon: "", order: 0, description: "", thumbnailUrl: "", emoji: "" }], textAlign: "left" as "left" | "center" | "right" },
   products: { showProducts: true },
   social_media: { platforms: ["instagram", "linkedin", "tiktok", "twitter", "youtube"] },
@@ -61,22 +71,33 @@ const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown
   faq: { items: [{ question: "", answer: "" }] },
   testimonials: { items: [{ name: "", quote: "", avatarUrl: "" }] },
   rich_text: { content: "" },
-  image_banner: { imageUrl: "" },
+  image_banner: { imageUrl: "", overlayOpacity: 0, overlayColor: "#000000", avatarPosition: "left" },
   bullet_list: { items: [""] },
 };
 
 const DEFAULT_BLOCKS: StorefrontBlock[] = [
-  { id: "default-header", type: "header", order: 0, data: { ...DEFAULT_BLOCK_DATA.header } },
-  { id: "default-links", type: "links", order: 1, data: { ...DEFAULT_BLOCK_DATA.links } },
-  { id: "default-products", type: "products", order: 2, data: { ...DEFAULT_BLOCK_DATA.products } },
-  { id: "default-book-me", type: "book_me", order: 3, data: {} },
+  { id: "default-hero", type: "hero", order: 0, data: { ...DEFAULT_BLOCK_DATA.hero } },
+  { id: "default-header", type: "header", order: 1, data: { ...DEFAULT_BLOCK_DATA.header } },
+  { id: "default-lead-magnet", type: "lead_magnet", order: 2, data: { ...DEFAULT_BLOCK_DATA.lead_magnet } },
+  { id: "default-products", type: "products", order: 3, data: { ...DEFAULT_BLOCK_DATA.products } },
+  { id: "default-testimonials", type: "testimonials", order: 4, data: { items: [{ name: "", quote: "" }] } },
+  { id: "default-faq", type: "faq", order: 5, data: { items: [{ question: "", answer: "" }] } },
+  { id: "default-book-me", type: "book_me", order: 6, data: {} },
 ];
 
 export function UnifiedStorefrontBuilder() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const supabase = createClient();
   const [activeTab, setActiveTab] = useState<"profile" | "design" | "blocks">("profile");
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "design" || tab === "blocks" || tab === "profile") {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -156,7 +177,19 @@ export function UnifiedStorefrontBuilder() {
   const [editingBlock, setEditingBlock] = useState<StorefrontBlock | null>(null);
 
   // Products for preview
-  const [products, setProducts] = useState<Array<{ id: string; name: string; price: number; pricing_type: string }>>([]);
+  const [products, setProducts] = useState<
+    Array<{
+      id: string;
+      name: string;
+      price: number;
+      pricing_type: string;
+      product_type?: string;
+      e_learning_subtype?: string;
+      cover_image_url?: string | null;
+      description?: string;
+      duration_label?: string | null;
+    }>
+  >([]);
 
   const majorLanguages = [
     "English", "Mandarin Chinese", "Spanish", "Hindi", "Arabic", "Portuguese", "Bengali",
@@ -207,7 +240,11 @@ export function UnifiedStorefrontBuilder() {
         const [categoriesRes, countriesRes, productsRes] = await Promise.all([
           supabase.from("categories").select("id, name").order("name"),
           supabase.from("countries").select("id, name, code").order("name"),
-          supabase.from("products").select("id, name, price, pricing_type, product_type").eq("expert_id", user.id).limit(10),
+          supabase
+            .from("products")
+            .select("id, name, description, price, pricing_type, product_type, e_learning_subtype, course_id, courses(cover_image_url)")
+            .eq("expert_id", user.id)
+            .limit(24),
         ]);
 
         if (profileRes.data) {
@@ -300,7 +337,33 @@ export function UnifiedStorefrontBuilder() {
 
         if (categoriesRes.data) setCategories(categoriesRes.data);
         if (countriesRes.data) setCountries(countriesRes.data);
-        if (productsRes.data) setProducts(productsRes.data.filter((p: { product_type?: string }) => p.product_type !== "appointment"));
+        if (productsRes.data) {
+          setProducts(
+            productsRes.data.map((p: Record<string, unknown>) => {
+              const courses = p.courses as { cover_image_url?: string } | { cover_image_url?: string }[] | null;
+              const cover =
+                (Array.isArray(courses) ? courses[0]?.cover_image_url : courses?.cover_image_url) ?? null;
+              const productType = p.product_type as string | undefined;
+              const subtype = ((p.e_learning_subtype as string) || "").toLowerCase();
+              let duration_label: string | null = null;
+              if (productType === "appointment") duration_label = "1-on-1 Session";
+              else if (subtype.includes("webinar")) duration_label = "Live webinar";
+              else if (subtype.includes("course")) duration_label = "Self-paced course";
+              else if (subtype.includes("ebook")) duration_label = "Instant download";
+              return {
+                id: p.id as string,
+                name: p.name as string,
+                description: (p.description as string) || "",
+                price: Number(p.price) || 0,
+                pricing_type: (p.pricing_type as string) || "one_time",
+                product_type: productType,
+                e_learning_subtype: p.e_learning_subtype as string | undefined,
+                cover_image_url: cover,
+                duration_label,
+              };
+            })
+          );
+        }
       } catch (err) {
         console.error("Error loading data:", err);
       } finally {
@@ -484,9 +547,11 @@ export function UnifiedStorefrontBuilder() {
     setEditingBlock(block);
   };
 
-  const availableBlockTypes = BLOCK_TYPES.filter(
-    (t) => t.id !== "header" || !storefrontBlocks.some((b) => b.type === "header")
-  );
+  const availableBlockTypes = BLOCK_TYPES.filter((t) => {
+    if (t.id === "header") return !storefrontBlocks.some((b) => b.type === "header");
+    if (t.id === "hero") return !storefrontBlocks.some((b) => b.type === "hero");
+    return true;
+  });
 
   const handleUpdateBlock = (id: string, data: Record<string, unknown>) => {
     setStorefrontBlocks((prev) =>
@@ -668,12 +733,15 @@ export function UnifiedStorefrontBuilder() {
                 {(["profile", "design", "blocks"] as const).map((tab) => (
                   <button
                     key={tab}
-                    onClick={() => setActiveTab(tab)}
+                    onClick={() => {
+                      setActiveTab(tab);
+                      router.replace(`/dashboard/storefront?tab=${tab}`, { scroll: false });
+                    }}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                       activeTab === tab ? "bg-slate-800 text-slate-50" : "text-slate-400 hover:text-slate-50"
                     }`}
                   >
-                    {tab === "profile" ? "Profile Info" : tab === "design" ? "Design" : "Storefront Blocks"}
+                    {tab === "profile" ? "Profile Info" : tab === "design" ? "Theme" : "Section Blocks"}
                   </button>
                 ))}
                 </div>
@@ -1478,10 +1546,11 @@ function BlocksTab({
           const sortedBlocks = [...blocks].sort((a, b) => a.order - b.order);
           return sortedBlocks.map((block, idx) => {
             const isHeader = block.type === "header";
+            const isLocked = isHeader;
           return (
-          <div key={block.id} className="p-4 bg-slate-950 border border-slate-700 rounded-lg">
+          <div key={block.id} className={`p-4 bg-slate-950 border rounded-lg ${block.type === "hero" || isHeader ? "border-indigo-500/40" : "border-slate-700"}`}>
             <div className="flex items-center justify-between">
-              <span className="text-slate-200 font-medium capitalize">{block.type.replace("_", " ")}</span>
+              <span className="text-slate-200 font-medium capitalize">{block.type.replace(/_/g, " ")}</span>
               <div className="flex gap-1">
                 <button
                   type="button"
@@ -1507,9 +1576,9 @@ function BlocksTab({
                 <button
                   type="button"
                   onClick={() => onRemoveBlock(block.id)}
-                  disabled={isHeader}
+                  disabled={isLocked}
                   className="px-2 py-1 text-red-400 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                  title={isHeader ? "Header cannot be removed" : undefined}
+                  title={isLocked ? "Header cannot be removed" : undefined}
                 >
                   Remove
                 </button>
@@ -1555,6 +1624,138 @@ function BlockEditForm({
   const [uploadError, setUploadError] = useState<string>("");
   const [uploadErrorIndex, setUploadErrorIndex] = useState<number | null>(null);
 
+  if (block.type === "hero") {
+    const overlayOpacity = typeof data.overlayOpacity === "number" ? data.overlayOpacity : 45;
+    const overlayColor = (data.overlayColor as string) || "#0f172a";
+    const avatarPosition = (data.avatarPosition as string) || "left";
+    return (
+      <div className="mt-4 space-y-4">
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Hero banner (16:9)</label>
+          {(data.imageUrl as string) && (
+            <div className="relative mb-2 aspect-video w-full overflow-hidden rounded-lg">
+              <Image src={data.imageUrl as string} alt="" fill className="object-cover" />
+            </div>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            id="hero-banner-upload"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setImageTextUploading(true);
+              setUploadError("");
+              try {
+                const url = await onImageUpload(file, "storefront/heroes");
+                onUpdate({ ...data, imageUrl: url });
+              } catch (err) {
+                setUploadError(err instanceof Error ? err.message : "Upload failed");
+              } finally {
+                setImageTextUploading(false);
+                e.target.value = "";
+              }
+            }}
+          />
+          <label
+            htmlFor="hero-banner-upload"
+            className="inline-block cursor-pointer rounded border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700"
+          >
+            {imageTextUploading ? "Uploading..." : (data.imageUrl as string) ? "Change image" : "Upload image"}
+          </label>
+          {uploadError && <p className="mt-1 text-xs text-red-400">{uploadError}</p>}
+        </div>
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Overlay opacity ({overlayOpacity}%)</label>
+          <input
+            type="range"
+            min={0}
+            max={80}
+            value={overlayOpacity}
+            onChange={(e) => onUpdate({ ...data, overlayOpacity: Number(e.target.value) })}
+            className="w-full"
+          />
+        </div>
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Overlay color</label>
+          <input
+            type="color"
+            value={overlayColor}
+            onChange={(e) => onUpdate({ ...data, overlayColor: e.target.value })}
+            className="h-10 w-16 cursor-pointer rounded border border-slate-700 bg-slate-950"
+          />
+        </div>
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Avatar position on banner</label>
+          <select
+            value={avatarPosition}
+            onChange={(e) => onUpdate({ ...data, avatarPosition: e.target.value })}
+            className={INPUT_CLASS}
+          >
+            <option value="left">Bottom left</option>
+            <option value="center">Bottom center</option>
+          </select>
+        </div>
+      </div>
+    );
+  }
+  if (block.type === "lead_magnet") {
+    return (
+      <div className="mt-4 space-y-3">
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Title</label>
+          <input
+            type="text"
+            value={(data.title as string) || ""}
+            onChange={(e) => onUpdate({ ...data, title: e.target.value })}
+            placeholder="Get my free guide"
+            className={INPUT_CLASS}
+          />
+        </div>
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Subtitle</label>
+          <textarea
+            value={(data.subtitle as string) || ""}
+            onChange={(e) => onUpdate({ ...data, subtitle: e.target.value })}
+            placeholder="Join my list for exclusive tips..."
+            rows={2}
+            className={`${INPUT_CLASS} resize-none`}
+          />
+        </div>
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">CTA button text</label>
+          <input
+            type="text"
+            value={(data.ctaText as string) || ""}
+            onChange={(e) => onUpdate({ ...data, ctaText: e.target.value })}
+            placeholder="Send me the freebie"
+            className={INPUT_CLASS}
+          />
+        </div>
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Email placeholder</label>
+          <input
+            type="text"
+            value={(data.placeholder as string) || ""}
+            onChange={(e) => onUpdate({ ...data, placeholder: e.target.value })}
+            placeholder="Enter your email"
+            className={INPUT_CLASS}
+          />
+        </div>
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Success message</label>
+          <input
+            type="text"
+            value={(data.successMessage as string) || ""}
+            onChange={(e) => onUpdate({ ...data, successMessage: e.target.value })}
+            placeholder="You're in!"
+            className={INPUT_CLASS}
+          />
+        </div>
+      </div>
+    );
+  }
   if (block.type === "header") {
     return (
       <div className="mt-4">

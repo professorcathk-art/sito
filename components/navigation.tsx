@@ -5,14 +5,17 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter, usePathname } from "next/navigation";
 import { useDashboardBadge } from "@/hooks/use-dashboard-badge";
+import { useDashboardMode } from "@/contexts/dashboard-mode-context";
 
 export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }) {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const hasNewActivity = useDashboardBadge();
+  const { mode, setMode, isCreator } = useDashboardMode();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dashboardMenuOpen, setDashboardMenuOpen] = useState(false);
+  const [learningMenuOpen, setLearningMenuOpen] = useState(false);
   
   // Check if we're on a dashboard page (all pages that use DashboardLayout)
   const isDashboardPage = pathname?.startsWith("/dashboard") || 
@@ -23,6 +26,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                           pathname?.startsWith("/subscriptions") || 
                           pathname?.startsWith("/courses/manage") || 
                           pathname?.startsWith("/courses/create") ||
+                          (pathname?.startsWith("/courses/") && pathname?.includes("/edit")) ||
                           pathname?.startsWith("/appointments") ||
                           pathname?.startsWith("/blog/create") ||
                           pathname?.startsWith("/blog/edit") ||
@@ -120,8 +124,73 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                 <div className="text-text-secondary animate-pulse text-sm lg:text-base">Loading...</div>
               ) : user ? (
                 <>
+                  {isDashboardPage && (
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setLearningMenuOpen((v) => !v)}
+                        className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:border-slate-500 hover:text-white transition-colors"
+                      >
+                        {isCreator ? "Creator Studio" : "My Learning"}
+                        <svg className="h-3.5 w-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      {learningMenuOpen && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setLearningMenuOpen(false)} />
+                          <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-2xl">
+                            <button
+                              type="button"
+                              className={`block w-full px-4 py-3 text-left text-sm ${mode === "creator" ? "bg-slate-800 text-white font-semibold" : "text-slate-300 hover:bg-slate-800"}`}
+                              onClick={() => {
+                                setMode("creator");
+                                setLearningMenuOpen(false);
+                                router.push("/dashboard/storefront");
+                              }}
+                            >
+                              Creator Studio
+                            </button>
+                            <button
+                              type="button"
+                              className={`block w-full px-4 py-3 text-left text-sm border-t border-slate-800 ${mode === "learner" ? "bg-slate-800 text-white font-semibold" : "text-slate-300 hover:bg-slate-800"}`}
+                              onClick={() => {
+                                setMode("learner");
+                                setLearningMenuOpen(false);
+                                router.push("/profile");
+                              }}
+                            >
+                              My Learning
+                            </button>
+                            <div className="border-t border-slate-800 py-1">
+                              <Link
+                                href="/blog/watch-later"
+                                onClick={() => {
+                                  setMode("learner");
+                                  setLearningMenuOpen(false);
+                                }}
+                                className="block px-4 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-white"
+                              >
+                                Watch Later
+                              </Link>
+                              <Link
+                                href="/dashboard/purchases"
+                                onClick={() => {
+                                  setMode("learner");
+                                  setLearningMenuOpen(false);
+                                }}
+                                className="block px-4 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-white"
+                              >
+                                Purchase History
+                              </Link>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
                   <Link
-                    href="/profile"
+                    href={isCreator ? "/dashboard/storefront" : "/profile"}
                     className="text-white/90 hover:text-text-primary transition-all duration-300 relative group text-sm lg:text-base"
                   >
                     {hasNewActivity && (
@@ -130,7 +199,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                         aria-label="New activity"
                       />
                     )}
-                    Dashboard
+                    Studio
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
                   </Link>
                   <button

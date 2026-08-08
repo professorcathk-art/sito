@@ -60,6 +60,8 @@ export function ProductsManagement() {
   const [interests, setInterests] = useState<ProductInterest[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [createWizardStep, setCreateWizardStep] = useState<1 | 2 | 3>(1);
+  const [wizardOfferType, setWizardOfferType] = useState<"course" | "download" | "lead_magnet" | "appointment" | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [pendingCourseData, setPendingCourseData] = useState<{
@@ -1552,6 +1554,8 @@ export function ProductsManagement() {
             onClick={() => {
               setShowAddForm(true);
               setEditingProduct(null);
+              setCreateWizardStep(1);
+              setWizardOfferType(null);
               setFormData({
                 name: "",
                 description: "",
@@ -1573,7 +1577,7 @@ export function ProductsManagement() {
                 meetingLocation: "",
               });
             }}
-            className="bg-cyber-green text-slate-900 px-4 py-2 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
+            className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-white transition-colors"
           >
             + Add Product
           </button>
@@ -1617,11 +1621,147 @@ export function ProductsManagement() {
 
       {/* Add/Edit Product Form */}
       {showAddForm && activeTab === "products" && (
-        <div className="bg-surface backdrop-blur-sm border border-border-default rounded-xl card-hover p-6">
-          <h3 className="text-xl font-bold text-custom-text mb-4">
-            {editingProduct ? "Edit Product" : "Add New Product"}
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <h3 className="text-xl font-bold text-slate-50 mb-2">
+            {editingProduct ? "Edit Product" : "Create offering"}
           </h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {!editingProduct && (
+            <div className="mb-6 flex flex-wrap items-center gap-2">
+              {[
+                { step: 1 as const, label: "Select Type" },
+                { step: 2 as const, label: "Content & Assets" },
+                { step: 3 as const, label: "Pricing & Access" },
+              ].map((s) => (
+                <div key={s.step} className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex h-7 min-w-7 items-center justify-center rounded-full px-2 text-xs font-bold ${
+                      createWizardStep === s.step
+                        ? "bg-slate-100 text-slate-950"
+                        : createWizardStep > s.step
+                          ? "bg-emerald-500/20 text-emerald-300"
+                          : "bg-slate-800 text-slate-400"
+                    }`}
+                  >
+                    {s.step}
+                  </span>
+                  <span className={`text-sm ${createWizardStep === s.step ? "text-slate-100 font-semibold" : "text-slate-500"}`}>
+                    {s.label}
+                  </span>
+                  {s.step < 3 && <span className="mx-1 text-slate-700">→</span>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!editingProduct && createWizardStep === 1 && (
+            <div className="space-y-4">
+              <p className="text-sm text-slate-400">What are you selling?</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[
+                  {
+                    id: "course" as const,
+                    title: "Course",
+                    desc: "Multi-lesson classroom experience",
+                    apply: () =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        product_type: "e-learning",
+                        e_learning_subtype: "online-course",
+                        enrollmentOnRequest: false,
+                        price: prev.price || "",
+                      })),
+                  },
+                  {
+                    id: "download" as const,
+                    title: "Digital Download",
+                    desc: "Ebook, prompt pack, or file",
+                    apply: () =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        product_type: "e-learning",
+                        e_learning_subtype: "ebook",
+                        enrollmentOnRequest: false,
+                      })),
+                  },
+                  {
+                    id: "lead_magnet" as const,
+                    title: "Lead Magnet",
+                    desc: "Free offer to capture emails",
+                    apply: () =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        product_type: "e-learning",
+                        e_learning_subtype: "other",
+                        price: "0",
+                        enrollmentOnRequest: true,
+                        payment_method: "offline",
+                      })),
+                  },
+                  {
+                    id: "appointment" as const,
+                    title: "Appointment",
+                    desc: "1-on-1 booked sessions",
+                    apply: () =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        product_type: "appointment",
+                        e_learning_subtype: "",
+                        pricing_type: "hourly",
+                      })),
+                  },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      setWizardOfferType(opt.id);
+                      opt.apply();
+                    }}
+                    className={`rounded-2xl border p-4 text-left transition-all ${
+                      wizardOfferType === opt.id
+                        ? "border-slate-200 bg-slate-100 text-slate-950"
+                        : "border-slate-700 bg-slate-950/50 text-slate-200 hover:border-slate-500"
+                    }`}
+                  >
+                    <p className="font-semibold">{opt.title}</p>
+                    <p className={`mt-1 text-sm ${wizardOfferType === opt.id ? "text-slate-600" : "text-slate-400"}`}>
+                      {opt.desc}
+                    </p>
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(false)}
+                  className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-900"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={!wizardOfferType}
+                  onClick={() => setCreateWizardStep(2)}
+                  className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-white disabled:opacity-40"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          )}
+
+          <form
+            onSubmit={(e) => {
+              if (!editingProduct && createWizardStep < 3) {
+                e.preventDefault();
+                setCreateWizardStep((s) => (s === 1 ? 2 : 3));
+                return;
+              }
+              return handleSubmit(e);
+            }}
+            className={`space-y-4 ${!editingProduct && createWizardStep === 1 ? "hidden" : ""}`}
+          >
+            {(editingProduct || createWizardStep >= 2) && (
             <div>
               <label className="block text-sm font-medium text-custom-text mb-2">
                 Title of your product *
@@ -1630,11 +1770,13 @@ export function ProductsManagement() {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
+                required={!!editingProduct || createWizardStep >= 2}
                 className="w-full px-4 py-2 bg-custom-bg border border-border-default rounded-md focus:ring-2 focus:ring-white/20 focus:border-white/20 text-custom-text placeholder-custom-text/50"
                 placeholder="e.g., 1-on-1 Consultation"
               />
             </div>
+            )}
+            {editingProduct && (
             <div>
               <label className="block text-sm font-medium text-custom-text mb-2">
                 Product Type *
@@ -1662,8 +1804,9 @@ export function ProductsManagement() {
                 {formData.product_type === "appointment" && "Create a 1-on-1 session service. After adding description, you'll set up appointment slots and pricing."}
               </p>
             </div>
+            )}
 
-            {formData.product_type === "e-learning" && (
+            {(editingProduct || createWizardStep === 2) && formData.product_type === "e-learning" && (
               <>
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
@@ -1719,7 +1862,7 @@ export function ProductsManagement() {
               </>
             )}
 
-            {formData.product_type === "e-learning" && (
+            {(editingProduct || createWizardStep === 2) && formData.product_type === "e-learning" && (
               <>
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
@@ -1764,7 +1907,7 @@ export function ProductsManagement() {
             )}
 
             {/* Appointment-specific: What to Expect & Meeting Location */}
-            {formData.product_type === "appointment" && (
+            {(editingProduct || createWizardStep === 2) && formData.product_type === "appointment" && (
               <>
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
@@ -1794,7 +1937,7 @@ export function ProductsManagement() {
             )}
 
             {/* Price field - hidden for appointments (price set in appointment form) */}
-            {formData.product_type !== "appointment" && (
+            {(editingProduct || createWizardStep === 3) && formData.product_type !== "appointment" && (
               <div>
                 <label className="block text-sm font-medium text-custom-text mb-2">
                   Price (USD) *
@@ -1855,7 +1998,7 @@ export function ProductsManagement() {
               </div>
             )}
 
-            {formData.price && parseFloat(formData.price) > 0 && (
+            {(editingProduct || createWizardStep === 3) && formData.price && parseFloat(formData.price) > 0 && (
               <>
                 <div>
                   <label className="block text-sm font-medium text-custom-text mb-2">
@@ -1949,6 +2092,7 @@ export function ProductsManagement() {
               </>
             )}
 
+            {(editingProduct || createWizardStep === 2) && (
             <div>
               <label className="block text-sm font-medium text-custom-text mb-2">Description of your product *</label>
               <RichTextEditor
@@ -1957,21 +2101,33 @@ export function ProductsManagement() {
                 placeholder="This e-learning is a full course/ a ebook for download…"
               />
             </div>
-            <div className="flex gap-4">
+            )}
+            <div className="flex flex-wrap gap-3">
+              {!editingProduct && createWizardStep > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setCreateWizardStep((s) => (s === 3 ? 2 : 1))}
+                  className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-900"
+                >
+                  Back
+                </button>
+              )}
               <button
                 type="submit"
-                className="bg-cyber-green text-slate-900 px-6 py-2 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
+                className="rounded-xl bg-slate-100 px-6 py-2 text-sm font-semibold text-slate-950 hover:bg-white transition-colors"
               >
-                {editingProduct 
-                  ? "Update Product" 
-                  : formData.product_type === "e-learning" 
-                    ? "Next: Create Form" 
-                    : "Next: Set Up Sessions"}
+                {editingProduct
+                  ? "Update Product"
+                  : createWizardStep === 2
+                    ? "Continue to Pricing"
+                    : formData.product_type === "e-learning"
+                      ? "Next: Create Form"
+                      : "Next: Set Up Sessions"}
               </button>
               {editingProduct && editingProduct.product_type === "appointment" && (
                 <Link
                   href="/appointments/manage"
-                  className="px-6 py-2 bg-blue-900/30 text-blue-200 border border-blue-500/50 rounded-md hover:bg-blue-900/50 transition-colors text-center"
+                  className="rounded-xl border border-sky-500/40 px-4 py-2 text-sm text-sky-300 hover:bg-sky-950/40"
                 >
                   Manage Timeslots
                 </Link>
@@ -1981,6 +2137,8 @@ export function ProductsManagement() {
                 onClick={() => {
                   setShowAddForm(false);
                   setEditingProduct(null);
+                  setCreateWizardStep(1);
+                  setWizardOfferType(null);
                   setFormData({
                     name: "",
                     description: "",
@@ -2002,7 +2160,7 @@ export function ProductsManagement() {
                     meetingLocation: "",
                   });
                 }}
-                className="px-6 py-2 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
+                className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-900"
               >
                 Cancel
               </button>
