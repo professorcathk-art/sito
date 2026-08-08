@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { StorefrontView } from "@/components/storefront-view";
@@ -160,28 +161,30 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
 
     const p = profile as Record<string, unknown>;
     return (
-      <StorefrontView
-        expertId={String(p.id)}
-        expertName={String(p.name || "Expert")}
-        expertBio={String(p.bio || "")}
-        expertTagline={p.tagline as string | undefined}
-        bioOverride={p.storefront_bio_override as string | undefined}
-        avatarUrl={p.avatar_url as string | undefined}
-        verified={!!p.verified}
-        designState={{ ...designState, glowElement }}
-        customLinks={(p.storefront_custom_links as any) || []}
-        website={p.website as string | undefined}
-        linkedin={p.linkedin as string | undefined}
-        instagramUrl={p.instagram_url as string | undefined}
-        tiktokUrl={p.tiktok_url as string | undefined}
-        twitterUrl={p.twitter_url as string | undefined}
-        youtubeUrl={p.youtube_url as string | undefined}
-        storefrontBackgroundImageUrl={p.storefront_background_image_url as string | undefined}
-        products={products}
-        blogPosts={blogPosts}
-        hasAppointments={hasAppointments}
-        storefrontBlocks={storefrontBlocks}
-      />
+      <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Loading storefront…</div>}>
+        <StorefrontView
+          expertId={String(p.id)}
+          expertName={String(p.name || "Expert")}
+          expertBio={String(p.bio || "")}
+          expertTagline={p.tagline as string | undefined}
+          bioOverride={p.storefront_bio_override as string | undefined}
+          avatarUrl={p.avatar_url as string | undefined}
+          verified={!!p.verified}
+          designState={{ ...designState, glowElement }}
+          customLinks={(p.storefront_custom_links as any) || []}
+          website={p.website as string | undefined}
+          linkedin={p.linkedin as string | undefined}
+          instagramUrl={p.instagram_url as string | undefined}
+          tiktokUrl={p.tiktok_url as string | undefined}
+          twitterUrl={p.twitter_url as string | undefined}
+          youtubeUrl={p.youtube_url as string | undefined}
+          storefrontBackgroundImageUrl={p.storefront_background_image_url as string | undefined}
+          products={products}
+          blogPosts={blogPosts}
+          hasAppointments={hasAppointments}
+          storefrontBlocks={storefrontBlocks}
+        />
+      </Suspense>
     );
   } catch (error: any) {
     console.error("Error fetching storefront:", error);

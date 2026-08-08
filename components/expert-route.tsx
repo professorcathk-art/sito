@@ -12,11 +12,12 @@ export function ExpertRoute({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
   const [isExpert, setIsExpert] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [missing, setMissing] = useState<string[]>([]);
 
   useEffect(() => {
     async function checkExpertStatus() {
       if (authLoading) return;
-      
+
       if (!user) {
         router.push("/login");
         return;
@@ -29,16 +30,17 @@ export function ExpertRoute({ children }: { children: React.ReactNode }) {
           .eq("id", user.id)
           .single();
 
-        // Check if user has completed expert profile (has category_id and bio)
-        const hasExpertProfile = !!(profile?.category_id && profile?.bio && profile?.name);
-        setIsExpert(hasExpertProfile);
+        const gaps: string[] = [];
+        if (!profile?.name?.trim()) gaps.push("display name");
+        if (!profile?.bio?.trim()) gaps.push("bio");
+        if (!profile?.category_id) gaps.push("area of expertise");
 
-        if (!hasExpertProfile) {
-          // Don't redirect automatically, show message instead
-        }
+        setMissing(gaps);
+        setIsExpert(gaps.length === 0);
       } catch (error) {
         console.error("Error checking expert status:", error);
         setIsExpert(false);
+        setMissing(["profile details"]);
       } finally {
         setChecking(false);
       }
@@ -49,8 +51,8 @@ export function ExpertRoute({ children }: { children: React.ReactNode }) {
 
   if (authLoading || checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-green-950">
-        <div className="text-text-secondary animate-pulse">Loading...</div>
+      <div className="min-h-[40vh] flex items-center justify-center">
+        <div className="text-slate-400 animate-pulse">Loading...</div>
       </div>
     );
   }
@@ -61,17 +63,24 @@ export function ExpertRoute({ children }: { children: React.ReactNode }) {
 
   if (!isExpert) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-green-950 px-4">
-        <div className="max-w-2xl w-full bg-surface backdrop-blur-sm border border-border-default rounded-2xl shadow-lg p-8 text-center">
-          <h2 className="text-3xl font-bold text-custom-text mb-4">Expert Profile Required</h2>
-          <p className="text-text-secondary mb-6">
-            You need to complete your expert profile to access this feature. Complete your profile with your category, bio, and other details to unlock expert features.
+      <div className="flex items-center justify-center px-4 py-16">
+        <div className="max-w-xl w-full rounded-2xl border border-slate-800 bg-slate-900/70 p-8 text-center shadow-xl">
+          <h2 className="text-2xl font-bold text-slate-50 mb-3">Complete your creator profile</h2>
+          <p className="text-slate-400 mb-4 text-sm leading-relaxed">
+            Unlock Products and Earnings by finishing your expert profile
+            {missing.length > 0 ? (
+              <>
+                {" "}
+                — still needed: <span className="text-slate-200 font-medium">{missing.join(", ")}</span>
+              </>
+            ) : null}
+            .
           </p>
           <Link
-            href="/profile/setup"
-            className="inline-block bg-cyber-green text-slate-900 px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors shadow-2xl"
+            href="/dashboard/storefront?tab=profile"
+            className="inline-block rounded-xl bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-white transition-colors"
           >
-            Complete Your Profile
+            Go to Storefront Profile
           </Link>
         </div>
       </div>

@@ -1754,7 +1754,29 @@ export function ProductsManagement() {
             onSubmit={(e) => {
               if (!editingProduct && createWizardStep < 3) {
                 e.preventDefault();
-                setCreateWizardStep((s) => (s === 1 ? 2 : 3));
+                if (createWizardStep === 2) {
+                  const plainDesc = formData.description.replace(/<[^>]*>/g, "").trim();
+                  if (!formData.name.trim()) {
+                    setError("Please enter a product title.");
+                    return;
+                  }
+                  if (!plainDesc) {
+                    setError("Please add a product description before continuing.");
+                    return;
+                  }
+                  if (formData.product_type === "e-learning" && !formData.e_learning_subtype) {
+                    setError("Please select an e-learning sub-type.");
+                    return;
+                  }
+                  if (formData.product_type === "e-learning" && !formData.category.trim()) {
+                    setError("Please enter a topic/category.");
+                    return;
+                  }
+                  setError("");
+                  setCreateWizardStep(3);
+                  return;
+                }
+                setCreateWizardStep(2);
                 return;
               }
               return handleSubmit(e);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { CourseLessonTreeEditor, type CourseLesson } from "@/components/course-lesson-tree-editor";
 
-export default function EditCoursePage() {
+function EditCourseContent() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -68,61 +68,67 @@ export default function EditCoursePage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-1/3 rounded-lg bg-slate-800" />
-          <div className="h-72 rounded-2xl bg-slate-900 border border-slate-800" />
-        </div>
-      </DashboardLayout>
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 w-1/3 rounded-lg bg-slate-800" />
+        <div className="h-72 rounded-2xl bg-slate-900 border border-slate-800" />
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Course builder</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-50">
-              {course?.title || "Edit Course"}
-            </h1>
-            <p className="mt-1 text-sm text-slate-400">
-              Drag lessons to reorder. Edit rich content and embed video on the right.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/courses/manage"
-              className="rounded-xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-900"
-            >
-              Back to Classroom
-            </Link>
-            {course && !course.published && (
-              <button
-                onClick={handlePublish}
-                className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-white"
-              >
-                Publish course
-              </button>
-            )}
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Course builder</p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-50">
+            {course?.title || "Edit Course"}
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Drag lessons to reorder. Edit rich content and embed video on the right.
+          </p>
         </div>
-
-        <CourseLessonTreeEditor
-          courseId={courseId}
-          lessons={lessons}
-          onLessonsChange={setLessons}
-        />
-
-        {skipLessons && (
-          <button
-            onClick={() => router.push("/products")}
-            className="w-full rounded-xl border border-slate-700 px-4 py-3 text-sm text-slate-300 hover:bg-slate-900"
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/courses/manage"
+            className="rounded-xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-900"
           >
-            Skip for now — return to Products
-          </button>
-        )}
+            Back to Classroom
+          </Link>
+          {course && !course.published && (
+            <button
+              onClick={handlePublish}
+              className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-white"
+            >
+              Publish course
+            </button>
+          )}
+        </div>
       </div>
+
+      <CourseLessonTreeEditor
+        courseId={courseId}
+        lessons={lessons}
+        onLessonsChange={setLessons}
+      />
+
+      {skipLessons && (
+        <button
+          onClick={() => router.push("/products")}
+          className="w-full rounded-xl border border-slate-700 px-4 py-3 text-sm text-slate-300 hover:bg-slate-900"
+        >
+          Skip for now — return to Products
+        </button>
+      )}
+    </div>
+  );
+}
+
+export default function EditCoursePage() {
+  return (
+    <DashboardLayout>
+      <Suspense fallback={<div className="text-slate-400">Loading course builder…</div>}>
+        <EditCourseContent />
+      </Suspense>
     </DashboardLayout>
   );
 }

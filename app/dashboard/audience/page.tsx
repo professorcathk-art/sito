@@ -45,11 +45,11 @@ function AudienceContent() {
         const courseIds = (courses || []).map((c) => c.id);
         const courseTitleById = Object.fromEntries((courses || []).map((c) => [c.id, c.title]));
 
-        const [interestsRes, enrollmentsRes, bookingsRes, contactRes] = await Promise.all([
+        const [interestsRes, enrollmentsRes, bookingsRes] = await Promise.all([
           productIds.length
             ? supabase
                 .from("product_interests")
-                .select("id, product_id, user_id, user_email, created_at, profiles(name, email)")
+                .select("id, product_id, user_id, user_email, created_at")
                 .in("product_id", productIds)
                 .order("created_at", { ascending: false })
                 .limit(50)
@@ -57,7 +57,7 @@ function AudienceContent() {
           courseIds.length
             ? supabase
                 .from("course_enrollments")
-                .select("id, course_id, user_id, user_email, created_at, amount_paid, profiles(name, email)")
+                .select("id, course_id, user_id, user_email, created_at, amount_paid")
                 .in("course_id", courseIds)
                 .order("created_at", { ascending: false })
                 .limit(50)
@@ -69,38 +69,72 @@ function AudienceContent() {
             .eq("status", "pending")
             .order("created_at", { ascending: false })
             .limit(50),
-          supabase
-            .from("contact_messages")
-            .select("id, name, email, subject, message, created_at")
-            .ilike("subject", "%Storefront lead%")
-            .order("created_at", { ascending: false })
-            .limit(30),
         ]);
 
-        const interestLeads = (interestsRes.data || []).map((row: any) => ({
+        // Prefer expert_id column (migration 054); fall back to subject token scoping
+        let contactRows: any[] = [];
+        const byColumn = await supabase
+          .from("contact_messages")
+          .select("id, name, email, subject, message, created_at, expert_id")
+          .eq("expert_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(30);
+        if (!byColumn.error && byColumn.data) {
+          contactRows = byColumn.data;
+        } else {
+          const bySubject = await supabase
+            .from("contact_messages")
+            .select("id, name, email, subject, message, created_at")
+            .ilike("subject", `%Storefront lead [${user.id}]%`)
+            .order("created_at", { ascending: false })
+            .limit(30);
+          contactRows = bySubject.data || [];
+        }
+
+        const interestRows = interestsRes.data || [];
+        const enrollmentRows = enrollmentsRes.data || [];
+        const profileIds = Array.from(
+          new Set(
+            [...interestRows, ...enrollmentRows]
+              .map((row: any) => row.user_id)
+              .filter(Boolean)
+          )
+        );
+        let profileMap: Record<string, { name?: string; email?: string }> = {};
+        if (profileIds.length) {
+          const { data: profilesData } = await supabase
+            .from("profiles")
+            .select("id, name, email")
+            .in("id", profileIds);
+          profilesData?.forEach((p: any) => {
+            profileMap[p.id] = p;
+          });
+        }
+
+        const interestLeads = interestRows.map((row: any) => ({
           id: `interest-${row.id}`,
           source: "Product interest",
-          name: row.profiles?.name || row.user_email?.split("@")[0] || "Lead",
-          email: row.profiles?.email || row.user_email || "—",
+          name: profileMap[row.user_id]?.name || row.user_email?.split("@")[0] || "Lead",
+          email: profileMap[row.user_id]?.email || row.user_email || "—",
           detail: productNameById[row.product_id] || "Product",
           created_at: row.created_at,
         }));
 
-        const storefrontLeads = (contactRes.data || []).map((row: any) => ({
+        const storefrontLeads = contactRows.map((row: any) => ({
           id: `contact-${row.id}`,
           source: "Storefront lead magnet",
           name: row.name || "Lead",
           email: row.email || "—",
-          detail: row.subject || "Lead magnet",
+          detail: String(row.subject || "Lead magnet").replace(`Storefront lead [${user.id}]: `, "") || "Lead magnet",
           created_at: row.created_at,
         }));
 
         setLeads([...interestLeads, ...storefrontLeads].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)));
         setStudents(
-          (enrollmentsRes.data || []).map((row: any) => ({
+          enrollmentRows.map((row: any) => ({
             id: row.id,
-            name: row.profiles?.name || row.user_email?.split("@")[0] || "Student",
-            email: row.profiles?.email || row.user_email || "—",
+            name: profileMap[row.user_id]?.name || row.user_email?.split("@")[0] || "Student",
+            email: profileMap[row.user_id]?.email || row.user_email || "—",
             course: courseTitleById[row.course_id] || "Course",
             amount: row.amount_paid,
             created_at: row.created_at,

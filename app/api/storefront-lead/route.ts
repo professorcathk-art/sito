@@ -23,15 +23,33 @@ export async function POST(request: NextRequest) {
       .eq("id", expertId)
       .maybeSingle();
 
-    // Persist as a contact message so experts can review leads later (best-effort)
-    const { error: insertError } = await supabase.from("contact_messages").insert({
+    const subject = `Storefront lead [${expertId}]: ${leadTitle}`;
+    const message = `New lead magnet signup from ${expertName}'s storefront (${leadTitle}). expert_id:${expertId}`;
+
+    // Prefer expert_id column when migration 054 is applied; fall back otherwise.
+    let insertError: { message: string } | null = null;
+    const withExpert = await supabase.from("contact_messages").insert({
       name: email.split("@")[0],
       email,
-      subject: `Storefront lead: ${leadTitle}`,
-      message: `New lead magnet signup from ${expertName}'s storefront (${leadTitle}).`,
+      subject,
+      message,
+      expert_id: expertId,
     });
+    insertError = withExpert.error;
+
+    if (insertError && /expert_id|column/i.test(insertError.message)) {
+      const fallback = await supabase.from("contact_messages").insert({
+        name: email.split("@")[0],
+        email,
+        subject,
+        message,
+      });
+      insertError = fallback.error;
+    }
+
     if (insertError) {
-      console.warn("storefront-lead insert warning:", insertError.message);
+      console.error("storefront-lead insert error:", insertError.message);
+      return NextResponse.json({ error: "Failed to save your signup. Please try again." }, { status: 500 });
     }
 
     if (process.env.RESEND_API_KEY && expertProfile?.email) {

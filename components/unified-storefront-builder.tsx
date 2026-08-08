@@ -579,6 +579,21 @@ export function UnifiedStorefrontBuilder() {
 
   const handleSave = async () => {
     if (!user) return;
+    if (!profileData.name.trim()) {
+      setError("Display name is required.");
+      setActiveTab("profile");
+      return;
+    }
+    if (!profileData.bio.trim() && !existingProfile?.bio) {
+      setError("Bio is required to unlock Products and Earnings.");
+      setActiveTab("profile");
+      return;
+    }
+    if (!profileData.categoryId && !existingProfile?.category_id) {
+      setError("Select an area of expertise to unlock creator tools.");
+      setActiveTab("profile");
+      return;
+    }
     setSaving(true);
     setError("");
     try {

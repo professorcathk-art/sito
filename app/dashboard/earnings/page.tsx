@@ -34,14 +34,25 @@ function EarningsContent() {
         if (courseIds.length) {
           const { data } = await supabase
             .from("course_enrollments")
-            .select("id, course_id, amount_paid, created_at, user_email, profiles(name, email)")
+            .select("id, course_id, amount_paid, created_at, user_email, user_id")
             .in("course_id", courseIds)
             .order("created_at", { ascending: false })
             .limit(40);
+          const enrollUserIds = Array.from(new Set((data || []).map((r: any) => r.user_id).filter(Boolean)));
+          let enrollProfiles: Record<string, { name?: string }> = {};
+          if (enrollUserIds.length) {
+            const { data: profilesData } = await supabase
+              .from("profiles")
+              .select("id, name")
+              .in("id", enrollUserIds);
+            profilesData?.forEach((p: any) => {
+              enrollProfiles[p.id] = p;
+            });
+          }
           enrollmentSales = (data || []).map((row: any) => ({
             id: row.id,
             label: courseTitleById[row.course_id] || "Course",
-            buyer: row.profiles?.name || row.user_email || "Buyer",
+            buyer: enrollProfiles[row.user_id]?.name || row.user_email || "Buyer",
             amount: Number(row.amount_paid) || 0,
             created_at: row.created_at,
             type: "Course",
