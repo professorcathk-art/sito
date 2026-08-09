@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { HONEYPOT_FIELD, isHoneypotTriggered } from "@/lib/honeypot";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    if (isHoneypotTriggered(body[HONEYPOT_FIELD] ?? body.website_url_hp)) {
+      return NextResponse.json({ success: true });
+    }
     const { name, email, subject, message } = body;
 
     if (!name || !email || !subject || !message) {

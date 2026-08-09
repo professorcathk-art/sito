@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { HoneypotField, useHoneypot } from "@/components/forms/honeypot-field";
 
 export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { honeypotValue, setHoneypotValue, isSpam } = useHoneypot();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -57,6 +59,10 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (isSpam()) {
+      // Silent reject for bots
+      return;
+    }
 
     if (emailExists) {
       setError("An account with this email already exists. Please sign in instead.");
@@ -257,7 +263,8 @@ export function RegisterForm({ embedded = false }: { embedded?: boolean }) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="relative space-y-4">
+        <HoneypotField value={honeypotValue} onChange={setHoneypotValue} id="signup_website_url_hp" />
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-slate-200 mb-2">
             Full Name

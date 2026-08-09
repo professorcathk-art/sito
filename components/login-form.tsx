@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { HoneypotField, useHoneypot } from "@/components/forms/honeypot-field";
 
 export function LoginForm({
   redirect,
@@ -17,6 +18,7 @@ export function LoginForm({
   const router = useRouter();
   const [email, setEmail] = useState(initialEmail || "");
   const [password, setPassword] = useState("");
+  const { honeypotValue, setHoneypotValue, isSpam } = useHoneypot();
 
   useEffect(() => {
     if (initialEmail) setEmail(initialEmail);
@@ -40,6 +42,11 @@ export function LoginForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (isSpam()) {
+      // Silent reject for bots
+      setLoading(false);
+      return;
+    }
     setLoading(true);
 
     try {
@@ -117,7 +124,8 @@ export function LoginForm({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="relative space-y-4">
+        <HoneypotField value={honeypotValue} onChange={setHoneypotValue} id="login_website_url_hp" />
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-slate-200 mb-2">
             Email

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { StorefrontLeadMagnetData } from "@/types/storefront";
+import { HoneypotField, useHoneypot } from "@/components/forms/honeypot-field";
+import { HONEYPOT_FIELD } from "@/lib/honeypot";
 
 interface FormField {
   id: string;
@@ -47,6 +49,7 @@ export function StorefrontLeadMagnet({
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [externalLink, setExternalLink] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const { honeypotValue, setHoneypotValue, isSpam } = useHoneypot();
 
   useEffect(() => {
     if (!leadMagnetId || isPreview) return;
@@ -114,6 +117,10 @@ export function StorefrontLeadMagnet({
       return;
     }
     setError("");
+    if (isSpam()) {
+      setSuccess(true);
+      return;
+    }
     setLoading(true);
     try {
       // Validate required
@@ -147,6 +154,7 @@ export function StorefrontLeadMagnet({
           leadTitle: title,
           leadMagnetId: leadMagnetId || undefined,
           responses: labeledResponses,
+          [HONEYPOT_FIELD]: honeypotValue,
         }),
       });
       const payload = await res.json().catch(() => ({}));
@@ -180,10 +188,15 @@ export function StorefrontLeadMagnet({
           </p>
         ) : (
           <form
+            className="relative mt-4 flex flex-col gap-3 sm:flex-row"
             onSubmit={async (e) => {
               e.preventDefault();
               const email = formValues.email?.trim() || "";
               setError("");
+              if (isSpam()) {
+                setSuccess(true);
+                return;
+              }
               setLoading(true);
               try {
                 if (isPreview) {
@@ -193,7 +206,13 @@ export function StorefrontLeadMagnet({
                 const res = await fetch("/api/storefront-lead", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ email, expertId, expertName, leadTitle: title }),
+                  body: JSON.stringify({
+                    email,
+                    expertId,
+                    expertName,
+                    leadTitle: title,
+                    [HONEYPOT_FIELD]: honeypotValue,
+                  }),
                 });
                 const payload = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(payload.error || "Something went wrong.");
@@ -204,8 +223,8 @@ export function StorefrontLeadMagnet({
                 setLoading(false);
               }
             }}
-            className="mt-4 flex flex-col gap-3 sm:flex-row"
           >
+            <HoneypotField value={honeypotValue} onChange={setHoneypotValue} id="lead_legacy_website_url_hp" />
             <input
               name="email"
               type="email"
@@ -312,7 +331,8 @@ export function StorefrontLeadMagnet({
                 )}
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <form onSubmit={handleSubmit} className="relative space-y-3">
+                <HoneypotField value={honeypotValue} onChange={setHoneypotValue} id="lead_magnet_website_url_hp" />
                 {(fields.length > 0
                   ? fields
                   : [

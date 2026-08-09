@@ -115,13 +115,6 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                 Secret Recipe
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
               </Link>
-              <Link
-                href="/blog"
-                className="text-white/90 hover:text-text-primary transition-all duration-300 relative group text-sm lg:text-base"
-              >
-                Experts Sharing
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300"></span>
-              </Link>
               {loading ? (
                 <div className="text-text-secondary animate-pulse text-sm lg:text-base">Loading...</div>
               ) : user ? (
@@ -270,13 +263,6 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                       >
                         Secret Recipe
                       </Link>
-                      <Link
-                        href="/blog"
-                        onClick={() => setDashboardMenuOpen(false)}
-                        className="block px-4 py-3 text-white/90 hover:text-primary hover:bg-surface/80 transition-colors text-sm font-medium"
-                      >
-                        Experts Sharing
-                      </Link>
                       {user && (
                         <>
                           <Link
@@ -358,13 +344,6 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                 className="block text-white/90 hover:text-primary transition-colors py-2"
               >
                 Secret Recipe
-              </Link>
-              <Link
-                href="/blog"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-white/90 hover:text-primary transition-colors py-2"
-              >
-                Experts Sharing
               </Link>
               {loading ? (
                 <div className="text-text-secondary animate-pulse py-2">Loading...</div>

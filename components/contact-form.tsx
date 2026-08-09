@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { HoneypotField, useHoneypot } from "@/components/forms/honeypot-field";
+import { HONEYPOT_FIELD } from "@/lib/honeypot";
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
@@ -13,6 +15,7 @@ export function ContactForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const { honeypotValue, setHoneypotValue, isSpam } = useHoneypot();
   const supabase = createClient();
 
   const handleChange = (
@@ -28,6 +31,10 @@ export function ContactForm() {
     e.preventDefault();
     setError("");
     setSuccess(false);
+    if (isSpam()) {
+      setSuccess(true);
+      return;
+    }
     setLoading(true);
 
     try {
@@ -51,7 +58,7 @@ export function ContactForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, [HONEYPOT_FIELD]: honeypotValue }),
       });
 
       if (!response.ok) {
@@ -74,7 +81,8 @@ export function ContactForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 mt-8">
+    <form onSubmit={handleSubmit} className="relative space-y-6 mt-8">
+      <HoneypotField value={honeypotValue} onChange={setHoneypotValue} id="contact_website_url_hp" />
       {error && (
         <div className="p-4 bg-red-900/30 border border-red-500/50 text-red-200 rounded-md">
           {error}

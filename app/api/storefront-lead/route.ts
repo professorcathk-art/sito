@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { HONEYPOT_FIELD, isHoneypotTriggered } from "@/lib/honeypot";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // Invisible honeypot — bots fill this; return fake success
+    if (isHoneypotTriggered(body[HONEYPOT_FIELD] ?? body.website_url_hp)) {
+      return NextResponse.json({
+        success: true,
+        successMessage: "You're in! Check your inbox soon.",
+      });
+    }
+
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const expertId = typeof body.expertId === "string" ? body.expertId : "";
     const expertName = typeof body.expertName === "string" ? body.expertName : "Expert";

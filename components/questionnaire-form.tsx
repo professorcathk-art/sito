@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
+import { HoneypotField, useHoneypot } from "@/components/forms/honeypot-field";
 
 interface QuestionnaireField {
   id: string;
@@ -25,6 +26,7 @@ interface QuestionnaireFormProps {
 export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYouMessage }: QuestionnaireFormProps) {
   const supabase = createClient();
   const { user } = useAuth();
+  const { honeypotValue, setHoneypotValue, isSpam } = useHoneypot();
   const [fields, setFields] = useState<QuestionnaireField[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -173,6 +175,13 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isSpam()) {
+      // Silent fake success for bots
+      if (thankYouMessage) setShowThankYou(true);
+      else if (onCancel) onCancel();
+      return;
+    }
     
     // Validate required fields
     for (const field of fields) {
@@ -250,7 +259,12 @@ export function QuestionnaireForm({ questionnaireId, onSubmit, onCancel, thankYo
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="relative space-y-6">
+      <HoneypotField
+        value={honeypotValue}
+        onChange={setHoneypotValue}
+        id={`questionnaire_hp_${questionnaireId}`}
+      />
       <h3 className="text-xl font-bold text-custom-text mb-4">Please fill out this form</h3>
       
       {fields.map((field) => (
