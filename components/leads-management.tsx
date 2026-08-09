@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
+import { EmailBroadcastsPanel } from "@/components/leads/email-broadcasts-panel";
 
 interface FormFieldDraft {
   id?: string;
@@ -102,6 +103,7 @@ export function LeadsManagement() {
   const [editor, setEditor] = useState<EditorState>(emptyEditor());
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [tablesReady, setTablesReady] = useState(true);
+  const [activeTab, setActiveTab] = useState<"magnets" | "crm" | "broadcasts">("magnets");
 
   const load = async () => {
     if (!user) return;
@@ -314,6 +316,25 @@ export function LeadsManagement() {
     if (filterMagnetId === "all") return leads;
     return leads.filter((l) => l.magnet_id === filterMagnetId);
   }, [leads, filterMagnetId]);
+
+  const broadcastLeadCounts = useMemo(() => {
+    const byMagnet: Record<string, number> = {};
+    const emailsAll = new Set<string>();
+    const emailsByMagnet: Record<string, Set<string>> = {};
+    leads.forEach((l) => {
+      const email = (l.email || "").toLowerCase();
+      if (!email || email === "—") return;
+      emailsAll.add(email);
+      if (l.magnet_id) {
+        if (!emailsByMagnet[l.magnet_id]) emailsByMagnet[l.magnet_id] = new Set();
+        emailsByMagnet[l.magnet_id].add(email);
+      }
+    });
+    Object.entries(emailsByMagnet).forEach(([id, set]) => {
+      byMagnet[id] = set.size;
+    });
+    return { all: emailsAll.size, byMagnet };
+  }, [leads]);
 
   const openCreate = () => {
     setEditor(emptyEditor());
@@ -570,37 +591,68 @@ export function LeadsManagement() {
           </p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-50">Lead magnets</h1>
           <p className="mt-2 text-sm text-slate-400">
-            Free downloads gated by a custom form — manage assets, forms, and captured leads.
+            Capture leads with free downloads, manage CRM, and send email broadcasts.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openCreate}
-          className="rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-sky-400"
-        >
-          + Create lead magnet
-        </button>
+        {activeTab === "magnets" && (
+          <button
+            type="button"
+            onClick={openCreate}
+            className="rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-sky-400"
+          >
+            + Create lead magnet
+          </button>
+        )}
       </header>
 
-      {!tablesReady && (
+      <div className="flex gap-2 overflow-x-auto border-b border-slate-800 pb-2">
+        {(
+          [
+            { id: "magnets" as const, label: "🎁 Lead magnets" },
+            { id: "crm" as const, label: "📋 Captured leads" },
+            { id: "broadcasts" as const, label: "✉️ Email broadcasts" },
+          ] as const
+        ).map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setActiveTab(t.id)}
+            className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === t.id
+                ? "bg-slate-100 text-slate-950"
+                : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {!tablesReady && activeTab !== "broadcasts" && (
         <div className="rounded-lg border border-amber-500/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-100">
           Run Supabase migration <code className="text-amber-50">056_lead_magnets.sql</code> to enable
           multi-asset lead magnets. CRM below still shows legacy signups.
         </div>
       )}
-      {error && (
+      {error && activeTab !== "broadcasts" && (
         <div className="rounded-lg border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-200">
           {error}
         </div>
       )}
-      {success && (
+      {success && activeTab !== "broadcasts" && (
         <div className="rounded-lg border border-emerald-500/30 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-200">
           {success}
         </div>
       )}
 
-      {/* Magnet list */}
-      {magnets.length === 0 ? (
+      {activeTab === "broadcasts" && (
+        <EmailBroadcastsPanel
+          magnets={magnets.map((m) => ({ id: m.id, title: m.title }))}
+          leadCounts={broadcastLeadCounts}
+        />
+      )}
+
+      {activeTab === "magnets" && (magnets.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-700 px-6 py-12 text-center text-sm text-slate-400">
           No lead magnets yet. Create one to start capturing emails with a free download.
         </div>
@@ -667,9 +719,10 @@ export function LeadsManagement() {
             </article>
           ))}
         </div>
-      )}
+      ))}
 
       {/* CRM */}
+      {activeTab === "crm" && (
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -758,6 +811,7 @@ export function LeadsManagement() {
           </div>
         )}
       </section>
+      )}
 
       {/* Editor modal */}
       {editorOpen && (
