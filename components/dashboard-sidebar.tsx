@@ -32,7 +32,9 @@ function linkActive(pathname: string, href: string, search: string, match?: NavL
     const [path, query] = href.split("?");
     return pathname === path && search.includes(query);
   }
-  return pathname.startsWith(href) && href !== "/";
+  // Hub detail pages should highlight their section root
+  if (href !== "/" && pathname.startsWith(href + "/")) return true;
+  return false;
 }
 
 export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
@@ -45,16 +47,13 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
 
   const [unreadCount, setUnreadCount] = useState(0);
   const [pendingConnections, setPendingConnections] = useState(0);
-  const [pendingBookings, setPendingBookings] = useState(0);
-  const [isExpert, setIsExpert] = useState(false);
-  const [profileComplete, setProfileComplete] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     async function fetchCounts() {
       if (!user) return;
       try {
-        const [messagesRes, connectionsRes, bookingsRes] = await Promise.all([
+        const [messagesRes, connectionsRes] = await Promise.all([
           supabase
             .from("messages")
             .select("*", { count: "exact", head: true })
@@ -65,15 +64,9 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
             .select("*", { count: "exact", head: true })
             .eq("expert_id", user.id)
             .eq("status", "pending"),
-          supabase
-            .from("appointments")
-            .select("*", { count: "exact", head: true })
-            .eq("expert_id", user.id)
-            .eq("status", "pending"),
         ]);
         setUnreadCount(messagesRes.count || 0);
         setPendingConnections(connectionsRes.count || 0);
-        setPendingBookings(bookingsRes.count || 0);
       } catch (error) {
         console.error("Error fetching counts:", error);
       }
@@ -87,33 +80,10 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       try {
         const { data } = await supabase
           .from("profiles")
-          .select("is_admin, category_id, bio, name, title, tagline, country_id, language_supported, phone_number, user_intention")
+          .select("is_admin, user_intention")
           .eq("id", user.id)
           .single();
-
         setIsAdmin(data?.is_admin === true);
-        setIsExpert(!!(data?.category_id && data?.bio && data?.name));
-
-        const hasLanguages =
-          data?.language_supported && Array.isArray(data.language_supported) && data.language_supported.length > 0;
-        const hasPhoneNumber =
-          data?.phone_number && typeof data.phone_number === "string" && data.phone_number.trim().length > 0;
-        const hasTitle =
-          (data?.title && data.title.trim().length > 0) || (data?.tagline && data.tagline.trim().length > 0);
-
-        setProfileComplete(
-          !!(
-            data?.name?.trim() &&
-            hasTitle &&
-            data?.category_id &&
-            data?.bio?.trim() &&
-            data?.country_id &&
-            hasLanguages &&
-            hasPhoneNumber
-          )
-        );
-
-        // Default new teach users into creator mode once
         if (data?.user_intention === "learn" && !localStorage.getItem("sito_dashboard_mode")) {
           setMode("learner");
         }
@@ -131,60 +101,58 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       icon: "🎨",
       items: [
         {
-          name: "Profile",
-          href: "/dashboard/storefront?tab=profile",
-          match: (p, s) => p.startsWith("/dashboard/storefront") && (!s || s.includes("tab=profile")),
+          name: "Profile & Storefront",
+          href: "/dashboard/storefront",
+          match: (p, s) =>
+            p.startsWith("/dashboard/storefront") &&
+            p !== "/dashboard/storefront/theme" &&
+            !s.includes("tab=design"),
         },
         {
-          name: "Theme",
-          href: "/dashboard/storefront?tab=design",
-          match: (p, s) => p.startsWith("/dashboard/storefront") && s.includes("tab=design"),
-        },
-        {
-          name: "Section Blocks",
-          href: "/dashboard/storefront?tab=blocks",
-          match: (p, s) => p.startsWith("/dashboard/storefront") && s.includes("tab=blocks"),
+          name: "Theme & Design",
+          href: "/dashboard/storefront/theme",
+          match: (p, s) =>
+            p === "/dashboard/storefront/theme" ||
+            (p.startsWith("/dashboard/storefront") && s.includes("tab=design")),
         },
       ],
     },
     {
-      id: "offerings",
-      title: "Offerings",
+      id: "products",
+      title: "Products",
       icon: "📦",
-      items: [
-        { name: "Products", href: "/products" },
-        { name: "Courses", href: "/courses/manage" },
-        { name: "Appointments", href: "/appointments/manage" },
-        ...(isExpert && profileComplete
-          ? [{ name: "Sharing Posts", href: "/dashboard/blog" }]
-          : []),
-      ],
-    },
-    {
-      id: "audience",
-      title: "Audience",
-      icon: "👥",
       items: [
         {
           name: "Overview",
-          href: "/dashboard/audience",
-          match: (p, s) => p === "/dashboard/audience" && !s.includes("tab="),
+          href: "/dashboard/products",
+          match: (p) => p === "/dashboard/products" || p === "/products",
         },
         {
-          name: "Leads",
-          href: "/dashboard/audience?tab=leads",
-          match: (p, s) => p === "/dashboard/audience" && s.includes("tab=leads"),
+          name: "e-Learning",
+          href: "/dashboard/elearning",
+          match: (p) => p.startsWith("/dashboard/elearning"),
         },
         {
-          name: "Enrolled Students",
-          href: "/dashboard/audience?tab=students",
-          match: (p, s) => p === "/dashboard/audience" && s.includes("tab=students"),
+          name: "Appointments",
+          href: "/dashboard/appointments",
+          match: (p) => p.startsWith("/dashboard/appointments"),
+        },
+      ],
+    },
+    {
+      id: "leads",
+      title: "Leads & Marketing",
+      icon: "🎯",
+      items: [
+        {
+          name: "Lead Magnets & Leads",
+          href: "/dashboard/leads",
+          match: (p) => p.startsWith("/dashboard/leads"),
         },
         {
-          name: "Booking Requests",
-          href: "/dashboard/audience?tab=bookings",
-          badge: pendingBookings > 0 ? pendingBookings : undefined,
-          match: (p, s) => p === "/dashboard/audience" && s.includes("tab=bookings"),
+          name: "Sharing Posts",
+          href: "/dashboard/posts",
+          match: (p) => p.startsWith("/dashboard/posts") || p.startsWith("/dashboard/blog"),
         },
       ],
     },
@@ -194,21 +162,20 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       icon: "💳",
       items: [
         {
-          name: "Sales",
-          href: "/dashboard/earnings?tab=sales",
-          match: (p, s) => p.startsWith("/dashboard/earnings") && (s.includes("tab=sales") || !s.includes("tab=")),
-        },
-        {
-          name: "Balance",
-          href: "/dashboard/earnings?tab=balance",
-          match: (p, s) => p.startsWith("/dashboard/earnings") && s.includes("tab=balance"),
+          name: "Sales & Balance",
+          href: "/dashboard/finance/sales",
+          match: (p, s) =>
+            p.startsWith("/dashboard/finance/sales") ||
+            p.startsWith("/dashboard/finance/balance") ||
+            (p.startsWith("/dashboard/earnings") && (s.includes("tab=sales") || s.includes("tab=balance") || !s.includes("tab="))),
         },
         {
           name: "Payout Settings",
-          href: "/dashboard/earnings?tab=payouts",
+          href: "/dashboard/finance/payouts",
           match: (p, s) =>
-            (p.startsWith("/dashboard/earnings") && s.includes("tab=payouts")) ||
-            p.startsWith("/dashboard/stripe-connect"),
+            p.startsWith("/dashboard/finance/payouts") ||
+            p.startsWith("/dashboard/stripe-connect") ||
+            (p.startsWith("/dashboard/earnings") && s.includes("tab=payouts")),
         },
       ],
     },
@@ -253,9 +220,7 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
             type="button"
             onClick={() => setMode("creator")}
             className={`rounded-lg px-2 py-2 text-xs font-semibold transition-all ${
-              mode === "creator"
-                ? "bg-white text-slate-950 shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+              mode === "creator" ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-200"
             }`}
           >
             Creator Studio
@@ -264,9 +229,7 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
             type="button"
             onClick={() => setMode("learner")}
             className={`rounded-lg px-2 py-2 text-xs font-semibold transition-all ${
-              mode === "learner"
-                ? "bg-white text-slate-950 shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+              mode === "learner" ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-200"
             }`}
           >
             My Learning
@@ -341,7 +304,7 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
         ) : (
           <div className="space-y-0.5">
             <div className="mb-2 px-2">
-              <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+              <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Learner Dashboard
               </h3>
             </div>

@@ -1,17 +1,6 @@
-import { ProductsManagement } from "@/components/products-management";
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { ProtectedRoute } from "@/components/protected-route";
-import { ExpertRoute } from "@/components/expert-route";
+import { redirect } from "next/navigation";
 
+/** Legacy route — keep for bookmarks; new IA lives under /dashboard/products */
 export default function ProductsPage() {
-  return (
-    <ProtectedRoute>
-      <ExpertRoute>
-        <DashboardLayout>
-          <ProductsManagement />
-        </DashboardLayout>
-      </ExpertRoute>
-    </ProtectedRoute>
-  );
+  redirect("/dashboard/products");
 }
-

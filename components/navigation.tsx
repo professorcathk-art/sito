@@ -34,6 +34,8 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                           pathname?.startsWith("/questionnaires/manage") ||
                           pathname === "/admin";
 
+  // New Creator Studio hubs are under /dashboard/* (products, elearning, appointments, leads, finance)
+
   const handleSignOut = async () => {
     await signOut();
     router.push("/");
@@ -146,7 +148,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                               onClick={() => {
                                 setMode("creator");
                                 setLearningMenuOpen(false);
-                                router.push("/dashboard/storefront");
+                                router.push("/dashboard/products");
                               }}
                             >
                               Creator Studio
@@ -190,7 +192,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                     </div>
                   )}
                   <Link
-                    href={isCreator ? "/dashboard/storefront" : "/profile"}
+                    href={isCreator ? "/dashboard/products" : "/profile"}
                     className="text-white/90 hover:text-text-primary transition-all duration-300 relative group text-sm lg:text-base"
                   >
                     {hasNewActivity && (
