@@ -143,14 +143,21 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
 
     let hasAppointments = false;
     if (profile.storefront_show_appointments !== false) {
-      const { count } = await supabase
-        .from("appointment_slots")
-        .select("*", { count: "exact", head: true })
-        .eq("expert_id", profileId)
-        .eq("is_available", true)
-        .gte("start_time", new Date().toISOString());
+      const [{ count }, { count: apptProductCount }] = await Promise.all([
+        supabase
+          .from("appointment_slots")
+          .select("*", { count: "exact", head: true })
+          .eq("expert_id", profileId)
+          .eq("is_available", true)
+          .gte("start_time", new Date().toISOString()),
+        supabase
+          .from("products")
+          .select("*", { count: "exact", head: true })
+          .eq("expert_id", profileId)
+          .eq("product_type", "appointment"),
+      ]);
 
-      hasAppointments = (count || 0) > 0;
+      hasAppointments = (count || 0) > 0 || (apptProductCount || 0) > 0;
     }
 
     const storefrontBlocks = (profile.storefront_blocks as any[]) || [];

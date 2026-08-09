@@ -262,7 +262,7 @@ function AudienceContent() {
       {!loading && !error && tab === "bookings" && (
         <div className="space-y-3">
           <div className="flex justify-end">
-            <Link href="/appointments/manage?tab=bookings" className="text-sm font-medium text-sky-400 hover:text-sky-300">
+            <Link href="/dashboard/appointments" className="text-sm font-medium text-sky-400 hover:text-sky-300">
               Open Appointments →
             </Link>
           </div>

@@ -154,6 +154,24 @@ export function BookingModal({
   const fetchSlotsAndProduct = async () => {
     setLoading(true);
     try {
+      const qs = new URLSearchParams({ expertId });
+      if (initialProduct?.id) qs.set("productId", initialProduct.id);
+      const apiRes = await fetch(`/api/booking/available-slots?${qs.toString()}`);
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        if (Array.isArray(data.slots)) setSlots(data.slots as AppointmentSlot[]);
+        if (data.product && !initialProduct) {
+          setProduct({
+            id: data.product.id,
+            name: data.product.name,
+            price: Number(data.product.price) || 0,
+            pricing_type: data.product.pricing_type,
+          });
+        }
+        return;
+      }
+
+      // Fallback: direct slot query
       const [slotsRes, productRes] = await Promise.all([
         supabase
           .from("appointment_slots")
@@ -362,7 +380,7 @@ export function BookingModal({
         }
         alert("Appointment booked successfully! The expert will be notified.");
         onClose();
-        router.push("/appointments/manage?tab=my-bookings");
+        router.push("/dashboard/my-bookings");
         return;
       }
 
@@ -446,7 +464,7 @@ export function BookingModal({
         }
         alert("Booking request sent! The expert will confirm and arrange payment with you.");
         onClose();
-        router.push("/appointments/manage?tab=my-bookings");
+        router.push("/dashboard/my-bookings");
         setSubmitting(false);
         return;
       }
@@ -569,7 +587,7 @@ export function BookingModal({
         }
         alert("Booking request sent! The expert will confirm and arrange payment with you.");
         onClose();
-        router.push("/appointments/manage?tab=my-bookings");
+        router.push("/dashboard/my-bookings");
       } else {
         throw new Error(data.error || "Failed to create checkout");
       }

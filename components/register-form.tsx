@@ -164,7 +164,7 @@ export function RegisterForm() {
           intent === "learn" || intent === "teach" ? `?intent=${intent}` : "";
         if (fromPayment) {
           const dest = fulfilledType === "appointment" || typeParam === "appointment"
-            ? "/appointments/manage?tab=my-bookings"
+            ? "/dashboard/my-bookings"
             : "/courses/manage";
           router.push(redirect || dest);
         } else if (redirect) {
@@ -289,7 +289,7 @@ export function RegisterForm() {
           if (redirectParam) {
             oauthRedirect = redirectParam;
           } else if (fromPayment) {
-            const dest = typeParam === "appointment" ? "/appointments/manage?tab=my-bookings" : "/courses/manage";
+            const dest = typeParam === "appointment" ? "/dashboard/my-bookings" : "/courses/manage";
             oauthRedirect = `/complete-purchase?dest=${encodeURIComponent(dest)}`;
           } else {
             oauthRedirect = `/onboarding${intentQuery}`;

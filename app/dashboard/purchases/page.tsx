@@ -309,7 +309,7 @@ export default function PurchasesPage() {
                           </>
                         ) : (
                           <Link
-                            href="/appointments/manage?tab=my-bookings"
+                            href="/dashboard/my-bookings"
                             className="inline-block px-4 py-2 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors text-sm"
                           >
                             View Appointment

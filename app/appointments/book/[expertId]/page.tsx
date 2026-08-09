@@ -289,7 +289,7 @@ export default function BookAppointmentPage() {
         }
 
         alert("Appointment booked successfully! The expert will be notified.");
-        router.push("/appointments/manage?tab=my-bookings");
+        router.push("/dashboard/my-bookings");
       } catch (err: any) {
         console.error("Error booking appointment:", err);
         alert("Failed to book appointment. Please try again.");
@@ -439,7 +439,7 @@ export default function BookAppointmentPage() {
           }
         }
         alert("Booking request sent! The expert will confirm and arrange payment with you.");
-        router.push("/appointments/manage?tab=my-bookings");
+        router.push("/dashboard/my-bookings");
         setBooking(false);
         return;
       }
@@ -536,7 +536,7 @@ export default function BookAppointmentPage() {
             }
           }
           alert("Booking request sent! The expert will confirm and arrange payment with you.");
-          router.push("/appointments/manage?tab=my-bookings");
+          router.push("/dashboard/my-bookings");
           setBooking(false);
           return;
         }

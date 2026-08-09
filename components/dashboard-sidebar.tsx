@@ -190,6 +190,13 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
 
   const learnerItems: NavLink[] = [
     { name: "My Learning Home", href: "/profile" },
+    {
+      name: "My Bookings",
+      href: "/dashboard/my-bookings",
+      match: (p, s) =>
+        p.startsWith("/dashboard/my-bookings") ||
+        (p.startsWith("/appointments/manage") && s.includes("tab=my-bookings")),
+    },
     { name: "Watch Later", href: "/blog/watch-later" },
     { name: "Purchase History", href: "/dashboard/purchases" },
     { name: "Subscriptions", href: "/subscriptions" },

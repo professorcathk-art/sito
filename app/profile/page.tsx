@@ -80,7 +80,7 @@ export default function ProfilePage() {
           title: "New booking request",
           description: `${clientNames[apt.user_id] || "Someone"} requested a session`,
           timeAgo: formatTimeAgo(apt.created_at),
-          href: "/appointments/manage?tab=bookings",
+          href: "/dashboard/appointments",
           isNew: true,
           meta: dateStr,
           sortTime: apt.created_at,
@@ -121,7 +121,7 @@ export default function ProfilePage() {
           title: "Upcoming session",
           description: `With ${upcomingNames[apt.user_id] || "client"}`,
           timeAgo: formatTimeAgo(apt.start_time),
-          href: "/appointments/manage?tab=bookings",
+          href: "/dashboard/appointments",
           meta: dateStr,
           sortTime: apt.start_time,
         });
@@ -244,7 +244,7 @@ export default function ProfilePage() {
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
                   <Link
-                    href="/appointments/manage"
+                    href="/dashboard/appointments"
                     className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     Manage Appointments

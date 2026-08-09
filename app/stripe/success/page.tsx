@@ -50,7 +50,7 @@ function SuccessContent() {
           // Use verifyData for redirect when available
           if (verifyData.appointmentId) {
             setAppointmentId(verifyData.appointmentId);
-            setTimeout(() => router.push("/appointments/manage?tab=my-bookings"), 3000);
+            setTimeout(() => router.push("/dashboard/my-bookings"), 3000);
             setLoading(false);
             return null;
           }
@@ -69,7 +69,7 @@ function SuccessContent() {
           if (!data) return;
           if (data.appointment_id) {
             setAppointmentId(data.appointment_id);
-            setTimeout(() => router.push("/appointments/manage?tab=my-bookings"), 3000);
+            setTimeout(() => router.push("/dashboard/my-bookings"), 3000);
           } else if (data.course_id) {
             setCourseId(data.course_id);
             setTimeout(() => router.push("/courses/manage"), 3000);
@@ -132,7 +132,7 @@ function SuccessContent() {
               <div className="flex gap-4 justify-center">
                 {appointmentId ? (
                   <Link
-                    href="/appointments/manage"
+                    href="/dashboard/my-bookings"
                     className="px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                   >
                     Go to Manage Appointments

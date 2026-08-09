@@ -13,7 +13,7 @@ export function RegisterPageFooter() {
     redirect
       ? redirect
       : fromPayment && type === "appointment"
-        ? "/appointments/manage?tab=my-bookings"
+        ? "/dashboard/my-bookings"
         : fromPayment && type === "course"
           ? "/courses/manage"
           : undefined;

@@ -18,7 +18,7 @@ function AccessPurchaseContent() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const dest = type === "appointment" ? "/appointments/manage?tab=my-bookings" : "/courses/manage";
+  const dest = type === "appointment" ? "/dashboard/my-bookings" : "/courses/manage";
   const completePurchaseUrl = `/complete-purchase?dest=${encodeURIComponent(dest)}`;
   const loginHref = `/login?redirect=${encodeURIComponent(completePurchaseUrl)}&email=${encodeURIComponent(email || "")}`;
 
@@ -98,7 +98,7 @@ function AccessPurchaseContent() {
         const res = await fetch("/api/fulfill-pending-purchases", { method: "POST" });
         const data = await res.json();
         const fulfilledType = data?.fulfilled?.appointments?.length ? "appointment" : data?.fulfilled?.courses?.length ? "course" : null;
-        const redirectDest = fulfilledType === "appointment" ? "/appointments/manage?tab=my-bookings" : "/courses/manage";
+        const redirectDest = fulfilledType === "appointment" ? "/dashboard/my-bookings" : "/courses/manage";
 
         router.push(redirectDest);
         router.refresh();

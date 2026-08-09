@@ -2148,7 +2148,7 @@ export function ProductsManagement() {
               </button>
               {editingProduct && editingProduct.product_type === "appointment" && (
                 <Link
-                  href="/appointments/manage"
+                  href="/dashboard/appointments"
                   className="rounded-xl border border-sky-500/40 px-4 py-2 text-sm text-sky-300 hover:bg-sky-950/40"
                 >
                   Manage Timeslots
