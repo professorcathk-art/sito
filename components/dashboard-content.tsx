@@ -320,7 +320,7 @@ export function DashboardContent() {
           {isExpert && (
             <>
               <Link
-                href="/products"
+                href="/dashboard/products"
                 className="p-4 sm:p-6 border-2 border-border-default rounded-md hover:border-cyber-green hover:bg-surface transition-all"
               >
                 <h3 className="text-base sm:text-lg font-semibold text-custom-text mb-2">Manage Products</h3>

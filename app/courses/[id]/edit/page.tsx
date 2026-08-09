@@ -113,7 +113,7 @@ function EditCourseContent() {
 
       {skipLessons && (
         <button
-          onClick={() => router.push("/products")}
+          onClick={() => router.push("/dashboard/products")}
           className="w-full rounded-xl border border-slate-700 px-4 py-3 text-sm text-slate-300 hover:bg-slate-900"
         >
           Skip for now — return to Products

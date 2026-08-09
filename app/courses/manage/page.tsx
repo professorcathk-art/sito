@@ -539,7 +539,7 @@ export default function ManageCoursePage() {
                       🔄 Refresh
                     </button>
                     <Link
-                      href="/products"
+                      href="/dashboard/products"
                       className="inline-block px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
                     >
                       Browse Courses
