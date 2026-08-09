@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
@@ -25,6 +25,7 @@ type OnboardingStep =
 
 export function OnboardingFlow() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const supabase = createClient();
   const [step, setStep] = useState<OnboardingStep>("intention");
@@ -65,6 +66,16 @@ export function OnboardingFlow() {
     fetchCategoriesAndCountries();
     fetchUserProfile();
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Honor homepage CTA intent (student → learn, expert → teach)
+  useEffect(() => {
+    const intent = searchParams.get("intent");
+    if (intent === "learn" || intent === "teach") {
+      handleIntentionSelect(intent);
+    }
+    // Only apply once from the URL on mount / intent change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const checkOnboardingStatus = async () => {
     if (!user) return;

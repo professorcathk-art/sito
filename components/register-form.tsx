@@ -159,6 +159,9 @@ export function RegisterForm() {
 
         const redirect = searchParams.get("redirect");
         const typeParam = searchParams.get("type");
+        const intent = searchParams.get("intent");
+        const intentQuery =
+          intent === "learn" || intent === "teach" ? `?intent=${intent}` : "";
         if (fromPayment) {
           const dest = fulfilledType === "appointment" || typeParam === "appointment"
             ? "/appointments/manage?tab=my-bookings"
@@ -167,7 +170,7 @@ export function RegisterForm() {
         } else if (redirect) {
           router.push(redirect);
         } else {
-          router.push("/onboarding");
+          router.push(`/onboarding${intentQuery}`);
         }
         router.refresh();
       }
@@ -279,6 +282,9 @@ export function RegisterForm() {
           const fromPayment = searchParams.get("from") === "payment";
           const typeParam = searchParams.get("type");
           const redirectParam = searchParams.get("redirect");
+          const intent = searchParams.get("intent");
+          const intentQuery =
+            intent === "learn" || intent === "teach" ? `?intent=${intent}` : "";
           let oauthRedirect: string;
           if (redirectParam) {
             oauthRedirect = redirectParam;
@@ -286,7 +292,7 @@ export function RegisterForm() {
             const dest = typeParam === "appointment" ? "/appointments/manage?tab=my-bookings" : "/courses/manage";
             oauthRedirect = `/complete-purchase?dest=${encodeURIComponent(dest)}`;
           } else {
-            oauthRedirect = "/onboarding";
+            oauthRedirect = `/onboarding${intentQuery}`;
           }
           const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",

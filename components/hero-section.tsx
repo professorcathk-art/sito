@@ -34,12 +34,31 @@ export function HeroSection() {
             Discover experts who solve your specific problems
           </p>
           {!user && (
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start animate-fade-in-up px-2 sm:px-0" style={{ animationDelay: "0.4s" }}>
+            <div
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto justify-center lg:justify-start animate-fade-in-up px-2 sm:px-0"
+              style={{ animationDelay: "0.4s" }}
+            >
               <Link
-                href="/register"
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 text-center"
+                href="/register?intent=learn"
+                className="group inline-flex flex-col items-center sm:items-start justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl transition-all duration-300 text-center sm:text-left shadow-lg shadow-indigo-900/30"
               >
-                Start Now for Free
+                <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wide text-indigo-100/90">
+                  I&apos;m a student
+                </span>
+                <span className="text-base sm:text-lg font-semibold leading-tight mt-0.5">
+                  Start learning
+                </span>
+              </Link>
+              <Link
+                href="/register?intent=teach"
+                className="group inline-flex flex-col items-center sm:items-start justify-center border border-slate-600 hover:border-slate-400 hover:bg-slate-800/60 text-slate-100 px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl transition-all duration-300 text-center sm:text-left"
+              >
+                <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wide text-slate-400 group-hover:text-slate-300">
+                  I&apos;m an expert
+                </span>
+                <span className="text-base sm:text-lg font-semibold leading-tight mt-0.5">
+                  Start selling
+                </span>
               </Link>
             </div>
           )}
