@@ -309,7 +309,7 @@ export function AdminDashboard() {
             href="/admin/payouts"
             className="inline-flex rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-sm font-semibold text-amber-100 hover:bg-amber-500/20"
           >
-            Manage manual payouts →
+            Manage bank transfer payouts →
           </Link>
         </div>
         <AdminRefundManagement />

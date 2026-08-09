@@ -22,9 +22,9 @@ export function SessionSettings({ form, onChange, onSave, saving }: SessionSetti
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-slate-50">Session settings</h2>
+        <h2 className="text-lg font-semibold text-slate-50">Appointment Settings</h2>
         <p className="mt-1 text-sm text-slate-400">
-          Title, pricing, and the default video link assigned to new confirmed bookings.
+          Title, pricing, and the default meeting link for confirmed bookings.
         </p>
       </div>
 

@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useDashboardMode } from "@/contexts/dashboard-mode-context";
 import { createClient } from "@/lib/supabase/client";
 import { useState, useEffect } from "react";
+import { LearnerSidebar } from "@/components/dashboard/learner-sidebar";
 
 interface NavLink {
   name: string;
@@ -73,6 +74,12 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
     }
     fetchCounts();
   }, [user, supabase]);
+
+  useEffect(() => {
+    if (pathname.startsWith("/dashboard/learning") || pathname.startsWith("/learn/")) {
+      setMode("learner");
+    }
+  }, [pathname, setMode]);
 
   useEffect(() => {
     async function checkProfile() {
@@ -193,30 +200,6 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
     },
   ];
 
-  const learnerItems: NavLink[] = [
-    { name: "My Learning Home", href: "/profile" },
-    {
-      name: "My Bookings",
-      href: "/dashboard/my-bookings",
-      match: (p, s) =>
-        p.startsWith("/dashboard/my-bookings") ||
-        (p.startsWith("/appointments/manage") && s.includes("tab=my-bookings")),
-    },
-    { name: "Watch Later", href: "/blog/watch-later" },
-    { name: "Purchase History", href: "/dashboard/purchases" },
-    { name: "Subscriptions", href: "/subscriptions" },
-    {
-      name: "Messages",
-      href: "/messages",
-      badge: unreadCount > 0 ? unreadCount : undefined,
-    },
-    {
-      name: "Connections",
-      href: "/connections",
-      badge: pendingConnections > 0 ? pendingConnections : undefined,
-    },
-  ];
-
   const sharedCreatorFooter: NavLink[] = [
     {
       name: "Messages",
@@ -321,44 +304,54 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
             </div>
           </>
         ) : (
-          <div className="space-y-0.5">
-            <div className="mb-2 px-2">
-              <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                Learner Dashboard
-              </h3>
-            </div>
-            {learnerItems.map((item) => {
-              const active = linkActive(pathname, item.href, search, item.match);
-              return (
+          <LearnerSidebar
+            onClose={onClose}
+            footer={
+              <div className="mt-4 space-y-0.5 border-t border-slate-800 pt-4">
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  href="/messages"
                   onClick={() => onClose?.()}
                   className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all ${
-                    active
-                      ? "bg-slate-100 text-slate-950 font-semibold shadow-sm"
+                    pathname.startsWith("/messages")
+                      ? "bg-slate-100 text-slate-950 font-semibold"
                       : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"
                   }`}
                 >
-                  <span className="flex-1 truncate">{item.name}</span>
-                  {item.badge ? (
+                  <span className="flex-1 truncate">Messages</span>
+                  {unreadCount > 0 ? (
                     <span className="min-w-[1.25rem] rounded-full bg-sky-500 px-1.5 py-0.5 text-center text-[10px] font-bold text-white">
-                      {item.badge}
+                      {unreadCount}
                     </span>
                   ) : null}
                 </Link>
-              );
-            })}
-            {isAdmin && (
-              <Link
-                href="/admin"
-                onClick={() => onClose?.()}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-400 hover:bg-slate-900 hover:text-slate-100"
-              >
-                Admin
-              </Link>
-            )}
-          </div>
+                <Link
+                  href="/connections"
+                  onClick={() => onClose?.()}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all ${
+                    pathname.startsWith("/connections")
+                      ? "bg-slate-100 text-slate-950 font-semibold"
+                      : "text-slate-400 hover:bg-slate-900 hover:text-slate-100"
+                  }`}
+                >
+                  <span className="flex-1 truncate">Connections</span>
+                  {pendingConnections > 0 ? (
+                    <span className="min-w-[1.25rem] rounded-full bg-sky-500 px-1.5 py-0.5 text-center text-[10px] font-bold text-white">
+                      {pendingConnections}
+                    </span>
+                  ) : null}
+                </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => onClose?.()}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-400 hover:bg-slate-900 hover:text-slate-100"
+                  >
+                    Admin
+                  </Link>
+                )}
+              </div>
+            }
+          />
         )}
       </nav>
     </aside>

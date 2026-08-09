@@ -551,3 +551,54 @@ select:focus {
   font-style: italic;
 }
 
+/* Appointment Hub — blocked-date picker (react-calendar) */
+.availability-date-picker .react-calendar {
+  width: 100%;
+  max-width: 20rem;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  color: #e2e8f0;
+}
+.availability-date-picker .react-calendar__navigation button {
+  color: #f8fafc;
+  min-width: 2.5rem;
+  background: transparent;
+}
+.availability-date-picker .react-calendar__navigation button:enabled:hover,
+.availability-date-picker .react-calendar__navigation button:enabled:focus {
+  background: rgba(14, 165, 233, 0.15);
+  border-radius: 0.5rem;
+}
+.availability-date-picker .react-calendar__month-view__weekdays {
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #64748b;
+}
+.availability-date-picker .react-calendar__tile {
+  color: #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.65em 0.35em;
+}
+.availability-date-picker .react-calendar__tile:enabled:hover,
+.availability-date-picker .react-calendar__tile:enabled:focus {
+  background: rgba(14, 165, 233, 0.18);
+}
+.availability-date-picker .react-calendar__tile--now {
+  background: rgba(148, 163, 184, 0.15);
+}
+.availability-date-picker .react-calendar__tile--active {
+  background: #0ea5e9 !important;
+  color: #020617 !important;
+  font-weight: 700;
+}
+.availability-date-picker .react-calendar__tile.availability-blocked-day {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fecaca;
+  text-decoration: line-through;
+}
+.availability-date-picker .react-calendar__month-view__days__day--neighboringMonth {
+  color: #475569;
+}
+

@@ -114,7 +114,7 @@ export function ProductCreateForm() {
     return (
       <div className="bg-surface border border-border-default rounded-md p-6">
         <p className="text-text-secondary mb-4">
-          Enable Stripe Connect (HK) or manual bank transfer in Payout Settings to create
+          Enable Stripe Connect (HK) or international bank transfer in Payout Settings to create
           paid products with online checkout. Offline products can still be managed from
           Products.
         </p>

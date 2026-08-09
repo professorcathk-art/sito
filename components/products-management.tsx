@@ -2120,7 +2120,7 @@ export function ProductsManagement() {
                   <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-md p-4">
                     <p className="text-sm text-yellow-400">
                       Enable online payouts before collecting Stripe payments. Choose Stripe Connect
-                      (HK) or manual bank transfer in{" "}
+                      (HK) or international bank transfer in{" "}
                       <a
                         href="/dashboard/finance/payouts"
                         className="underline hover:text-yellow-300"

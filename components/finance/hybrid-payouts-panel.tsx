@@ -228,8 +228,8 @@ export function HybridPayoutsPanel() {
             },
             {
               id: "manual_transfer" as const,
-              title: "Manual bank transfer",
-              desc: "Platform holds funds; withdraw via bank (overseas)",
+              title: "International bank transfer",
+              desc: "Receive payouts to your bank account worldwide (7–10 business days)",
             },
           ] as const
         ).map((opt) => (
@@ -329,7 +329,7 @@ export function HybridPayoutsPanel() {
           <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
             <h3 className="text-lg font-semibold text-slate-50">Confirm withdrawal</h3>
             <p className="mt-2 text-sm text-slate-400">
-              Manual payouts are processed via bank transfer within{" "}
+              Bank transfers are typically completed within{" "}
               <strong className="text-slate-200">7–10 business days</strong>.
             </p>
             <label className="mt-4 block text-sm">

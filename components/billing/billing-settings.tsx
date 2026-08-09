@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import {
+  PLAN_COMPARISON_ROWS,
   PLAN_FEATURES,
   PRO_MONTHLY_PRICE_USD,
   PRO_YEARLY_PRICE_USD,
@@ -247,13 +248,7 @@ export function BillingSettings() {
             </tr>
           </thead>
           <tbody className="text-slate-300">
-            {[
-              ["Storefront", "1", "1"],
-              ["Email broadcasts / mo", "50", "2,500"],
-              ["Lead magnets", "Included", "Unlimited"],
-              ["Hide Powered by Sito", "—", "Yes"],
-              ["Priority support", "—", "Yes"],
-            ].map(([feature, free, pro]) => (
+            {PLAN_COMPARISON_ROWS.map(([feature, free, pro]) => (
               <tr key={feature} className="border-t border-slate-800">
                 <td className="px-4 py-3 text-slate-200">{feature}</td>
                 <td className="px-4 py-3 text-slate-400">{free}</td>

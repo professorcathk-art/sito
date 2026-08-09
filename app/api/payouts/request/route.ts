@@ -42,7 +42,10 @@ export async function POST(request: NextRequest) {
 
     if (profile.payout_method !== "manual_transfer") {
       return NextResponse.json(
-        { error: "Manual withdrawal is only available for overseas (manual transfer) payouts." },
+        {
+          error:
+            "Bank withdrawals are only available when International bank transfer is selected in Payout Settings.",
+        },
         { status: 400 }
       );
     }
@@ -95,7 +98,8 @@ export async function POST(request: NextRequest) {
       success: true,
       requestId,
       amount,
-      message: "Payout request submitted. Manual payouts are processed within 7–10 business days.",
+      message:
+        "Payout request submitted. Bank transfers are typically completed within 7–10 business days.",
     });
   } catch (error: unknown) {
     console.error("payouts/request error:", error);

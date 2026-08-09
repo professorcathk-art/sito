@@ -102,9 +102,9 @@ export function AdminPayoutsPanel() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-slate-50">Manual payouts</h2>
+          <h2 className="text-xl font-semibold text-slate-50">Bank transfer payouts</h2>
           <p className="mt-1 text-sm text-slate-400">
-            Review overseas withdrawal requests, export for Wise, then mark as paid.
+            Review international withdrawal requests, export for Wise, then mark as paid.
           </p>
         </div>
         <button

@@ -209,7 +209,7 @@ export function AppointmentHub({ productId }: AppointmentHubProps) {
           .eq("id", productId);
         if (retryError) throw retryError;
       }
-      setSuccess("Session settings saved");
+      setSuccess("Appointment settings saved");
       setProductName(sessionForm.name.trim());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save settings");
@@ -296,9 +296,9 @@ export function AppointmentHub({ productId }: AppointmentHubProps) {
   }
 
   const tabs: { id: HubTab; label: string }[] = [
-    { id: "bookings", label: "📅 Bookings" },
-    { id: "availability", label: "⏰ Weekly availability" },
-    { id: "settings", label: "⚙️ Session settings" },
+    { id: "bookings", label: "📅 Bookings & Calendar" },
+    { id: "availability", label: "⏰ Manage Availability" },
+    { id: "settings", label: "⚙️ Appointment Settings" },
   ];
 
   return (

@@ -304,20 +304,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                href="/profile/setup"
-                className="text-cyber-green hover:text-white font-medium transition-colors"
-              >
-                Set up profile →
-              </Link>
-              <Link
-                href="/dashboard/storefront"
-                className="text-cyber-green hover:text-white font-medium transition-colors"
-              >
-                Storefront →
-              </Link>
-            </div>
+            {/* Creator setup links live under Creator Studio — not shown on learner surfaces */}
           </div>
         </div>
       </DashboardLayout>

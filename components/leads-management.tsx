@@ -5,6 +5,8 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { EmailBroadcastsPanel } from "@/components/leads/email-broadcasts-panel";
+import { FREE_LEAD_MAGNET_LIMIT, resolvePlanTier } from "@/lib/billing";
+import { UpgradeModal } from "@/components/upgrade-modal";
 
 interface FormFieldDraft {
   id?: string;
@@ -104,12 +106,21 @@ export function LeadsManagement() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [tablesReady, setTablesReady] = useState(true);
   const [activeTab, setActiveTab] = useState<"magnets" | "crm" | "broadcasts">("magnets");
+  const [isPro, setIsPro] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const load = async () => {
     if (!user) return;
     setLoading(true);
     setError("");
     try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("plan_tier, is_pro_store")
+        .eq("id", user.id)
+        .maybeSingle();
+      setIsPro(resolvePlanTier(profile || {}) === "pro");
+
       const { data: magnetsData, error: magnetsError } = await supabase
         .from("lead_magnets")
         .select("*")
@@ -336,7 +347,16 @@ export function LeadsManagement() {
     return { all: emailsAll.size, byMagnet };
   }, [leads]);
 
+  const atLeadMagnetLimit = !isPro && magnets.length >= FREE_LEAD_MAGNET_LIMIT;
+
   const openCreate = () => {
+    if (atLeadMagnetLimit) {
+      setShowUpgradeModal(true);
+      setError(
+        `Free plan includes ${FREE_LEAD_MAGNET_LIMIT} lead magnets. Upgrade to Pro for unlimited.`
+      );
+      return;
+    }
     setEditor(emptyEditor());
     setEditorOpen(true);
     setSuccess("");
@@ -432,6 +452,14 @@ export function LeadsManagement() {
     }
     if (!tablesReady) {
       setError("Run migration 056_lead_magnets.sql in Supabase first.");
+      return;
+    }
+
+    if (!editor.id && !isPro && magnets.length >= FREE_LEAD_MAGNET_LIMIT) {
+      setError(
+        `Free plan includes ${FREE_LEAD_MAGNET_LIMIT} lead magnets. Upgrade to Pro for unlimited.`
+      );
+      setShowUpgradeModal(true);
       return;
     }
 
@@ -600,10 +628,23 @@ export function LeadsManagement() {
             onClick={openCreate}
             className="rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-sky-400"
           >
-            + Create lead magnet
+            {atLeadMagnetLimit ? "Upgrade for more magnets" : "+ Create lead magnet"}
           </button>
         )}
       </header>
+      {activeTab === "magnets" && !isPro && (
+        <p className="text-xs text-slate-500">
+          Free plan: {magnets.length}/{FREE_LEAD_MAGNET_LIMIT} lead magnets used.{" "}
+          <button
+            type="button"
+            onClick={() => setShowUpgradeModal(true)}
+            className="text-sky-400 hover:underline"
+          >
+            Upgrade to Pro
+          </button>{" "}
+          for unlimited.
+        </p>
+      )}
 
       <div className="flex gap-2 overflow-x-auto border-b border-slate-800 pb-2">
         {(
@@ -1077,6 +1118,8 @@ export function LeadsManagement() {
           </div>
         </div>
       )}
+
+      {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
     </div>
   );
 }

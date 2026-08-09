@@ -152,24 +152,24 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                               onClick={() => {
                                 setMode("learner");
                                 setLearningMenuOpen(false);
-                                router.push("/profile");
+                                router.push("/dashboard/learning");
                               }}
                             >
                               My Learning
                             </button>
                             <div className="border-t border-slate-800 py-1">
                               <Link
-                                href="/blog/watch-later"
+                                href="/dashboard/learning/subscriptions?tab=saved"
                                 onClick={() => {
                                   setMode("learner");
                                   setLearningMenuOpen(false);
                                 }}
                                 className="block px-4 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-white"
                               >
-                                Watch Later
+                                Saved / Watch Later
                               </Link>
                               <Link
-                                href="/dashboard/purchases"
+                                href="/dashboard/learning/history"
                                 onClick={() => {
                                   setMode("learner");
                                   setLearningMenuOpen(false);
@@ -185,7 +185,7 @@ export function Navigation({ onSidebarToggle }: { onSidebarToggle?: () => void }
                     </div>
                   )}
                   <Link
-                    href={isCreator ? "/dashboard/products" : "/profile"}
+                    href={isCreator ? "/dashboard/products" : "/dashboard/learning"}
                     className="text-white/90 hover:text-text-primary transition-all duration-300 relative group text-sm lg:text-base"
                   >
                     {hasNewActivity && (

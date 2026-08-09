@@ -1473,7 +1473,7 @@ function DesignTab({
               onClick={onUpgradeClick}
               className="font-semibold text-sky-400 hover:underline"
             >
-              Upgrade to Pro ($9/mo)
+              Upgrade to Pro
             </button>{" "}
             to remove it.
           </p>

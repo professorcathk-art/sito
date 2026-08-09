@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Expert has not enabled online payouts. Ask them to set up Stripe Connect (HK) or manual bank transfer in Payout Settings, or use offline payment.",
+            "Expert has not enabled online payouts. Ask them to set up Stripe Connect (HK) or international bank transfer in Payout Settings, or use offline payment.",
         },
         { status: 400 }
       );

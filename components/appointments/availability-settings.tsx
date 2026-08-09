@@ -1,11 +1,15 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import Calendar from "react-calendar";
+import { format } from "date-fns";
 import {
   WEEKDAY_LABELS,
   type AvailabilityRules,
   type TimeWindow,
   type WeekdayKey,
 } from "@/lib/appointment-availability";
+import "react-calendar/dist/Calendar.css";
 
 interface AvailabilitySettingsProps {
   rules: AvailabilityRules;
@@ -19,6 +23,16 @@ function emptyWindow(): TimeWindow {
   return { start: "09:00", end: "17:00" };
 }
 
+function toDateKey(date: Date): string {
+  return format(date, "yyyy-MM-dd");
+}
+
+function formatChipDate(dateKey: string): string {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  if (!y || !m || !d) return dateKey;
+  return format(new Date(y, m - 1, d), "MM/dd/yyyy");
+}
+
 export function AvailabilitySettings({
   rules,
   onChange,
@@ -26,6 +40,14 @@ export function AvailabilitySettings({
   saving,
   lastSyncedCount,
 }: AvailabilitySettingsProps) {
+  const [pendingDate, setPendingDate] = useState<Date | null>(null);
+  const [pickerError, setPickerError] = useState("");
+
+  const blockedKeys = useMemo(
+    () => new Set(rules.dateOverrides.filter((o) => o.blocked).map((o) => o.date)),
+    [rules.dateOverrides]
+  );
+
   const setDayEnabled = (day: WeekdayKey, enabled: boolean) => {
     const weekly = { ...rules.weekly };
     if (enabled) {
@@ -55,15 +77,44 @@ export function AvailabilitySettings({
     onChange({ ...rules, weekly });
   };
 
-  const addBlockedDate = (date: string) => {
-    if (!date) return;
-    if (rules.dateOverrides.some((o) => o.date === date)) return;
+  const copyMondayToWeekdays = () => {
+    const monday = rules.weekly.mon;
+    if (!monday?.length) {
+      setPickerError("Set Monday hours first, then copy to weekdays.");
+      return;
+    }
+    setPickerError("");
+    const cloned = monday.map((w) => ({ ...w }));
+    onChange({
+      ...rules,
+      weekly: {
+        ...rules.weekly,
+        tue: cloned.map((w) => ({ ...w })),
+        wed: cloned.map((w) => ({ ...w })),
+        thu: cloned.map((w) => ({ ...w })),
+        fri: cloned.map((w) => ({ ...w })),
+      },
+    });
+  };
+
+  const addBlockedDate = () => {
+    if (!pendingDate) {
+      setPickerError("Select a date on the calendar first.");
+      return;
+    }
+    const date = toDateKey(pendingDate);
+    if (blockedKeys.has(date)) {
+      setPickerError("That date is already blocked.");
+      return;
+    }
+    setPickerError("");
     onChange({
       ...rules,
       dateOverrides: [...rules.dateOverrides, { date, blocked: true }].sort((a, b) =>
         a.date.localeCompare(b.date)
       ),
     });
+    setPendingDate(null);
   };
 
   const removeOverride = (date: string) => {
@@ -73,15 +124,14 @@ export function AvailabilitySettings({
     });
   };
 
-  // Mon-first display order
   const displayDays: WeekdayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-lg font-semibold text-slate-50">Weekly availability</h2>
+        <h2 className="text-lg font-semibold text-slate-50">Manage Availability</h2>
         <p className="mt-1 text-sm text-slate-400">
-          Set recurring hours like Calendly. Saving regenerates bookable slots for the next{" "}
+          Set recurring hours. Saving regenerates bookable slots for the next{" "}
           {rules.horizonDays} days.
         </p>
       </div>
@@ -183,6 +233,15 @@ export function AvailabilitySettings({
                   />
                   {WEEKDAY_LABELS[day]}
                 </label>
+                {day === "mon" && enabled && (
+                  <button
+                    type="button"
+                    onClick={copyMondayToWeekdays}
+                    className="rounded-lg border border-slate-700 px-2.5 py-1 text-xs font-medium text-sky-300 hover:border-sky-500/50 hover:bg-sky-500/10"
+                  >
+                    Copy Monday hours to all weekdays
+                  </button>
+                )}
                 {!enabled ? (
                   <span className="text-sm text-slate-500">Unavailable</span>
                 ) : (
@@ -229,41 +288,66 @@ export function AvailabilitySettings({
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-slate-200">Date overrides</h3>
-        <p className="mt-1 text-xs text-slate-500">Block holidays or days off.</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <input
-            type="date"
-            id="block-date"
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
-            onChange={(e) => {
-              addBlockedDate(e.target.value);
-              e.target.value = "";
-            }}
-          />
-          <span className="text-xs text-slate-500">Pick a date to block</span>
+        <h3 className="text-sm font-semibold text-slate-200">Blocked Dates & Holidays</h3>
+        <p className="mt-1 text-xs text-slate-500">
+          Select a date, then click Add. Dates are not blocked until you confirm.
+        </p>
+
+        <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-start">
+          <div className="availability-date-picker rounded-xl border border-slate-800 bg-slate-950/80 p-3">
+            <Calendar
+              onChange={(value) => {
+                const next = Array.isArray(value) ? value[0] : value;
+                setPendingDate(next instanceof Date ? next : null);
+                setPickerError("");
+              }}
+              value={pendingDate}
+              minDate={new Date()}
+              tileClassName={({ date, view }) => {
+                if (view !== "month") return null;
+                return blockedKeys.has(toDateKey(date)) ? "availability-blocked-day" : null;
+              }}
+            />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Selected</p>
+              <p className="mt-1 font-medium text-slate-100">
+                {pendingDate ? format(pendingDate, "EEEE, MMM d, yyyy") : "None — pick a day"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={addBlockedDate}
+              disabled={!pendingDate}
+              className="w-fit rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
+            >
+              + Add Blocked Date
+            </button>
+            {pickerError && <p className="text-sm text-amber-300">{pickerError}</p>}
+            <div className="flex flex-wrap gap-2">
+              {rules.dateOverrides
+                .filter((o) => o.blocked)
+                .map((o) => (
+                  <button
+                    key={o.date}
+                    type="button"
+                    onClick={() => removeOverride(o.date)}
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-sm text-slate-200 hover:border-red-500/40 hover:text-red-200"
+                    title="Remove blocked date"
+                  >
+                    <span>{formatChipDate(o.date)}</span>
+                    <span aria-hidden className="text-slate-500">
+                      ✕
+                    </span>
+                  </button>
+                ))}
+            </div>
+            {rules.dateOverrides.filter((o) => o.blocked).length === 0 && (
+              <p className="text-xs text-slate-500">No blocked dates yet.</p>
+            )}
+          </div>
         </div>
-        {rules.dateOverrides.length > 0 && (
-          <ul className="mt-3 space-y-2">
-            {rules.dateOverrides.map((o) => (
-              <li
-                key={o.date}
-                className="flex items-center justify-between rounded-lg border border-slate-800 px-3 py-2 text-sm"
-              >
-                <span className="text-slate-300">
-                  {o.date} · {o.blocked ? "Blocked" : "Custom hours"}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeOverride(o.date)}
-                  className="text-xs text-red-400 hover:text-red-300"
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -279,7 +363,6 @@ export function AvailabilitySettings({
           <p className="text-sm text-emerald-400">{lastSyncedCount} open slots ready to book</p>
         )}
       </div>
-
     </div>
   );
 }
