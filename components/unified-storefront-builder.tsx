@@ -84,11 +84,15 @@ const DEFAULT_BLOCKS: StorefrontBlock[] = [
   { id: "default-book-me", type: "book_me", order: 5, data: {} },
 ];
 
-/** Strip profile-owned blocks; keep header locked at top */
+/**
+ * Strip profile-owned blocks; keep header locked at top.
+ * Preserves the given array order for non-header blocks (do not re-sort by stale `order`,
+ * or drag/reorder swaps get undone).
+ */
 function normalizeEditableBlocks(blocks: StorefrontBlock[]): StorefrontBlock[] {
   const filtered = blocks.filter((b) => b.type !== "hero" && b.type !== "social_media");
   const header = filtered.find((b) => b.type === "header");
-  const rest = filtered.filter((b) => b.type !== "header").sort((a, b) => a.order - b.order);
+  const rest = filtered.filter((b) => b.type !== "header");
   if (!header) {
     return [
       { id: "default-header", type: "header" as const, order: 0, data: { ...DEFAULT_BLOCK_DATA.header } },
@@ -356,7 +360,9 @@ export function UnifiedStorefrontBuilder() {
           };
           setDesignSettings(nextDesign);
           const nextBlocks =
-            dbBlocksRaw.length > 0 ? normalizeEditableBlocks(dbBlocksRaw) : [...DEFAULT_BLOCKS];
+            dbBlocksRaw.length > 0
+              ? normalizeEditableBlocks([...dbBlocksRaw].sort((a, b) => a.order - b.order))
+              : [...DEFAULT_BLOCKS];
           setStorefrontBlocks(nextBlocks);
           setSavedSnapshot(buildDirtySnapshot(nextProfile, nextDesign, nextBlocks));
         } else {
@@ -657,7 +663,10 @@ export function UnifiedStorefrontBuilder() {
   };
 
   const handleMoveBlock = (id: string, direction: "up" | "down") => {
-    const sorted = [...storefrontBlocks].sort((a, b) => a.order - b.order);
+    // Work from display order (header first, no hero/social)
+    const sorted = normalizeEditableBlocks(
+      [...storefrontBlocks].sort((a, b) => a.order - b.order)
+    );
     const idx = sorted.findIndex((b) => b.id === id);
     if (idx < 0) return;
     const block = sorted[idx];
@@ -667,6 +676,7 @@ export function UnifiedStorefrontBuilder() {
     if (sorted[newIdx].type === "header") return; // Nothing may move above header
     const reordered = [...sorted];
     [reordered[idx], reordered[newIdx]] = [reordered[newIdx], reordered[idx]];
+    // Preserve swapped array order — normalize reassigns order indices only
     setStorefrontBlocks(normalizeEditableBlocks(reordered));
   };
 
@@ -1726,7 +1736,8 @@ function BlocksTab({
           return sortedBlocks.map((block, idx) => {
             const isHeader = block.type === "header";
             const isLocked = isHeader;
-            const canMoveUp = !isHeader && idx > 1; // index 0 is header; can't move into that slot
+            // Header stays at index 0; other blocks can reorder among themselves
+            const canMoveUp = !isHeader && idx > 1;
             const canMoveDown = !isHeader && idx < sortedBlocks.length - 1;
           return (
           <div key={block.id} className={`p-4 bg-slate-950 border rounded-lg ${isHeader ? "border-indigo-500/40" : "border-slate-700"}`}>
@@ -1740,9 +1751,17 @@ function BlocksTab({
                   type="button"
                   onClick={() => onMoveBlock(block.id, "up")}
                   disabled={!canMoveUp}
-                  className="p-1 text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className={`p-1.5 rounded hover:bg-slate-800 ${
+                    canMoveUp ? "text-slate-100" : "text-slate-600 cursor-not-allowed"
+                  }`}
                   aria-label="Move up"
-                  title={isHeader ? "Header stays at the top" : undefined}
+                  title={
+                    isHeader
+                      ? "Header stays at the top"
+                      : !canMoveUp
+                        ? "Already at the top (below header)"
+                        : "Move up"
+                  }
                 >
                   ↑
                 </button>
@@ -1750,9 +1769,17 @@ function BlocksTab({
                   type="button"
                   onClick={() => onMoveBlock(block.id, "down")}
                   disabled={!canMoveDown}
-                  className="p-1 text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className={`p-1.5 rounded hover:bg-slate-800 ${
+                    canMoveDown ? "text-slate-100" : "text-slate-600 cursor-not-allowed"
+                  }`}
                   aria-label="Move down"
-                  title={isHeader ? "Header stays at the top" : undefined}
+                  title={
+                    isHeader
+                      ? "Header stays at the top"
+                      : !canMoveDown
+                        ? "Already at the bottom"
+                        : "Move down"
+                  }
                 >
                   ↓
                 </button>

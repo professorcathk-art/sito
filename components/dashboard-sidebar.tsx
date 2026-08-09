@@ -106,7 +106,8 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
           match: (p, s) =>
             p.startsWith("/dashboard/storefront") &&
             p !== "/dashboard/storefront/theme" &&
-            !s.includes("tab=design"),
+            !s.includes("tab=design") &&
+            !s.includes("tab=blocks"),
         },
         {
           name: "Theme & Design",
@@ -114,6 +115,12 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
           match: (p, s) =>
             p === "/dashboard/storefront/theme" ||
             (p.startsWith("/dashboard/storefront") && s.includes("tab=design")),
+        },
+        {
+          name: "Section Blocks",
+          href: "/dashboard/storefront?tab=blocks",
+          match: (p, s) =>
+            p.startsWith("/dashboard/storefront") && s.includes("tab=blocks"),
         },
       ],
     },
