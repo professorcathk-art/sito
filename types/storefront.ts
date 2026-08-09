@@ -28,6 +28,8 @@ export interface StorefrontHeroData {
 }
 
 export interface StorefrontLeadMagnetData {
+  /** First-class lead magnet id from /dashboard/leads */
+  leadMagnetId?: string;
   title?: string;
   subtitle?: string;
   ctaText?: string;

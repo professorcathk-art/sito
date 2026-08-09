@@ -57,6 +57,7 @@ const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown
   hero: { imageUrl: "", overlayOpacity: 40, overlayColor: "#0f172a", avatarPosition: "center" },
   header: { name: "", tagline: "", bio: "", avatarUrl: "" },
   lead_magnet: {
+    leadMagnetId: "",
     title: "Get my free guide",
     subtitle: "Join my list for exclusive tips and updates.",
     ctaText: "Send me the freebie",
@@ -1816,6 +1817,84 @@ function BlocksTab({
   );
 }
 
+function LeadMagnetBlockEditor({
+  data,
+  onUpdate,
+}: {
+  data: Record<string, unknown>;
+  onUpdate: (data: Record<string, unknown>) => void;
+}) {
+  const { user } = useAuth();
+  const supabase = createClient();
+  const [magnets, setMagnets] = useState<Array<{ id: string; title: string; subtitle: string | null }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      if (!user) return;
+      const { data: rows } = await supabase
+        .from("lead_magnets")
+        .select("id, title, subtitle")
+        .eq("expert_id", user.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      setMagnets(rows || []);
+      setLoading(false);
+    }
+    load();
+  }, [user, supabase]);
+
+  const selectedId = (data.leadMagnetId as string) || "";
+
+  return (
+    <div className="mt-4 space-y-3">
+      <p className="text-sm text-slate-400">
+        Choose a lead magnet from{" "}
+        <a href="/dashboard/leads" className="text-indigo-400 hover:underline">
+          Leads &amp; Marketing
+        </a>
+        . Title and form come from that asset.
+      </p>
+      {loading ? (
+        <p className="text-sm text-slate-500">Loading magnets…</p>
+      ) : magnets.length === 0 ? (
+        <p className="text-sm text-amber-300/90">
+          No lead magnets yet. Create one under Leads first, then select it here.
+        </p>
+      ) : (
+        <div>
+          <label className="mb-1 block text-slate-400 text-sm">Lead magnet</label>
+          <select
+            value={selectedId}
+            onChange={(e) => {
+              const m = magnets.find((x) => x.id === e.target.value);
+              onUpdate({
+                ...data,
+                leadMagnetId: e.target.value,
+                title: m?.title || data.title,
+                subtitle: m?.subtitle || data.subtitle,
+              });
+            }}
+            className={INPUT_CLASS}
+          >
+            <option value="">Select a lead magnet…</option>
+            {magnets.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {selectedId && (
+        <p className="text-xs text-slate-500">
+          Selected: {magnets.find((m) => m.id === selectedId)?.title || selectedId}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function BlockEditForm({
   block,
   onUpdate,
@@ -1914,60 +1993,7 @@ function BlockEditForm({
     );
   }
   if (block.type === "lead_magnet") {
-    return (
-      <div className="mt-4 space-y-3">
-        <div>
-          <label className="block text-slate-400 text-sm mb-1">Title</label>
-          <input
-            type="text"
-            value={(data.title as string) || ""}
-            onChange={(e) => onUpdate({ ...data, title: e.target.value })}
-            placeholder="Get my free guide"
-            className={INPUT_CLASS}
-          />
-        </div>
-        <div>
-          <label className="block text-slate-400 text-sm mb-1">Subtitle</label>
-          <textarea
-            value={(data.subtitle as string) || ""}
-            onChange={(e) => onUpdate({ ...data, subtitle: e.target.value })}
-            placeholder="Join my list for exclusive tips..."
-            rows={2}
-            className={`${INPUT_CLASS} resize-none`}
-          />
-        </div>
-        <div>
-          <label className="block text-slate-400 text-sm mb-1">CTA button text</label>
-          <input
-            type="text"
-            value={(data.ctaText as string) || ""}
-            onChange={(e) => onUpdate({ ...data, ctaText: e.target.value })}
-            placeholder="Send me the freebie"
-            className={INPUT_CLASS}
-          />
-        </div>
-        <div>
-          <label className="block text-slate-400 text-sm mb-1">Email placeholder</label>
-          <input
-            type="text"
-            value={(data.placeholder as string) || ""}
-            onChange={(e) => onUpdate({ ...data, placeholder: e.target.value })}
-            placeholder="Enter your email"
-            className={INPUT_CLASS}
-          />
-        </div>
-        <div>
-          <label className="block text-slate-400 text-sm mb-1">Success message</label>
-          <input
-            type="text"
-            value={(data.successMessage as string) || ""}
-            onChange={(e) => onUpdate({ ...data, successMessage: e.target.value })}
-            placeholder="You're in!"
-            className={INPUT_CLASS}
-          />
-        </div>
-      </div>
-    );
+    return <LeadMagnetBlockEditor data={data} onUpdate={onUpdate} />;
   }
   if (block.type === "header") {
     return (
