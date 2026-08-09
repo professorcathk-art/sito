@@ -90,6 +90,7 @@ export interface DigitalStorefrontProps {
   currentUserId?: string;
   isPreview?: boolean;
   onBookMe?: () => void;
+  hidePoweredBy?: boolean;
 }
 
 export function DigitalStorefront({
@@ -115,6 +116,7 @@ export function DigitalStorefront({
   currentUserId,
   isPreview = false,
   onBookMe,
+  hidePoweredBy = false,
 }: DigitalStorefrontProps) {
   const isFluidAura = designState.themePreset === "fluid-aura";
   const isSoftGradient = designState.themePreset === "soft-gradient" || designState.themePreset === "pearl-silk";
@@ -300,14 +302,16 @@ export function DigitalStorefront({
               Shop · {displayName}
             </h1>
             {renderProductsSection(productsBlock, true)}
-            <a
-              href="https://www.sito.club"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-10 block pt-4 text-center text-sm text-[var(--store-subheadline)] opacity-70 hover:opacity-100"
-            >
-              Powered by Sito
-            </a>
+            {!hidePoweredBy && (
+              <a
+                href="https://www.sito.club"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-10 block pt-4 text-center text-sm text-[var(--store-subheadline)] opacity-70 hover:opacity-100"
+              >
+                Powered by Sito
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -451,42 +455,69 @@ export function DigitalStorefront({
                     description?: string;
                     thumbnailUrl?: string;
                     emoji?: string;
+                    variant?: "card" | "button";
                   }>) || [];
                 const links = items.filter((l) => l.title && l.url).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
                 const fallbackLinks = customLinks.filter((l) => l.title && l.url);
                 const toShow = links.length > 0 ? links : fallbackLinks;
                 if (toShow.length === 0) return null;
+                const align =
+                  (block.data.textAlign as "left" | "center" | "right") || "left";
+                const alignClass =
+                  align === "center" ? "items-center" : align === "right" ? "items-end" : "items-stretch";
                 return (
-                  <section key={block.id} className="flex flex-col gap-3">
-                    {toShow.map((link, idx) => (
-                      <a
-                        key={idx}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={isPreview ? (e) => e.preventDefault() : undefined}
-                        className="group flex items-center gap-3 rounded-2xl border border-[var(--store-card-border)] bg-[var(--store-card-bg)] p-3 backdrop-blur-xl transition-all hover:scale-[1.01]"
-                      >
-                        <LinkThumbnail
-                          thumbnailUrl={"thumbnailUrl" in link ? (link as { thumbnailUrl?: string }).thumbnailUrl : undefined}
-                          url={link.url}
-                          emoji={
-                            "emoji" in link
-                              ? (link as { emoji?: string }).emoji
-                              : (link as { icon?: string }).icon
-                          }
-                        />
-                        <div className="min-w-0 flex-1">
-                          <span className="block font-semibold text-[var(--store-text)]">{link.title}</span>
-                          {"description" in link && link.description && (
-                            <span className="mt-0.5 block text-xs text-[var(--store-subheadline)] line-clamp-1">
-                              {link.description}
-                            </span>
-                          )}
-                        </div>
-                        <span className="opacity-40 transition-transform group-hover:translate-x-0.5">→</span>
-                      </a>
-                    ))}
+                  <section key={block.id} className={`flex flex-col gap-3 ${alignClass}`}>
+                    {toShow.map((link, idx) => {
+                      const isButton =
+                        "variant" in link && (link as { variant?: string }).variant === "button";
+                      if (isButton) {
+                        return (
+                          <a
+                            key={idx}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={isPreview ? (e) => e.preventDefault() : undefined}
+                            className={`inline-flex w-full max-w-md items-center justify-center px-8 py-3.5 text-center text-base font-semibold no-underline transition-opacity hover:opacity-90 ${buttonStyleClass}`}
+                          >
+                            {link.title}
+                          </a>
+                        );
+                      }
+                      return (
+                        <a
+                          key={idx}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={isPreview ? (e) => e.preventDefault() : undefined}
+                          className="group flex w-full max-w-md items-center gap-3 rounded-2xl border border-[var(--store-card-border)] bg-[var(--store-card-bg)] p-3 backdrop-blur-xl transition-all hover:scale-[1.01]"
+                        >
+                          <LinkThumbnail
+                            thumbnailUrl={
+                              "thumbnailUrl" in link
+                                ? (link as { thumbnailUrl?: string }).thumbnailUrl
+                                : undefined
+                            }
+                            url={link.url}
+                            emoji={
+                              "emoji" in link
+                                ? (link as { emoji?: string }).emoji
+                                : (link as { icon?: string }).icon
+                            }
+                          />
+                          <div className="min-w-0 flex-1">
+                            <span className="block font-semibold text-[var(--store-text)]">{link.title}</span>
+                            {"description" in link && link.description && (
+                              <span className="mt-0.5 block text-xs text-[var(--store-subheadline)] line-clamp-1">
+                                {link.description}
+                              </span>
+                            )}
+                          </div>
+                          <span className="opacity-40 transition-transform group-hover:translate-x-0.5">→</span>
+                        </a>
+                      );
+                    })}
                   </section>
                 );
               }
@@ -628,15 +659,17 @@ export function DigitalStorefront({
               </section>
             )}
 
-            <a
-              href="https://www.sito.club"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pt-4 text-center text-sm text-[var(--store-subheadline)] opacity-70 hover:opacity-100"
-              onClick={isPreview ? (e) => e.preventDefault() : undefined}
-            >
-              Powered by Sito
-            </a>
+            {!hidePoweredBy && (
+              <a
+                href="https://www.sito.club"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pt-4 text-center text-sm text-[var(--store-subheadline)] opacity-70 hover:opacity-100"
+                onClick={isPreview ? (e) => e.preventDefault() : undefined}
+              >
+                Powered by Sito
+              </a>
+            )}
           </div>
         </div>
       </div>

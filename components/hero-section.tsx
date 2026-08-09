@@ -39,7 +39,7 @@ export function HeroSection() {
               style={{ animationDelay: "0.4s" }}
             >
               <Link
-                href="/register?intent=learn"
+                href="/signup?intent=learn"
                 className="group inline-flex flex-col items-center sm:items-start justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl transition-all duration-300 text-center sm:text-left shadow-lg shadow-indigo-900/30"
               >
                 <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wide text-indigo-100/90">
@@ -50,7 +50,7 @@ export function HeroSection() {
                 </span>
               </Link>
               <Link
-                href="/register?intent=teach"
+                href="/signup?intent=teach"
                 className="group inline-flex flex-col items-center sm:items-start justify-center border border-slate-600 hover:border-slate-400 hover:bg-slate-800/60 text-slate-100 px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl transition-all duration-300 text-center sm:text-left"
               >
                 <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wide text-slate-400 group-hover:text-slate-300">

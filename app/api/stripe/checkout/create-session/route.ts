@@ -45,6 +45,8 @@ export async function POST(request: NextRequest) {
       priceData, // For dynamic pricing (appointments)
       quantity = 1,
       connectedAccountId,
+      expertId, // Expert receiving funds (required for platform ledger / manual payouts)
+      payoutRoute, // 'stripe_connect' | 'manual_transfer'
       applicationFeePercent = defaultPlatformFee, // Default from env var or 10%
       courseId,
       appointmentId, // Can be camelCase from frontend (actually slot id)
@@ -55,10 +57,28 @@ export async function POST(request: NextRequest) {
       customerEmail, // For guest checkout - email from form
     } = body;
 
+    const useConnect = !!connectedAccountId && payoutRoute !== "manual_transfer";
+    const usePlatformLedger = !useConnect && (payoutRoute === "manual_transfer" || !!expertId);
+
     // Validate required fields
-    if ((!priceId && !priceData) || !connectedAccountId) {
+    if (!priceId && !priceData) {
       return NextResponse.json(
-        { error: "Either priceId or priceData, and connectedAccountId are required" },
+        { error: "Either priceId or priceData is required" },
+        { status: 400 }
+      );
+    }
+    if (!useConnect && !usePlatformLedger) {
+      return NextResponse.json(
+        {
+          error:
+            "Expert has not enabled online payouts. Ask them to set up Stripe Connect (HK) or manual bank transfer in Payout Settings, or use offline payment.",
+        },
+        { status: 400 }
+      );
+    }
+    if (usePlatformLedger && !expertId) {
+      return NextResponse.json(
+        { error: "expertId is required for platform-held (manual transfer) checkout" },
         { status: 400 }
       );
     }
@@ -135,9 +155,13 @@ export async function POST(request: NextRequest) {
     // Log metadata being sent for debugging
     const effectiveUserId = user?.id || "guest";
     const guestEmail = !user && customerEmail ? customerEmail : undefined;
+    const netExpertCents = Math.max(0, totalAmount - applicationFeeAmount);
     const sessionMetadata: Record<string, string> = {
-      connected_account_id: connectedAccountId,
+      connected_account_id: connectedAccountId || "",
+      expert_id: expertId || "",
+      payout_route: useConnect ? "stripe_connect" : "manual_transfer",
       application_fee_percent: applicationFeePercent.toString(),
+      net_expert_cents: String(netExpertCents),
       user_id: effectiveUserId,
       course_id: courseId || "",
       appointment_id: appointmentId || "",
@@ -149,46 +173,30 @@ export async function POST(request: NextRequest) {
     if (guestEmail) sessionMetadata.guest_email = guestEmail;
     
     console.log("Creating checkout session with metadata:", JSON.stringify(sessionMetadata, null, 2));
-    console.log("Connected Account ID:", connectedAccountId);
+    console.log("Payout route:", sessionMetadata.payout_route);
     console.log("User ID:", user?.id);
     console.log("Course ID:", courseId);
     console.log("Appointment ID:", appointmentId);
 
-    const session = await stripeClient.checkout.sessions.create({
-      // Line items for the checkout
-      line_items: lineItems,
-
-      // Payment intent configuration
-      payment_intent_data: {
-        // Platform's fee (in cents)
-        application_fee_amount: applicationFeeAmount,
-
-        // Transfer configuration
-        transfer_data: {
-          // Destination: Connected account to receive funds
-          destination: connectedAccountId,
-        },
-
-        // Store metadata for tracking and enrollment (in payment intent)
-        metadata: sessionMetadata,
-      },
-
-      // Store metadata at session level too (for webhook access)
+    const paymentIntentData: Record<string, unknown> = {
       metadata: sessionMetadata,
+    };
 
-      // Payment mode (one-time payment)
+    if (useConnect) {
+      paymentIntentData.application_fee_amount = applicationFeeAmount;
+      paymentIntentData.transfer_data = {
+        destination: connectedAccountId,
+      };
+    }
+
+    const session = await stripeClient.checkout.sessions.create({
+      line_items: lineItems,
+      payment_intent_data: paymentIntentData,
+      metadata: sessionMetadata,
       mode: "payment",
-
-      // Success URL - redirect here after successful payment
       success_url: `${baseUrl}/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
-
-      // Cancel URL - redirect here if user cancels
       cancel_url: `${baseUrl}/stripe/cancel`,
-
-      // Customer email (logged-in user or guest from form)
       customer_email: user?.email || customerEmail || undefined,
-
-      // Set locale to English for checkout page and emails
       locale: "en",
     });
 

@@ -39,6 +39,9 @@ export default async function StorefrontShopPage({ params }: ShopPageProps) {
         avatar_url,
         verified,
         listed_on_marketplace,
+        is_pro_store,
+        plan_tier,
+        hide_powered_by_sito,
         storefront_theme_preset,
         storefront_custom_brand_color,
         storefront_button_style,
@@ -169,6 +172,10 @@ export default async function StorefrontShopPage({ params }: ShopPageProps) {
           hasAppointments={hasAppointments}
           storefrontBlocks={storefrontBlocks as never[]}
           productsOnly
+          hidePoweredBy={
+            !!profile.hide_powered_by_sito &&
+            (profile.plan_tier === "pro" || !!profile.is_pro_store)
+          }
         />
       </Suspense>
     );

@@ -53,8 +53,8 @@ export async function POST(request: Request) {
           quantity: 1,
         },
       ],
-      success_url: `${request.headers.get("origin")}/dashboard/storefront?success=true`,
-      cancel_url: `${request.headers.get("origin")}/dashboard/storefront?canceled=true`,
+      success_url: `${request.headers.get("origin")}/dashboard/billing?success=true`,
+      cancel_url: `${request.headers.get("origin")}/dashboard/billing?canceled=true`,
       metadata: {
         user_id: user.id,
         subscription_type: "pro",

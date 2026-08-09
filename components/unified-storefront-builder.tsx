@@ -64,7 +64,21 @@ const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown
     placeholder: "Enter your email",
     successMessage: "You're in! Check your inbox soon.",
   },
-  links: { items: [{ title: "", url: "", icon: "", order: 0, description: "", thumbnailUrl: "", emoji: "" }], textAlign: "left" as "left" | "center" | "right" },
+  links: {
+    items: [
+      {
+        title: "",
+        url: "",
+        icon: "",
+        order: 0,
+        description: "",
+        thumbnailUrl: "",
+        emoji: "",
+        variant: "card" as const,
+      },
+    ],
+    textAlign: "left" as "left" | "center" | "right",
+  },
   products: { showProducts: true, displayMode: "inline" },
   social_media: { platforms: ["instagram", "linkedin", "tiktok", "twitter", "youtube"] },
   book_me: {},
@@ -185,6 +199,7 @@ export function UnifiedStorefrontBuilder() {
 
   // Design settings (Theme & Styling Engine)
   const [isPro, setIsPro] = useState(false);
+  const [hidePoweredBySito, setHidePoweredBySito] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [designSettings, setDesignSettings] = useState<{
     themePreset: ThemePresetId;
@@ -257,7 +272,7 @@ export function UnifiedStorefrontBuilder() {
               name, tagline, bio, website, linkedin, instagram_url, tiktok_url, twitter_url, youtube_url,
               storefront_background_image_url, listed_on_marketplace,
               category_id, country_id, language_supported, phone_number, avatar_url, custom_slug,
-              is_pro_store, storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
+              is_pro_store, plan_tier, hide_powered_by_sito, storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
               storefront_font_family, storefront_background_type, storefront_background_color, storefront_card_style,
               storefront_text_color, storefront_button_text_color, storefront_button_variant, storefront_blocks,
               categories!profiles_category_id_fkey(name),
@@ -269,9 +284,12 @@ export function UnifiedStorefrontBuilder() {
           .eq("id", user.id)
           .single();
         if (profileRes.error) {
+          const withoutBilling = baseProfileSelect
+            .replace(/,\s*plan_tier/, "")
+            .replace(/,\s*hide_powered_by_sito/, "");
           profileRes = await supabase
             .from("profiles")
-            .select(baseProfileSelect)
+            .select(withoutBilling)
             .eq("id", user.id)
             .single();
         }
@@ -322,7 +340,8 @@ export function UnifiedStorefrontBuilder() {
           if (p.country_id) setCountrySearch(countryName || "");
           if (p.custom_slug) setSlugAvailable(true);
 
-          setIsPro((p.is_pro_store as boolean) || false);
+          setIsPro((p.is_pro_store as boolean) || p.plan_tier === "pro");
+          setHidePoweredBySito(!!p.hide_powered_by_sito && ((p.is_pro_store as boolean) || p.plan_tier === "pro"));
           const themePreset = normalizeThemePreset(p.storefront_theme_preset as string);
           const presetVals = THEME_PRESET_VALUES[themePreset] ?? THEME_PRESET_VALUES.minimal;
           const fontMap: Record<string, FontFamilyId> = {
@@ -754,6 +773,7 @@ export function UnifiedStorefrontBuilder() {
           storefront_button_variant: designSettings.buttonStyle || "default",
           storefront_subheadline_color: designSettings.subheadlineColor || null,
           storefront_blocks: blocksPayload,
+          hide_powered_by_sito: isPro ? hidePoweredBySito : false,
           updated_at: new Date().toISOString(),
         }, { onConflict: "id" });
 
@@ -935,6 +955,15 @@ export function UnifiedStorefrontBuilder() {
                   <DesignTab
                     designSettings={designSettings}
                     isPro={isPro}
+                    hidePoweredBySito={hidePoweredBySito}
+                    onHidePoweredByChange={(next) => {
+                      if (!isPro && next) {
+                        setShowUpgradeModal(true);
+                        return;
+                      }
+                      setHidePoweredBySito(next);
+                    }}
+                    onUpgradeClick={() => setShowUpgradeModal(true)}
                     onThemeSelect={handleThemeSelect}
                     onDesignChange={setDesignSettings}
                     onBackgroundUpload={handleBackgroundUpload}
@@ -1008,6 +1037,7 @@ export function UnifiedStorefrontBuilder() {
                   verified={false}
                   products={displayedProducts}
                   storefrontBlocks={storefrontBlocks.length > 0 ? [...storefrontBlocks].sort((a, b) => a.order - b.order) : undefined}
+                  hidePoweredBy={isPro && hidePoweredBySito}
                   profileData={profileData}
                 />
               </div>
@@ -1380,6 +1410,9 @@ function ProfileTab({
 function DesignTab({
   designSettings,
   isPro,
+  hidePoweredBySito,
+  onHidePoweredByChange,
+  onUpgradeClick,
   onThemeSelect,
   onDesignChange,
   onBackgroundUpload,
@@ -1402,6 +1435,9 @@ function DesignTab({
     buttonStyle: ButtonStyleId;
   };
   isPro: boolean;
+  hidePoweredBySito: boolean;
+  onHidePoweredByChange: (next: boolean) => void;
+  onUpgradeClick: () => void;
   onThemeSelect: (theme: ThemePresetId) => void;
   onDesignChange: React.Dispatch<React.SetStateAction<typeof designSettings>>;
   onBackgroundUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -1411,6 +1447,39 @@ function DesignTab({
 }) {
   return (
     <div className="space-y-8">
+      <section className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-200">Branding</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Hide the “Powered by Sito” footer badge (Pro Creator).
+            </p>
+          </div>
+          <label className="inline-flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hidePoweredBySito}
+              onChange={(e) => onHidePoweredByChange(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-600 bg-slate-900 text-sky-500 focus:ring-sky-500"
+            />
+            <span className="text-sm text-slate-300">Hide Powered by Sito badge</span>
+          </label>
+        </div>
+        {!isPro && (
+          <p className="mt-3 text-xs text-amber-200/90">
+            Free plans show the badge.{" "}
+            <button
+              type="button"
+              onClick={onUpgradeClick}
+              className="font-semibold text-sky-400 hover:underline"
+            >
+              Upgrade to Pro ($9/mo)
+            </button>{" "}
+            to remove it.
+          </p>
+        )}
+      </section>
+
       {/* Themes Section - Mini phone previews */}
       <section>
         <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Theme</h3>
@@ -2005,7 +2074,17 @@ function BlockEditForm({
     );
   }
   if (block.type === "links") {
-    const items = (data.items as Array<{ title: string; url: string; icon?: string; order: number; description?: string; thumbnailUrl?: string; emoji?: string }>) || [];
+    const items =
+      (data.items as Array<{
+        title: string;
+        url: string;
+        icon?: string;
+        order: number;
+        description?: string;
+        thumbnailUrl?: string;
+        emoji?: string;
+        variant?: "card" | "button";
+      }>) || [];
     const textAlign = (data.textAlign as "left" | "center" | "right") || "left";
     return (
       <div className="mt-4 space-y-4">
@@ -2022,8 +2101,34 @@ function BlockEditForm({
             </button>
           ))}
         </div>
-        {items.map((item, i) => (
-          <div key={i} className="bg-slate-900 border border-slate-700 p-4 rounded-lg">
+        {items.map((item, i) => {
+          const variant = item.variant === "button" ? "button" : "card";
+          return (
+          <div key={i} className="bg-slate-900 border border-slate-700 p-4 rounded-lg space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-slate-500 text-xs uppercase tracking-wide">Style</span>
+              {(
+                [
+                  { id: "card" as const, label: "Link card" },
+                  { id: "button" as const, label: "CTA button" },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => {
+                    const next = [...items];
+                    next[i] = { ...next[i], variant: opt.id };
+                    onUpdate({ ...data, items: next });
+                  }}
+                  className={`px-2.5 py-1 text-xs rounded ${
+                    variant === opt.id ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
             <input
               type="text"
               value={item.title || ""}
@@ -2032,84 +2137,92 @@ function BlockEditForm({
                 next[i] = { ...next[i], title: e.target.value };
                 onUpdate({ ...data, items: next });
               }}
-              placeholder="Title"
-              className={`${INPUT_CLASS} mb-2`}
+              placeholder={variant === "button" ? "Button label (e.g. Book a call)" : "Title"}
+              className={INPUT_CLASS}
             />
             <input
-              type="text"
+              type="url"
               value={item.url || ""}
               onChange={(e) => {
                 const next = [...items];
                 next[i] = { ...next[i], url: e.target.value };
                 onUpdate({ ...data, items: next });
               }}
-              placeholder="URL"
-              className={`${INPUT_CLASS} mb-2`}
+              placeholder="Button URL (https://…)"
+              className={INPUT_CLASS}
             />
-            <input
-              type="text"
-              value={item.emoji || ""}
-              onChange={(e) => {
-                const next = [...items];
-                next[i] = { ...next[i], emoji: e.target.value };
-                onUpdate({ ...data, items: next });
-              }}
-              placeholder="Emoji (e.g. 🔗)"
-              maxLength={4}
-              className={`${INPUT_CLASS} mb-2 w-20`}
-            />
-            <textarea
-              value={item.description || ""}
-              onChange={(e) => {
-                const next = [...items];
-                next[i] = { ...next[i], description: e.target.value };
-                onUpdate({ ...data, items: next });
-              }}
-              placeholder="Description (optional)"
-              rows={2}
-              className={`${INPUT_CLASS} mb-2 resize-none`}
-            />
-            <div className="flex items-center gap-2 mb-2">
-              {item.thumbnailUrl && (
-                <div className="relative w-16 h-16 rounded overflow-hidden flex-shrink-0">
-                  <Image src={item.thumbnailUrl} alt="" fill className="object-cover" />
-                </div>
-              )}
-              <div>
+            {variant === "button" ? (
+              <p className="text-xs text-slate-500">
+                Renders as a clean text button using your storefront button style — no icon or thumbnail.
+              </p>
+            ) : (
+              <>
                 <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  id={`link-thumb-${i}`}
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    setUploadingIndex(i);
-                    setUploadError("");
-                    setUploadErrorIndex(null);
-                    try {
-                      const url = await onImageUpload(file, "storefront/links");
-                      const next = [...items];
-                      next[i] = { ...next[i], thumbnailUrl: url };
-                      onUpdate({ ...data, items: next });
-                    } catch (err) {
-                      setUploadError(err instanceof Error ? err.message : "Upload failed");
-                      setUploadErrorIndex(i);
-                    } finally {
-                      setUploadingIndex(null);
-                      e.target.value = "";
-                    }
+                  type="text"
+                  value={item.emoji || ""}
+                  onChange={(e) => {
+                    const next = [...items];
+                    next[i] = { ...next[i], emoji: e.target.value };
+                    onUpdate({ ...data, items: next });
                   }}
+                  placeholder="Emoji (e.g. 🔗)"
+                  maxLength={4}
+                  className={`${INPUT_CLASS} w-20`}
                 />
-                <label
-                  htmlFor={`link-thumb-${i}`}
-                  className={`inline-block px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-slate-200 text-sm cursor-pointer hover:bg-slate-700 ${uploadingIndex === i ? "opacity-50 pointer-events-none" : ""}`}
-                >
-                  {uploadingIndex === i ? "Uploading..." : item.thumbnailUrl ? "Change thumbnail" : "Add thumbnail"}
-                </label>
-              </div>
-            </div>
-            {uploadErrorIndex === i && uploadError && <p className="text-red-400 text-xs mb-2">{uploadError}</p>}
+                <textarea
+                  value={item.description || ""}
+                  onChange={(e) => {
+                    const next = [...items];
+                    next[i] = { ...next[i], description: e.target.value };
+                    onUpdate({ ...data, items: next });
+                  }}
+                  placeholder="Description (optional)"
+                  rows={2}
+                  className={`${INPUT_CLASS} resize-none`}
+                />
+                <div className="flex items-center gap-2">
+                  {item.thumbnailUrl && (
+                    <div className="relative w-16 h-16 rounded overflow-hidden flex-shrink-0">
+                      <Image src={item.thumbnailUrl} alt="" fill className="object-cover" />
+                    </div>
+                  )}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      id={`link-thumb-${i}`}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingIndex(i);
+                        setUploadError("");
+                        setUploadErrorIndex(null);
+                        try {
+                          const url = await onImageUpload(file, "storefront/links");
+                          const next = [...items];
+                          next[i] = { ...next[i], thumbnailUrl: url };
+                          onUpdate({ ...data, items: next });
+                        } catch (err) {
+                          setUploadError(err instanceof Error ? err.message : "Upload failed");
+                          setUploadErrorIndex(i);
+                        } finally {
+                          setUploadingIndex(null);
+                          e.target.value = "";
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={`link-thumb-${i}`}
+                      className={`inline-block px-3 py-1.5 bg-slate-800 border border-slate-700 rounded text-slate-200 text-sm cursor-pointer hover:bg-slate-700 ${uploadingIndex === i ? "opacity-50 pointer-events-none" : ""}`}
+                    >
+                      {uploadingIndex === i ? "Uploading..." : item.thumbnailUrl ? "Change thumbnail" : "Add thumbnail"}
+                    </label>
+                  </div>
+                </div>
+                {uploadErrorIndex === i && uploadError && <p className="text-red-400 text-xs">{uploadError}</p>}
+              </>
+            )}
             <button
               type="button"
               onClick={() => onUpdate({ ...data, items: items.filter((_, j) => j !== i) })}
@@ -2118,13 +2231,26 @@ function BlockEditForm({
               Remove link
             </button>
           </div>
-        ))}
+          );
+        })}
         <button
           type="button"
           onClick={() =>
             onUpdate({
               ...data,
-              items: [...items, { title: "", url: "", icon: "", order: items.length, description: "", thumbnailUrl: "", emoji: "" }],
+              items: [
+                ...items,
+                {
+                  title: "",
+                  url: "",
+                  icon: "",
+                  order: items.length,
+                  description: "",
+                  thumbnailUrl: "",
+                  emoji: "",
+                  variant: "button",
+                },
+              ],
             })
           }
           className="text-indigo-400 text-sm"

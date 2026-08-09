@@ -38,6 +38,8 @@ interface StorefrontViewProps {
   hasAppointments: boolean;
   storefrontBlocks?: StorefrontBlock[];
   productsOnly?: boolean;
+  /** Pro creators may hide the Powered by Sito footer */
+  hidePoweredBy?: boolean;
 }
 
 export function StorefrontView({
@@ -63,6 +65,7 @@ export function StorefrontView({
   hasAppointments,
   storefrontBlocks = [],
   productsOnly = false,
+  hidePoweredBy = false,
 }: StorefrontViewProps) {
   const { user } = useAuth();
   const router = useRouter();
@@ -111,6 +114,7 @@ export function StorefrontView({
         customLinks={customLinks}
         currentUserId={user?.id}
         productsOnly={productsOnly}
+        hidePoweredBy={hidePoweredBy}
         onBookMe={() => setOpenBookingModal(true)}
       />
       {openBookingModal && hasAppointments && (

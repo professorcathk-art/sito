@@ -30,7 +30,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/register" className="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">
+                <Link href="/signup" className="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">
                   Become an Expert
                 </Link>
               </li>

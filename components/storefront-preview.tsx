@@ -18,6 +18,7 @@ interface StorefrontPreviewProps {
   verified: boolean;
   products: StorefrontProductItem[];
   storefrontBlocks?: StorefrontBlock[];
+  hidePoweredBy?: boolean;
   profileData?: {
     name: string;
     title: string;
@@ -48,6 +49,7 @@ export function StorefrontPreview({
   verified,
   products,
   storefrontBlocks,
+  hidePoweredBy = false,
   profileData,
 }: StorefrontPreviewProps) {
   const name = profileData?.name || expertName;
@@ -106,6 +108,7 @@ export function StorefrontPreview({
             storefrontBlocks={blocks}
             customLinks={customLinks}
             isPreview
+            hidePoweredBy={hidePoweredBy}
           />
         </div>
       </div>

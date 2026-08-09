@@ -65,11 +65,11 @@ export function EmailBroadcastsPanel({ magnets, leadCounts }: EmailBroadcastsPan
     try {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("is_pro_store, monthly_email_limit, emails_sent_this_month, email_quota_period")
+        .select("is_pro_store, plan_tier, monthly_email_limit, emails_sent_this_month, email_quota_period")
         .eq("id", user.id)
         .maybeSingle();
 
-      const pro = !!profile?.is_pro_store;
+      const pro = !!profile?.is_pro_store || profile?.plan_tier === "pro";
       setIsPro(pro);
       setLimit(resolveMonthlyLimit(pro, profile?.monthly_email_limit));
       // Client-side month reset display (server enforces on send)

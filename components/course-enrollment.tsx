@@ -617,14 +617,28 @@ export function CourseEnrollment({
         if (product?.stripe_product_id && product?.stripe_price_id) {
           const { data: expertProfile } = await supabase
             .from("profiles")
-            .select("stripe_connect_account_id")
+            .select(
+              "stripe_connect_account_id, stripe_connect_onboarding_complete, payout_method, bank_details"
+            )
             .eq("id", expertId)
             .maybeSingle();
-          
+
+          const payoutRoute =
+            expertProfile?.payout_method === "manual_transfer"
+              ? "manual_transfer"
+              : expertProfile?.stripe_connect_account_id
+                ? "stripe_connect"
+                : null;
           const connectedAccountId = expertProfile?.stripe_connect_account_id;
-          
-          if (!connectedAccountId) {
-            alert("Expert has not set up payment processing. Please contact them directly.");
+
+          if (
+            !payoutRoute ||
+            (payoutRoute === "stripe_connect" && !connectedAccountId) ||
+            (payoutRoute === "manual_transfer" && !expertProfile?.bank_details)
+          ) {
+            alert(
+              "Expert has not enabled online payouts yet. Please contact them for offline payment, or try again later."
+            );
             setProcessing(false);
             return;
           }
@@ -652,7 +666,10 @@ export function CourseEnrollment({
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 priceId: product.stripe_price_id,
-                connectedAccountId: connectedAccountId,
+                connectedAccountId:
+                  payoutRoute === "stripe_connect" ? connectedAccountId : undefined,
+                expertId,
+                payoutRoute,
                 courseId: courseId,
                 questionnaireResponseId: questionnaireResponseId || null,
                 customerEmail: customerEmail || undefined,

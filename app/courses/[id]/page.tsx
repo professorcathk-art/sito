@@ -1,14 +1,51 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { CourseActions } from "@/components/course-actions";
+import { JsonLd } from "@/components/json-ld";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getSiteUrl } from "@/lib/site-url";
 
 interface CoursePageProps {
   params: Promise<{
     id: string;
   }>;
+}
+
+export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: course } = await supabase
+    .from("courses")
+    .select("title, description, cover_image_url")
+    .eq("id", id)
+    .maybeSingle();
+  if (!course) return { title: "Course | Sito" };
+  const plainDesc = String(course.description || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 150);
+  const title = `${course.title} | Sito`;
+  const site = getSiteUrl();
+  const ogUrl = `${site}/api/og?title=${encodeURIComponent(course.title)}&subtitle=${encodeURIComponent("E-learning on Sito")}`;
+  return {
+    title,
+    description: plainDesc || "E-learning course on Sito",
+    openGraph: {
+      title,
+      description: plainDesc,
+      images: [{ url: course.cover_image_url || ogUrl, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: plainDesc,
+      images: [course.cover_image_url || ogUrl],
+    },
+  };
 }
 
 export default async function CoursePage({ params }: CoursePageProps) {
@@ -109,8 +146,36 @@ export default async function CoursePage({ params }: CoursePageProps) {
       console.error("Error fetching lessons:", lessonsError);
     }
 
+    const site = getSiteUrl();
+    const plainDesc = String(course.description || "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 300);
+    const courseLd = {
+      "@context": "https://schema.org",
+      "@type": "Course",
+      name: course.title,
+      description: plainDesc,
+      url: `${site}/courses/${course.id}`,
+      image: course.cover_image_url || undefined,
+      provider: {
+        "@type": "Organization",
+        name: "Sito",
+        url: site,
+      },
+      instructor: expertProfile
+        ? {
+            "@type": "Person",
+            name: expertProfile.name || "Expert",
+            url: `${site}/expert/${course.expert_id}`,
+          }
+        : undefined,
+    };
+
     return (
     <div className="min-h-screen bg-custom-bg flex flex-col">
+      <JsonLd data={courseLd} />
       <Navigation />
       <div className="pt-16 pb-12 px-4 sm:px-6 lg:px-8 flex-1">
         <div className="max-w-4xl mx-auto">

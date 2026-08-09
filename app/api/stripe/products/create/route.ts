@@ -52,12 +52,22 @@ export async function POST(request: NextRequest) {
       priceInCents,
       currency = "usd",
       connectedAccountId,
+      payoutRoute, // 'manual_transfer' allows platform product without Connect
     } = body;
 
     // Validate required fields
-    if (!name || priceInCents === undefined || !connectedAccountId) {
+    if (!name || priceInCents === undefined) {
       return NextResponse.json(
-        { error: "name, priceInCents, and connectedAccountId are required" },
+        { error: "name and priceInCents are required" },
+        { status: 400 }
+      );
+    }
+    if (!connectedAccountId && payoutRoute !== "manual_transfer") {
+      return NextResponse.json(
+        {
+          error:
+            "connectedAccountId is required unless payoutRoute is manual_transfer (overseas ledger).",
+        },
         { status: 400 }
       );
     }
@@ -96,7 +106,8 @@ export async function POST(request: NextRequest) {
       // Store mapping to connected account in metadata
       // This allows us to know which expert owns this product
       metadata: {
-        connected_account_id: connectedAccountId,
+        connected_account_id: connectedAccountId || "",
+        payout_route: connectedAccountId ? "stripe_connect" : "manual_transfer",
         created_by_user_id: user.id,
       },
     };

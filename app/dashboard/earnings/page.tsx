@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { ExpertRoute } from "@/components/expert-route";
-import { StripeConnectOnboarding } from "@/components/stripe-connect-onboarding";
+import { HybridPayoutsPanel } from "@/components/finance/hybrid-payouts-panel";
 import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
 
@@ -203,17 +203,8 @@ function EarningsContent() {
       )}
 
       {tab === "payouts" && (
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <h2 className="text-lg font-semibold text-slate-50 mb-2">Payout settings</h2>
-            <p className="text-sm text-slate-400 mb-6">
-              Connect Stripe to receive payouts for paid products and appointments.
-            </p>
-            <StripeConnectOnboarding />
-          </div>
-          <Link href="/dashboard/stripe-connect" className="text-sm text-sky-400 hover:text-sky-300">
-            Open classic Payment Setup page →
-          </Link>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+          <HybridPayoutsPanel />
         </div>
       )}
     </div>

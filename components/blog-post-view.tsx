@@ -559,7 +559,7 @@ export function BlogPostView({ blogPost }: BlogPostViewProps) {
                     Sign In to Continue
                   </Link>
                   <Link
-                    href={`/register?redirect=/blog/${blogPost.id}`}
+                    href={`/signup?redirect=/blog/${blogPost.id}`}
                     className="px-6 py-3 border-2 border-border-default text-cyber-green font-semibold rounded-md hover:bg-white/5 transition-all"
                   >
                     Create Account

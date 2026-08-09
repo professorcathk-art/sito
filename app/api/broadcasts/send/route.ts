@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select(
-        "id, name, email, is_pro_store, monthly_email_limit, emails_sent_this_month, email_quota_period"
+        "id, name, email, is_pro_store, plan_tier, monthly_email_limit, emails_sent_this_month, email_quota_period"
       )
       .eq("id", user.id)
       .single();
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
         .eq("id", user.id);
     }
 
-    const isPro = !!profile.is_pro_store;
+    const isPro = !!profile.is_pro_store || profile.plan_tier === "pro";
     const limit = resolveMonthlyLimit(isPro, profile.monthly_email_limit);
     // Keep limit column in sync for Pro prep
     if ((profile.monthly_email_limit || 50) !== limit) {

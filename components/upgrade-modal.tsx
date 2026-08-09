@@ -15,14 +15,17 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
     setLoading(true);
     try {
       // Redirect to Stripe checkout for Pro subscription
-      const response = await fetch("/api/stripe/create-pro-subscription", {
+      const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interval: "month" }),
       });
 
-      const { url } = await response.json();
-      if (url) {
-        window.location.href = url;
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || "Checkout failed");
       }
     } catch (error) {
       console.error("Error creating subscription:", error);

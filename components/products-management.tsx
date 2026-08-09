@@ -135,6 +135,8 @@ export function ProductsManagement() {
     country_code: "+852", // Default to Hong Kong
   });
   const [stripeAccountId, setStripeAccountId] = useState<string | null>(null);
+  const [payoutMethod, setPayoutMethod] = useState<string | null>(null);
+  const [payoutReady, setPayoutReady] = useState(false);
   const [isProfileListed, setIsProfileListed] = useState<boolean | null>(null);
   const [courseMembersMap, setCourseMembersMap] = useState<{ [courseId: string]: any[] }>({});
   const [showMembersForProduct, setShowMembersForProduct] = useState<string | null>(null);
@@ -204,7 +206,7 @@ export function ProductsManagement() {
   };
 
   /**
-   * Fetch user's Stripe Connect account ID
+   * Fetch user's Stripe Connect / payout configuration
    */
   const fetchStripeAccountId = async () => {
     if (!user) return;
@@ -212,13 +214,22 @@ export function ProductsManagement() {
     try {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("stripe_connect_account_id")
+        .select(
+          "stripe_connect_account_id, stripe_connect_onboarding_complete, payout_method, bank_details"
+        )
         .eq("id", user.id)
         .single();
       
       if (profile?.stripe_connect_account_id) {
         setStripeAccountId(profile.stripe_connect_account_id);
       }
+      setPayoutMethod(profile?.payout_method || null);
+      const ready =
+        (profile?.payout_method === "stripe_connect" &&
+          !!profile?.stripe_connect_account_id &&
+          !!profile?.stripe_connect_onboarding_complete) ||
+        (profile?.payout_method === "manual_transfer" && !!profile?.bank_details);
+      setPayoutReady(!!ready);
     } catch (err) {
       console.error("Error fetching Stripe account ID:", err);
     }
@@ -276,29 +287,31 @@ export function ProductsManagement() {
     price: number,
     productId: string
   ): Promise<{ stripeProductId: string | null; stripePriceId: string | null }> => {
-    // Only create Stripe product for paid products
-    if (price <= 0 || !stripeAccountId) {
+    // Only create Stripe product for paid products with a configured payout route
+    if (price <= 0 || !payoutReady) {
       return { stripeProductId: null, stripePriceId: null };
     }
 
     try {
-      // Verify account is ready
-      const statusResponse = await fetch(
-        `/api/stripe/connect/account-status?accountId=${stripeAccountId}`
-      );
-      
-      if (!statusResponse.ok) {
-        console.warn("Stripe account not ready, skipping Stripe product creation");
-        return { stripeProductId: null, stripePriceId: null };
+      if (payoutMethod === "stripe_connect") {
+        if (!stripeAccountId) {
+          return { stripeProductId: null, stripePriceId: null };
+        }
+        const statusResponse = await fetch(
+          `/api/stripe/connect/account-status?accountId=${stripeAccountId}`
+        );
+        if (!statusResponse.ok) {
+          console.warn("Stripe account not ready, skipping Stripe product creation");
+          return { stripeProductId: null, stripePriceId: null };
+        }
+        const statusData = await statusResponse.json();
+        if (!statusData.readyToReceivePayments) {
+          console.warn("Stripe account not ready to receive payments, skipping Stripe product creation");
+          return { stripeProductId: null, stripePriceId: null };
+        }
       }
 
-      const statusData = await statusResponse.json();
-      if (!statusData.readyToReceivePayments) {
-        console.warn("Stripe account not ready to receive payments, skipping Stripe product creation");
-        return { stripeProductId: null, stripePriceId: null };
-      }
-
-      // Create Stripe product
+      // Create Stripe product (Connect destination or platform ledger)
       const response = await fetch("/api/stripe/products/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -307,7 +320,9 @@ export function ProductsManagement() {
           description: productDescription,
           priceInCents: Math.round(price * 100), // Convert to cents
           currency: "usd", // Use USD to match form display
-          connectedAccountId: stripeAccountId,
+          connectedAccountId:
+            payoutMethod === "stripe_connect" ? stripeAccountId : undefined,
+          payoutRoute: payoutMethod === "manual_transfer" ? "manual_transfer" : undefined,
         }),
       });
 
@@ -2101,13 +2116,18 @@ export function ProductsManagement() {
                   </div>
                 )}
 
-                {formData.payment_method === "stripe" && !stripeAccountId && (
+                {formData.payment_method === "stripe" && !payoutReady && (
                   <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-md p-4">
                     <p className="text-sm text-yellow-400">
-                      ⚠️ You need to set up a Stripe account to accept online payments.{" "}
-                      <a href="/dashboard/stripe-connect" className="underline hover:text-yellow-300">
-                        Set up Stripe account
+                      Enable online payouts before collecting Stripe payments. Choose Stripe Connect
+                      (HK) or manual bank transfer in{" "}
+                      <a
+                        href="/dashboard/finance/payouts"
+                        className="underline hover:text-yellow-300"
+                      >
+                        Payout Settings
                       </a>
+                      . You can still use offline payment without payouts.
                     </p>
                   </div>
                 )}

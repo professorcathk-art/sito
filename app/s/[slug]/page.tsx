@@ -1,13 +1,70 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { StorefrontView } from "@/components/storefront-view";
+import { JsonLd } from "@/components/json-ld";
 import { getDesignStateFromProfile, THEME_PRESET_VALUES, normalizeThemePreset } from "@/lib/storefront-theme-config";
+import { getSiteUrl } from "@/lib/site-url";
 
 interface StorefrontPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+async function fetchStorefrontProfile(slug: string) {
+  const supabase = await createClient();
+  let { data, error } = await supabase
+    .from("profiles")
+    .select(
+      "id, name, bio, tagline, avatar_url, custom_slug, website, linkedin, listed_on_marketplace, hide_powered_by_sito, plan_tier, is_pro_store"
+    )
+    .eq("custom_slug", slug.toLowerCase().trim())
+    .eq("listed_on_marketplace", true)
+    .maybeSingle();
+  if (error) {
+    const retry = await supabase
+      .from("profiles")
+      .select("id, name, bio, tagline, avatar_url, custom_slug, website, linkedin, listed_on_marketplace")
+      .eq("custom_slug", slug.toLowerCase().trim())
+      .eq("listed_on_marketplace", true)
+      .maybeSingle();
+    data = retry.data as typeof data;
+  }
+  return data;
+}
+
+export async function generateMetadata({ params }: StorefrontPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const profile = await fetchStorefrontProfile(slug);
+  if (!profile) {
+    return { title: "Storefront | Sito" };
+  }
+  const name = profile.name || "Expert";
+  const tagline = profile.tagline || "Expert on Sito";
+  const description = (profile.bio || tagline).slice(0, 150);
+  const title = `${name} — ${tagline} | Sito`;
+  const site = getSiteUrl();
+  const ogUrl = `${site}/api/og?title=${encodeURIComponent(name)}&subtitle=${encodeURIComponent(tagline)}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "profile",
+      url: `${site}/s/${slug.toLowerCase().trim()}`,
+      images: [{ url: ogUrl, width: 1200, height: 630, alt: name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogUrl],
+    },
+  };
 }
 
 function durationLabelForProduct(product: {
@@ -39,6 +96,9 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         avatar_url,
         verified,
         listed_on_marketplace,
+        is_pro_store,
+        plan_tier,
+        hide_powered_by_sito,
         storefront_theme_preset,
         storefront_custom_brand_color,
         storefront_button_style,
@@ -73,9 +133,14 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
       .maybeSingle();
 
     if (result.error) {
+      // Retry without newer columns if migration not applied yet
+      const legacySelect = baseSelect
+        .replace(/,\s*plan_tier/, "")
+        .replace(/,\s*hide_powered_by_sito/, "")
+        .replace(/,\s*is_pro_store/, "");
       result = await supabase
         .from("profiles")
-        .select(baseSelect)
+        .select(legacySelect)
         .eq("custom_slug", slug.toLowerCase().trim())
         .eq("listed_on_marketplace", true)
         .maybeSingle();
@@ -166,8 +231,25 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
     const glowElement = THEME_PRESET_VALUES[themeKey]?.glowElement;
 
     const p = profile as Record<string, unknown>;
+    const site = getSiteUrl();
+    const personLd = {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: String(p.name || "Expert"),
+      description: String(p.bio || p.tagline || "").slice(0, 300),
+      url: `${site}/s/${slug.toLowerCase().trim()}`,
+      image: (p.avatar_url as string) || undefined,
+      jobTitle: (p.tagline as string) || undefined,
+      sameAs: [p.website, p.linkedin, p.instagram_url, p.twitter_url, p.youtube_url].filter(
+        Boolean
+      ) as string[],
+    };
+    const hideBadge =
+      (!!p.hide_powered_by_sito && (p.plan_tier === "pro" || !!p.is_pro_store));
+
     return (
       <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Loading storefront…</div>}>
+        <JsonLd data={personLd} />
         <StorefrontView
           expertId={String(p.id)}
           expertName={String(p.name || "Expert")}
@@ -194,6 +276,7 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
           blogPosts={blogPosts}
           hasAppointments={hasAppointments}
           storefrontBlocks={storefrontBlocks}
+          hidePoweredBy={hideBadge}
         />
       </Suspense>
     );

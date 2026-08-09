@@ -184,6 +184,11 @@ export function DashboardSidebar({ onClose }: DashboardSidebarProps) {
             p.startsWith("/dashboard/stripe-connect") ||
             (p.startsWith("/dashboard/earnings") && s.includes("tab=payouts")),
         },
+        {
+          name: "Billing & Plan",
+          href: "/dashboard/billing",
+          match: (p) => p.startsWith("/dashboard/billing"),
+        },
       ],
     },
   ];

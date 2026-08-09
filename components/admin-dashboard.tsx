@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { AdminRefundManagement } from "@/components/admin-refund-management";
@@ -303,6 +304,14 @@ export function AdminDashboard() {
 
       {/* Refund Management */}
       <div className="mt-8">
+        <div className="mb-6">
+          <Link
+            href="/admin/payouts"
+            className="inline-flex rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-sm font-semibold text-amber-100 hover:bg-amber-500/20"
+          >
+            Manage manual payouts →
+          </Link>
+        </div>
         <AdminRefundManagement />
       </div>
     </div>

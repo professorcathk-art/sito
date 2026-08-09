@@ -137,8 +137,29 @@ export async function POST(request: NextRequest) {
       } else {
         console.log(`Subscription ${subscription.id} updated for user ${userId}`);
       }
+
+      // Explicit plan_tier + customer id (trigger also syncs is_pro_store)
+      const isActive =
+        subscription.status === "active" || subscription.status === "trialing";
+      const isDeleted =
+        eventType === "customer.subscription.deleted" ||
+        ["canceled", "unpaid", "incomplete_expired"].includes(subscription.status);
+
+      await supabase
+        .from("profiles")
+        .update({
+          stripe_customer_id: subscription.customer as string,
+          plan_tier: isActive && !isDeleted ? "pro" : "free",
+          is_pro_store: isActive && !isDeleted,
+          monthly_email_limit: isActive && !isDeleted ? 2500 : 50,
+          ...(isDeleted || !isActive ? { hide_powered_by_sito: false } : {}),
+          pro_subscription_expires_at: new Date(
+            subscription.current_period_end * 1000
+          ).toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", userId);
       
-      // The trigger will automatically update is_pro_store in profiles table
       return NextResponse.json({ received: true });
     }
     
@@ -200,6 +221,20 @@ export async function POST(request: NextRequest) {
         } else {
           console.log(`✅ Pro subscription created: ${subscription.id} for user ${userId}`);
         }
+
+        await supabase
+          .from("profiles")
+          .update({
+            stripe_customer_id: subscription.customer as string,
+            plan_tier: "pro",
+            is_pro_store: true,
+            monthly_email_limit: 2500,
+            pro_subscription_expires_at: new Date(
+              subscription.current_period_end * 1000
+            ).toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", userId);
         
         // Return early - don't process as course enrollment
         return NextResponse.json({ received: true });
@@ -456,6 +491,39 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Credit overseas expert ledger for platform-held (manual_transfer) sales
+      const payoutRoute =
+        session.metadata?.payout_route || paymentIntentMetadata?.payout_route;
+      const expertIdForLedger =
+        session.metadata?.expert_id || paymentIntentMetadata?.expert_id;
+      const netExpertCents = parseInt(
+        session.metadata?.net_expert_cents ||
+          paymentIntentMetadata?.net_expert_cents ||
+          "0",
+        10
+      );
+      if (
+        payoutRoute === "manual_transfer" &&
+        expertIdForLedger &&
+        netExpertCents > 0
+      ) {
+        const netUsd = netExpertCents / 100;
+        const { error: creditErr } = await supabase.rpc(
+          "credit_expert_available_balance",
+          {
+            p_expert_id: expertIdForLedger,
+            p_net_amount: netUsd,
+          }
+        );
+        if (creditErr) {
+          console.error("Failed to credit expert ledger:", creditErr);
+        } else {
+          console.log(
+            `✅ Credited $${netUsd.toFixed(2)} to expert ${expertIdForLedger} available_balance`
+          );
+        }
+      }
+
       if (!courseId && !appointmentId) {
         console.warn("Missing course_id or appointment_id in checkout session metadata");
       }
@@ -490,6 +558,9 @@ export async function POST(request: NextRequest) {
           .from("profiles")
           .update({
             stripe_connect_onboarding_complete: onboardingComplete,
+            ...(readyToReceivePayments
+              ? { payout_method: "stripe_connect" }
+              : {}),
           })
           .eq("stripe_connect_account_id", accountId);
 

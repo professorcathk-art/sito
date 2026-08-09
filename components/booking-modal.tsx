@@ -384,9 +384,25 @@ export function BookingModal({
         return;
       }
 
-      const { data: expertProfile } = await supabase.from("profiles").select("stripe_connect_account_id, name, email").eq("id", expertId).single();
+      const { data: expertProfile } = await supabase
+        .from("profiles")
+        .select(
+          "stripe_connect_account_id, stripe_connect_onboarding_complete, payout_method, bank_details, name, email"
+        )
+        .eq("id", expertId)
+        .single();
+      const payoutRoute =
+        expertProfile?.payout_method === "manual_transfer"
+          ? "manual_transfer"
+          : expertProfile?.stripe_connect_account_id
+            ? "stripe_connect"
+            : null;
       const connectedAccountId = expertProfile?.stripe_connect_account_id;
-      if (!connectedAccountId) {
+      const canCollectOnline =
+        (payoutRoute === "stripe_connect" && !!connectedAccountId) ||
+        (payoutRoute === "manual_transfer" && !!expertProfile?.bank_details);
+
+      if (!canCollectOnline) {
         if (!authLoading && !user) {
           if (isReturningFromLogin && !sessionHydrating) {
             setSessionHydrating(true);
@@ -499,7 +515,10 @@ export function BookingModal({
             },
           },
           quantity: 1,
-          connectedAccountId,
+          connectedAccountId:
+            payoutRoute === "stripe_connect" ? connectedAccountId : undefined,
+          expertId,
+          payoutRoute: payoutRoute || "stripe_connect",
           appointmentId: selectedSlot.id,
           slotStartTime: selectedSlot.start_time,
           slotEndTime: selectedSlot.end_time,

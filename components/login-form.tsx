@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-export function LoginForm({ redirect, email: initialEmail }: { redirect?: string; email?: string }) {
+export function LoginForm({
+  redirect,
+  email: initialEmail,
+  embedded = false,
+}: {
+  redirect?: string;
+  email?: string;
+  embedded?: boolean;
+}) {
   const router = useRouter();
   const [email, setEmail] = useState(initialEmail || "");
   const [password, setPassword] = useState("");
@@ -16,6 +24,18 @@ export function LoginForm({ redirect, email: initialEmail }: { redirect?: string
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
+
+  const handleGoogle = async () => {
+    const redirectUrl = redirect ? decodeURIComponent(redirect) : "/dashboard";
+    const fullRedirect = redirectUrl.startsWith("http")
+      ? redirectUrl
+      : `${window.location.origin}${redirectUrl.startsWith("/") ? "" : "/"}${redirectUrl}`;
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: fullRedirect },
+    });
+    if (oauthError) setError(oauthError.message);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,89 +54,40 @@ export function LoginForm({ redirect, email: initialEmail }: { redirect?: string
       }
 
       if (data.user) {
-        // Decode redirect URL if it exists
         const redirectUrl = redirect ? decodeURIComponent(redirect) : "/dashboard";
         router.push(redirectUrl);
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const inputClass =
+    "w-full px-4 py-2.5 bg-slate-950 border border-slate-700 text-slate-100 rounded-lg placeholder-slate-500 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-all";
+
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-2xl">
+    <div
+      className={
+        embedded
+          ? "space-y-4"
+          : "bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-2xl space-y-4"
+      }
+    >
       {error && (
-        <div className="mb-4 p-3 bg-red-900/30 border border-red-500/50 text-red-200 rounded-md">
+        <div className="p-3 bg-red-900/30 border border-red-500/50 text-red-200 rounded-md text-sm">
           {error}
         </div>
       )}
-      <div className="mb-4">
-        <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full px-4 py-2 bg-slate-950 border border-slate-700 text-slate-100 rounded-lg placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
-          placeholder="you@example.com"
-        />
-      </div>
-      <div className="mb-6">
-        <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
-          Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full px-4 py-2 bg-slate-950 border border-slate-700 text-slate-100 rounded-lg placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
-          placeholder="••••••••"
-        />
-      </div>
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-      >
-        {loading ? "Signing in..." : "Sign In"}
-      </button>
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border-default"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-surface text-text-secondary">Or continue with</span>
-        </div>
-      </div>
 
       <button
         type="button"
-        onClick={async () => {
-          const supabaseClient = createClient();
-          const redirectUrl = redirect ? decodeURIComponent(redirect) : "/dashboard";
-          const fullRedirect = redirectUrl.startsWith("http") ? redirectUrl : `${window.location.origin}${redirectUrl.startsWith("/") ? "" : "/"}${redirectUrl}`;
-          const { error } = await supabaseClient.auth.signInWithOAuth({
-            provider: "google",
-            options: {
-              redirectTo: fullRedirect,
-            },
-          });
-          if (error) {
-            setError(error.message);
-          }
-        }}
-        className="w-full mt-4 flex items-center justify-center gap-3 bg-white text-slate-900 py-3 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
+        onClick={handleGoogle}
+        className="w-full flex items-center justify-center gap-3 bg-white text-slate-900 py-3 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
       >
-        <svg className="w-5 h-5" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden>
           <path
             fill="#4285F4"
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -134,20 +105,67 @@ export function LoginForm({ redirect, email: initialEmail }: { redirect?: string
             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
           />
         </svg>
-        Sign in with Google
+        Continue with Google
       </button>
-      
-      <p className="mt-6 text-xs sm:text-sm text-text-secondary text-center">
+
+      <div className="relative py-1">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-slate-800" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-slate-950 text-slate-500">or use email</span>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-slate-200 mb-2">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className={inputClass}
+            placeholder="you@example.com"
+          />
+        </div>
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-slate-200 mb-2">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className={inputClass}
+            placeholder="••••••••"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? "Signing in..." : "Sign In"}
+        </button>
+      </form>
+
+      <p className="text-xs text-slate-500 text-center">
         By continuing, you agree to our{" "}
-        <Link href="/terms" className="text-primary hover:text-white underline font-medium">
+        <Link href="/terms" className="text-sky-400 hover:text-sky-300 underline font-medium">
           Terms of Service
-        </Link>
-        {" "}and{" "}
-        <Link href="/privacy" className="text-primary hover:text-white underline font-medium">
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="text-sky-400 hover:text-sky-300 underline font-medium">
           Privacy Policy
         </Link>
       </p>
-    </form>
+    </div>
   );
 }
 

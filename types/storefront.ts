@@ -37,6 +37,19 @@ export interface StorefrontLeadMagnetData {
   successMessage?: string;
 }
 
+/** Links block item — card (media row) or button (clean CTA text) */
+export interface StorefrontLinkItem {
+  title: string;
+  url: string;
+  order: number;
+  /** card = link-in-bio row; button = solid CTA with label only */
+  variant?: "card" | "button";
+  description?: string;
+  thumbnailUrl?: string;
+  emoji?: string;
+  icon?: string;
+}
+
 export interface StorefrontProductItem {
   id: string;
   name: string;

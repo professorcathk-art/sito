@@ -435,7 +435,7 @@ export function ExpertDirectory() {
           Tell us what you want to learn, and we&apos;ll match you with the perfect expert from our network of 100+ industry professionals. Your learning journey starts here.
         </p>
         <Link
-          href="/register"
+          href="/signup"
           className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-medium transition-all duration-300 text-sm sm:text-base"
         >
           Sign Up Now
