@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +16,7 @@ import {
   CARD_STYLES,
   BUTTON_RADIUS_OPTIONS,
   BUTTON_STYLE_OPTIONS,
+  normalizeThemePreset,
   type ThemePresetId,
   type FontFamilyId,
   type CardStyleId,
@@ -37,13 +38,12 @@ interface Country {
   code: string;
 }
 
+/** Addable section types — hero & social live on Profile Info */
 const BLOCK_TYPES: { id: StorefrontBlock["type"]; name: string }[] = [
-  { id: "hero", name: "Hero Banner" },
   { id: "header", name: "Header" },
   { id: "lead_magnet", name: "Lead Magnet" },
   { id: "links", name: "Links" },
   { id: "products", name: "Products" },
-  { id: "social_media", name: "Social Media" },
   { id: "book_me", name: "Book Me" },
   { id: "image_text", name: "Image + Text" },
   { id: "faq", name: "FAQ" },
@@ -54,7 +54,7 @@ const BLOCK_TYPES: { id: StorefrontBlock["type"]; name: string }[] = [
 ];
 
 const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown>> = {
-  hero: { imageUrl: "", overlayOpacity: 45, overlayColor: "#0f172a", avatarPosition: "left" },
+  hero: { imageUrl: "", overlayOpacity: 40, overlayColor: "#0f172a", avatarPosition: "center" },
   header: { name: "", tagline: "", bio: "", avatarUrl: "" },
   lead_magnet: {
     title: "Get my free guide",
@@ -64,26 +64,55 @@ const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown
     successMessage: "You're in! Check your inbox soon.",
   },
   links: { items: [{ title: "", url: "", icon: "", order: 0, description: "", thumbnailUrl: "", emoji: "" }], textAlign: "left" as "left" | "center" | "right" },
-  products: { showProducts: true },
+  products: { showProducts: true, displayMode: "inline" },
   social_media: { platforms: ["instagram", "linkedin", "tiktok", "twitter", "youtube"] },
   book_me: {},
   image_text: { imageUrl: "", title: "", text: "", alignment: "left" },
   faq: { items: [{ question: "", answer: "" }] },
   testimonials: { items: [{ name: "", quote: "", avatarUrl: "" }] },
   rich_text: { content: "" },
-  image_banner: { imageUrl: "", overlayOpacity: 0, overlayColor: "#000000", avatarPosition: "left" },
+  image_banner: { imageUrl: "", overlayOpacity: 0, overlayColor: "#000000", avatarPosition: "center" },
   bullet_list: { items: [""] },
 };
 
 const DEFAULT_BLOCKS: StorefrontBlock[] = [
-  { id: "default-hero", type: "hero", order: 0, data: { ...DEFAULT_BLOCK_DATA.hero } },
-  { id: "default-header", type: "header", order: 1, data: { ...DEFAULT_BLOCK_DATA.header } },
-  { id: "default-lead-magnet", type: "lead_magnet", order: 2, data: { ...DEFAULT_BLOCK_DATA.lead_magnet } },
-  { id: "default-products", type: "products", order: 3, data: { ...DEFAULT_BLOCK_DATA.products } },
-  { id: "default-testimonials", type: "testimonials", order: 4, data: { items: [{ name: "", quote: "" }] } },
-  { id: "default-faq", type: "faq", order: 5, data: { items: [{ question: "", answer: "" }] } },
-  { id: "default-book-me", type: "book_me", order: 6, data: {} },
+  { id: "default-header", type: "header", order: 0, data: { ...DEFAULT_BLOCK_DATA.header } },
+  { id: "default-lead-magnet", type: "lead_magnet", order: 1, data: { ...DEFAULT_BLOCK_DATA.lead_magnet } },
+  { id: "default-products", type: "products", order: 2, data: { ...DEFAULT_BLOCK_DATA.products } },
+  { id: "default-testimonials", type: "testimonials", order: 3, data: { items: [{ name: "", quote: "" }] } },
+  { id: "default-faq", type: "faq", order: 4, data: { items: [{ question: "", answer: "" }] } },
+  { id: "default-book-me", type: "book_me", order: 5, data: {} },
 ];
+
+/** Strip profile-owned blocks; keep header locked at top */
+function normalizeEditableBlocks(blocks: StorefrontBlock[]): StorefrontBlock[] {
+  const filtered = blocks.filter((b) => b.type !== "hero" && b.type !== "social_media");
+  const header = filtered.find((b) => b.type === "header");
+  const rest = filtered.filter((b) => b.type !== "header").sort((a, b) => a.order - b.order);
+  if (!header) {
+    return [
+      { id: "default-header", type: "header" as const, order: 0, data: { ...DEFAULT_BLOCK_DATA.header } },
+      ...rest.map((b, i) => ({ ...b, order: i + 1 })),
+    ];
+  }
+  return [{ ...header, order: 0 }, ...rest.map((b, i) => ({ ...b, order: i + 1 }))];
+}
+
+function extractHeroSettings(blocks: StorefrontBlock[]): { overlayOpacity: number; overlayColor: string } {
+  const hero = blocks.find((b) => b.type === "hero");
+  return {
+    overlayOpacity: typeof hero?.data?.overlayOpacity === "number" ? hero.data.overlayOpacity : 40,
+    overlayColor: (hero?.data?.overlayColor as string) || "#0f172a",
+  };
+}
+
+function buildDirtySnapshot(
+  profileData: Record<string, unknown>,
+  designSettings: Record<string, unknown>,
+  storefrontBlocks: StorefrontBlock[]
+) {
+  return JSON.stringify({ profileData, designSettings, storefrontBlocks });
+}
 
 export function UnifiedStorefrontBuilder() {
   const router = useRouter();
@@ -129,6 +158,8 @@ export function UnifiedStorefrontBuilder() {
     twitterUrl: "",
     youtubeUrl: "",
     storefrontBackgroundImageUrl: "",
+    heroOverlayOpacity: 40,
+    heroOverlayColor: "#0f172a",
     listedOnMarketplace: false,
     avatarUrl: "",
     customSlug: "",
@@ -136,9 +167,11 @@ export function UnifiedStorefrontBuilder() {
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   const [slugError, setSlugError] = useState("");
+  const [slugCopied, setSlugCopied] = useState(false);
   const [existingProfile, setExistingProfile] = useState<{ category_id?: string; bio?: string } | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBackground, setUploadingBackground] = useState(false);
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
@@ -254,7 +287,9 @@ export function UnifiedStorefrontBuilder() {
           const categoryName = Array.isArray(cat) ? cat[0]?.name : cat?.name;
           const countryName = Array.isArray(country) ? country[0]?.name : country?.name;
           setExistingProfile({ category_id: p.category_id as string | undefined, bio: p.bio as string | undefined });
-          setProfileData({
+          const dbBlocksRaw = (p.storefront_blocks as StorefrontBlock[]) || [];
+          const heroSettings = extractHeroSettings(dbBlocksRaw);
+          const nextProfile = {
             name: (p.name as string) || "",
             title: (p.tagline as string) || "",
             categoryId: (p.category_id as string) || "",
@@ -271,27 +306,19 @@ export function UnifiedStorefrontBuilder() {
             twitterUrl: (p.twitter_url as string) || "",
             youtubeUrl: (p.youtube_url as string) || "",
             storefrontBackgroundImageUrl: (p.storefront_background_image_url as string) || "",
+            heroOverlayOpacity: heroSettings.overlayOpacity,
+            heroOverlayColor: heroSettings.overlayColor,
             listedOnMarketplace: (p.listed_on_marketplace as boolean) || false,
             avatarUrl: (p.avatar_url as string) || "",
             customSlug: (p.custom_slug as string) || "",
-          });
+          };
+          setProfileData(nextProfile);
           if (p.category_id) setCategorySearch(categoryName || "");
           if (p.country_id) setCountrySearch(countryName || "");
           if (p.custom_slug) setSlugAvailable(true);
 
           setIsPro((p.is_pro_store as boolean) || false);
-          const themeMap: Record<string, ThemePresetId> = {
-            default: "minimal",
-            "minimal-light": "minimal",
-            "bold-dark": "midnight-glass",
-            "soft-gradient": "pearl-silk",
-            "organic-earth": "organic-earth",
-            "neon-cyber": "neon-cyber",
-            "glass-ocean": "glass-ocean",
-            "liquid-velvet": "liquid-velvet",
-          };
-          const rawTheme = (p.storefront_theme_preset as string) || "default";
-          const themePreset = (themeMap[rawTheme] ?? (THEME_PRESETS[rawTheme as ThemePresetId] ? rawTheme : "minimal")) as ThemePresetId;
+          const themePreset = normalizeThemePreset(p.storefront_theme_preset as string);
           const presetVals = THEME_PRESET_VALUES[themePreset] ?? THEME_PRESET_VALUES.minimal;
           const fontMap: Record<string, FontFamilyId> = {
             "font-sans": "inter",
@@ -313,7 +340,7 @@ export function UnifiedStorefrontBuilder() {
           const storedFont = (p.storefront_font_family as string) || "font-sans";
           const storedBtn = (p.storefront_button_style as string) || "rounded-md";
           const storedBtnVariant = (p.storefront_button_variant as string) || presetVals.buttonStyle || "default";
-          setDesignSettings({
+          const nextDesign = {
             themePreset,
             fontFamily: (fontMap[storedFont] || presetVals.fontFamily || "inter") as FontFamilyId,
             backgroundType: ((p.storefront_background_type as string) || "solid") as "solid" | "gradient" | "mesh",
@@ -326,12 +353,51 @@ export function UnifiedStorefrontBuilder() {
             cardStyle: ((p.storefront_card_style as string) || presetVals.cardStyle) as CardStyleId,
             buttonRadius: (btnStyleToRadius[storedBtn] || presetVals.buttonRadius || "rounded") as ButtonRadiusId,
             buttonStyle: (["default", "glass", "neon", "organic"].includes(storedBtnVariant) ? storedBtnVariant : presetVals.buttonStyle || "default") as ButtonStyleId,
-          });
-          const dbBlocks = (p.storefront_blocks as StorefrontBlock[]) || [];
-          setStorefrontBlocks(
-            dbBlocks.length > 0
-              ? [...dbBlocks].sort((a, b) => a.order - b.order)
-              : DEFAULT_BLOCKS
+          };
+          setDesignSettings(nextDesign);
+          const nextBlocks =
+            dbBlocksRaw.length > 0 ? normalizeEditableBlocks(dbBlocksRaw) : [...DEFAULT_BLOCKS];
+          setStorefrontBlocks(nextBlocks);
+          setSavedSnapshot(buildDirtySnapshot(nextProfile, nextDesign, nextBlocks));
+        } else {
+          setSavedSnapshot(
+            buildDirtySnapshot(
+              {
+                name: "",
+                title: "",
+                categoryId: "",
+                categoryName: "",
+                bio: "",
+                countryId: "",
+                countryName: "",
+                languagesSupported: [],
+                phoneNumber: "",
+                website: "",
+                linkedin: "",
+                instagramUrl: "",
+                tiktokUrl: "",
+                twitterUrl: "",
+                youtubeUrl: "",
+                storefrontBackgroundImageUrl: "",
+                heroOverlayOpacity: 40,
+                heroOverlayColor: "#0f172a",
+                listedOnMarketplace: false,
+                avatarUrl: "",
+                customSlug: "",
+              },
+              {
+                themePreset: "minimal",
+                fontFamily: "inter",
+                backgroundType: "solid",
+                backgroundImageUrl: "",
+                buttonStyle: "default",
+                ...THEME_PRESET_VALUES.minimal,
+                subheadlineColor:
+                  (THEME_PRESET_VALUES.minimal as { subheadlineColor?: string }).subheadlineColor ??
+                  THEME_PRESET_VALUES.minimal.textColor,
+              },
+              DEFAULT_BLOCKS
+            )
           );
         }
 
@@ -379,8 +445,31 @@ export function UnifiedStorefrontBuilder() {
     (l) => l.toLowerCase().includes(languageSearch.toLowerCase()) && !profileData.languagesSupported.includes(l)
   );
 
-  const handleProfileChange = (field: string, value: string | string[] | boolean) => {
+  const handleProfileChange = (field: string, value: string | string[] | boolean | number) => {
     setProfileData({ ...profileData, [field]: value });
+  };
+
+  const storefrontPublicUrl = useMemo(() => {
+    if (!profileData.customSlug.trim()) return "";
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "https://www.sito.club";
+    return `${origin}/s/${profileData.customSlug.trim()}`;
+  }, [profileData.customSlug]);
+
+  const hasUnsavedChanges = useMemo(() => {
+    if (savedSnapshot === null) return false;
+    return buildDirtySnapshot(profileData, designSettings, storefrontBlocks) !== savedSnapshot;
+  }, [profileData, designSettings, storefrontBlocks, savedSnapshot]);
+
+  const handleCopyStorefrontUrl = async () => {
+    if (!storefrontPublicUrl) return;
+    try {
+      await navigator.clipboard.writeText(storefrontPublicUrl);
+      setSlugCopied(true);
+      setTimeout(() => setSlugCopied(false), 2000);
+    } catch {
+      setError("Could not copy link");
+    }
   };
 
   const handleCategorySelect = (cat: Category) => {
@@ -534,6 +623,7 @@ export function UnifiedStorefrontBuilder() {
   };
 
   const handleAddBlock = (type: StorefrontBlock["type"]) => {
+    if (type === "hero" || type === "social_media") return;
     if (type === "header" && storefrontBlocks.some((b) => b.type === "header")) return;
     const maxOrder = storefrontBlocks.length ? Math.max(...storefrontBlocks.map((b) => b.order)) : -1;
     const block: StorefrontBlock = {
@@ -542,14 +632,13 @@ export function UnifiedStorefrontBuilder() {
       order: maxOrder + 1,
       data: { ...DEFAULT_BLOCK_DATA[type] },
     };
-    setStorefrontBlocks((prev) => [...prev, block].sort((a, b) => a.order - b.order));
+    setStorefrontBlocks((prev) => normalizeEditableBlocks([...prev, block]));
     setShowAddBlockModal(false);
     setEditingBlock(block);
   };
 
   const availableBlockTypes = BLOCK_TYPES.filter((t) => {
     if (t.id === "header") return !storefrontBlocks.some((b) => b.type === "header");
-    if (t.id === "hero") return !storefrontBlocks.some((b) => b.type === "hero");
     return true;
   });
 
@@ -563,18 +652,41 @@ export function UnifiedStorefrontBuilder() {
   const handleRemoveBlock = (id: string) => {
     const block = storefrontBlocks.find((b) => b.id === id);
     if (block?.type === "header") return; // Lock header - expert identity must stay
-    setStorefrontBlocks((prev) => prev.filter((b) => b.id !== id).map((b, i) => ({ ...b, order: i })));
+    setStorefrontBlocks((prev) => normalizeEditableBlocks(prev.filter((b) => b.id !== id)));
     if (editingBlock?.id === id) setEditingBlock(null);
   };
 
   const handleMoveBlock = (id: string, direction: "up" | "down") => {
-    const idx = storefrontBlocks.findIndex((b) => b.id === id);
+    const sorted = [...storefrontBlocks].sort((a, b) => a.order - b.order);
+    const idx = sorted.findIndex((b) => b.id === id);
     if (idx < 0) return;
+    const block = sorted[idx];
+    if (block.type === "header") return; // Header stays at top
     const newIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (newIdx < 0 || newIdx >= storefrontBlocks.length) return;
-    const reordered = [...storefrontBlocks];
+    if (newIdx < 0 || newIdx >= sorted.length) return;
+    if (sorted[newIdx].type === "header") return; // Nothing may move above header
+    const reordered = [...sorted];
     [reordered[idx], reordered[newIdx]] = [reordered[newIdx], reordered[idx]];
-    setStorefrontBlocks(reordered.map((b, i) => ({ ...b, order: i })));
+    setStorefrontBlocks(normalizeEditableBlocks(reordered));
+  };
+
+  const blocksForSave = (): StorefrontBlock[] => {
+    const editable = normalizeEditableBlocks(storefrontBlocks);
+    const heroBlock: StorefrontBlock = {
+      id: "managed-hero",
+      type: "hero",
+      order: 0,
+      data: {
+        imageUrl: profileData.storefrontBackgroundImageUrl || "",
+        overlayOpacity: profileData.heroOverlayOpacity,
+        overlayColor: profileData.heroOverlayColor,
+        avatarPosition: "center",
+      },
+    };
+    return [
+      heroBlock,
+      ...editable.map((b, i) => ({ ...b, order: i + 1 })),
+    ];
   };
 
   const handleSave = async () => {
@@ -596,6 +708,7 @@ export function UnifiedStorefrontBuilder() {
     }
     setSaving(true);
     setError("");
+    const blocksPayload = blocksForSave();
     try {
       const { error: profileError } = await supabase
         .from("profiles")
@@ -629,7 +742,7 @@ export function UnifiedStorefrontBuilder() {
           storefront_button_text_color: designSettings.buttonTextColor || null,
           storefront_button_variant: designSettings.buttonStyle || "default",
           storefront_subheadline_color: designSettings.subheadlineColor || null,
-          storefront_blocks: storefrontBlocks,
+          storefront_blocks: blocksPayload,
           updated_at: new Date().toISOString(),
         }, { onConflict: "id" });
 
@@ -664,7 +777,7 @@ export function UnifiedStorefrontBuilder() {
             storefront_text_color: designSettings.textColor || null,
             storefront_button_text_color: designSettings.buttonTextColor || null,
             storefront_button_variant: designSettings.buttonStyle || "default",
-            storefront_blocks: storefrontBlocks,
+            storefront_blocks: blocksPayload,
             updated_at: new Date().toISOString(),
           }, { onConflict: "id" });
           if (retryError) throw retryError;
@@ -672,6 +785,7 @@ export function UnifiedStorefrontBuilder() {
           throw profileError;
         }
       }
+      setSavedSnapshot(buildDirtySnapshot(profileData, designSettings, storefrontBlocks));
       router.refresh();
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -800,6 +914,9 @@ export function UnifiedStorefrontBuilder() {
                     backgroundFileInputRef={backgroundFileInputRef}
                     onBackgroundUpload={handleBackgroundUpload}
                     uploadingBackground={uploadingBackground}
+                    storefrontPublicUrl={storefrontPublicUrl}
+                    slugCopied={slugCopied}
+                    onCopyStorefrontUrl={handleCopyStorefrontUrl}
                   />
                 )}
 
@@ -844,10 +961,10 @@ export function UnifiedStorefrontBuilder() {
 
               <button
                 onClick={handleSave}
-                disabled={saving}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
+                disabled={saving || !hasUnsavedChanges}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-semibold transition-colors disabled:bg-slate-700 disabled:text-slate-400 disabled:hover:bg-slate-700 disabled:cursor-not-allowed"
               >
-                {saving ? "Saving..." : "Save All Changes"}
+                {saving ? "Saving..." : hasUnsavedChanges ? "Save All Changes" : "No changes to save"}
               </button>
               {saveSuccess && <p className="text-green-400 text-sm mt-2">Changes saved successfully!</p>}
             </div>
@@ -936,6 +1053,9 @@ function ProfileTab({
   backgroundFileInputRef,
   onBackgroundUpload,
   uploadingBackground,
+  storefrontPublicUrl,
+  slugCopied,
+  onCopyStorefrontUrl,
 }: {
   profileData: {
     name: string;
@@ -954,6 +1074,8 @@ function ProfileTab({
     twitterUrl: string;
     youtubeUrl: string;
     storefrontBackgroundImageUrl: string;
+    heroOverlayOpacity: number;
+    heroOverlayColor: string;
     listedOnMarketplace: boolean;
     avatarUrl: string;
     customSlug: string;
@@ -975,7 +1097,7 @@ function ProfileTab({
   countryDropdownRef: React.RefObject<HTMLDivElement>;
   languageDropdownRef: React.RefObject<HTMLDivElement>;
   fileInputRef: React.RefObject<HTMLInputElement>;
-  onProfileChange: (field: string, value: string | string[] | boolean) => void;
+  onProfileChange: (field: string, value: string | string[] | boolean | number) => void;
   onCategorySearch: (v: string) => void;
   onCountrySearch: (v: string) => void;
   onLanguageSearch: (v: string) => void;
@@ -992,6 +1114,9 @@ function ProfileTab({
   backgroundFileInputRef: React.RefObject<HTMLInputElement>;
   onBackgroundUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   uploadingBackground: boolean;
+  storefrontPublicUrl: string;
+  slugCopied: boolean;
+  onCopyStorefrontUrl: () => void;
 }) {
   return (
     <div className="space-y-4">
@@ -1147,10 +1272,12 @@ function ProfileTab({
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-200 mb-1">Storefront Background Image</label>
+        <label className="block text-sm font-medium text-slate-200 mb-1">Storefront Cover Image</label>
+        <p className="text-xs text-slate-500 mb-2">Recommended 1920×1080 (16:9). Shown as a wide banner on your public page.</p>
         <div className="flex items-center gap-4">
           {profileData.storefrontBackgroundImageUrl && (
-            <img src={profileData.storefrontBackgroundImageUrl} alt="Background" className="w-24 h-16 rounded object-cover border-2 border-slate-700" />
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profileData.storefrontBackgroundImageUrl} alt="Cover" className="w-32 h-[72px] rounded object-cover border-2 border-slate-700" />
           )}
           <div>
             <input ref={backgroundFileInputRef} type="file" accept="image/*" onChange={onBackgroundUpload} className="hidden" />
@@ -1160,8 +1287,32 @@ function ProfileTab({
               disabled={uploadingBackground}
               className="min-h-[44px] px-4 py-3 sm:py-2 text-base bg-slate-800 border border-slate-700 text-slate-100 rounded-lg hover:bg-slate-700 disabled:opacity-50"
             >
-              {uploadingBackground ? "Uploading..." : profileData.storefrontBackgroundImageUrl ? "Change background" : "Upload background"}
+              {uploadingBackground ? "Uploading..." : profileData.storefrontBackgroundImageUrl ? "Change cover" : "Upload cover"}
             </button>
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">
+              Cover overlay ({profileData.heroOverlayOpacity}%)
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={80}
+              value={profileData.heroOverlayOpacity}
+              onChange={(e) => onProfileChange("heroOverlayOpacity", Number(e.target.value))}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">Overlay color</label>
+            <input
+              type="color"
+              value={profileData.heroOverlayColor}
+              onChange={(e) => onProfileChange("heroOverlayColor", e.target.value)}
+              className="h-10 w-16 cursor-pointer rounded border border-slate-700 bg-slate-950"
+            />
           </div>
         </div>
       </div>
@@ -1176,9 +1327,9 @@ function ProfileTab({
       </label>
       {profileData.listedOnMarketplace && (
         <div>
-          <label className="block text-sm font-medium text-slate-200 mb-1">Custom Slug (sito.club/s/...)</label>
+          <label className="block text-sm font-medium text-slate-200 mb-1">Custom Slug</label>
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 text-sm">sito.club/s/</span>
+            <span className="text-slate-400 text-sm shrink-0">/s/</span>
             <input
               type="text"
               value={profileData.customSlug}
@@ -1195,6 +1346,20 @@ function ProfileTab({
           {checkingSlug && <p className="text-xs text-slate-400 mt-1">Checking...</p>}
           {slugAvailable === true && profileData.customSlug.length >= 3 && <p className="text-xs text-green-400 mt-1">✓ Available</p>}
           {slugAvailable === false && <p className="text-xs text-red-400 mt-1">{slugError}</p>}
+          {profileData.customSlug.length >= 3 && storefrontPublicUrl && (
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2">
+              <p className="min-w-0 flex-1 truncate text-xs text-slate-300" title={storefrontPublicUrl}>
+                {storefrontPublicUrl}
+              </p>
+              <button
+                type="button"
+                onClick={onCopyStorefrontUrl}
+                className="shrink-0 rounded-md bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-700"
+              >
+                {slugCopied ? "Copied!" : "Copy URL"}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -1246,10 +1411,7 @@ function DesignTab({
             const bgStyle =
               theme.backgroundColor.startsWith("conic") || theme.backgroundColor.startsWith("linear")
                 ? {
-                    background:
-                      themeKey === "pearl-silk" || themeKey === "soft-gradient"
-                        ? "conic-gradient(at top right, #fdf2f8 0%, #f8fafc 50%, #fffbeb 100%)"
-                        : theme.backgroundColor,
+                    background: theme.backgroundColor,
                     backgroundImage: theme.backgroundImageUrl ? `url(${theme.backgroundImageUrl})` : "none",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
@@ -1558,30 +1720,39 @@ function BlocksTab({
       </div>
       <div className="space-y-2">
         {(() => {
-          const sortedBlocks = [...blocks].sort((a, b) => a.order - b.order);
+          const sortedBlocks = [...blocks]
+            .filter((b) => b.type !== "hero" && b.type !== "social_media")
+            .sort((a, b) => a.order - b.order);
           return sortedBlocks.map((block, idx) => {
             const isHeader = block.type === "header";
             const isLocked = isHeader;
+            const canMoveUp = !isHeader && idx > 1; // index 0 is header; can't move into that slot
+            const canMoveDown = !isHeader && idx < sortedBlocks.length - 1;
           return (
-          <div key={block.id} className={`p-4 bg-slate-950 border rounded-lg ${block.type === "hero" || isHeader ? "border-indigo-500/40" : "border-slate-700"}`}>
+          <div key={block.id} className={`p-4 bg-slate-950 border rounded-lg ${isHeader ? "border-indigo-500/40" : "border-slate-700"}`}>
             <div className="flex items-center justify-between">
-              <span className="text-slate-200 font-medium capitalize">{block.type.replace(/_/g, " ")}</span>
+              <span className="text-slate-200 font-medium capitalize">
+                {block.type.replace(/_/g, " ")}
+                {isHeader ? <span className="ml-2 text-xs text-indigo-400 font-normal">Pinned top</span> : null}
+              </span>
               <div className="flex gap-1">
                 <button
                   type="button"
                   onClick={() => onMoveBlock(block.id, "up")}
-                  disabled={idx === 0}
-                  className="p-1 text-slate-400 hover:text-slate-200 disabled:opacity-30"
+                  disabled={!canMoveUp}
+                  className="p-1 text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed"
                   aria-label="Move up"
+                  title={isHeader ? "Header stays at the top" : undefined}
                 >
                   ↑
                 </button>
                 <button
                   type="button"
                   onClick={() => onMoveBlock(block.id, "down")}
-                  disabled={idx === sortedBlocks.length - 1}
-                  className="p-1 text-slate-400 hover:text-slate-200 disabled:opacity-30"
+                  disabled={!canMoveDown}
+                  className="p-1 text-slate-400 hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed"
                   aria-label="Move down"
+                  title={isHeader ? "Header stays at the top" : undefined}
                 >
                   ↓
                 </button>
@@ -1914,36 +2085,53 @@ function BlockEditForm({
     const selectedIds = data.selectedProductIds as string[] | undefined;
     const legacyShow = (data.showProducts as boolean) !== false;
     const ids = selectedIds !== undefined ? selectedIds : legacyShow ? products.map((p) => p.id) : [];
+    const displayMode = (data.displayMode as string) === "subpage" ? "subpage" : "inline";
     return (
-      <div className="mt-4 space-y-2">
-        <p className="text-slate-400 text-sm mb-3">Select which products to display:</p>
-        {products.length === 0 ? (
-          <p className="text-slate-500 text-sm italic">No products yet. Add products in your dashboard first.</p>
-        ) : (
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {products.map((p) => {
-              const checked = ids.includes(p.id);
-              return (
-                <label
-                  key={p.id}
-                  className="flex items-center gap-3 p-2 rounded-lg border border-slate-700 hover:bg-slate-800/50 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={(e) => {
-                      const next = e.target.checked ? [...ids, p.id] : ids.filter((id) => id !== p.id);
-                      onUpdate({ ...data, selectedProductIds: next });
-                    }}
-                    className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-indigo-500"
-                  />
-                  <span className="text-slate-200 text-sm flex-1">{p.name}</span>
-                  <span className="text-slate-500 text-xs">{p.price === 0 ? "Free" : `$${p.price}`}</span>
-                </label>
-              );
-            })}
-          </div>
-        )}
+      <div className="mt-4 space-y-4">
+        <div>
+          <label className="block text-slate-400 text-sm mb-1">Where to show products</label>
+          <select
+            value={displayMode}
+            onChange={(e) => onUpdate({ ...data, displayMode: e.target.value })}
+            className={INPUT_CLASS}
+          >
+            <option value="inline">On main storefront page</option>
+            <option value="subpage">On a separate /shop subpage</option>
+          </select>
+          <p className="mt-1 text-xs text-slate-500">
+            Subpage mode shows a “View shop” button on your main page and lists products at /s/your-slug/shop.
+          </p>
+        </div>
+        <div>
+          <p className="text-slate-400 text-sm mb-3">Select which products to display:</p>
+          {products.length === 0 ? (
+            <p className="text-slate-500 text-sm italic">No products yet. Add products in your dashboard first.</p>
+          ) : (
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {products.map((p) => {
+                const checked = ids.includes(p.id);
+                return (
+                  <label
+                    key={p.id}
+                    className="flex items-center gap-3 p-2 rounded-lg border border-slate-700 hover:bg-slate-800/50 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => {
+                        const next = e.target.checked ? [...ids, p.id] : ids.filter((id) => id !== p.id);
+                        onUpdate({ ...data, selectedProductIds: next });
+                      }}
+                      className="w-4 h-4 rounded border-slate-700 bg-slate-950 text-indigo-500"
+                    />
+                    <span className="text-slate-200 text-sm flex-1">{p.name}</span>
+                    <span className="text-slate-500 text-xs">{p.price === 0 ? "Free" : `$${p.price}`}</span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     );
   }

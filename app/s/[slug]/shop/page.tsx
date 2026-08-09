@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { StorefrontView } from "@/components/storefront-view";
 import { getDesignStateFromProfile, THEME_PRESET_VALUES, normalizeThemePreset } from "@/lib/storefront-theme-config";
 
-interface StorefrontPageProps {
+interface ShopPageProps {
   params: Promise<{
     slug: string;
   }>;
@@ -26,7 +26,7 @@ function durationLabelForProduct(product: {
   return null;
 }
 
-export default async function StorefrontPage({ params }: StorefrontPageProps) {
+export default async function StorefrontShopPage({ params }: ShopPageProps) {
   const { slug } = await params;
   const supabase = await createClient();
 
@@ -51,7 +51,6 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         storefront_custom_links,
         storefront_show_products,
         storefront_show_appointments,
-        storefront_show_blog,
         storefront_bio_override,
         storefront_blocks,
         storefront_background_image_url,
@@ -62,8 +61,6 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         twitter_url,
         youtube_url
       `;
-    let profile: Record<string, unknown> | null = null;
-    let error: { message: string } | null = null;
 
     let result = await supabase
       .from("profiles")
@@ -81,20 +78,13 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         .maybeSingle();
     }
 
-    profile = result.data as Record<string, unknown> | null;
-    error = result.error;
-
-    if (error) {
-      console.error("Error fetching profile by slug:", error);
-      notFound();
-    }
-
-    if (!profile || !(profile.id as string)) {
+    const profile = result.data as Record<string, unknown> | null;
+    if (result.error || !profile?.id) {
       notFound();
     }
 
     const profileId = profile.id as string;
-    let products: any[] = [];
+    let products: Array<Record<string, unknown>> = [];
     if (profile.storefront_show_products !== false) {
       const { data: productsData } = await supabase
         .from("products")
@@ -111,33 +101,24 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         `)
         .eq("expert_id", profileId)
         .order("created_at", { ascending: false })
-        .limit(24);
+        .limit(48);
 
       if (productsData) {
-        products = productsData.map((p: any) => {
-          const { courses, ...rest } = p;
+        products = productsData.map((p: Record<string, unknown>) => {
+          const { courses, ...rest } = p as {
+            courses?: { cover_image_url?: string } | { cover_image_url?: string }[] | null;
+          } & Record<string, unknown>;
+          const cover = Array.isArray(courses) ? courses[0]?.cover_image_url : courses?.cover_image_url;
           return {
             ...rest,
-            cover_image_url: courses?.cover_image_url ?? null,
-            duration_label: durationLabelForProduct(rest),
+            cover_image_url: cover ?? null,
+            duration_label: durationLabelForProduct(rest as {
+              product_type?: string | null;
+              e_learning_subtype?: string | null;
+              pricing_type?: string | null;
+            }),
           };
         });
-      }
-    }
-
-    let blogPosts: any[] = [];
-    if (profile.storefront_show_blog !== false) {
-      const { data: blogData } = await supabase
-        .from("blog_posts")
-        .select("id, title, description, featured_image_url, published_at")
-        .eq("expert_id", profileId)
-        .eq("access_level", "public")
-        .not("published_at", "is", null)
-        .order("published_at", { ascending: false })
-        .limit(5);
-
-      if (blogData) {
-        blogPosts = blogData;
       }
     }
 
@@ -149,49 +130,50 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
         .eq("expert_id", profileId)
         .eq("is_available", true)
         .gte("start_time", new Date().toISOString());
-
       hasAppointments = (count || 0) > 0;
     }
 
-    const storefrontBlocks = (profile.storefront_blocks as any[]) || [];
+    const storefrontBlocks = (profile.storefront_blocks as unknown[]) || [];
     const designState = getDesignStateFromProfile(profile);
     const themeKey = normalizeThemePreset(profile.storefront_theme_preset as string);
     const glowElement = THEME_PRESET_VALUES[themeKey]?.glowElement;
 
-    const p = profile as Record<string, unknown>;
     return (
-      <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Loading storefront…</div>}>
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
+            Loading shop…
+          </div>
+        }
+      >
         <StorefrontView
-          expertId={String(p.id)}
-          expertName={String(p.name || "Expert")}
-          expertBio={String(p.bio || "")}
-          expertTagline={p.tagline as string | undefined}
-          bioOverride={p.storefront_bio_override as string | undefined}
-          avatarUrl={p.avatar_url as string | undefined}
-          verified={!!p.verified}
+          expertId={String(profile.id)}
+          expertName={String(profile.name || "Expert")}
+          expertBio={String(profile.bio || "")}
+          expertTagline={profile.tagline as string | undefined}
+          bioOverride={profile.storefront_bio_override as string | undefined}
+          avatarUrl={profile.avatar_url as string | undefined}
+          verified={!!profile.verified}
           designState={{ ...designState, glowElement, themePreset: themeKey }}
-          customLinks={(p.storefront_custom_links as any) || []}
-          website={p.website as string | undefined}
-          linkedin={p.linkedin as string | undefined}
-          instagramUrl={p.instagram_url as string | undefined}
-          tiktokUrl={p.tiktok_url as string | undefined}
-          twitterUrl={p.twitter_url as string | undefined}
-          youtubeUrl={p.youtube_url as string | undefined}
-          storefrontBackgroundImageUrl={
-            (p.storefront_background_image_url as string | undefined) ||
-            ((storefrontBlocks.find((b: { type?: string }) => b.type === "hero") as { data?: { imageUrl?: string } } | undefined)?.data
-              ?.imageUrl)
-          }
+          customLinks={(profile.storefront_custom_links as Array<{ title: string; url: string; icon?: string; order: number }>) || []}
+          website={profile.website as string | undefined}
+          linkedin={profile.linkedin as string | undefined}
+          instagramUrl={profile.instagram_url as string | undefined}
+          tiktokUrl={profile.tiktok_url as string | undefined}
+          twitterUrl={profile.twitter_url as string | undefined}
+          youtubeUrl={profile.youtube_url as string | undefined}
+          storefrontBackgroundImageUrl={profile.storefront_background_image_url as string | undefined}
           storefrontSlug={slug.toLowerCase().trim()}
-          products={products}
-          blogPosts={blogPosts}
+          products={products as never[]}
+          blogPosts={[]}
           hasAppointments={hasAppointments}
-          storefrontBlocks={storefrontBlocks}
+          storefrontBlocks={storefrontBlocks as never[]}
+          productsOnly
         />
       </Suspense>
     );
-  } catch (error: any) {
-    console.error("Error fetching storefront:", error);
+  } catch (error) {
+    console.error("Error fetching storefront shop:", error);
     notFound();
   }
 }

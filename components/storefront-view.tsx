@@ -26,6 +26,7 @@ interface StorefrontViewProps {
   twitterUrl?: string;
   youtubeUrl?: string;
   storefrontBackgroundImageUrl?: string;
+  storefrontSlug?: string;
   products: StorefrontProductItem[];
   blogPosts: Array<{
     id: string;
@@ -36,6 +37,7 @@ interface StorefrontViewProps {
   }>;
   hasAppointments: boolean;
   storefrontBlocks?: StorefrontBlock[];
+  productsOnly?: boolean;
 }
 
 export function StorefrontView({
@@ -55,10 +57,12 @@ export function StorefrontView({
   twitterUrl,
   youtubeUrl,
   storefrontBackgroundImageUrl,
+  storefrontSlug,
   products,
   blogPosts,
   hasAppointments,
   storefrontBlocks = [],
+  productsOnly = false,
 }: StorefrontViewProps) {
   const { user } = useAuth();
   const router = useRouter();
@@ -99,12 +103,14 @@ export function StorefrontView({
         designState={designState}
         socialLinks={{ website, linkedin, instagramUrl, tiktokUrl, twitterUrl, youtubeUrl }}
         storefrontBackgroundImageUrl={storefrontBackgroundImageUrl}
+        storefrontSlug={storefrontSlug}
         products={products}
-        blogPosts={blogPosts}
+        blogPosts={productsOnly ? [] : blogPosts}
         hasAppointments={hasAppointments}
         storefrontBlocks={storefrontBlocks}
         customLinks={customLinks}
         currentUserId={user?.id}
+        productsOnly={productsOnly}
         onBookMe={() => setOpenBookingModal(true)}
       />
       {openBookingModal && hasAppointments && (

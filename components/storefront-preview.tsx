@@ -29,6 +29,10 @@ interface StorefrontPreviewProps {
     tiktokUrl?: string;
     twitterUrl?: string;
     youtubeUrl?: string;
+    customSlug?: string;
+    heroOverlayOpacity?: number;
+    heroOverlayColor?: string;
+    storefrontBackgroundImageUrl?: string;
   };
 }
 
@@ -59,23 +63,13 @@ export function StorefrontPreview({
       ? storefrontBlocks
       : ([
           {
-            id: "preview-hero",
-            type: "hero",
-            order: 0,
-            data: {
-              imageUrl: designState.backgroundImageUrl || "",
-              overlayOpacity: 45,
-              avatarPosition: "left",
-            },
-          },
-          {
             id: "preview-header",
             type: "header",
-            order: 1,
+            order: 0,
             data: { name, tagline, bio: bioOverride || bio, avatarUrl: avatar },
           },
           ...(displayedProducts.length > 0
-            ? [{ id: "preview-products", type: "products" as const, order: 2, data: { showProducts: true } }]
+            ? [{ id: "preview-products", type: "products" as const, order: 1, data: { showProducts: true, displayMode: "inline" } }]
             : []),
         ] as StorefrontBlock[]);
 
@@ -101,7 +95,12 @@ export function StorefrontPreview({
               twitterUrl: profileData?.twitterUrl,
               youtubeUrl: profileData?.youtubeUrl,
             }}
-            storefrontBackgroundImageUrl={designState.backgroundImageUrl}
+            storefrontBackgroundImageUrl={
+              profileData?.storefrontBackgroundImageUrl || designState.backgroundImageUrl
+            }
+            storefrontSlug={profileData?.customSlug}
+            heroOverlayOpacity={profileData?.heroOverlayOpacity}
+            heroOverlayColor={profileData?.heroOverlayColor}
             products={displayedProducts}
             hasAppointments={showAppointments}
             storefrontBlocks={blocks}

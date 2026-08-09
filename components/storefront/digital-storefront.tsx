@@ -69,6 +69,13 @@ export interface DigitalStorefrontProps {
   designState: StorefrontDesignState;
   socialLinks: StorefrontSocialLinks;
   storefrontBackgroundImageUrl?: string;
+  /** Public slug for shop subpage links */
+  storefrontSlug?: string;
+  /** Hero overlay (from profile / managed hero block) */
+  heroOverlayOpacity?: number;
+  heroOverlayColor?: string;
+  /** When true, render only the products section (shop subpage) */
+  productsOnly?: boolean;
   products: StorefrontProductItem[];
   blogPosts?: Array<{
     id: string;
@@ -96,6 +103,10 @@ export function DigitalStorefront({
   designState,
   socialLinks,
   storefrontBackgroundImageUrl,
+  storefrontSlug,
+  heroOverlayOpacity,
+  heroOverlayColor,
+  productsOnly = false,
   products,
   blogPosts = [],
   hasAppointments = false,
@@ -106,32 +117,37 @@ export function DigitalStorefront({
   onBookMe,
 }: DigitalStorefrontProps) {
   const isFluidAura = designState.themePreset === "fluid-aura";
-  const isPearlSilk = designState.themePreset === "pearl-silk" || designState.themePreset === "soft-gradient";
+  const isSoftGradient = designState.themePreset === "soft-gradient" || designState.themePreset === "pearl-silk";
+  const isOrganicEarth = designState.themePreset === "organic-earth";
   const effectiveBgImage = storefrontBackgroundImageUrl || designState.backgroundImageUrl;
 
   const cssVars = useMemo(() => {
+    const darkThemes = ["neon-cyber", "glass-ocean", "liquid-velvet", "midnight-glass", "fluid-aura"];
     let card = getCardCssVars(designState.cardStyle as "flat" | "glass" | "brutalist" | "soft-shadow");
     if (isFluidAura) card = { bg: "rgba(255,255,255,0.06)", border: "rgba(255,255,255,0.12)" };
-    else if (isPearlSilk) card = { bg: "rgba(255,255,255,0.55)", border: "rgba(255,255,255,0.7)" };
+    else if (isSoftGradient) card = { bg: "rgba(255,255,255,0.78)", border: "rgba(255,255,255,0.85)" };
+    else if (isOrganicEarth) card = { bg: "rgba(255,255,255,0.92)", border: "rgba(44,36,22,0.1)" };
     const btnRadius = designState.buttonRadius === "pill" ? "9999px" : designState.buttonRadius === "sharp" ? "0" : "0.75rem";
-    const pageBg = isFluidAura ? "#050505" : isPearlSilk ? undefined : designState.backgroundColor;
+    const pageBg = isFluidAura
+      ? "#050505"
+      : isSoftGradient
+        ? undefined
+        : designState.backgroundColor;
     return {
       "--store-bg-color": pageBg,
       "--store-bg": pageBg,
-      "--store-bg-ring": isFluidAura || ["neon-cyber", "glass-ocean", "liquid-velvet", "midnight-glass"].includes(designState.themePreset || "")
-        ? "#0f172a"
-        : "#ffffff",
-      "--store-text": isFluidAura ? "#f1f5f9" : isPearlSilk ? "#1A1A1A" : designState.textColor,
+      "--store-bg-ring": darkThemes.includes(designState.themePreset || "") ? "#0f172a" : "#ffffff",
+      "--store-text": isFluidAura ? "#f1f5f9" : isSoftGradient ? "#1E293B" : designState.textColor,
       "--store-subheadline":
         designState.subheadlineColor ||
-        (isFluidAura ? "rgba(241,245,249,0.72)" : isPearlSilk ? "#4B5563" : designState.textColor),
-      "--store-btn-bg": isFluidAura ? "rgba(255,255,255,0.12)" : isPearlSilk ? "#1A1A1A" : designState.buttonColor,
+        (isFluidAura ? "rgba(241,245,249,0.72)" : isSoftGradient ? "#64748B" : designState.textColor),
+      "--store-btn-bg": isFluidAura ? "rgba(255,255,255,0.12)" : isSoftGradient ? "#1E293B" : designState.buttonColor,
       "--store-btn-text": designState.buttonTextColor,
       "--store-card-bg": card.bg,
       "--store-card-border": card.border,
       "--store-btn-radius": btnRadius,
     } as React.CSSProperties;
-  }, [designState, isFluidAura, isPearlSilk]);
+  }, [designState, isFluidAura, isSoftGradient, isOrganicEarth]);
 
   const fontClass = FONT_FAMILIES.find((f) => f.id === designState.fontFamily)?.class || "font-store-inter";
   const fontVarMap: Record<string, string> = {
@@ -156,41 +172,29 @@ export function DigitalStorefront({
     }
     return [
       {
-        id: "default-hero",
-        type: "hero" as const,
-        order: 0,
-        data: { imageUrl: effectiveBgImage || "", overlayOpacity: 40, avatarPosition: "left" },
-      },
-      {
         id: "default-header",
         type: "header" as const,
-        order: 1,
+        order: 0,
         data: { name: expertName, tagline: expertTagline, bio: bioOverride || expertBio, avatarUrl },
       },
       ...(products.length > 0
-        ? [{ id: "default-products", type: "products" as const, order: 2, data: { showProducts: true } }]
+        ? [{ id: "default-products", type: "products" as const, order: 1, data: { showProducts: true, displayMode: "inline" } }]
         : []),
     ] as StorefrontBlock[];
-  }, [storefrontBlocks, effectiveBgImage, expertName, expertTagline, bioOverride, expertBio, avatarUrl, products.length]);
+  }, [storefrontBlocks, expertName, expertTagline, bioOverride, expertBio, avatarUrl, products.length]);
 
-  const heroBlock = sortedBlocks.find((b) => b.type === "hero")
-    || sortedBlocks.find((b) => b.type === "image_banner" && (b.data.imageUrl as string));
+  const heroBlock = sortedBlocks.find((b) => b.type === "hero");
   const headerBlock = sortedBlocks.find((b) => b.type === "header");
-  const contentBlocks = sortedBlocks.filter(
-    (b) => b.type !== "hero" && !(b.type === "image_banner" && b.id === heroBlock?.id && heroBlock?.type === "image_banner")
+  // Hero + social are driven by profile; never render as content blocks
+  const blocksToRender = sortedBlocks.filter(
+    (b) => b.type !== "hero" && b.type !== "social_media"
   );
 
-  // If hero came from image_banner, don't also render that banner in content
-  const heroFromBanner = heroBlock?.type === "image_banner";
-  const blocksToRender = heroFromBanner
-    ? contentBlocks.filter((b) => b.id !== heroBlock.id)
-    : contentBlocks;
-
   const heroData: StorefrontHeroData = {
-    imageUrl: (heroBlock?.data.imageUrl as string) || effectiveBgImage || "",
-    overlayOpacity: (heroBlock?.data.overlayOpacity as number) ?? 45,
-    overlayColor: (heroBlock?.data.overlayColor as string) || "#0f172a",
-    avatarPosition: ((heroBlock?.data.avatarPosition as "left" | "center") || "left"),
+    imageUrl: effectiveBgImage || (heroBlock?.data.imageUrl as string) || "",
+    overlayOpacity: heroOverlayOpacity ?? (heroBlock?.data.overlayOpacity as number) ?? 40,
+    overlayColor: heroOverlayColor || (heroBlock?.data.overlayColor as string) || "#0f172a",
+    avatarPosition: "center",
   };
 
   const displayName = (headerBlock?.data.name as string) || expertName;
@@ -198,19 +202,117 @@ export function DigitalStorefront({
   const displayBio = (headerBlock?.data.bio as string) || bioOverride || expertBio || "";
   const displayAvatar = (headerBlock?.data.avatarUrl as string) || avatarUrl;
 
-  const pageBackground = effectiveBgImage && !heroData.imageUrl
-    ? `url(${effectiveBgImage})`
-    : isFluidAura
-      ? "#050505"
-      : isPearlSilk
-        ? "conic-gradient(at top right, #fdf2f8 0%, #f8fafc 50%, #fffbeb 100%)"
-        : designState.backgroundColor.startsWith("linear") || designState.backgroundColor.startsWith("conic")
-          ? designState.backgroundColor
-          : "var(--store-bg-color, var(--store-bg))";
+  const pageBackground = isFluidAura
+    ? "#050505"
+    : isSoftGradient
+      ? "linear-gradient(160deg, #FFF7ED 0%, #F8FAFC 45%, #EFF6FF 100%)"
+      : designState.backgroundColor.startsWith("linear") || designState.backgroundColor.startsWith("conic")
+        ? designState.backgroundColor
+        : "var(--store-bg-color, var(--store-bg))";
 
   const wrapperClass = isPreview
     ? `relative w-full min-h-full ${fontClass}`
     : `min-h-screen relative ${fontClass}`;
+
+  const renderProductsSection = (block: StorefrontBlock, forceInline = false) => {
+    const selectedIds = block.data.selectedProductIds as string[] | undefined;
+    const legacyShow = (block.data.showProducts as boolean) !== false;
+    const displayMode = (block.data.displayMode as string) || "inline";
+    const displayed =
+      selectedIds !== undefined
+        ? products.filter((p) => selectedIds.includes(p.id))
+        : legacyShow
+          ? products
+          : [];
+    if (displayed.length === 0) return null;
+
+    if (!forceInline && displayMode === "subpage" && !productsOnly) {
+      const shopHref = storefrontSlug ? `/s/${storefrontSlug}/shop` : "#";
+      return (
+        <section key={block.id} className="flex justify-center">
+          <Link
+            href={shopHref}
+            onClick={isPreview ? (e) => e.preventDefault() : undefined}
+            className={`inline-flex items-center gap-2 px-8 py-3.5 text-base font-semibold ${buttonStyleClass}`}
+          >
+            View shop
+            <span aria-hidden>→</span>
+          </Link>
+        </section>
+      );
+    }
+
+    return (
+      <section key={block.id}>
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--store-text)]">Shop</h2>
+          <p className="text-xs text-[var(--store-subheadline)]">
+            {displayed.length} offering{displayed.length === 1 ? "" : "s"}
+          </p>
+        </div>
+        <div className={`grid gap-4 ${isPreview ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
+          {displayed.map((product) => (
+            <StorefrontProductCard
+              key={product.id}
+              product={product}
+              expertId={expertId}
+              currentUserId={currentUserId}
+              buttonClassName={buttonStyleClass}
+              brandColor={designState.buttonColor}
+              buttonTextColor={designState.buttonTextColor}
+              themePreset={designState.themePreset}
+              isPreview={isPreview}
+              onBook={onBookMe}
+            />
+          ))}
+        </div>
+      </section>
+    );
+  };
+
+  if (productsOnly) {
+    const productsBlock =
+      sortedBlocks.find((b) => b.type === "products") ||
+      ({ id: "shop-products", type: "products" as const, order: 0, data: { showProducts: true, displayMode: "inline" } } as StorefrontBlock);
+
+    return (
+      <div
+        className={wrapperClass}
+        style={{
+          ...cssVars,
+          background: pageBackground,
+          backgroundPosition: "center",
+          color: "var(--store-text)",
+          fontFamily: fontFamilyStyle,
+        }}
+      >
+        <div className={isPreview ? "pb-8 pt-8 px-4" : "pb-16 pt-10 px-4 sm:px-6 lg:px-8"}>
+          <div className={`mx-auto w-full ${isPreview ? "max-w-none" : "max-w-5xl"}`}>
+            {storefrontSlug && !isPreview && (
+              <Link
+                href={`/s/${storefrontSlug}`}
+                className="mb-6 inline-flex text-sm text-[var(--store-subheadline)] hover:text-[var(--store-text)]"
+              >
+                ← Back to profile
+              </Link>
+            )}
+            <h1 className="mb-6 text-2xl sm:text-3xl font-bold tracking-tight text-[var(--store-text)]">
+              Shop · {displayName}
+            </h1>
+            {renderProductsSection(productsBlock, true)}
+            <a
+              href="https://www.sito.club"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-10 block pt-4 text-center text-sm text-[var(--store-subheadline)] opacity-70 hover:opacity-100"
+            >
+              Powered by Sito
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -218,7 +320,6 @@ export function DigitalStorefront({
       style={{
         ...cssVars,
         background: pageBackground,
-        backgroundSize: effectiveBgImage && !heroData.imageUrl ? "cover" : undefined,
         backgroundPosition: "center",
         color: "var(--store-text)",
         fontFamily: fontFamilyStyle,
@@ -242,23 +343,20 @@ export function DigitalStorefront({
         />
 
         <div className={`mx-auto w-full ${isPreview ? "max-w-none px-4" : "max-w-5xl px-4 sm:px-6 lg:px-8"}`}>
-          {/* Header identity */}
-          <header className={`mt-4 ${heroData.avatarPosition === "center" ? "text-center" : "text-left"}`}>
-            <div className={`flex items-center gap-2 ${heroData.avatarPosition === "center" ? "justify-center" : ""}`}>
+          {/* Centered identity (LinkedIn / Instagram style) */}
+          <header className="mt-4 text-center">
+            <div className="flex items-center justify-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--store-text)]">{displayName}</h1>
             </div>
             {displayTagline && (
               <p className="mt-1.5 text-base font-medium text-[var(--store-text)] opacity-90">{displayTagline}</p>
             )}
             {displayBio && (
-              <p className={`mt-3 text-sm sm:text-base leading-relaxed text-[var(--store-subheadline)] ${heroData.avatarPosition === "center" ? "mx-auto max-w-2xl" : "max-w-2xl"}`}>
+              <p className="mx-auto mt-3 max-w-2xl text-sm sm:text-base leading-relaxed text-[var(--store-subheadline)]">
                 {displayBio}
               </p>
             )}
-            <StorefrontSocialBar
-              links={socialLinks}
-              className={`mt-4 ${heroData.avatarPosition === "center" ? "justify-center" : ""}`}
-            />
+            <StorefrontSocialBar links={socialLinks} className="mt-4 justify-center" />
           </header>
 
           <div className="mt-8 flex flex-col gap-8">
@@ -279,39 +377,7 @@ export function DigitalStorefront({
               }
 
               if (block.type === "products") {
-                const selectedIds = block.data.selectedProductIds as string[] | undefined;
-                const legacyShow = (block.data.showProducts as boolean) !== false;
-                const displayed =
-                  selectedIds !== undefined
-                    ? products.filter((p) => selectedIds.includes(p.id))
-                    : legacyShow
-                      ? products
-                      : [];
-                if (displayed.length === 0) return null;
-                return (
-                  <section key={block.id}>
-                    <div className="mb-4 flex items-end justify-between gap-3">
-                      <h2 className="text-xl font-semibold tracking-tight text-[var(--store-text)]">Shop</h2>
-                      <p className="text-xs text-[var(--store-subheadline)]">{displayed.length} offering{displayed.length === 1 ? "" : "s"}</p>
-                    </div>
-                    <div className={`grid gap-4 ${isPreview ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
-                      {displayed.map((product) => (
-                        <StorefrontProductCard
-                          key={product.id}
-                          product={product}
-                          expertId={expertId}
-                          currentUserId={currentUserId}
-                          buttonClassName={buttonStyleClass}
-                          brandColor={designState.buttonColor}
-                          buttonTextColor={designState.buttonTextColor}
-                          themePreset={designState.themePreset}
-                          isPreview={isPreview}
-                          onBook={onBookMe}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                );
+                return renderProductsSection(block);
               }
 
               if (block.type === "testimonials") {
