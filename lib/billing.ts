@@ -29,7 +29,9 @@ export function leadMagnetLimitForPlan(tier: PlanTier): number | null {
 
 /** Canonical feature matrix — keep billing UI + upgrade modals in sync */
 export const PLAN_COMPARISON_ROWS: Array<[string, string, string]> = [
-  ["Storefront", "1", "1"],
+  ["Storefront hub", "1", "1"],
+  ["Shop / Blog / Guides sub-pages", "—", "Yes"],
+  ["Lead magnet landing pages", "—", "Yes"],
   ["Email broadcasts / mo", String(FREE_MONTHLY_EMAIL_LIMIT), "2,500"],
   ["Lead magnets", String(FREE_LEAD_MAGNET_LIMIT), "Unlimited"],
   ["Hide Powered by Sito", "—", "Yes"],
@@ -38,12 +40,14 @@ export const PLAN_COMPARISON_ROWS: Array<[string, string, string]> = [
 
 export const PLAN_FEATURES = {
   free: [
-    "1 storefront",
+    "1 storefront hub",
     `${FREE_LEAD_MAGNET_LIMIT} lead magnets`,
     `${FREE_MONTHLY_EMAIL_LIMIT} email broadcast credits / mo`,
     '"Powered by Sito" badge on storefront',
   ],
   pro: [
+    "Shop, Blog & Free Guides sub-pages",
+    "Standalone lead magnet landing pages",
     "Unlimited lead magnets",
     `${PRO_MONTHLY_EMAIL_LIMIT.toLocaleString()} email broadcast credits / mo`,
     "Hide “Powered by Sito” badge",

@@ -8,7 +8,12 @@ import { useAuth } from "@/contexts/auth-context";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { StorefrontPreview } from "@/components/storefront-preview";
 import { UpgradeModal } from "@/components/upgrade-modal";
+import { PagesFunnelsTab } from "@/components/storefront/pages-funnels-tab";
 import type { StorefrontBlock } from "@/types/storefront";
+import {
+  parseStorefrontNav,
+  type StorefrontNavConfig,
+} from "@/lib/storefront-pages";
 import {
   THEME_PRESETS,
   THEME_PRESET_VALUES,
@@ -130,9 +135,10 @@ function extractHeroSettings(blocks: StorefrontBlock[]): { overlayOpacity: numbe
 function buildDirtySnapshot(
   profileData: Record<string, unknown>,
   designSettings: Record<string, unknown>,
-  storefrontBlocks: StorefrontBlock[]
+  storefrontBlocks: StorefrontBlock[],
+  storefrontNav?: StorefrontNavConfig
 ) {
-  return JSON.stringify({ profileData, designSettings, storefrontBlocks });
+  return JSON.stringify({ profileData, designSettings, storefrontBlocks, storefrontNav });
 }
 
 export function UnifiedStorefrontBuilder() {
@@ -140,11 +146,11 @@ export function UnifiedStorefrontBuilder() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const supabase = createClient();
-  const [activeTab, setActiveTab] = useState<"profile" | "design" | "blocks">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "design" | "blocks" | "pages">("profile");
 
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab === "design" || tab === "blocks" || tab === "profile") {
+    if (tab === "design" || tab === "blocks" || tab === "profile" || tab === "pages") {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -228,6 +234,7 @@ export function UnifiedStorefrontBuilder() {
 
   // Storefront blocks (initialized with defaults so page is never blank)
   const [storefrontBlocks, setStorefrontBlocks] = useState<StorefrontBlock[]>(() => [...DEFAULT_BLOCKS]);
+  const [storefrontNav, setStorefrontNav] = useState<StorefrontNavConfig>(() => parseStorefrontNav(null));
   const [showAddBlockModal, setShowAddBlockModal] = useState(false);
   const [editingBlock, setEditingBlock] = useState<StorefrontBlock | null>(null);
 
@@ -276,7 +283,7 @@ export function UnifiedStorefrontBuilder() {
               category_id, country_id, language_supported, phone_number, avatar_url, custom_slug,
               is_pro_store, plan_tier, hide_powered_by_sito, storefront_theme_preset, storefront_custom_brand_color, storefront_button_style,
               storefront_font_family, storefront_background_type, storefront_background_color, storefront_card_style,
-              storefront_text_color, storefront_button_text_color, storefront_button_variant, storefront_blocks,
+              storefront_text_color, storefront_button_text_color, storefront_button_variant, storefront_blocks, storefront_nav,
               categories!profiles_category_id_fkey(name),
               countries(name)
             `;
@@ -286,14 +293,22 @@ export function UnifiedStorefrontBuilder() {
           .eq("id", user.id)
           .single();
         if (profileRes.error) {
-          const withoutBilling = baseProfileSelect
+          const withoutNav = baseProfileSelect.replace(/,\s*storefront_nav/, "");
+          const withoutBilling = withoutNav
             .replace(/,\s*plan_tier/, "")
             .replace(/,\s*hide_powered_by_sito/, "");
           profileRes = await supabase
             .from("profiles")
-            .select(withoutBilling)
+            .select(`${withoutBilling}, storefront_subheadline_color`)
             .eq("id", user.id)
             .single();
+          if (profileRes.error) {
+            profileRes = await supabase
+              .from("profiles")
+              .select(withoutBilling)
+              .eq("id", user.id)
+              .single();
+          }
         }
         const [categoriesRes, countriesRes, productsRes] = await Promise.all([
           supabase.from("categories").select("id, name").order("name"),
@@ -386,7 +401,9 @@ export function UnifiedStorefrontBuilder() {
               ? normalizeEditableBlocks([...dbBlocksRaw].sort((a, b) => a.order - b.order))
               : [...DEFAULT_BLOCKS];
           setStorefrontBlocks(nextBlocks);
-          setSavedSnapshot(buildDirtySnapshot(nextProfile, nextDesign, nextBlocks));
+          const nextNav = parseStorefrontNav(p.storefront_nav);
+          setStorefrontNav(nextNav);
+          setSavedSnapshot(buildDirtySnapshot(nextProfile, nextDesign, nextBlocks, nextNav));
         } else {
           setSavedSnapshot(
             buildDirtySnapshot(
@@ -424,7 +441,8 @@ export function UnifiedStorefrontBuilder() {
                   (THEME_PRESET_VALUES.minimal as { subheadlineColor?: string }).subheadlineColor ??
                   THEME_PRESET_VALUES.minimal.textColor,
               },
-              DEFAULT_BLOCKS
+              DEFAULT_BLOCKS,
+              parseStorefrontNav(null)
             )
           );
         }
@@ -486,8 +504,8 @@ export function UnifiedStorefrontBuilder() {
 
   const hasUnsavedChanges = useMemo(() => {
     if (savedSnapshot === null) return false;
-    return buildDirtySnapshot(profileData, designSettings, storefrontBlocks) !== savedSnapshot;
-  }, [profileData, designSettings, storefrontBlocks, savedSnapshot]);
+    return buildDirtySnapshot(profileData, designSettings, storefrontBlocks, storefrontNav) !== savedSnapshot;
+  }, [profileData, designSettings, storefrontBlocks, storefrontNav, savedSnapshot]);
 
   const handleCopyStorefrontUrl = async () => {
     if (!storefrontPublicUrl) return;
@@ -776,12 +794,13 @@ export function UnifiedStorefrontBuilder() {
           storefront_button_variant: designSettings.buttonStyle || "default",
           storefront_subheadline_color: designSettings.subheadlineColor || null,
           storefront_blocks: blocksPayload,
+          storefront_nav: isPro ? storefrontNav : parseStorefrontNav(null),
           hide_powered_by_sito: isPro ? hidePoweredBySito : false,
           updated_at: new Date().toISOString(),
         }, { onConflict: "id" });
 
       if (profileError) {
-        if (profileError.message?.includes("storefront_subheadline_color") || profileError.message?.includes("column")) {
+        if (profileError.message?.includes("storefront_nav") || profileError.message?.includes("storefront_subheadline_color") || profileError.message?.includes("column")) {
           const { error: retryError } = await supabase.from("profiles").upsert({
             id: user.id,
             name: profileData.name,
@@ -815,11 +834,14 @@ export function UnifiedStorefrontBuilder() {
             updated_at: new Date().toISOString(),
           }, { onConflict: "id" });
           if (retryError) throw retryError;
+          if (profileError.message?.includes("storefront_nav")) {
+            setError("Nav settings need migration 060_storefront_pages_funnels.sql in Supabase. Other changes were saved.");
+          }
         } else {
           throw profileError;
         }
       }
-      setSavedSnapshot(buildDirtySnapshot(profileData, designSettings, storefrontBlocks));
+      setSavedSnapshot(buildDirtySnapshot(profileData, designSettings, storefrontBlocks, storefrontNav));
       router.refresh();
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -893,7 +915,7 @@ export function UnifiedStorefrontBuilder() {
             <div className="lg:col-span-2 space-y-4">
               <div className="w-full overflow-x-auto overflow-y-hidden hide-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
                 <div className="flex whitespace-nowrap gap-2 border-b border-slate-700 pb-2 min-w-max">
-                {(["profile", "design", "blocks"] as const).map((tab) => (
+                {(["profile", "design", "blocks", "pages"] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
@@ -904,7 +926,13 @@ export function UnifiedStorefrontBuilder() {
                       activeTab === tab ? "bg-slate-800 text-slate-50" : "text-slate-400 hover:text-slate-50"
                     }`}
                   >
-                    {tab === "profile" ? "Profile Info" : tab === "design" ? "Theme" : "Section Blocks"}
+                    {tab === "profile"
+                      ? "Profile Info"
+                      : tab === "design"
+                        ? "Theme"
+                        : tab === "blocks"
+                          ? "Section Blocks"
+                          : "Pages & Funnels"}
                   </button>
                 ))}
                 </div>
@@ -993,6 +1021,17 @@ export function UnifiedStorefrontBuilder() {
                       twitter: profileData.twitterUrl,
                       youtube: profileData.youtubeUrl,
                     }}
+                  />
+                )}
+
+                {activeTab === "pages" && user && (
+                  <PagesFunnelsTab
+                    isPro={isPro}
+                    customSlug={profileData.customSlug}
+                    navConfig={storefrontNav}
+                    onNavChange={setStorefrontNav}
+                    onUpgradeClick={() => setShowUpgradeModal(true)}
+                    userId={user.id}
                   />
                 )}
               </div>
@@ -1452,6 +1491,13 @@ function DesignTab({
 }) {
   return (
     <div className="space-y-8">
+      <section className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+        <h3 className="text-sm font-semibold text-slate-200">Storefront navigation</h3>
+        <p className="mt-1 text-xs text-slate-500">
+          Toggle Shop, Blog, and Free Guides links — and publish lead magnet landing pages — from the{" "}
+          <span className="text-slate-300">Pages & Funnels</span> tab (Pro).
+        </p>
+      </section>
       <section className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>

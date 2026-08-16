@@ -1,11 +1,20 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { StorefrontView } from "@/components/storefront-view";
+import { StorefrontNavBar } from "@/components/storefront/storefront-nav-bar";
 import { JsonLd } from "@/components/json-ld";
-import { getDesignStateFromProfile, THEME_PRESET_VALUES, normalizeThemePreset } from "@/lib/storefront-theme-config";
+import {
+  getDesignStateFromProfile,
+  THEME_PRESET_VALUES,
+  normalizeThemePreset,
+} from "@/lib/storefront-theme-config";
 import { getSiteUrl } from "@/lib/site-url";
+import {
+  loadPublicStorefrontProfile,
+  shouldHidePoweredBy,
+} from "@/lib/storefront-public";
 
 interface StorefrontPageProps {
   params: Promise<{
@@ -86,77 +95,11 @@ function durationLabelForProduct(product: {
 export default async function StorefrontPage({ params }: StorefrontPageProps) {
   const { slug } = await params;
   const supabase = await createClient();
+  const normalizedSlug = slug.toLowerCase().trim();
 
   try {
-    const baseSelect = `
-        id,
-        name,
-        bio,
-        tagline,
-        avatar_url,
-        verified,
-        listed_on_marketplace,
-        is_pro_store,
-        plan_tier,
-        hide_powered_by_sito,
-        storefront_theme_preset,
-        storefront_custom_brand_color,
-        storefront_button_style,
-        storefront_font_family,
-        storefront_background_color,
-        storefront_card_style,
-        storefront_text_color,
-        storefront_button_text_color,
-        storefront_button_variant,
-        storefront_custom_links,
-        storefront_show_products,
-        storefront_show_appointments,
-        storefront_show_blog,
-        storefront_bio_override,
-        storefront_blocks,
-        storefront_background_image_url,
-        website,
-        linkedin,
-        instagram_url,
-        tiktok_url,
-        twitter_url,
-        youtube_url
-      `;
-    let profile: Record<string, unknown> | null = null;
-    let error: { message: string } | null = null;
-
-    let result = await supabase
-      .from("profiles")
-      .select(`${baseSelect}, storefront_subheadline_color`)
-      .eq("custom_slug", slug.toLowerCase().trim())
-      .eq("listed_on_marketplace", true)
-      .maybeSingle();
-
-    if (result.error) {
-      // Retry without newer columns if migration not applied yet
-      const legacySelect = baseSelect
-        .replace(/,\s*plan_tier/, "")
-        .replace(/,\s*hide_powered_by_sito/, "")
-        .replace(/,\s*is_pro_store/, "");
-      result = await supabase
-        .from("profiles")
-        .select(legacySelect)
-        .eq("custom_slug", slug.toLowerCase().trim())
-        .eq("listed_on_marketplace", true)
-        .maybeSingle();
-    }
-
-    profile = result.data as Record<string, unknown> | null;
-    error = result.error;
-
-    if (error) {
-      console.error("Error fetching profile by slug:", error);
-      notFound();
-    }
-
-    if (!profile || !(profile.id as string)) {
-      notFound();
-    }
+    const profile = await loadPublicStorefrontProfile(normalizedSlug);
+    if (!profile?.id) notFound();
 
     const profileId = profile.id as string;
     let products: any[] = [];
@@ -230,57 +173,80 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
     const themeKey = normalizeThemePreset(profile.storefront_theme_preset as string);
     const glowElement = THEME_PRESET_VALUES[themeKey]?.glowElement;
 
-    const p = profile as Record<string, unknown>;
     const site = getSiteUrl();
     const personLd = {
       "@context": "https://schema.org",
       "@type": "Person",
-      name: String(p.name || "Expert"),
-      description: String(p.bio || p.tagline || "").slice(0, 300),
-      url: `${site}/s/${slug.toLowerCase().trim()}`,
-      image: (p.avatar_url as string) || undefined,
-      jobTitle: (p.tagline as string) || undefined,
-      sameAs: [p.website, p.linkedin, p.instagram_url, p.twitter_url, p.youtube_url].filter(
-        Boolean
-      ) as string[],
+      name: String(profile.name || "Expert"),
+      description: String(profile.bio || profile.tagline || "").slice(0, 300),
+      url: `${site}/s/${normalizedSlug}`,
+      image: (profile.avatar_url as string) || undefined,
+      jobTitle: (profile.tagline as string) || undefined,
+      sameAs: [
+        profile.website,
+        profile.linkedin,
+        profile.instagram_url,
+        profile.twitter_url,
+        profile.youtube_url,
+      ].filter(Boolean) as string[],
     };
-    const hideBadge =
-      (!!p.hide_powered_by_sito && (p.plan_tier === "pro" || !!p.is_pro_store));
+
+    const navSlot = (
+      <StorefrontNavBar
+        slug={normalizedSlug}
+        active="home"
+        navConfig={profile.storefront_nav}
+        planTier={profile.plan_tier as string | null}
+        isProStore={profile.is_pro_store as boolean | null}
+        textColor={designState.textColor}
+        accentColor={designState.buttonColor}
+      />
+    );
 
     return (
-      <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Loading storefront…</div>}>
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
+            Loading storefront…
+          </div>
+        }
+      >
         <JsonLd data={personLd} />
         <StorefrontView
-          expertId={String(p.id)}
-          expertName={String(p.name || "Expert")}
-          expertBio={String(p.bio || "")}
-          expertTagline={p.tagline as string | undefined}
-          bioOverride={p.storefront_bio_override as string | undefined}
-          avatarUrl={p.avatar_url as string | undefined}
-          verified={!!p.verified}
+          expertId={String(profile.id)}
+          expertName={String(profile.name || "Expert")}
+          expertBio={String(profile.bio || "")}
+          expertTagline={profile.tagline as string | undefined}
+          bioOverride={profile.storefront_bio_override as string | undefined}
+          avatarUrl={profile.avatar_url as string | undefined}
+          verified={!!profile.verified}
           designState={{ ...designState, glowElement, themePreset: themeKey }}
-          customLinks={(p.storefront_custom_links as any) || []}
-          website={p.website as string | undefined}
-          linkedin={p.linkedin as string | undefined}
-          instagramUrl={p.instagram_url as string | undefined}
-          tiktokUrl={p.tiktok_url as string | undefined}
-          twitterUrl={p.twitter_url as string | undefined}
-          youtubeUrl={p.youtube_url as string | undefined}
+          customLinks={(profile.storefront_custom_links as any) || []}
+          website={profile.website as string | undefined}
+          linkedin={profile.linkedin as string | undefined}
+          instagramUrl={profile.instagram_url as string | undefined}
+          tiktokUrl={profile.tiktok_url as string | undefined}
+          twitterUrl={profile.twitter_url as string | undefined}
+          youtubeUrl={profile.youtube_url as string | undefined}
           storefrontBackgroundImageUrl={
-            (p.storefront_background_image_url as string | undefined) ||
-            ((storefrontBlocks.find((b: { type?: string }) => b.type === "hero") as { data?: { imageUrl?: string } } | undefined)?.data
-              ?.imageUrl)
+            (profile.storefront_background_image_url as string | undefined) ||
+            (
+              storefrontBlocks.find((b: { type?: string }) => b.type === "hero") as
+                | { data?: { imageUrl?: string } }
+                | undefined
+            )?.data?.imageUrl
           }
-          storefrontSlug={slug.toLowerCase().trim()}
+          storefrontSlug={normalizedSlug}
           products={products}
           blogPosts={blogPosts}
           hasAppointments={hasAppointments}
           storefrontBlocks={storefrontBlocks}
-          hidePoweredBy={hideBadge}
+          hidePoweredBy={shouldHidePoweredBy(profile)}
+          navSlot={navSlot}
         />
       </Suspense>
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching storefront:", error);
     notFound();
   }

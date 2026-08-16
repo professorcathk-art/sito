@@ -1,8 +1,18 @@
 import { Suspense } from "react";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { notFound } from "next/navigation";
 import { StorefrontView } from "@/components/storefront-view";
-import { getDesignStateFromProfile, THEME_PRESET_VALUES, normalizeThemePreset } from "@/lib/storefront-theme-config";
+import { StorefrontNavBar } from "@/components/storefront/storefront-nav-bar";
+import {
+  getDesignStateFromProfile,
+  THEME_PRESET_VALUES,
+  normalizeThemePreset,
+} from "@/lib/storefront-theme-config";
+import {
+  isPublicSubPageAllowed,
+  loadPublicStorefrontProfile,
+  shouldHidePoweredBy,
+} from "@/lib/storefront-public";
 
 interface ShopPageProps {
   params: Promise<{
@@ -29,61 +39,14 @@ function durationLabelForProduct(product: {
 export default async function StorefrontShopPage({ params }: ShopPageProps) {
   const { slug } = await params;
   const supabase = await createClient();
+  const normalizedSlug = slug.toLowerCase().trim();
 
   try {
-    const baseSelect = `
-        id,
-        name,
-        bio,
-        tagline,
-        avatar_url,
-        verified,
-        listed_on_marketplace,
-        is_pro_store,
-        plan_tier,
-        hide_powered_by_sito,
-        storefront_theme_preset,
-        storefront_custom_brand_color,
-        storefront_button_style,
-        storefront_font_family,
-        storefront_background_color,
-        storefront_card_style,
-        storefront_text_color,
-        storefront_button_text_color,
-        storefront_button_variant,
-        storefront_custom_links,
-        storefront_show_products,
-        storefront_show_appointments,
-        storefront_bio_override,
-        storefront_blocks,
-        storefront_background_image_url,
-        website,
-        linkedin,
-        instagram_url,
-        tiktok_url,
-        twitter_url,
-        youtube_url
-      `;
+    const profile = await loadPublicStorefrontProfile(normalizedSlug);
+    if (!profile?.id) notFound();
 
-    let result = await supabase
-      .from("profiles")
-      .select(`${baseSelect}, storefront_subheadline_color`)
-      .eq("custom_slug", slug.toLowerCase().trim())
-      .eq("listed_on_marketplace", true)
-      .maybeSingle();
-
-    if (result.error) {
-      result = await supabase
-        .from("profiles")
-        .select(baseSelect)
-        .eq("custom_slug", slug.toLowerCase().trim())
-        .eq("listed_on_marketplace", true)
-        .maybeSingle();
-    }
-
-    const profile = result.data as Record<string, unknown> | null;
-    if (result.error || !profile?.id) {
-      notFound();
+    if (!isPublicSubPageAllowed(profile, "shop")) {
+      redirect(`/s/${normalizedSlug}`);
     }
 
     const profileId = profile.id as string;
@@ -115,11 +78,13 @@ export default async function StorefrontShopPage({ params }: ShopPageProps) {
           return {
             ...rest,
             cover_image_url: cover ?? null,
-            duration_label: durationLabelForProduct(rest as {
-              product_type?: string | null;
-              e_learning_subtype?: string | null;
-              pricing_type?: string | null;
-            }),
+            duration_label: durationLabelForProduct(
+              rest as {
+                product_type?: string | null;
+                e_learning_subtype?: string | null;
+                pricing_type?: string | null;
+              }
+            ),
           };
         });
       }
@@ -141,6 +106,18 @@ export default async function StorefrontShopPage({ params }: ShopPageProps) {
     const themeKey = normalizeThemePreset(profile.storefront_theme_preset as string);
     const glowElement = THEME_PRESET_VALUES[themeKey]?.glowElement;
 
+    const navSlot = (
+      <StorefrontNavBar
+        slug={normalizedSlug}
+        active="shop"
+        navConfig={profile.storefront_nav}
+        planTier={profile.plan_tier as string | null}
+        isProStore={profile.is_pro_store as boolean | null}
+        textColor={designState.textColor}
+        accentColor={designState.buttonColor}
+      />
+    );
+
     return (
       <Suspense
         fallback={
@@ -158,7 +135,14 @@ export default async function StorefrontShopPage({ params }: ShopPageProps) {
           avatarUrl={profile.avatar_url as string | undefined}
           verified={!!profile.verified}
           designState={{ ...designState, glowElement, themePreset: themeKey }}
-          customLinks={(profile.storefront_custom_links as Array<{ title: string; url: string; icon?: string; order: number }>) || []}
+          customLinks={
+            (profile.storefront_custom_links as Array<{
+              title: string;
+              url: string;
+              icon?: string;
+              order: number;
+            }>) || []
+          }
           website={profile.website as string | undefined}
           linkedin={profile.linkedin as string | undefined}
           instagramUrl={profile.instagram_url as string | undefined}
@@ -166,16 +150,14 @@ export default async function StorefrontShopPage({ params }: ShopPageProps) {
           twitterUrl={profile.twitter_url as string | undefined}
           youtubeUrl={profile.youtube_url as string | undefined}
           storefrontBackgroundImageUrl={profile.storefront_background_image_url as string | undefined}
-          storefrontSlug={slug.toLowerCase().trim()}
+          storefrontSlug={normalizedSlug}
           products={products as never[]}
           blogPosts={[]}
           hasAppointments={hasAppointments}
           storefrontBlocks={storefrontBlocks as never[]}
           productsOnly
-          hidePoweredBy={
-            !!profile.hide_powered_by_sito &&
-            (profile.plan_tier === "pro" || !!profile.is_pro_store)
-          }
+          hidePoweredBy={shouldHidePoweredBy(profile)}
+          navSlot={navSlot}
         />
       </Suspense>
     );

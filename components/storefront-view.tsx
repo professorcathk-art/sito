@@ -40,6 +40,8 @@ interface StorefrontViewProps {
   productsOnly?: boolean;
   /** Pro creators may hide the Powered by Sito footer */
   hidePoweredBy?: boolean;
+  navSlot?: React.ReactNode;
+  postsOnly?: boolean;
 }
 
 export function StorefrontView({
@@ -66,6 +68,8 @@ export function StorefrontView({
   storefrontBlocks = [],
   productsOnly = false,
   hidePoweredBy = false,
+  navSlot,
+  postsOnly = false,
 }: StorefrontViewProps) {
   const { user } = useAuth();
   const router = useRouter();
@@ -114,7 +118,9 @@ export function StorefrontView({
         customLinks={customLinks}
         currentUserId={user?.id}
         productsOnly={productsOnly}
+        postsOnly={postsOnly}
         hidePoweredBy={hidePoweredBy}
+        navSlot={navSlot}
         onBookMe={() => setOpenBookingModal(true)}
       />
       {openBookingModal && hasAppointments && (

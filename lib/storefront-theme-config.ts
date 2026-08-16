@@ -266,17 +266,17 @@ export function getCardCssVars(cardStyle: CardStyleId): { bg: string; border: st
 }
 
 export function getDesignStateFromProfile(profile: {
-  storefront_theme_preset?: string;
-  storefront_custom_brand_color?: string;
-  storefront_button_style?: string;
-  storefront_button_variant?: string;
-  storefront_font_family?: string;
-  storefront_background_color?: string;
-  storefront_background_image_url?: string;
-  storefront_card_style?: string;
-  storefront_text_color?: string;
-  storefront_button_text_color?: string;
-  storefront_subheadline_color?: string;
+  storefront_theme_preset?: string | null;
+  storefront_custom_brand_color?: string | null;
+  storefront_button_style?: string | null;
+  storefront_button_variant?: string | null;
+  storefront_font_family?: string | null;
+  storefront_background_color?: string | null;
+  storefront_background_image_url?: string | null;
+  storefront_card_style?: string | null;
+  storefront_text_color?: string | null;
+  storefront_button_text_color?: string | null;
+  storefront_subheadline_color?: string | null;
 }): {
   backgroundColor: string;
   backgroundImageUrl?: string;

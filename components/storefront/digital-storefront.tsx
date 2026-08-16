@@ -91,6 +91,10 @@ export interface DigitalStorefrontProps {
   isPreview?: boolean;
   onBookMe?: () => void;
   hidePoweredBy?: boolean;
+  /** Optional top navigation (public sub-pages) */
+  navSlot?: React.ReactNode;
+  /** Blog archive layout — list of posts only */
+  postsOnly?: boolean;
 }
 
 export function DigitalStorefront({
@@ -117,6 +121,8 @@ export function DigitalStorefront({
   isPreview = false,
   onBookMe,
   hidePoweredBy = false,
+  navSlot,
+  postsOnly = false,
 }: DigitalStorefrontProps) {
   const isFluidAura = designState.themePreset === "fluid-aura";
   const isSoftGradient = designState.themePreset === "soft-gradient" || designState.themePreset === "pearl-silk";
@@ -288,9 +294,10 @@ export function DigitalStorefront({
           fontFamily: fontFamilyStyle,
         }}
       >
+        {navSlot}
         <div className={isPreview ? "pb-8 pt-8 px-4" : "pb-16 pt-10 px-4 sm:px-6 lg:px-8"}>
           <div className={`mx-auto w-full ${isPreview ? "max-w-none" : "max-w-5xl"}`}>
-            {storefrontSlug && !isPreview && (
+            {!navSlot && storefrontSlug && !isPreview && (
               <Link
                 href={`/s/${storefrontSlug}`}
                 className="mb-6 inline-flex text-sm text-[var(--store-subheadline)] hover:text-[var(--store-text)]"
@@ -318,6 +325,79 @@ export function DigitalStorefront({
     );
   }
 
+  if (postsOnly) {
+    return (
+      <div
+        className={wrapperClass}
+        style={{
+          ...cssVars,
+          background: pageBackground,
+          backgroundPosition: "center",
+          color: "var(--store-text)",
+          fontFamily: fontFamilyStyle,
+        }}
+      >
+        {navSlot}
+        <div className={isPreview ? "pb-8 pt-8 px-4" : "pb-16 pt-10 px-4 sm:px-6 lg:px-8"}>
+          <div className={`mx-auto w-full ${isPreview ? "max-w-none" : "max-w-3xl"}`}>
+            {!navSlot && storefrontSlug && !isPreview && (
+              <Link
+                href={`/s/${storefrontSlug}`}
+                className="mb-6 inline-flex text-sm text-[var(--store-subheadline)] hover:text-[var(--store-text)]"
+              >
+                ← Back to profile
+              </Link>
+            )}
+            <h1 className="mb-2 text-2xl sm:text-3xl font-bold tracking-tight text-[var(--store-text)]">
+              Blog · {displayName}
+            </h1>
+            <p className="mb-8 text-sm text-[var(--store-subheadline)]">Published articles and insights</p>
+            {blogPosts.length === 0 ? (
+              <p className="text-sm text-[var(--store-subheadline)]">No published posts yet.</p>
+            ) : (
+              <ul className="space-y-4">
+                {blogPosts.map((post) => (
+                  <li key={post.id}>
+                    <Link
+                      href={`/blog/${post.id}`}
+                      className="block rounded-2xl border border-[var(--store-card-border)] bg-[var(--store-card-bg)] p-4 transition hover:opacity-95"
+                    >
+                      <h2 className="text-lg font-semibold text-[var(--store-text)]">{post.title}</h2>
+                      {post.description && (
+                        <p className="mt-1 line-clamp-2 text-sm text-[var(--store-subheadline)]">
+                          {post.description}
+                        </p>
+                      )}
+                      {post.published_at && (
+                        <p className="mt-2 text-xs text-[var(--store-subheadline)] opacity-80">
+                          {new Date(post.published_at).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </p>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {!hidePoweredBy && (
+              <a
+                href="https://www.sito.club"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-10 block pt-4 text-center text-sm text-[var(--store-subheadline)] opacity-70 hover:opacity-100"
+              >
+                Powered by Sito
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={wrapperClass}
@@ -329,6 +409,7 @@ export function DigitalStorefront({
         fontFamily: fontFamilyStyle,
       }}
     >
+      {navSlot}
       {isFluidAura && (
         <>
           <div className="pointer-events-none absolute -left-4 top-0 -z-10 h-72 w-72 rounded-full bg-fuchsia-600 opacity-30 mix-blend-screen blur-3xl" aria-hidden />
