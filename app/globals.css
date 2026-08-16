@@ -551,6 +551,77 @@ select:focus {
   font-style: italic;
 }
 
+/* Sharing Posts — Medium-style article prose */
+.article-prose {
+  color: #e2e8f0;
+  font-size: 1.125rem;
+  line-height: 1.8;
+}
+.article-prose > *:first-child {
+  margin-top: 0;
+}
+.article-prose p {
+  margin: 1.25em 0;
+}
+.article-prose h2 {
+  margin: 2em 0 0.75em;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+.article-prose h3 {
+  margin: 1.75em 0 0.6em;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+.article-prose a {
+  color: #38bdf8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.article-prose ul,
+.article-prose ol {
+  margin: 1.25em 0;
+  padding-left: 1.35em;
+}
+.article-prose li {
+  margin: 0.4em 0;
+}
+.article-prose blockquote,
+.article-prose .sito-callout {
+  margin: 1.75em 0;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid #38bdf8;
+  border-radius: 0 0.75rem 0.75rem 0;
+  background: rgba(14, 165, 233, 0.08);
+  color: #cbd5e1;
+  font-style: normal;
+}
+.article-prose .sito-callout-product {
+  border-left-color: #a78bfa;
+  background: rgba(167, 139, 250, 0.08);
+}
+.article-prose img {
+  margin: 1.75em 0;
+  border-radius: 0.75rem;
+  max-width: 100%;
+  height: auto;
+}
+.article-prose pre {
+  margin: 1.5em 0;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  background: #020617;
+  padding: 1rem;
+  font-size: 0.9em;
+}
+.article-prose strong {
+  color: #f8fafc;
+  font-weight: 650;
+}
+
 /* Appointment Hub — blocked-date picker (react-calendar) */
 .availability-date-picker .react-calendar {
   width: 100%;

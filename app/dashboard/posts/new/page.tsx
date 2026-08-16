@@ -2,13 +2,13 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { ExpertRoute } from "@/components/expert-route";
-import { PostsManagement } from "@/components/posts/posts-management";
+import { PostCanvasEditor } from "@/components/posts/post-canvas-editor";
 
-export default function DashboardPostsPage() {
+export default function NewPostPage() {
   return (
     <DashboardLayout>
       <ExpertRoute>
-        <PostsManagement />
+        <PostCanvasEditor />
       </ExpertRoute>
     </DashboardLayout>
   );

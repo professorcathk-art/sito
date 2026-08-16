@@ -1,80 +1,103 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { Navigation } from "@/components/navigation";
-import { BlogPostView } from "@/components/blog-post-view";
-import { BlogPostSidebar } from "@/components/blog-post-sidebar";
 import { Footer } from "@/components/footer";
+import { ArticleReader } from "@/components/posts/article-reader";
+import { ArticleSidebar } from "@/components/posts/article-sidebar";
 import { notFound } from "next/navigation";
+import { getSiteUrl } from "@/lib/site-url";
 
 interface BlogPostPageProps {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("blog_posts")
+    .select("title, description, featured_image_url")
+    .eq("id", id)
+    .maybeSingle();
+  if (!data) return { title: "Post | Sito" };
+  const desc = String(data.description || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+  const site = getSiteUrl();
+  return {
+    title: `${data.title} | Sito`,
+    description: desc || "Expert article on Sito",
+    openGraph: {
+      title: data.title,
+      description: desc,
+      images: data.featured_image_url ? [{ url: data.featured_image_url }] : undefined,
+      url: `${site}/blog/${id}`,
+    },
+  };
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { id } = await params;
   const supabase = await createClient();
-  
-  try {
-    const { data: blogPost, error } = await supabase
-      .from("blog_posts")
-      .select("*")
-      .eq("id", id)
-      .single();
 
-    if (error) {
-      console.error("Error fetching blog post:", error);
-      notFound();
-    }
+  const { data: blogPost, error } = await supabase
+    .from("blog_posts")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-    if (!blogPost) {
-      notFound();
-    }
+  if (error || !blogPost) notFound();
 
-    // Fetch expert profile separately
-    let expertProfile = null;
-    if (blogPost.expert_id) {
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("id, name, title, avatar_url")
-        .eq("id", blogPost.expert_id)
-        .single();
-      
-      // Don't fail if profile not found, just use defaults
-      if (!profileError && profile) {
-        expertProfile = profile;
-      }
-    }
+  // Unpublished drafts: only author via client auth later — hide from public SSR if no published_at
+  // (author preview still works client-side when logged in as owner via hasAccess)
 
-    const blogPostWithProfile = {
-      ...blogPost,
-      profiles: expertProfile || {
-        id: blogPost.expert_id,
-        name: "Expert",
-        title: null,
-        avatar_url: null,
-      },
-    };
+  let expertProfile: {
+    id: string;
+    name: string;
+    title: string | null;
+    avatar_url: string | null;
+    custom_slug?: string | null;
+  } | null = null;
 
-    return (
-    <div className="min-h-screen bg-custom-bg flex flex-col">
+  if (blogPost.expert_id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, name, title, avatar_url, custom_slug")
+      .eq("id", blogPost.expert_id)
+      .maybeSingle();
+    if (profile) expertProfile = profile;
+  }
+
+  const blogPostWithProfile = {
+    ...blogPost,
+    profiles: expertProfile || {
+      id: blogPost.expert_id,
+      name: "Expert",
+      title: null,
+      avatar_url: null,
+      custom_slug: null,
+    },
+  };
+
+  return (
+    <div className="flex min-h-screen flex-col bg-slate-950">
       <Navigation />
-      <div className="pt-24 pb-12 flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:w-3/4">
-            <BlogPostView blogPost={blogPostWithProfile} />
-          </div>
-          <div className="lg:w-1/4">
-            <BlogPostSidebar expertId={blogPost.expert_id} currentPostId={blogPost.id} />
+      <main className="flex-1 px-4 pb-24 pt-24 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <ArticleReader blogPost={blogPostWithProfile} />
+          <div className="lg:pt-2">
+            <ArticleSidebar
+              expertId={blogPost.expert_id}
+              currentPostId={blogPost.id}
+              expertName={blogPostWithProfile.profiles.name}
+              customSlug={blogPostWithProfile.profiles.custom_slug}
+            />
           </div>
         </div>
-      </div>
+      </main>
       <Footer />
     </div>
-    );
-  } catch (err) {
-    console.error("Error in blog post page:", err);
-    notFound();
-  }
+  );
 }
-
