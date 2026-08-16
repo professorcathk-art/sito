@@ -11,7 +11,8 @@ export type StorefrontBlockType =
   | "bullet_list"
   | "social_media"
   | "book_me"
-  | "lead_magnet";
+  | "lead_magnet"
+  | "blog";
 
 export interface StorefrontBlock {
   id: string;

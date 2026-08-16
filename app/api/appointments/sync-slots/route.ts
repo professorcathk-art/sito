@@ -1,6 +1,6 @@
 /**
  * Sync appointment_slots from product availability_rules (weekly schedule).
- * Deletes future free slots for the product, then regenerates from rules minus busy bookings.
+ * Regenerates future free slots for the product from rules minus busy bookings.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
     const rules = parseAvailabilityRules(product.availability_rules);
     const nowIso = new Date().toISOString();
 
-    // Busy: confirmed/pending appointments + slots already taken
     const { data: busyAppts } = await supabase
       .from("appointments")
       .select("start_time, end_time")
@@ -48,7 +47,24 @@ export async function POST(request: NextRequest) {
       .in("status", ["pending", "confirmed"])
       .gte("end_time", nowIso);
 
-    // Remove future available (unbooked) slots for this product
+    const generated = generateSlotsFromRules(rules, {
+      from: new Date(),
+      busy: (busyAppts || []).map((a) => ({ start: a.start_time, end: a.end_time })),
+    });
+
+    if (generated.length === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "No bookable slots generated. Check weekly hours (start/end times) and minimum notice settings.",
+          created: 0,
+          timezone: rules.timezone,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Only wipe free inventory after we know we can regenerate
     const { data: existingFree } = await supabase
       .from("appointment_slots")
       .select("id")
@@ -67,7 +83,6 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    // Also clear orphan free slots without product_id for this expert (legacy)
     await supabase
       .from("appointment_slots")
       .delete()
@@ -75,11 +90,6 @@ export async function POST(request: NextRequest) {
       .is("product_id", null)
       .eq("is_available", true)
       .gte("start_time", nowIso);
-
-    const generated = generateSlotsFromRules(rules, {
-      from: new Date(),
-      busy: (busyAppts || []).map((a) => ({ start: a.start_time, end: a.end_time })),
-    });
 
     const rate = Number(product.price) || 0;
     const rows = generated.map((g) => ({
@@ -91,13 +101,10 @@ export async function POST(request: NextRequest) {
       is_available: true,
     }));
 
-    if (rows.length > 0) {
-      // Insert in chunks
-      for (let i = 0; i < rows.length; i += 100) {
-        const chunk = rows.slice(i, i + 100);
-        const { error: insertError } = await supabase.from("appointment_slots").insert(chunk);
-        if (insertError) throw insertError;
-      }
+    for (let i = 0; i < rows.length; i += 100) {
+      const chunk = rows.slice(i, i + 100);
+      const { error: insertError } = await supabase.from("appointment_slots").insert(chunk);
+      if (insertError) throw insertError;
     }
 
     return NextResponse.json({

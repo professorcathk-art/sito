@@ -30,6 +30,11 @@ const nextConfig = {
         destination: "/dashboard/learning/subscriptions?tab=saved",
         permanent: false,
       },
+      {
+        source: "/courses/create",
+        destination: "/dashboard/products",
+        permanent: false,
+      },
     ];
   },
 };

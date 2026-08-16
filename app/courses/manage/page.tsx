@@ -86,27 +86,17 @@ export default function ManageCoursePage() {
     if (!user) return;
     setLoading(true);
     try {
-      // Fetch courses where user is expert
-      const { data: expertCourses, error: expertError } = await supabase
-        .from("courses")
-        .select("*")
-        .eq("expert_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (expertError) throw expertError;
-
-      // Fetch courses where user is enrolled (by user_id or email)
+      // Learner classroom only — expert editing lives in /dashboard/elearning
       const { data: userProfile } = await supabase
         .from("profiles")
         .select("email")
         .eq("id", user.id)
         .maybeSingle();
-      
+
       const userEmail = userProfile?.email;
       const { data: authUser } = await supabase.auth.getUser();
       const finalUserEmail = userEmail || authUser?.user?.email;
 
-      // Fetch enrollments by user_id
       const { data: enrollmentsById, error: enrollmentByIdError } = await supabase
         .from("course_enrollments")
         .select("course_id, courses(*), payment_intent_id")
@@ -116,17 +106,14 @@ export default function ManageCoursePage() {
         console.error("Error fetching enrollments by user_id:", enrollmentByIdError);
         throw enrollmentByIdError;
       }
-      
-      console.log(`Found ${enrollmentsById?.length || 0} enrollments by user_id for user ${user.id}`);
 
-      // Fetch enrollments by email (for offline payment enrollments)
       let enrollmentsByEmail: any[] = [];
       if (finalUserEmail) {
         const { data, error: enrollmentByEmailError } = await supabase
           .from("course_enrollments")
           .select("course_id, courses(*)")
           .eq("user_email", finalUserEmail);
-        
+
         if (enrollmentByEmailError) {
           console.error("Error fetching enrollments by email:", enrollmentByEmailError);
         } else if (data) {
@@ -134,26 +121,27 @@ export default function ManageCoursePage() {
         }
       }
 
-      // Combine expert courses and enrolled courses
       const allEnrollments = [...(enrollmentsById || []), ...enrollmentsByEmail];
-      const enrolledCourses = allEnrollments.map((e: any) => e.courses).filter(Boolean);
-      const allCourses = [...(expertCourses || []), ...enrolledCourses];
-      
-      // Remove duplicates
+      const enrolledCourses = allEnrollments
+        .map((e: any) => {
+          const c = Array.isArray(e.courses) ? e.courses[0] : e.courses;
+          return c;
+        })
+        .filter(Boolean)
+        .filter((c: any) => c.expert_id !== user.id); // exclude own courses — edit in Creator Studio
+
       const uniqueCourses = Array.from(
-        new Map(allCourses.map((c: any) => [c.id, c])).values()
+        new Map(enrolledCourses.map((c: any) => [c.id, c])).values()
       );
 
       setCourses(uniqueCourses);
-      
-      // Check if we should auto-select a course from sessionStorage after courses are loaded
+
       if (typeof window !== "undefined") {
         const courseId = sessionStorage.getItem("selectedCourseId");
         if (courseId) {
           sessionStorage.removeItem("selectedCourseId");
           const course = uniqueCourses.find((c: Course) => c.id === courseId);
           if (course) {
-            // Use setTimeout to ensure state is set before selecting
             setTimeout(() => {
               handleSelectCourse(course);
             }, 100);
@@ -511,8 +499,17 @@ export default function ManageCoursePage() {
     <ProtectedRoute>
       <DashboardLayout>
         <div className="px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-4xl font-bold text-custom-text">Classroom</h1>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-8">
+            <div>
+              <h1 className="text-4xl font-bold text-custom-text">Classroom</h1>
+              <p className="mt-1 text-sm text-text-secondary">
+                Courses you enrolled in. Experts edit courses in{" "}
+                <Link href="/dashboard/elearning" className="text-sky-400 hover:underline">
+                  Creator Studio → e-Learning
+                </Link>
+                .
+              </p>
+            </div>
             <button
               onClick={() => fetchCourses()}
               className="px-4 py-2 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
@@ -525,22 +522,20 @@ export default function ManageCoursePage() {
             <div className="space-y-4">
               {courses.length === 0 ? (
                 <div className="bg-surface border border-border-default rounded-md p-8 text-center">
-                  <p className="text-text-secondary mb-4">No courses found.</p>
+                  <p className="text-text-secondary mb-4">No enrolled courses yet.</p>
                   <p className="text-text-secondary text-sm mb-4">
-                    {user && courses.some(c => c.expert_id === user.id)
-                      ? "Create a course from the Products page first."
-                      : "You haven't enrolled in any courses yet. Purchase a course to get started."}
+                    Purchase a course from an expert storefront to start learning here.
                   </p>
-                  <div className="flex gap-4 justify-center">
-                    <button
-                      onClick={() => fetchCourses()}
-                      className="px-4 py-2 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
-                    >
-                      🔄 Refresh
-                    </button>
+                  <div className="flex gap-4 justify-center flex-wrap">
                     <Link
-                      href="/dashboard/products"
+                      href="/dashboard/learning"
                       className="inline-block px-6 py-3 bg-cyber-green text-slate-900 font-semibold rounded-md hover:bg-gray-200 transition-colors"
+                    >
+                      My Learning
+                    </Link>
+                    <Link
+                      href="/featured-courses"
+                      className="inline-block px-6 py-3 border border-border-default text-custom-text rounded-md hover:bg-surface transition-colors"
                     >
                       Browse Courses
                     </Link>

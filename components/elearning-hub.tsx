@@ -36,6 +36,14 @@ export function ElearningHub({ productId }: ElearningHubProps) {
     published: false,
   });
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get("tab");
+      if (t === "lessons" || t === "members" || t === "details") setTab(t);
+    }
+  }, []);
+
   const load = async () => {
     if (!user) return;
     setLoading(true);
@@ -55,11 +63,31 @@ export function ElearningHub({ productId }: ElearningHubProps) {
       setProduct(productData);
 
       let courseData = null;
-      if (productData.course_id) {
+      let courseId = productData.course_id as string | null;
+
+      // Legacy repair: product without course_id — try match by title/expert or create link target
+      if (!courseId) {
+        const { data: orphanCourse } = await supabase
+          .from("courses")
+          .select("*")
+          .eq("expert_id", user.id)
+          .ilike("title", productData.name || "")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (orphanCourse?.id) {
+          courseId = orphanCourse.id;
+          await supabase.from("products").update({ course_id: courseId }).eq("id", productData.id);
+          productData.course_id = courseId;
+          setProduct({ ...productData });
+        }
+      }
+
+      if (courseId) {
         const { data, error: courseError } = await supabase
           .from("courses")
           .select("*")
-          .eq("id", productData.course_id)
+          .eq("id", courseId)
           .single();
         if (courseError) throw courseError;
         courseData = data;
@@ -71,11 +99,14 @@ export function ElearningHub({ productId }: ElearningHubProps) {
           .eq("course_id", data.id)
           .order("order_index", { ascending: true });
         setLessons(lessonsData || []);
+      } else {
+        setCourse(null);
+        setLessons([]);
       }
 
       setForm({
         name: productData.name || "",
-        description: productData.description || "",
+        description: productData.description || courseData?.description || "",
         category: courseData?.category || "",
         price: String(productData.price ?? courseData?.price ?? 0),
         coverImageUrl: courseData?.cover_image_url || "",
@@ -89,11 +120,17 @@ export function ElearningHub({ productId }: ElearningHubProps) {
   };
 
   const loadMembers = async (courseId: string) => {
-    const { data: enrollments } = await supabase
+    const { data: enrollments, error } = await supabase
       .from("course_enrollments")
-      .select("id, user_id, user_email, created_at, amount_paid")
+      .select("id, user_id, user_email, enrolled_at")
       .eq("course_id", courseId)
-      .order("created_at", { ascending: false });
+      .order("enrolled_at", { ascending: false });
+
+    if (error) {
+      console.error("loadMembers:", error);
+      setMembers([]);
+      return;
+    }
 
     const rows = enrollments || [];
     const userIds = Array.from(new Set(rows.map((r) => r.user_id).filter(Boolean)));
@@ -109,8 +146,7 @@ export function ElearningHub({ productId }: ElearningHubProps) {
         id: r.id,
         name: profiles[r.user_id]?.name || r.user_email?.split("@")[0] || "Student",
         email: profiles[r.user_id]?.email || r.user_email || "—",
-        created_at: r.created_at,
-        amount_paid: r.amount_paid,
+        enrolled_at: r.enrolled_at,
       }))
     );
   };
@@ -156,6 +192,24 @@ export function ElearningHub({ productId }: ElearningHubProps) {
           })
           .eq("id", course.id);
         if (courseError) throw courseError;
+      } else {
+        // Create classroom for legacy products missing course_id
+        const { data: created, error: createError } = await supabase
+          .from("courses")
+          .insert({
+            expert_id: user.id,
+            title: form.name.trim(),
+            description: form.description,
+            category: form.category || null,
+            cover_image_url: form.coverImageUrl || null,
+            price,
+            is_free: price === 0,
+            published: form.published,
+          })
+          .select("*")
+          .single();
+        if (createError) throw createError;
+        await supabase.from("products").update({ course_id: created.id }).eq("id", product.id);
       }
       setSuccess("Course details saved");
       await load();
@@ -352,7 +406,9 @@ export function ElearningHub({ productId }: ElearningHubProps) {
                   <tr key={m.id} className="border-b border-slate-800/70 last:border-0">
                     <td className="px-4 py-3 text-slate-100">{m.name}</td>
                     <td className="px-4 py-3 text-slate-300">{m.email}</td>
-                    <td className="px-4 py-3 text-slate-400">{new Date(m.created_at).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-slate-400">
+                      {m.enrolled_at ? new Date(m.enrolled_at).toLocaleString() : "—"}
+                    </td>
                     <td className="px-4 py-3 text-emerald-300">Enrolled</td>
                   </tr>
                 ))}

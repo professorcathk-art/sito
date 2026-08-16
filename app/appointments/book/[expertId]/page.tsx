@@ -60,7 +60,6 @@ export default function BookAppointmentPage() {
 
   const fetchData = async () => {
     try {
-      // Fetch expert info
       const { data: expertData } = await supabase
         .from("profiles")
         .select("id, name, title")
@@ -69,36 +68,23 @@ export default function BookAppointmentPage() {
 
       setExpert(expertData);
 
-              // Fetch available appointment slots (including those linked to products)
-              const { data: slotsData, error } = await supabase
-                .from("appointment_slots")
-                .select("id, start_time, end_time, rate_per_hour, product_id, is_available")
-                .eq("expert_id", expertId)
-                .eq("is_available", true)
-                .gte("start_time", new Date().toISOString())
-                .order("start_time", { ascending: true });
-
-      if (error) throw error;
-
-      // Fetch expert profile separately
-      const { data: expertProfile } = await supabase
-        .from("profiles")
-        .select("id, name, title")
-        .eq("id", expertId)
-        .single();
+      const res = await fetch(`/api/booking/available-slots?expertId=${encodeURIComponent(expertId)}`);
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.error || "Failed to load slots");
 
       setSlots(
-        (slotsData || []).map((slot: any) => ({
+        (payload.slots || []).map((slot: any) => ({
           id: slot.id,
           start_time: slot.start_time,
           end_time: slot.end_time,
           rate_per_hour: slot.rate_per_hour,
           is_available: slot.is_available !== false,
-          expert: expertProfile || { id: expertId, name: "Expert", title: null },
+          expert: expertData || { id: expertId, name: "Expert", title: null },
         }))
       );
     } catch (err) {
-      console.error("Error fetching appointment slots:", err);
+      console.error("Error fetching booking data:", err);
+      setSlots([]);
     } finally {
       setLoading(false);
     }

@@ -628,10 +628,54 @@ export function DigitalStorefront({
 
               if (block.type === "hero") return null;
 
+              if (block.type === "blog") {
+                const posts = blogPosts.slice(0, Number(block.data?.limit) || 6);
+                if (!posts.length && !isPreview) return null;
+                const sectionTitle = (block.data?.title as string) || "Latest posts";
+                return (
+                  <section key={block.id}>
+                    <h2 className="mb-4 text-xl font-semibold tracking-tight text-[var(--store-text)]">
+                      {sectionTitle}
+                    </h2>
+                    {posts.length === 0 ? (
+                      <p className="text-sm text-[var(--store-subheadline)] opacity-70">
+                        Blog posts will appear here once published.
+                      </p>
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {posts.map((post) => (
+                          <Link
+                            key={post.id}
+                            href={`/blog/${post.id}`}
+                            onClick={isPreview ? (e) => e.preventDefault() : undefined}
+                            className="overflow-hidden rounded-2xl border border-[var(--store-card-border)] bg-[var(--store-card-bg)] transition-opacity hover:opacity-90"
+                          >
+                            {post.featured_image_url && (
+                              <div className="relative aspect-video w-full">
+                                <Image src={post.featured_image_url} alt={post.title} fill className="object-cover" />
+                              </div>
+                            )}
+                            <div className="p-4">
+                              <h3 className="font-semibold text-[var(--store-text)]">{post.title}</h3>
+                              {post.description && (
+                                <p className="mt-1 line-clamp-2 text-sm text-[var(--store-subheadline)]">
+                                  {post.description}
+                                </p>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                );
+              }
+
               return null;
             })}
 
-            {blogPosts.length > 0 && (
+            {/* Legacy fallback: auto-append blog if no blog section block exists */}
+            {blogPosts.length > 0 && !sortedBlocks.some((b) => b.type === "blog") && (
               <section>
                 <h2 className="mb-4 text-xl font-semibold tracking-tight text-[var(--store-text)]">Latest posts</h2>
                 <div className="grid gap-4 sm:grid-cols-2">

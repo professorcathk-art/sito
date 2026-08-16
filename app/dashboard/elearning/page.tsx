@@ -8,6 +8,56 @@ import { ExpertRoute } from "@/components/expert-route";
 import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
 
+/**
+ * Ensure every expert course has a linked e-learning product so legacy classrooms
+ * appear in Creator Studio and keep their lessons/members.
+ */
+async function ensureLegacyCoursesLinked(
+  supabase: ReturnType<typeof createClient>,
+  userId: string
+) {
+  const { data: courses } = await supabase
+    .from("courses")
+    .select("id, title, description, price, cover_image_url, published, is_free")
+    .eq("expert_id", userId);
+
+  if (!courses?.length) return;
+
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, course_id, name")
+    .eq("expert_id", userId)
+    .eq("product_type", "e-learning");
+
+  const linkedCourseIds = new Set(
+    (products || []).map((p) => p.course_id).filter(Boolean) as string[]
+  );
+
+  for (const course of courses) {
+    if (linkedCourseIds.has(course.id)) continue;
+
+    // Prefer attaching an existing product with matching name and null course_id
+    const dangling = (products || []).find(
+      (p) => !p.course_id && p.name?.trim().toLowerCase() === course.title?.trim().toLowerCase()
+    );
+    if (dangling) {
+      await supabase.from("products").update({ course_id: course.id }).eq("id", dangling.id);
+      continue;
+    }
+
+    await supabase.from("products").insert({
+      expert_id: userId,
+      name: course.title || "Untitled course",
+      description: course.description || "",
+      price: course.price ?? 0,
+      pricing_type: "one_time",
+      product_type: "e-learning",
+      e_learning_subtype: "online-course",
+      course_id: course.id,
+    });
+  }
+}
+
 function ElearningList() {
   const { user } = useAuth();
   const supabase = createClient();
@@ -17,6 +67,11 @@ function ElearningList() {
   useEffect(() => {
     async function load() {
       if (!user) return;
+      try {
+        await ensureLegacyCoursesLinked(supabase, user.id);
+      } catch (err) {
+        console.error("Legacy course link:", err);
+      }
       const { data } = await supabase
         .from("products")
         .select("id, name, price, course_id, courses(cover_image_url, published)")
@@ -35,9 +90,14 @@ function ElearningList() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Products</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-50">e-Learning</h1>
-          <p className="mt-2 text-sm text-slate-400">Open a course hub to edit details, lessons, and members.</p>
+          <p className="mt-2 text-sm text-slate-400">
+            Open a course hub to edit details, lessons, and members.
+          </p>
         </div>
-        <Link href="/dashboard/products" className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-white">
+        <Link
+          href="/dashboard/products"
+          className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-white"
+        >
           + Add from Overview
         </Link>
       </header>

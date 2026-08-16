@@ -5,6 +5,7 @@ import Calendar from "react-calendar";
 import { format } from "date-fns";
 import {
   WEEKDAY_LABELS,
+  normalizeHm,
   type AvailabilityRules,
   type TimeWindow,
   type WeekdayKey,
@@ -60,7 +61,10 @@ export function AvailabilitySettings({
 
   const updateWindow = (day: WeekdayKey, index: number, patch: Partial<TimeWindow>) => {
     const windows = [...(rules.weekly[day] || [])];
-    windows[index] = { ...windows[index], ...patch };
+    const next = { ...windows[index], ...patch };
+    if (patch.start) next.start = normalizeHm(patch.start) || patch.start.slice(0, 5);
+    if (patch.end) next.end = normalizeHm(patch.end) || patch.end.slice(0, 5);
+    windows[index] = next;
     onChange({ ...rules, weekly: { ...rules.weekly, [day]: windows } });
   };
 
@@ -294,8 +298,14 @@ export function AvailabilitySettings({
         </p>
 
         <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-start">
-          <div className="availability-date-picker rounded-xl border border-slate-800 bg-slate-950/80 p-3">
+          <div className="availability-date-picker rounded-xl border border-slate-800 bg-slate-950 p-3">
             <Calendar
+              locale="en-US"
+              calendarType="gregory"
+              formatDay={(_locale, date) => String(date.getDate())}
+              formatShortWeekday={(_locale, date) =>
+                ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()]
+              }
               onChange={(value) => {
                 const next = Array.isArray(value) ? value[0] : value;
                 setPendingDate(next instanceof Date ? next : null);
@@ -310,21 +320,21 @@ export function AvailabilitySettings({
             />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Selected</p>
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-4">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Selected date</p>
               <p className="mt-1 font-medium text-slate-100">
-                {pendingDate ? format(pendingDate, "EEEE, MMM d, yyyy") : "None — pick a day"}
+                {pendingDate ? format(pendingDate, "EEEE, MMM d, yyyy") : "None — pick a day on the calendar"}
               </p>
+              <button
+                type="button"
+                onClick={addBlockedDate}
+                disabled={!pendingDate}
+                className="mt-3 w-full rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400 sm:w-auto"
+              >
+                + Add Blocked Date
+              </button>
+              {pickerError && <p className="mt-2 text-sm text-amber-300">{pickerError}</p>}
             </div>
-            <button
-              type="button"
-              onClick={addBlockedDate}
-              disabled={!pendingDate}
-              className="w-fit rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
-            >
-              + Add Blocked Date
-            </button>
-            {pickerError && <p className="text-sm text-amber-300">{pickerError}</p>}
             <div className="flex flex-wrap gap-2">
               {rules.dateOverrides
                 .filter((o) => o.blocked)

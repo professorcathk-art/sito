@@ -128,18 +128,18 @@ export function RichTextEditor({
     input.accept = ".pdf,.doc,.docx,.txt,.zip,.rar";
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file || !editor || !onFileUpload) return;
+      if (!file || !editor) return;
 
       // Prompt user to rename the file
       const originalName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
       const fileExt = file.name.split(".").pop();
-      const newName = prompt(`Rename file (optional):`, originalName) || originalName;
+      const newName = prompt(`Rename file (optional):`, originalName);
       
       // If user cancelled, don't upload
       if (newName === null) return;
 
       // Sanitize filename
-      const sanitizedName = newName.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const sanitizedName = (newName || originalName).replace(/[^a-zA-Z0-9._-]/g, "_");
       const finalFileName = sanitizedName ? `${sanitizedName}.${fileExt}` : file.name;
 
       setUploading(true);
@@ -161,7 +161,7 @@ export function RichTextEditor({
         // Insert a link to the file in the editor with the renamed filename
         editor.chain().focus().insertContent(`<a href="${data.publicUrl}" target="_blank" rel="noopener noreferrer">📎 ${finalFileName}</a>`).run();
         
-        onFileUpload(data.publicUrl, finalFileName, file.type, file.size);
+        onFileUpload?.(data.publicUrl, finalFileName, file.type, file.size);
       } catch (err: any) {
         console.error("Error uploading file:", err);
         alert("Failed to upload file. Please try again.");
@@ -350,7 +350,7 @@ export function RichTextEditor({
           <button
             type="button"
             onClick={handleFileUpload}
-            disabled={uploading || !onFileUpload}
+            disabled={uploading}
             className="px-4 py-2 rounded-md text-sm font-semibold transition-colors bg-white/5 text-cyber-green border-2 border-border-default hover:bg-cyber-green/30 hover:border-cyber-green disabled:opacity-50 disabled:cursor-not-allowed"
             title="Upload attachment (PDF, DOC, ZIP, etc.)"
           >

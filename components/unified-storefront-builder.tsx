@@ -45,6 +45,7 @@ const BLOCK_TYPES: { id: StorefrontBlock["type"]; name: string }[] = [
   { id: "links", name: "Links" },
   { id: "products", name: "Products" },
   { id: "book_me", name: "Book Me" },
+  { id: "blog", name: "Blog Posts" },
   { id: "image_text", name: "Image + Text" },
   { id: "faq", name: "FAQ" },
   { id: "testimonials", name: "Testimonials" },
@@ -82,6 +83,7 @@ const DEFAULT_BLOCK_DATA: Record<StorefrontBlock["type"], Record<string, unknown
   products: { showProducts: true, displayMode: "inline" },
   social_media: { platforms: ["instagram", "linkedin", "tiktok", "twitter", "youtube"] },
   book_me: {},
+  blog: { title: "Latest posts", limit: 6 },
   image_text: { imageUrl: "", title: "", text: "", alignment: "left" },
   faq: { items: [{ question: "", answer: "" }] },
   testimonials: { items: [{ name: "", quote: "", avatarUrl: "" }] },
@@ -665,6 +667,7 @@ export function UnifiedStorefrontBuilder() {
 
   const availableBlockTypes = BLOCK_TYPES.filter((t) => {
     if (t.id === "header") return !storefrontBlocks.some((b) => b.type === "header");
+    if (t.id === "blog") return !storefrontBlocks.some((b) => b.type === "blog");
     return true;
   });
 
@@ -944,6 +947,9 @@ export function UnifiedStorefrontBuilder() {
                     onAvatarUpload={handleAvatarUpload}
                     backgroundFileInputRef={backgroundFileInputRef}
                     onBackgroundUpload={handleBackgroundUpload}
+                    onRemoveBackground={() =>
+                      setProfileData((p) => ({ ...p, storefrontBackgroundImageUrl: "" }))
+                    }
                     uploadingBackground={uploadingBackground}
                     storefrontPublicUrl={storefrontPublicUrl}
                     slugCopied={slugCopied}
@@ -966,10 +972,6 @@ export function UnifiedStorefrontBuilder() {
                     onUpgradeClick={() => setShowUpgradeModal(true)}
                     onThemeSelect={handleThemeSelect}
                     onDesignChange={setDesignSettings}
-                    onBackgroundUpload={handleBackgroundUpload}
-                    uploadingBackground={uploadingBackground}
-                    backgroundImageUrl={profileData.storefrontBackgroundImageUrl}
-                    backgroundFileInputRef={backgroundFileInputRef}
                   />
                 )}
 
@@ -1093,6 +1095,7 @@ function ProfileTab({
   onAvatarUpload,
   backgroundFileInputRef,
   onBackgroundUpload,
+  onRemoveBackground,
   uploadingBackground,
   storefrontPublicUrl,
   slugCopied,
@@ -1154,6 +1157,7 @@ function ProfileTab({
   onAvatarUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   backgroundFileInputRef: React.RefObject<HTMLInputElement>;
   onBackgroundUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemoveBackground: () => void;
   uploadingBackground: boolean;
   storefrontPublicUrl: string;
   slugCopied: boolean;
@@ -1315,12 +1319,12 @@ function ProfileTab({
       <div>
         <label className="block text-sm font-medium text-slate-200 mb-1">Storefront Cover Image</label>
         <p className="text-xs text-slate-500 mb-2">Recommended 1920×1080 (16:9). Shown as a wide banner on your public page.</p>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           {profileData.storefrontBackgroundImageUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={profileData.storefrontBackgroundImageUrl} alt="Cover" className="w-32 h-[72px] rounded object-cover border-2 border-slate-700" />
           )}
-          <div>
+          <div className="flex flex-wrap gap-2">
             <input ref={backgroundFileInputRef} type="file" accept="image/*" onChange={onBackgroundUpload} className="hidden" />
             <button
               type="button"
@@ -1330,6 +1334,15 @@ function ProfileTab({
             >
               {uploadingBackground ? "Uploading..." : profileData.storefrontBackgroundImageUrl ? "Change cover" : "Upload cover"}
             </button>
+            {profileData.storefrontBackgroundImageUrl && (
+              <button
+                type="button"
+                onClick={onRemoveBackground}
+                className="min-h-[44px] px-4 py-3 sm:py-2 text-base border border-red-500/40 text-red-300 rounded-lg hover:bg-red-950/40"
+              >
+                Remove cover
+              </button>
+            )}
           </div>
         </div>
         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1415,10 +1428,6 @@ function DesignTab({
   onUpgradeClick,
   onThemeSelect,
   onDesignChange,
-  onBackgroundUpload,
-  uploadingBackground,
-  backgroundImageUrl,
-  backgroundFileInputRef,
 }: {
   designSettings: {
     themePreset: ThemePresetId;
@@ -1440,10 +1449,6 @@ function DesignTab({
   onUpgradeClick: () => void;
   onThemeSelect: (theme: ThemePresetId) => void;
   onDesignChange: React.Dispatch<React.SetStateAction<typeof designSettings>>;
-  onBackgroundUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  uploadingBackground?: boolean;
-  backgroundImageUrl?: string;
-  backgroundFileInputRef?: React.RefObject<HTMLInputElement>;
 }) {
   return (
     <div className="space-y-8">
@@ -1579,9 +1584,9 @@ function DesignTab({
         </select>
       </section>
 
-      {/* Background Section */}
+      {/* Background color (cover image is managed under Profile Info) */}
       <section>
-        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Background</h3>
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Background color</h3>
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             {designSettings.backgroundColor?.startsWith("#") && (
@@ -1600,27 +1605,9 @@ function DesignTab({
               className={`flex-1 ${INPUT_CLASS} py-2`}
             />
           </div>
-          <div>
-            <label className="block text-sm text-slate-400 mb-1">Upload Background Image</label>
-            <div className="flex items-center gap-4">
-              {backgroundImageUrl && (
-                <img src={backgroundImageUrl} alt="Background" className="w-24 h-16 rounded object-cover border-2 border-slate-700" />
-              )}
-              {onBackgroundUpload && backgroundFileInputRef && (
-                <div>
-                  <input ref={backgroundFileInputRef} type="file" accept="image/*" onChange={onBackgroundUpload} className="hidden" />
-                  <button
-                    type="button"
-                    onClick={() => backgroundFileInputRef.current?.click()}
-                    disabled={uploadingBackground}
-                    className="min-h-[44px] px-4 py-3 sm:py-2 text-base bg-slate-800 border border-slate-700 text-slate-100 rounded-lg hover:bg-slate-700 disabled:opacity-50"
-                  >
-                    {uploadingBackground ? "Uploading..." : backgroundImageUrl ? "Change" : "Upload"}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <p className="text-xs text-slate-500">
+            Cover photo is set under Profile Info → Storefront Cover Image.
+          </p>
         </div>
       </section>
 
@@ -2585,6 +2572,41 @@ function BlockEditForm({
       <div className="mt-4">
         <p className="text-slate-400 text-sm italic">
           This block links to your appointment booking page. No configuration needed.
+        </p>
+      </div>
+    );
+  }
+  if (block.type === "blog") {
+    const title = (data.title as string) || "Latest posts";
+    const limit = typeof data.limit === "number" ? data.limit : 6;
+    return (
+      <div className="mt-4 space-y-3">
+        <div>
+          <label className="mb-1 block text-sm text-slate-400">Section title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => onUpdate({ ...data, title: e.target.value })}
+            className={INPUT_CLASS}
+            placeholder="Latest posts"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm text-slate-400">Max posts to show</label>
+          <select
+            value={limit}
+            onChange={(e) => onUpdate({ ...data, limit: Number(e.target.value) })}
+            className={INPUT_CLASS}
+          >
+            {[3, 4, 6, 9, 12].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="text-xs text-slate-500">
+          Shows your published Sharing Posts on the storefront.
         </p>
       </div>
     );

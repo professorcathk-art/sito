@@ -57,24 +57,55 @@ export const DEFAULT_AVAILABILITY_RULES: AvailabilityRules = {
 export function parseAvailabilityRules(raw: unknown): AvailabilityRules {
   if (!raw || typeof raw !== "object") return { ...DEFAULT_AVAILABILITY_RULES, weekly: { ...DEFAULT_AVAILABILITY_RULES.weekly }, dateOverrides: [] };
   const r = raw as Partial<AvailabilityRules>;
+  const weeklyRaw =
+    r.weekly && typeof r.weekly === "object"
+      ? (r.weekly as Partial<Record<WeekdayKey, TimeWindow[]>>)
+      : { ...DEFAULT_AVAILABILITY_RULES.weekly };
   return {
     timezone: typeof r.timezone === "string" && r.timezone ? r.timezone : DEFAULT_AVAILABILITY_RULES.timezone,
     durationMinutes: Number(r.durationMinutes) > 0 ? Number(r.durationMinutes) : 60,
     bufferMinutes: Math.max(0, Number(r.bufferMinutes) || 0),
     minNoticeHours: Math.max(0, Number(r.minNoticeHours) || 0),
     horizonDays: Math.min(90, Math.max(7, Number(r.horizonDays) || 28)),
-    weekly: r.weekly && typeof r.weekly === "object" ? r.weekly : { ...DEFAULT_AVAILABILITY_RULES.weekly },
+    weekly: normalizeWeeklyWindows(weeklyRaw),
     dateOverrides: Array.isArray(r.dateOverrides) ? r.dateOverrides : [],
   };
 }
 
-function parseHm(hm: string): number | null {
-  const m = /^(\d{1,2}):(\d{2})$/.exec(hm.trim());
+/** Accept HH:mm or HH:mm:ss (Safari/iOS time inputs often include seconds). */
+export function normalizeHm(hm: string): string | null {
+  const m = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(String(hm || "").trim());
   if (!m) return null;
   const h = Number(m[1]);
   const min = Number(m[2]);
   if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+  return `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+}
+
+function parseHm(hm: string): number | null {
+  const normalized = normalizeHm(hm);
+  if (!normalized) return null;
+  const [h, min] = normalized.split(":").map(Number);
   return h * 60 + min;
+}
+
+function normalizeWeeklyWindows(
+  weekly: Partial<Record<WeekdayKey, TimeWindow[]>>
+): Partial<Record<WeekdayKey, TimeWindow[]>> {
+  const out: Partial<Record<WeekdayKey, TimeWindow[]>> = {};
+  for (const [day, windows] of Object.entries(weekly || {}) as [WeekdayKey, TimeWindow[]][]) {
+    if (!Array.isArray(windows)) continue;
+    const cleaned = windows
+      .map((w) => {
+        const start = normalizeHm(w?.start);
+        const end = normalizeHm(w?.end);
+        if (!start || !end) return null;
+        return { start, end };
+      })
+      .filter(Boolean) as TimeWindow[];
+    if (cleaned.length) out[day] = cleaned;
+  }
+  return out;
 }
 
 /** Local calendar date YYYY-MM-DD in a timezone */
